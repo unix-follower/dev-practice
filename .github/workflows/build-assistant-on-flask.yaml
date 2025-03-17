@@ -19,7 +19,7 @@ env:
   PYTHON_VERSION: ${{ inputs.python-version || '3.11.7' }}
 
 jobs:
-  build-server:
+  build:
     runs-on:
       - ubuntu-latest
     steps:
