@@ -28,15 +28,17 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup
+      - name: Install python
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
-          working-directory: python/math/linear_algebra
-          run: |
-            python -m pip install --upgrade pip
-            pip install pipenv
-            pipenv sync --dev
+
+      - name: Install dependencies
+        working-directory: python/math/linear_algebra
+        run: |
+          python -m pip install --upgrade pip
+          pip install pipenv
+          pipenv sync --dev
 
       - name: Run checks
         shell: bash
