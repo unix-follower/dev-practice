@@ -42,6 +42,7 @@ jobs:
           pipenv sync --dev
 
       - name: Run checks
+        working-directory: python/fin-predictor-ml-model
         shell: bash
         run: pipenv run lint
     
@@ -80,6 +81,7 @@ jobs:
           pipenv sync --dev
 
       - name: Run checks
+        working-directory: python/fin-predictor-ml-model
         shell: bash
         run: pipenv run lint
 

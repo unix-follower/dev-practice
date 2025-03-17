@@ -42,6 +42,7 @@ jobs:
           pipenv sync --dev
 
       - name: Run checks
+        working-directory: python/assistant-on-flask/
         shell: bash
         run: pipenv run lint
 

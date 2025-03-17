@@ -41,6 +41,7 @@ jobs:
           pipenv sync --dev
 
       - name: Run checks
+        working-directory: python/math/example0
         shell: bash
         run: |
           pipenv run lint
