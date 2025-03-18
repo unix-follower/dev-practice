@@ -20,5 +20,5 @@ black = "*"
 python_version = "3.11"
 
 [scripts]
-lint = "pylint --rcfile pylintrc.toml ./app"
+lint = "pylint --rcfile pylintrc ./app"
 format = "black --config pyproject.toml ./app"

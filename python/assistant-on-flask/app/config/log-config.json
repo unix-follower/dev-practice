@@ -3,7 +3,7 @@
   "disable_existing_loggers": true,
   "formatters": {
     "json_formatter": {
-      "()": "org_example_fin_predictor.config.json_log_formatter.JsonLogFormatter"
+      "()": "app.config.json_log_formatter.JsonLogFormatter"
     }
   },
   "handlers": {

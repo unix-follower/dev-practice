@@ -1,8 +1,9 @@
 import os
 import dataclasses
 import keras
+# pylint: disable=import-error
 from keras.models import load_model
-from org_example_fin_predictor.util import constants
+from app.util import constants
 
 _LSTM_MODEL_PATH = os.getenv("APP_LSTM_MODEL_PATH")
 _GRU_MODEL_PATH = os.getenv("APP_GRU_MODEL_PATH")
@@ -11,8 +12,8 @@ _GRU_MODEL_PATH = os.getenv("APP_GRU_MODEL_PATH")
 @dataclasses.dataclass
 class Config:
     HEALTHZ = {
-        "live": "org_example_fin_predictor.api.health.check.liveness",
-        "ready": "org_example_fin_predictor.api.health.check.readiness",
+        "live": "app.api.health.check.liveness",
+        "ready": "app.api.health.check.readiness",
     }
 
 

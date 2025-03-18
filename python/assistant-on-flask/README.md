@@ -12,7 +12,7 @@ make run
 ```
 ### Define variables
 ```shell
-export SERVER_URL="$(minikube ip):5000"
+export SERVER_URL="$(minikube ip):8000"
 ```
 ### Health check
 ```shell
@@ -58,7 +58,7 @@ docker run \
   --name assistant-on-flask \
   --hostname assistant-on-flask \
   --network assistant-on-flask-net \
-  --publish 5000:5000 \
+  --publish 8000:8000 \
   assistant-on-flask:latest
 ```
 #### Connect to running container 

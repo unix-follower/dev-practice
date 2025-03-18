@@ -16,10 +16,8 @@ COPY app ./
 ENV APP_LSTM_MODEL_PATH=/opt/app/models/lstm_model.keras
 ENV APP_GRU_MODEL_PATH=/opt/app/models/gru_model.keras
 
-EXPOSE 5000
-
-ENV FLASK_APP=org_example_fin_predictor.app
+EXPOSE 8000
 
 CMD pipenv run python -m gunicorn \
-    --config ./org_example_fin_predictor/config/gunicorn.conf.py \
-    org_example_fin_predictor.app:app
+    --config ./app/config/gunicorn.conf.py \
+    app.app:app

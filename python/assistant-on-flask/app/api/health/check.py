@@ -1,8 +1,8 @@
 from typing import Callable
 import numpy as np
 from flask_healthz import HealthError
-from org_example_fin_predictor.config import app_config
-from org_example_fin_predictor.util import constants
+from app.config import app_config
+from app.util import constants
 
 
 def liveness():

@@ -7,8 +7,8 @@ from logging import getLogger
 import numpy as np
 from flask import Blueprint, json, request
 
-from org_example_fin_predictor.ml import predictor
-from org_example_fin_predictor.util import util
+from app.ml import predictor
+from app.util import util
 
 predict_api_v1 = Blueprint("predict_api_v1", __name__)
 

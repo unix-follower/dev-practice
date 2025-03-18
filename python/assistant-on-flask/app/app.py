@@ -8,13 +8,13 @@ import traceback
 from flask import Flask, json
 from flask_healthz import Healthz
 
-from org_example_fin_predictor.api import predict_controller
-from org_example_fin_predictor.util import util
+from app.api import predict_controller
+from app.util import util
 
 app = Flask(__name__)
 Healthz(app)
 app.register_blueprint(predict_controller.predict_api_v1)
-app.config.from_object("org_example_fin_predictor.config.app_config.Config")
+app.config.from_object("app.config.app_config.Config")
 
 NOT_FOUND_STATUS_CODE = 404
 INTERNAL_SERVER_ERROR_STATUS_CODE = 500

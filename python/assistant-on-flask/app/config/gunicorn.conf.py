@@ -5,7 +5,7 @@ from logging.config import dictConfig
 
 _current_working_directory = os.getcwd()
 _log_config_file_path = pathlib.Path(
-    f"{_current_working_directory}/org_example_fin_predictor/config/log-config.json"
+    f"{_current_working_directory}/app/config/log-config.json"
 )
 with _log_config_file_path.open(encoding="utf-8") as file:
     dictConfig(json.load(file))
@@ -14,7 +14,7 @@ with _log_config_file_path.open(encoding="utf-8") as file:
 loglevel = "DEBUG"
 workers = 2
 timeout = 120
-bind = "0.0.0.0:5000"
+bind = "0.0.0.0:8000"
 accesslog = "-"
 errorlog = None
 
