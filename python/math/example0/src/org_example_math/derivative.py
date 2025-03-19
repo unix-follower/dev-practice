@@ -3,8 +3,9 @@ import math
 import textwrap
 
 import sympy as sp
-from org.example.math.config.logging_config import logger
 from sympy import Symbol, init_printing, lambdify, symbols
+
+from src.org_example_math.config.logging_config import logger
 
 init_printing(use_latex=True)
 
@@ -27,15 +28,10 @@ def x_square(x):
 
     if logger.isEnabledFor(logging.INFO):
         msg = textwrap.dedent(
-            """
-            f(x) = {f} = {y_result}
+            f"""
+            f(x) = {expr} = {y_result}
             f'(x) = {derivative} = {result}
-            """.format(
-                f=expr,
-                y_result=y_result,
-                derivative=derivative,
-                result=result,
-            )
+            """
         )
         logger.info(msg)
 
@@ -506,7 +502,7 @@ def ax(a, x):
             f(x) = {y_result}
             f'(x) = {result}
             """.format(
-                f=expr, a=a, y_result=y_result, derivative=derivative, result=result
+                f=expr, y_result=y_result, derivative=derivative, result=result
             )
         )
         logger.info(msg)

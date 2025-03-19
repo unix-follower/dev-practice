@@ -15,7 +15,7 @@ pylint = "*"
 black = "*"
 
 [requires]
-python_version = "3.12"
+python_version = "3.13.2"
 
 [scripts]
 lint = "pylint --rcfile pylintrc ."

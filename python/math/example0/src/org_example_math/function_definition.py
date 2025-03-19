@@ -1,4 +1,4 @@
-from org.example.math.config.logging_config import logger
+from src.org_example_math.config.logging_config import logger
 
 
 def f_definition(number):
@@ -10,5 +10,5 @@ def f_definition(number):
         return 3 * pow(x, 2) + 2 * x - 5
 
     result = f(number)
-    logger.info("f({0}) = {1}".format(number, result))
+    logger.info(f"f({number}) = {result}")
     return result

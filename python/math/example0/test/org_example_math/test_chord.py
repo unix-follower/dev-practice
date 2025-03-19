@@ -1,7 +1,7 @@
 import unittest
 
 import matplotlib.pyplot as plt
-import org.example.math.chord as chord
+import src.org_example_mathchord as chord
 
 
 class ChordTest(unittest.TestCase):

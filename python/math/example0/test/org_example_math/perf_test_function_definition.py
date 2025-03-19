@@ -3,8 +3,8 @@ import timeit
 import unittest
 
 # noinspection PyUnresolvedReferences
-import org.example.math.function_definition as f_def
-from org.example.math.config.logging_config import logger
+import src.org_example_mathfunction_definition as f_def
+from src.org_example_math.config.logging_config import logger
 
 
 class FunctionDefinitionPerformanceTest(unittest.TestCase):
