@@ -10,5 +10,5 @@ def f_definition(number):
         return 3 * pow(x, 2) + 2 * x - 5
 
     result = f(number)
-    logger.info(f"f({number}) = {result}")
+    logger.info("f(%d) = %d", number, result)
     return result

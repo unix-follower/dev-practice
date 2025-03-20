@@ -1,7 +1,7 @@
 import unittest
 
 import matplotlib.pyplot as plt
-import src.org_example_mathchord as chord
+from src.org_example_math import chord
 
 
 class ChordTest(unittest.TestCase):
@@ -44,7 +44,12 @@ class ChordTest(unittest.TestCase):
             "f(x) = x²",
             xy=(b + 0.01, b_square),
             xytext=(b + 0.3, b_square),
-            arrowprops=dict(facecolor="black", shrink=0.02, width=1, headwidth=6),
+            arrowprops={
+                "facecolor": "black",
+                "shrink": 0.02,
+                "width": 1,
+                "headwidth": 6
+            },
         )
         plt.annotate("C", xy=(c, c_square), xytext=(c, c_square + 0.2))
         plt.annotate("D", xy=(d, d_square), xytext=(d, d_square + 0.2))

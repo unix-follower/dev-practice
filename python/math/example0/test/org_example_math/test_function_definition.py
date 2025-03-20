@@ -1,6 +1,6 @@
 import unittest
 
-import src.org_example_mathfunction_definition as f_def
+import src.org_example_math.function_definition as f_def
 
 
 class FunctionDefinitionTest(unittest.TestCase):

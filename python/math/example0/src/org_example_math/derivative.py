@@ -57,21 +57,14 @@ def ax_in_power_n(a, n, x):
 
     if logger.isEnabledFor(logging.INFO):
         msg = textwrap.dedent(
-            """
+            f"""
             y = axⁿ = {a} * {powered_x} = {y_result}
             dy
             -- = anxⁿ⁻¹ = {derivative} = {result}
             dx
             f(x) = {y_result}
             f'(x) = {result}
-            """.format(
-                a=a,
-                powered_x=powered_x,
-                y_result=y_result,
-                power=n - 1,
-                derivative=derivative,
-                result=result,
-            )
+            """
         )
         logger.info(msg)
 
@@ -188,30 +181,19 @@ def enhanced_sin_bx_minus_enhanced_cos_dx(a, b, c, d, x):
     _a, _b, _c, _d, _x = symbols("a b c d x")
     expr = _a * sp.sin(_b * _x) - _c * sp.cos(_d * _x)
     derivative = expr.diff(_x)
-    f1 = lambdify((_a, _b, _c, _d, _x), derivative)
-    result = f1(a, b, c, d, x)
+    result = lambdify((_a, _b, _c, _d, _x), derivative)(a, b, c, d, x)
     y_result = lambdify((_a, _b, _c, _d, _x), expr)(a, b, c, d, x)
 
     if logger.isEnabledFor(logging.INFO):
         msg = textwrap.dedent(
-            """
-            y = {f} = {a} * sin({b} * {x}) - {c} * cos({d} * {x}) = {y_result}
+            f"""
+            y = {expr} = {a} * sin({b} * {x}) - {c} * cos({d} * {x}) = {y_result}
             dy
             -- = {derivative} = {result}
             dx
             f(x) = {y_result}
             f'(x) = {result}
-            """.format(
-                f=expr,
-                a=a,
-                b=b,
-                c=c,
-                d=d,
-                x=x,
-                y_result=y_result,
-                derivative=derivative,
-                result=result,
-            )
+            """
         )
         logger.info(msg)
 
