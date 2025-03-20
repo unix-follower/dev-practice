@@ -1,6 +1,6 @@
 htmlcov
 .coverage
-local.env
+.env.local
 __local*
 __tmp*
 
