@@ -15,6 +15,5 @@ GRU_MODEL_PATH = os.getenv("APP_GRU_MODEL_PATH")
 MODEL_OUTPUT_PATH = os.getenv("APP_MODEL_OUTPUT_PATH", "model.keras")
 
 
-
 def is_gui_enabled():
     return GUI_ENABLED.capitalize() == "True"
