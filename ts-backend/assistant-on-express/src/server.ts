@@ -1,8 +1,6 @@
-import debugLib from "debug"
+import "module-alias/register"
 import http from "http"
 import app from "./app"
-
-const debug = debugLib("assistant-on-express:server")
 
 /**
  * Normalize a port into a number, string, or false.
@@ -43,13 +41,14 @@ function onError(error: Error) {
 
   // @ts-expect-error https://expressjs.com/en/guide/error-handling.html
   if (error.code === "EACCES") {
-    console.error(bind + " requires elevated privileges")
+    console.error(`${bind} requires elevated privileges`)
     process.exit(1)
     // @ts-expect-error https://expressjs.com/en/guide/error-handling.html
   } else if (error.code === "EADDRINUSE") {
-    console.error(bind + " is already in use")
+    console.error(`${bind} is already in use`)
     process.exit(1)
   } else {
+    console.error(error)
     throw error
   }
 }
@@ -57,5 +56,5 @@ function onError(error: Error) {
 function onListening() {
   const addr = server.address()!
   const bind = typeof addr === "string" ? "pipe " + addr : "port " + addr.port
-  debug("Listening on " + bind)
+  console.info(`Listening on ${bind}`)
 }

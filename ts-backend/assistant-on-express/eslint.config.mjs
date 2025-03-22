@@ -11,6 +11,14 @@ export default [
   {
     files: ["**/*.{js,mjs,cjs,ts}"],
     languageOptions: { globals: globals.browser },
+    settings: {
+      "import/resolver": {
+        alias: {
+          map: [["@", "./src"]],
+          extensions: [".js", ".jsx", ".ts", ".tsx"],
+        },
+      },
+    },
     rules: {
       "@typescript-eslint/no-unused-vars": [
         "error", // or "error" if you want stricter enforcement

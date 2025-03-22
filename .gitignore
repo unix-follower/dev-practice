@@ -76,10 +76,11 @@ out/
 !**/src/main/**/build/
 !**/src/test/**/build/
 
-### JS ###
+### JS/TS ###
 node_modules
 .cache
 **/ts/**/.env
+tsconfig.tsbuildinfo
 
 ### Python ###
 *.pyc
