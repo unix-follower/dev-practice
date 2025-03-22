@@ -1,0 +1,20 @@
+auth:
+  postgresPassword: $PGPASSWORD
+
+namespaceOverride: assistant
+
+primary:
+  service:
+    type: NodePort
+    nodePorts:
+      postgresql: 32000
+
+initContainers:
+  - name: install-pgvector
+    image: bitnami/postgresql:17.4.0-debian-12-r4
+    command:
+      - /bin/bash
+      - -c
+      - |
+        apt-get update && apt-get install -y postgresql-17-pgvector && \
+        echo "pgvector installed successfully"
