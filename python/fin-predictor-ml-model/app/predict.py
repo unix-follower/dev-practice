@@ -1,11 +1,11 @@
 """
-Loads RNN model from the file path and makes a predicition.
+Loads RNN model from the file path and makes a prediction.
 """
 
 import numpy as np
 
-from keras.models import load_model
-from org_example_ml import app_config as config
+from tensorflow.keras.models import load_model
+from app import app_config as config
 
 
 def _get_model(model_type: str = None):

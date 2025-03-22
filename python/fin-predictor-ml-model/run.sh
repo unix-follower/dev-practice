@@ -4,19 +4,17 @@ set -e
 
 export APP_GUI_ENABLED=false
 export APP_DATASET_FOLDER_PATH="$(pwd)/data"
-output_dir="$(pwd)/../server/models"
+output_dir="$(pwd)/models"
 mkdir -p $output_dir
 export APP_MODEL_OUTPUT_PATH="$output_dir/gru_model.keras"
 export APP_GRU_MODEL_PATH=$APP_MODEL_OUTPUT_PATH
 
 build_gru() {
-  cd src
-  pipenv run python -m org_example_ml.model true GRU
+  pipenv run python -m app.model true GRU
 }
 
 gru_predict() {
-  cd src
-  pipenv run python -m org_example_ml.model false GRU
+  pipenv run python -m app.model false GRU
 }
 
 prepare_lstm_variables() {
@@ -26,14 +24,12 @@ prepare_lstm_variables() {
 
 build_lstm() {
   prepare_lstm_variables
-  cd src
-  pipenv run python -m org_example_ml.model true LSTM
+  pipenv run python -m app.model true LSTM
 }
 
 lstm_predict() {
   prepare_lstm_variables
-  cd src
-  pipenv run python -m org_example_ml.model false LSTM
+  pipenv run python -m app.model false LSTM
 }
 
 "$@"

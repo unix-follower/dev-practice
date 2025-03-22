@@ -11,19 +11,20 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import tensorflow as tf
-from keras.callbacks import History, EarlyStopping, Callback
-from keras.layers import Dropout, GRU, LSTM, Dense
-from keras.models import Sequential
-from keras.optimizers import Adam
-from keras.regularizers import l2
+from tensorflow.keras.callbacks import History, EarlyStopping, Callback
+from tensorflow.keras.layers import Dropout, GRU, LSTM, Dense
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.regularizers import l2
 from sklearn.metrics import mean_squared_error
 from sklearn.preprocessing import MinMaxScaler
 
 # noinspection PyUnresolvedReferences
-import org_example_ml.logging_config  # pylint: disable=unused-import
-from org_example_ml import app_config
-from org_example_ml import predict
+from app.logging_config import setup_logging
+from app import app_config
+from app import predict
 
+setup_logging()
 
 @dataclasses.dataclass
 class ModelTrainingContext:  # pylint: disable=too-many-instance-attributes
@@ -35,7 +36,7 @@ class ModelTrainingContext:  # pylint: disable=too-many-instance-attributes
     scaler: MinMaxScaler
     x_train_stock_price_dataset: np.ndarray
     y_train_stock_price_dataset: np.ndarray
-    input_shape: [int, int]
+    input_shape: tuple[int, int]
     x_test_stock_price_dataset: np.ndarray
     y_test_stock_price_dataset: np.ndarray
     model_output_file_path: str
