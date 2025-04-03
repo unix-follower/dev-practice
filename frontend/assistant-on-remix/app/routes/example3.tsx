@@ -5,11 +5,7 @@ export const meta: MetaFunction = () => {
   return [{ title: "Example 3" }, { name: "description", content: "Linear Algebra" }]
 }
 
-const exampleUrls = [
-  "/example3/canvasjs",
-  "/example3/observable-plot",
-  "/example3/plotly"
-]
+const exampleUrls = ["/example3/canvasjs", "/example3/observable-plot", "/example3/plotly"]
 
 export default function Example_1_7() {
   return (

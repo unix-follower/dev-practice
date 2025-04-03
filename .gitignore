@@ -81,6 +81,10 @@ node_modules
 .cache
 **/ts/**/.env
 tsconfig.tsbuildinfo
+*--local-demo.js
+*--local-demo.ts
+*--local-demo.jsx
+*--local-demo.tsx
 
 ### Python ###
 *.pyc
