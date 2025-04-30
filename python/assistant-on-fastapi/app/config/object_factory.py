@@ -1,3 +1,4 @@
+from typing import Any
 from abc import ABC, abstractmethod
 from collections.abc import Callable, Awaitable
 
@@ -8,13 +9,13 @@ class AbstractObjectFactory(ABC):
 
     @abstractmethod
     def register_factory_method(
-        self, name: str, scope: str, creator: Callable[[...], any]
+        self, name: str, scope: str, creator: Callable[[...], Any]
     ):
         pass
 
     @abstractmethod
     def register_async_factory_method(
-        self, name: str, scope: str, creator: Callable[[...], Awaitable[any]]
+        self, name: str, scope: str, creator: Callable[[...], Awaitable[Any]]
     ):
         pass
 
@@ -25,12 +26,12 @@ class AbstractObjectFactory(ABC):
 
 class ObjectFactory(AbstractObjectFactory):
     def register_factory_method(
-        self, name: str, scope: str, creator: Callable[[...], any]
+        self, name: str, scope: str, creator: Callable[[...], Any]
     ):
         self._creators[name] = (scope, creator)
 
     def register_async_factory_method(
-        self, name: str, scope: str, creator: Callable[[...], Awaitable[any]]
+        self, name: str, scope: str, creator: Callable[[...], Awaitable[Any]]
     ):
         self._creators[name] = (scope, creator)
 

@@ -11,6 +11,7 @@ pydantic-settings = "*"
 fastapi-healthchecks = "*"
 psycopg = "*"
 sqlalchemy = {extras = ["asyncio"], version = "*"}
+scikit-learn = "*"
 
 [dev-packages]
 pylint = "*"

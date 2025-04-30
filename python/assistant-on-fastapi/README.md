@@ -49,3 +49,16 @@ curl $SERVER_URL/openapi.json
 curl $SERVER_URL/docs
 curl $SERVER_URL/redoc
 ```
+## Food predict API
+```shell
+curl -v $SERVER_URL/api/v1/chemistry/ml/food/predict \
+  --header 'Content-Type: application/json' \
+  --data '{
+  "model": "foodb-3feat",
+  "feature": {
+      "name": "Herbal tea",
+      "description": "is not specified",
+      "category": "unknown"
+  }
+}' | jq > __tmp-response.json
+```

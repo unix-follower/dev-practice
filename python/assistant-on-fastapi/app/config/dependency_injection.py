@@ -6,6 +6,7 @@ from app.config.config import Settings
 from app.config.object_factory import ObjectFactory
 from app.db.database import DocumentEmbeddingAsyncDatabaseConnection
 from app.internal.document_embedding_facade import DocumentEmbeddingApiFacade
+from app.internal.food_predict_api_facade import FoodPredictApiFacade, FoodPredictFacade
 
 object_factory: ObjectFactory = None
 
@@ -42,3 +43,11 @@ async def get_document_embedding_facade(
     engine: AsyncEngine = Depends(get_document_embedding_db_engine),
 ) -> DocumentEmbeddingApiFacade:
     return DocumentEmbeddingApiFacade(engine)
+
+
+def available_ml_models():
+    return {"foodb-3feat"}
+
+
+async def get_food_predict_api_facade() -> FoodPredictApiFacade:
+    return FoodPredictFacade(available_ml_models())

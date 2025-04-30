@@ -15,7 +15,7 @@ from app.config.log_settings import configure_logging
 from app.errors.app_exception import AppException
 from app.errors.error_code import ErrorCode, to_http_status_code
 from app.models.common import AppVersionModel
-from app.routers.document_embedding import router as document_embedding_router
+from app.routers import document_embedding_router, food_router
 
 configure_logging()
 
@@ -38,20 +38,26 @@ def configure_healthcheck(fastapi_app: FastAPI):
 
 def configure_router(fastapi_app: FastAPI):
     configure_healthcheck(fastapi_app)
-    fastapi_app.include_router(document_embedding_router)
+    fastapi_app.include_router(document_embedding_router.router)
+    fastapi_app.include_router(food_router.router)
 
 
 @asynccontextmanager
 async def configure_app(fastapi_app: FastAPI):
     configure_router(fastapi_app)
 
-    connection = get_document_embedding_async_db_connection()
-    await connection.create_engine()
-    await connection.get_db_version()
+    is_lazy_startup = settings.model_extra.get(constants.LAZY_STARTUP, "false").lower()
+    if is_lazy_startup == "false":
+        connection = get_document_embedding_async_db_connection()
+        await connection.create_engine()
+        await connection.get_db_version()
+    else:
+        connection = None
 
     yield
 
-    await connection.close()
+    if connection:
+        await connection.close()
 
 
 origins = [
