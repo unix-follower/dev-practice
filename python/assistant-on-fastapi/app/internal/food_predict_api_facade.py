@@ -29,7 +29,7 @@ class FoodPredictFacade(FoodPredictApiFacade):
                 "Unsupported model", error_code=ErrorCode.UNSUPPORTED_ML_MODEL
             )
 
-        with open(f"{APP_DIR}/ml/models/foodb-3feat.pkl", "rb") as file:
+        with open(f"{APP_DIR}/ml/models/foodb-scikit-learn-3feat.pkl", "rb") as file:
             pipeline: Pipeline = load(file)
 
         feature = food_predict_request_dto.feature
