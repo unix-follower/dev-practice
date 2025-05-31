@@ -89,3 +89,7 @@ tsconfig.tsbuildinfo
 ### Python ###
 *.pyc
 *__pycache__*
+
+### ML ###
+*.pkl
+*.keras
