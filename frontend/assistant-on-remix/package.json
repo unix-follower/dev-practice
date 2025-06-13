@@ -4,15 +4,15 @@
   "sideEffects": false,
   "type": "module",
   "engines": {
-    "node": ">=20.0.0"
+    "node": ">=22.0.0"
   },
   "scripts": {
     "build": "remix vite:build",
     "dev": "remix vite:dev",
-    "lint": "eslint --ignore-path .gitignore --cache --cache-location ./node_modules/.cache/eslint .",
+    "lint": "eslint --cache --cache-location ./node_modules/.cache/eslint .",
     "start": "remix-serve ./build/server/index.js",
     "typecheck": "tsc",
-    "format": "prettier --loglevel warn --write '**/*.{js,cjs,jsx,ts,tsx,json,css,html}'"
+    "format": "prettier --loglevel error --write '**/*.{js,cjs,jsx,ts,tsx,json,css,html}'"
   },
   "dependencies": {
     "@canvasjs/react-charts": "^1.0.2",
