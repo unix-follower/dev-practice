@@ -1,0 +1,38 @@
+name: Build assistant-on-remix
+on:
+  pull_request:
+    paths:
+      - python/assistant-on-remix/**
+    types:
+      - opened
+      - reopened
+      - synchronize
+
+jobs:
+  build:
+    runs-on:
+      - ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install python
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: package.json
+        
+      - name: Install dependencies
+        working-directory: frontend/assistant-on-remix
+        shell: bash
+        run: npm install
+
+      - name: Run checks
+        working-directory: frontend/assistant-on-remix
+        shell: bash
+        run: |
+          npm run format
+          npm run lint
+          npm ci
+          npm test
