@@ -1,0 +1,71 @@
+spring:
+  application:
+    name: assistant-on-spring-boot-servlet
+  cloud:
+    config:
+      import-check:
+        enabled: false
+  config:
+    import: optional:configserver:http://localhost:8000
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:}
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://192.168.105.8:32000/pubchem_food_additive}
+    username: ${SPRING_DATASOURCE_USERNAME:}
+    password: ${SPRING_DATASOURCE_PASSWORD:}
+    hikari:
+      maximum-pool-size: ${SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE:100}
+      minimum-idle: ${SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE:2}
+      pool-name: ${spring.application.name}-ds-pool
+      transaction-isolation: TRANSACTION_READ_COMMITTED
+  jpa:
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+  liquibase:
+    enabled: true
+    change-log: classpath:db/changelog/db.pubchem-food-additive-changelog-master.xml
+
+server:
+  port: ${SERVER_PORT:8080}
+  shutdown: graceful
+
+management:
+  endpoint:
+    health:
+      probes:
+        enabled: true
+    prometheus:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include:
+          - "*"
+  tracing:
+    enabled: ${MANAGEMENT_TRACING_ENABLED:false}
+    sampling:
+      probability: 1.0
+  zipkin:
+    tracing:
+      endpoint: ${MANAGEMENT_TRACING_ZIPKIN_ENDPOINT:}
+
+logging:
+  level:
+    org.hibernate: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+
+logbook:
+  exclude:
+    - /actuator/**
+
+app:
+  cors:
+    access-control-allow-origin: ${APP_CORS_ACCESS_CONTROL_ALLOW_ORIGIN:http://localhost:3000}
+    access-control-max-age: ${APP_CORS_ACCESS_CONTROL_MAX_AGE:PT1h}
+    access-control-allow-headers: ${APP_CORS_ACCESS_CONTROL_ALLOW_HEADERS:*}
+    access-control-allow-methods: ${APP_CORS_ACCESS_CONTROL_ALLOW_METHODS:GET,POST,PUT,PATCH,DELETE,OPTIONS}

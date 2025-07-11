@@ -3,6 +3,7 @@ htmlcov
 .env.local
 __local*
 __tmp*
+**/logs/
 
 .gradle
 build/

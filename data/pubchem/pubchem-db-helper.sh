@@ -30,4 +30,15 @@ unpack() {
   gzip -d PubChem_BioAssay-Classification.csv.gz
 }
 
-unpack
+export PGHOST=$(minikube ip)
+export PGUSER=postgres
+export PGPORT=32000
+export PGDATABASE=pubchem_food_additive
+# export PGPASSWORD=<YOUR PASSWORD>
+
+create_pubchem_food_additive_db() {
+  dropdb --echo $PGDATABASE
+  createdb --echo --encoding='utf-8'
+}
+
+create_pubchem_food_additive_db
