@@ -8,13 +8,20 @@ indent_style = space
 insert_final_newline = false
 max_line_length = 120
 tab_width = 4
-ij_continuation_indent_size = 8
+ij_continuation_indent_size = 2
 ij_formatter_off_tag = @formatter:off
 ij_formatter_on_tag = @formatter:on
 ij_formatter_tags_enabled = true
 ij_smart_tabs = false
 ij_visual_guides = 
 ij_wrap_on_typing = false
+
+[{*.java}]
+ij_continuation_indent_size = 4
+
+[{*.js,*.jsx,*.ts,*.tsx}]
+indent_size = 2
+tab_width = 2
 
 [*.css]
 ij_css_align_closing_brace_with_properties = false
@@ -44,8 +51,7 @@ ij_editorconfig_space_before_colon = false
 ij_editorconfig_space_before_comma = false
 ij_editorconfig_spaces_around_assignment_operators = true
 
-[{*.ats,*.cts,*.mts,*.ts}]
-ij_continuation_indent_size = 4
+[{*.ats,*.cts,*.mts,*.ts,*.ts}]
 ij_typescript_align_imports = false
 ij_typescript_align_multiline_array_initializer_expression = false
 ij_typescript_align_multiline_binary_operation = false
@@ -223,7 +229,6 @@ ij_typescript_while_on_new_line = false
 ij_typescript_wrap_comments = false
 
 [{*.cjs,*.es6,*.js,*.mjs}]
-ij_continuation_indent_size = 4
 ij_javascript_align_imports = false
 ij_javascript_align_multiline_array_initializer_expression = false
 ij_javascript_align_multiline_binary_operation = false

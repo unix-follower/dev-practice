@@ -1,0 +1,37 @@
+name: Build assistant-on-spring-boot-servlet
+on:
+  pull_request:
+    paths:
+      - java/assistant-on-spring-boot-servlet/**
+    types:
+      - opened
+      - reopened
+      - synchronize
+
+env:
+  JAVA_VERSION: 24
+  JDK_VENDOR: corretto
+
+jobs:
+  build:
+    runs-on:
+      - ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: ${{ env.JDK_VENDOR }}
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Build project
+        working-directory: java/assistant-on-spring-boot-servlet
+        shell: bash
+        run: ./gradlew clean build

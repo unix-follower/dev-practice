@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
+
+    <changeSet id="pubchem-food-additive-1" author="Artsem_Nikitsenka">
+        <sqlFile path="initial/food_additive_substance.sql" relativeToChangelogFile="true" />
+    </changeSet>
+
+</databaseChangeLog>
