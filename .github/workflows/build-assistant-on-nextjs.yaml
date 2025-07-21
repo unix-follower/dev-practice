@@ -1,8 +1,8 @@
-name: Build assistant-on-remix
+name: Build assistant-on-nextjs
 on:
   pull_request:
     paths:
-      - frontend/assistant-on-remix/**
+      - frontend/assistant-on-nextjs/**
     types:
       - opened
       - reopened
@@ -24,16 +24,15 @@ jobs:
           node-version-file: package.json
         
       - name: Install dependencies
-        working-directory: frontend/assistant-on-remix
+        working-directory: frontend/assistant-on-nextjs
         shell: bash
         run: npm install
 
       - name: Run checks
-        working-directory: frontend/assistant-on-remix
+        working-directory: frontend/assistant-on-nextjs
         shell: bash
         run: |
           npm run format
           npm run lint
-          npm ci
           npm test
           npm build
