@@ -18,7 +18,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Install python
+      - name: Install Node.js
         uses: actions/setup-node@v4
         with:
           node-version-file: frontend/assistant-on-nextjs/package.json
@@ -35,4 +35,8 @@ jobs:
           npm run format
           npm run lint
           npm test
-          npm build
+
+      - name: Build
+        working-directory: frontend/assistant-on-nextjs
+        shell: bash
+        run: npm build

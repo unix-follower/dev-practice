@@ -18,7 +18,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Install python
+      - name: Install Node.js
         uses: actions/setup-node@v4
         with:
           node-version-file: frontend/assistant-on-remix/package.json
@@ -36,4 +36,8 @@ jobs:
           npm run lint
           npm ci
           npm test
-          npm build
+
+      - name: Build
+        working-directory: frontend/assistant-on-remix
+        shell: bash
+        run: npm build
