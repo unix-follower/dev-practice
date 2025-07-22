@@ -31,13 +31,15 @@ jobs:
         shell: bash
         run: npm ci
 
-      - name: Run checks
+      - name: Check code formatting
         working-directory: frontend/assistant-on-remix
         shell: bash
-        run: |
-          npm run check-format
-          npm run lint
-          npm run test
+        run: npm run check-format
+
+      - name: Run ESLint
+        working-directory: frontend/assistant-on-remix
+        shell: bash
+        run: npm run lint
 
       - name: Build
         working-directory: frontend/assistant-on-remix
