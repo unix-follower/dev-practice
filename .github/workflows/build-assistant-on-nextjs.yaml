@@ -8,6 +8,9 @@ on:
       - reopened
       - synchronize
 
+env:
+  ACTIONS_STEP_DEBUG: true
+
 jobs:
   build:
     runs-on:
@@ -26,17 +29,17 @@ jobs:
       - name: Install dependencies
         working-directory: frontend/assistant-on-nextjs
         shell: bash
-        run: npm install
+        run: npm ci
 
       - name: Run checks
         working-directory: frontend/assistant-on-nextjs
         shell: bash
         run: |
-          npm run format
+          npm run check-format
           npm run lint
-          npm test
+          npm run test
 
       - name: Build
         working-directory: frontend/assistant-on-nextjs
         shell: bash
-        run: npm build
+        run: npm run build
