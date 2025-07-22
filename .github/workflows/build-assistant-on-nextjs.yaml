@@ -1,8 +1,8 @@
-name: Build assistant-on-remix
+name: Build assistant-on-nextjs
 on:
   pull_request:
     paths:
-      - frontend/assistant-on-remix/**
+      - frontend/assistant-on-nextjs/**
     types:
       - opened
       - reopened
@@ -24,24 +24,29 @@ jobs:
       - name: Install Node.js
         uses: actions/setup-node@v4
         with:
-          node-version-file: frontend/assistant-on-remix/package.json
+          node-version-file: frontend/assistant-on-nextjs/package.json
         
       - name: Install dependencies
-        working-directory: frontend/assistant-on-remix
+        working-directory: frontend/assistant-on-nextjs
         shell: bash
         run: npm ci
 
       - name: Check code formatting
-        working-directory: frontend/assistant-on-remix
+        working-directory: frontend/assistant-on-nextjs
         shell: bash
         run: npm run check-format
 
       - name: Run ESLint
-        working-directory: frontend/assistant-on-remix
+        working-directory: frontend/assistant-on-nextjs
         shell: bash
         run: npm run lint
 
+      - name: Run tests
+        working-directory: frontend/assistant-on-nextjs
+        shell: bash
+        run: npm run test
+
       - name: Build
-        working-directory: frontend/assistant-on-remix
+        working-directory: frontend/assistant-on-nextjs
         shell: bash
         run: npm run build

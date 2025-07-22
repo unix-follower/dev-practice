@@ -1,0 +1,33 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`Home page snapshot renders home page 1`] = `
+<div>
+  <nav
+    class="nav"
+    data-testid="main-menu"
+  >
+    <a
+      class="link "
+      href="/"
+    >
+      Home
+    </a>
+    <a
+      class="link "
+      href="/chemistry/food-additives"
+    >
+      Chemistry - food additives
+    </a>
+  </nav>
+  <div
+    class="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]"
+  >
+    <main />
+    <footer>
+      © 
+      2025
+       Developed by Artsem Nikitsenka. Unlicensed.
+    </footer>
+  </div>
+</div>
+`;
