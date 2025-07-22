@@ -21,7 +21,7 @@ jobs:
       - name: Install python
         uses: actions/setup-node@v4
         with:
-          node-version-file: package.json
+          node-version-file: frontend/assistant-on-nextjs/package.json
         
       - name: Install dependencies
         working-directory: frontend/assistant-on-nextjs
