@@ -2,18 +2,18 @@
 
 import { use, useEffect } from "react"
 import { useSearchParams } from "next/navigation"
-import i18n from "@/config/i18n"
+import { TFunction } from "i18next"
 import { useTranslation } from "react-i18next"
+import i18n from "@/config/i18n"
 import { DataGrid, GridColDef } from "@mui/x-data-grid"
 import Paper from "@mui/material/Paper"
+
 import {
   FoodAdditiveSubstanceDto,
   FoodAdditiveSubstanceResponseDto,
 } from "@/lib/features/chemistry/food-additives/model/FoodAdditiveResponse"
-
 import { parsePaginationParams } from "@/app/components/utils/urlUtils"
 import { useGetAllQuery } from "@/lib/features/chemistry/food-additives/foodAdditivesSlice"
-import { TFunction } from "i18next"
 
 const getRowId = (value: FoodAdditiveSubstanceDto) => value.compoundCid
 
