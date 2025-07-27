@@ -1,0 +1,273 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+  <file source-language="uk" datatype="plaintext" original="ng2.template">
+    <body>
+      <trans-unit id="8491460039421038687" datatype="html">
+        <source>Compound ID</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/food-additives/food-additives.html</context>
+          <context context-type="linenumber">4,5</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="8953033926734869941" datatype="html">
+        <source>Name</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/food-additives/food-additives.html</context>
+          <context context-type="linenumber">5,6</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="1643211772878546411" datatype="html">
+        <source>Synonyms</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/food-additives/food-additives.html</context>
+          <context context-type="linenumber">6,7</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="1257329718554436977" datatype="html">
+        <source>Molecular weight</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/food-additives/food-additives.html</context>
+          <context context-type="linenumber">7,8</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="6620503560601275526" datatype="html">
+        <source>Molecular formula</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/food-additives/food-additives.html</context>
+          <context context-type="linenumber">8,9</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="8217405876944267013" datatype="html">
+        <source>Polar area</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/food-additives/food-additives.html</context>
+          <context context-type="linenumber">9,10</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="526741716584527941" datatype="html">
+        <source>Complexity</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/food-additives/food-additives.html</context>
+          <context context-type="linenumber">10,11</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="7321949302120593040" datatype="html">
+        <source>xlogp</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/food-additives/food-additives.html</context>
+          <context context-type="linenumber">11,12</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="4452550939930535466" datatype="html">
+        <source>Heavy atom count</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/food-additives/food-additives.html</context>
+          <context context-type="linenumber">12,13</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="1812410170837605853" datatype="html">
+        <source>H bond donor count</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/food-additives/food-additives.html</context>
+          <context context-type="linenumber">13,14</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="4327905272755219889" datatype="html">
+        <source>H bond acceptor count</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/food-additives/food-additives.html</context>
+          <context context-type="linenumber">14,15</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="6672704746927148952" datatype="html">
+        <source>Rotatable bond count</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/food-additives/food-additives.html</context>
+          <context context-type="linenumber">15,16</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="2766119854471988091" datatype="html">
+        <source>inchi</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/food-additives/food-additives.html</context>
+          <context context-type="linenumber">16,17</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="2935153277928255293" datatype="html">
+        <source>Smiles</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/food-additives/food-additives.html</context>
+          <context context-type="linenumber">17,18</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="8004662331699789375" datatype="html">
+        <source>Inchi key</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/food-additives/food-additives.html</context>
+          <context context-type="linenumber">18,19</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="6779444017792700694" datatype="html">
+        <source>IUPAC name</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/food-additives/food-additives.html</context>
+          <context context-type="linenumber">19,20</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="3146474217156311419" datatype="html">
+        <source>Exact mass</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/food-additives/food-additives.html</context>
+          <context context-type="linenumber">20,21</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="1950272627083117947" datatype="html">
+        <source>Monoisotopic mass</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/food-additives/food-additives.html</context>
+          <context context-type="linenumber">21,22</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="7541005936062780573" datatype="html">
+        <source>Charge</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/food-additives/food-additives.html</context>
+          <context context-type="linenumber">22,23</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="6798044075150093526" datatype="html">
+        <source>Covalent unit count</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/food-additives/food-additives.html</context>
+          <context context-type="linenumber">23,24</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="4297979406078081994" datatype="html">
+        <source>Isotopic atom count</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/food-additives/food-additives.html</context>
+          <context context-type="linenumber">24,25</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="1017880638641387377" datatype="html">
+        <source>Total atom stereo count</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/food-additives/food-additives.html</context>
+          <context context-type="linenumber">25,26</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="2465586491687137488" datatype="html">
+        <source>Defined atom stereo count</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/food-additives/food-additives.html</context>
+          <context context-type="linenumber">26,27</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="5040093537754763820" datatype="html">
+        <source>Undefined atom stereo count</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/food-additives/food-additives.html</context>
+          <context context-type="linenumber">27,28</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="6744586412999822806" datatype="html">
+        <source>Total bond stereo count</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/food-additives/food-additives.html</context>
+          <context context-type="linenumber">28,29</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="430605315605679038" datatype="html">
+        <source>Defined bond stereo count</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/food-additives/food-additives.html</context>
+          <context context-type="linenumber">29,30</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="3251553229021461914" datatype="html">
+        <source>Undefined bond stereo count</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/food-additives/food-additives.html</context>
+          <context context-type="linenumber">30,31</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="233360303682031964" datatype="html">
+        <source>Linked PubChem literature count</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/food-additives/food-additives.html</context>
+          <context context-type="linenumber">31,32</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="3684165899562383821" datatype="html">
+        <source>Linked PubChem patent count</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/food-additives/food-additives.html</context>
+          <context context-type="linenumber">32,33</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="7036197206033989787" datatype="html">
+        <source>Linked PubChem patent family count</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/food-additives/food-additives.html</context>
+          <context context-type="linenumber">33,34</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="3593254870069661173" datatype="html">
+        <source>Mesh headings</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/food-additives/food-additives.html</context>
+          <context context-type="linenumber">34,35</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="3358860488689422334" datatype="html">
+        <source>Annotation content</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/food-additives/food-additives.html</context>
+          <context context-type="linenumber">35,36</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="8951597697912738674" datatype="html">
+        <source>Annotation type count</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/food-additives/food-additives.html</context>
+          <context context-type="linenumber">36,37</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="7297401512116574516" datatype="html">
+        <source>Linked bio assays</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/food-additives/food-additives.html</context>
+          <context context-type="linenumber">37,38</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="9132748672962145655" datatype="html">
+        <source>Create date</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/food-additives/food-additives.html</context>
+          <context context-type="linenumber">38,39</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="2278182951080632950" datatype="html">
+        <source>Data source</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/food-additives/food-additives.html</context>
+          <context context-type="linenumber">39,40</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="2406538558324287946" datatype="html">
+        <source>Data source category</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/food-additives/food-additives.html</context>
+          <context context-type="linenumber">40,41</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="8946934629229870196" datatype="html">
+        <source>Tagged by PubChem</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/food-additives/food-additives.html</context>
+          <context context-type="linenumber">41,42</context>
+        </context-group>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

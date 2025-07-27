@@ -1,0 +1,88 @@
+<table>
+    <thead>
+        <tr>
+            <th i18n>Compound ID</th>
+            <th i18n>Name</th>
+            <th i18n>Synonyms</th>
+            <th i18n>Molecular weight</th>
+            <th i18n>Molecular formula</th>
+            <th i18n>Polar area</th>
+            <th i18n>Complexity</th>
+            <th i18n>xlogp</th>
+            <th i18n>Heavy atom count</th>
+            <th i18n>H bond donor count</th>
+            <th i18n>H bond acceptor count</th>
+            <th i18n>Rotatable bond count</th>
+            <th i18n>inchi</th>
+            <th i18n>Smiles</th>
+            <th i18n>Inchi key</th>
+            <th i18n>IUPAC name</th>
+            <th i18n>Exact mass</th>
+            <th i18n>Monoisotopic mass</th>
+            <th i18n>Charge</th>
+            <th i18n>Covalent unit count</th>
+            <th i18n>Isotopic atom count</th>
+            <th i18n>Total atom stereo count</th>
+            <th i18n>Defined atom stereo count</th>
+            <th i18n>Undefined atom stereo count</th>
+            <th i18n>Total bond stereo count</th>
+            <th i18n>Defined bond stereo count</th>
+            <th i18n>Undefined bond stereo count</th>
+            <th i18n>Linked PubChem literature count</th>
+            <th i18n>Linked PubChem patent count</th>
+            <th i18n>Linked PubChem patent family count</th>
+            <th i18n>Mesh headings</th>
+            <th i18n>Annotation content</th>
+            <th i18n>Annotation type count</th>
+            <th i18n>Linked bio assays</th>
+            <th i18n>Create date</th>
+            <th i18n>Data source</th>
+            <th i18n>Data source category</th>
+            <th i18n>Tagged by PubChem</th>
+        </tr>
+    </thead>
+    <tbody>
+        @for (data of foodAdditiveList(); track data.compoundCid) {
+            <tr>
+                <td>{{ data.compoundCid }}</td>
+                <td>{{ data.name }}</td>
+                <td>{{ data.synonyms }}</td>
+                <td>{{ data.molecularWeight }}</td>
+                <td>{{ data.molecularFormula }}</td>
+                <td>{{ data.polarArea }}</td>
+                <td>{{ data.complexity }}</td>
+                <td>{{ data.xlogp }}</td>
+                <td>{{ data.heavyAtomCount }}</td>
+                <td>{{ data.hBondDonorCount }}</td>
+                <td>{{ data.hBondAcceptorCount }}</td>
+                <td>{{ data.rotatableBondCount }}</td>
+                <td>{{ data.inchi }}</td>
+                <td>{{ data.smiles }}</td>
+                <td>{{ data.inchiKey }}</td>
+                <td>{{ data.iupacName }}</td>
+                <td>{{ data.exactMass }}</td>
+                <td>{{ data.monoisotopicMass }}</td>
+                <td>{{ data.charge }}</td>
+                <td>{{ data.covalentUnitCount }}</td>
+                <td>{{ data.isotopicAtomCount }}</td>
+                <td>{{ data.totalAtomStereoCount }}</td>
+                <td>{{ data.definedAtomStereoCount }}</td>
+                <td>{{ data.undefinedAtomStereoCount }}</td>
+                <td>{{ data.totalBondStereoCount }}</td>
+                <td>{{ data.definedBondStereoCount }}</td>
+                <td>{{ data.undefinedBondStereoCount }}</td>
+                <td>{{ data.linkedPubChemLiteratureCount }}</td>
+                <td>{{ data.linkedPubChemPatentCount }}</td>
+                <td>{{ data.linkedPubChemPatentFamilyCount }}</td>
+                <td>{{ data.meshHeadings }}</td>
+                <td>{{ data.annotationContent }}</td>
+                <td>{{ data.annotationTypeCount }}</td>
+                <td>{{ data.linkedBioAssays }}</td>
+                <td>{{ data.createDate?.toString() }}</td>
+                <td>{{ data.dataSource }}</td>
+                <td>{{ data.dataSourceCategory }}</td>
+                <td>{{ data.taggedByPubChem }}</td>
+            </tr>
+        }
+    </tbody>
+</table>

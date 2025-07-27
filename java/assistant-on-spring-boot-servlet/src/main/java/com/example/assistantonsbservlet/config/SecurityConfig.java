@@ -35,7 +35,7 @@ class SecurityConfig {
 
         final var corsConfiguration = new CorsConfiguration();
         final var cors = appProperties.cors();
-        corsConfiguration.addAllowedOrigin(cors.accessControlAllowOrigin());
+        corsConfiguration.setAllowedOriginPatterns(cors.accessControlAllowOriginPatterns());
         corsConfiguration.setMaxAge(cors.accessControlMaxAge());
         corsConfiguration.setAllowedHeaders(cors.accessControlAllowHeaders());
         corsConfiguration.setAllowedMethods(cors.accessControlAllowMethods());

@@ -1,0 +1,47 @@
+name: Build assistant-on-angular
+on:
+  pull_request:
+    paths:
+      - frontend/assistant-on-angular/**
+    types:
+      - opened
+      - reopened
+      - synchronize
+
+env:
+  ACTIONS_STEP_DEBUG: true
+
+jobs:
+  build:
+    runs-on:
+      - ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: frontend/assistant-on-angular/package.json
+        
+      - name: Install dependencies
+        working-directory: frontend/assistant-on-angular
+        shell: bash
+        run: npm ci
+
+      - name: Check code formatting
+        working-directory: frontend/assistant-on-angular
+        shell: bash
+        run: npm run check-format
+
+      - name: Run ESLint
+        working-directory: frontend/assistant-on-angular
+        shell: bash
+        run: npm run lint
+
+      - name: Build
+        working-directory: frontend/assistant-on-angular
+        shell: bash
+        run: npm run build
