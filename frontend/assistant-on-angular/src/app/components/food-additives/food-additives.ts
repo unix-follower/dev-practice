@@ -25,7 +25,7 @@ export default class FoodAdditives {
     this.apiHttpClient
       .getAllFoodAdditives(1, 10)
       .then((foodAdditives: FoodAdditiveSubstanceResponseDto) => {
-        this.foodAdditiveList.update((prev) => foodAdditives)
+        this.foodAdditiveList.update(() => foodAdditives)
       })
       .catch((reason) => console.error(reason))
   }
