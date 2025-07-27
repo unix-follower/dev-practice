@@ -4,7 +4,7 @@ import java.time.Duration;
 import java.util.List;
 
 public record CorsProperties(
-    String accessControlAllowOrigin,
+    List<String> accessControlAllowOriginPatterns,
     Duration accessControlMaxAge,
     List<String> accessControlAllowHeaders,
     List<String> accessControlAllowMethods

@@ -65,7 +65,7 @@ logbook:
 
 app:
   cors:
-    access-control-allow-origin: ${APP_CORS_ACCESS_CONTROL_ALLOW_ORIGIN:http://localhost:3000}
+    access-control-allow-origin-patterns: ${APP_CORS_ACCESS_CONTROL_ALLOW_ORIGIN_PATTERN:http://localhost:3000,http://localhost:4200}
     access-control-max-age: ${APP_CORS_ACCESS_CONTROL_MAX_AGE:PT1h}
     access-control-allow-headers: ${APP_CORS_ACCESS_CONTROL_ALLOW_HEADERS:*}
     access-control-allow-methods: ${APP_CORS_ACCESS_CONTROL_ALLOW_METHODS:GET,POST,PUT,PATCH,DELETE,OPTIONS}
