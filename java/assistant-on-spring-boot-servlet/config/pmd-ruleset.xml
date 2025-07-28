@@ -24,7 +24,7 @@
     <rule ref="category/java/design.xml/AvoidCatchingGenericException" />
     <rule ref="category/java/design.xml/LoosePackageCoupling">
         <properties>
-            <property name="packages" value="com.example" />
+            <property name="packages" value="org.example" />
         </properties>
     </rule>
 

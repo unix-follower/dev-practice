@@ -1,0 +1,43 @@
+name: Build scala experimental-hibernate
+on:
+  pull_request:
+    paths:
+      - scala/experimental-hibernate/**
+    types:
+      - opened
+      - reopened
+      - synchronize
+
+env:
+  JAVA_VERSION: 24
+  JDK_VENDOR: corretto
+
+jobs:
+  build:
+    runs-on:
+      - ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: ${{ env.JDK_VENDOR }}
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Install sdkman
+        run: |
+          curl -s "https://get.sdkman.io" | bash
+          source "$HOME/.sdkman/bin/sdkman-init.sh"
+          sdk version
+
+      - name: Install sbt
+        run: sdk install sbt
+
+      - name: Build project
+        working-directory: scala/experimental-hibernate
+        shell: bash
+        run: sbt clean package
