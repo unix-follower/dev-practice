@@ -33,7 +33,7 @@ jobs:
           curl -s "https://get.sdkman.io" | bash
           source "$HOME/.sdkman/bin/sdkman-init.sh"
           sdk version
-          echo "source $HOME/.sdkman/bin/sdkman-init.sh" >> $GITHUB_ENV
+          echo "export PATH=$HOME/.sdkman/bin:$PATH" >> $GITHUB_ENV
 
       - name: Cache sbt dependencies
         uses: actions/cache@v3
@@ -44,9 +44,7 @@ jobs:
             ${{ runner.os }}-sbt-
 
       - name: Install sbt
-        run: |
-          source "$HOME/.sdkman/bin/sdkman-init.sh"
-          sdk install sbt
+        run: sdk install sbt
 
       - name: Build project
         working-directory: scala/experimental-hibernate
