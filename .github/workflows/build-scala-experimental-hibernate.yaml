@@ -31,9 +31,9 @@ jobs:
       - name: Install sdkman
         run: |
           curl -s "https://get.sdkman.io" | bash
-          echo "source $HOME/.sdkman/bin/sdkman-init.sh" >> $GITHUB_ENV
           source "$HOME/.sdkman/bin/sdkman-init.sh"
           sdk version
+          echo "source $HOME/.sdkman/bin/sdkman-init.sh" >> $GITHUB_ENV
 
       - name: Cache sbt dependencies
         uses: actions/cache@v3
