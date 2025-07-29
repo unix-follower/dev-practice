@@ -31,11 +31,22 @@ jobs:
       - name: Install sdkman
         run: |
           curl -s "https://get.sdkman.io" | bash
+          echo "source $HOME/.sdkman/bin/sdkman-init.sh" >> $GITHUB_ENV
           source "$HOME/.sdkman/bin/sdkman-init.sh"
           sdk version
 
+      - name: Cache sbt dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.ivy2/cache
+          key: ${{ runner.os }}-sbt-${{ hashFiles('**/*.sbt') }}
+          restore-keys: |
+            ${{ runner.os }}-sbt-
+
       - name: Install sbt
-        run: sdk install sbt
+        run: |
+          source "$HOME/.sdkman/bin/sdkman-init.sh"
+          sdk install sbt
 
       - name: Build project
         working-directory: scala/experimental-hibernate
