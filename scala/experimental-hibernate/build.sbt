@@ -1,4 +1,4 @@
-import Dependencies.{persistenceApi, munit}
+import Dependencies.{hibernateCore, munit}
 import sbt.Keys.libraryDependencies
 
 ThisBuild / scalaVersion := "3.7.1"
@@ -9,7 +9,7 @@ ThisBuild / organizationName := "experimental_hibernate"
 lazy val stockMarketDb = (project in file("stock-market-db"))
   .settings(
       libraryDependencies ++= Seq(
-          persistenceApi
+          hibernateCore
       )
   )
 
@@ -19,8 +19,6 @@ lazy val app = (project in file("app"))
       libraryDependencies ++= Seq(
           // https://mvnrepository.com/artifact/org.postgresql/postgresql
           "org.postgresql" % "postgresql" % "42.7.7",
-          // https://mvnrepository.com/artifact/org.hibernate.orm/hibernate-core
-          "org.hibernate.orm" % "hibernate-core" % "7.0.8.Final",
           munit % Test
       )
   )
