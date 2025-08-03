@@ -41,6 +41,11 @@ jobs:
         shell: bash
         run: npm run lint
 
+      - name: Run tests
+        working-directory: frontend/assistant-on-react-router
+        shell: bash
+        run: npm run test
+
       - name: Build
         working-directory: frontend/assistant-on-react-router
         shell: bash
