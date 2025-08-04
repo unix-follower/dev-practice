@@ -11,8 +11,8 @@ import { environment } from "@/environments/environment"
   selector: "app-food-additives",
   standalone: true,
   imports: [],
-  templateUrl: "./food-additives.html",
-  styleUrl: "./food-additives.css",
+  templateUrl: "./PubChemFoodAdditives.html",
+  styleUrl: "./PubChemFoodAdditives.css",
 })
 export default class FoodAdditives {
   apiHttpClient!: ApiHttpClient
