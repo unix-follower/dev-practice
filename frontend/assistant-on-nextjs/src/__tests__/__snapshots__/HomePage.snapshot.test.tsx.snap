@@ -14,9 +14,9 @@ exports[`Home page snapshot renders home page 1`] = `
     </a>
     <a
       class="link "
-      href="/chemistry/food-additives"
+      href="/chemistry/organic/dbs/pub-chem"
     >
-      Chemistry - food additives
+      Organic chemistry - PubChem db food additives
     </a>
   </nav>
   <div
