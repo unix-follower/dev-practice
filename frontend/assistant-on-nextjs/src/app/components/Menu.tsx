@@ -14,10 +14,10 @@ export default function Menu() {
         Home
       </Link>
       <Link
-        className={`${styles.link} ${pathname === "/chemistry/food-additives" ? styles.active : ""}`}
-        href="/chemistry/food-additives"
+        className={`${styles.link} ${pathname === "/chemistry/pub-chem" ? styles.active : ""}`}
+        href="/chemistry/organic/dbs/pub-chem"
       >
-        Chemistry - food additives
+        Organic chemistry - PubChem db food additives
       </Link>
     </nav>
   )
