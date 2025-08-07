@@ -1,7 +1,9 @@
 package org.example.assistantonsbservlet.config;
 
+import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.converter.Converter;
@@ -18,7 +20,12 @@ import org.zalando.logbook.core.DefaultSink;
 import java.util.List;
 
 @Configuration
-@EnableJpaRepositories
+@ComponentScan(basePackages = {
+    "org.example.assistantonsbservlet",
+    "org.example.db",
+})
+@EnableJpaRepositories(basePackages = "org.example.db")
+@EntityScan(basePackages = "org.example.db")
 @EnableTransactionManagement
 @EnableConfigurationProperties({AppProperties.class})
 class ApplicationConfig {

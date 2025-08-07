@@ -1,7 +1,7 @@
-package org.example.assistantonsbservlet.svc;
+package org.example.assistantonsbservlet.svc.chemistry;
 
-import org.example.assistantonsbservlet.api.pubchem.model.FoodAdditiveSubstanceResponseDto;
-import org.example.assistantonsbservlet.db.pubchem.repo.FoodAdditiveSubstanceRepository;
+import org.example.assistantonsbservlet.api.chemistry.organic.dbs.pubchem.fda.model.FoodAdditiveSubstanceResponseDto;
+import org.example.db.pubchem.fda.repo.FoodAdditiveSubstanceRepository;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -10,11 +10,11 @@ import java.util.List;
 
 @Component
 @Transactional
-public class FoodAdditiveSubstanceFacade implements FoodAdditiveSubstanceApiFacade {
+public class PubChemFdaFacade implements PubChemFdaApiFacade {
     private final FoodAdditiveSubstanceRepository repository;
     private final ConversionService conversionService;
 
-    public FoodAdditiveSubstanceFacade(
+    public PubChemFdaFacade(
         final FoodAdditiveSubstanceRepository repository,
         final ConversionService conversionService
     ) {

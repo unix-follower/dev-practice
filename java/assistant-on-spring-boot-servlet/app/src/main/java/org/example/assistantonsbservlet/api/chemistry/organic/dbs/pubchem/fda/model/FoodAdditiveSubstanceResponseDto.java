@@ -1,4 +1,4 @@
-package org.example.assistantonsbservlet.api.pubchem.model;
+package org.example.assistantonsbservlet.api.chemistry.organic.dbs.pubchem.fda.model;
 
 import java.time.LocalDate;
 

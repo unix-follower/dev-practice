@@ -1,8 +1,8 @@
-package org.example.assistantonsbservlet.svc;
+package org.example.assistantonsbservlet.svc.chemistry;
 
-import org.example.assistantonsbservlet.api.pubchem.model.FoodAdditiveSubstanceResponseDto;
+import org.example.assistantonsbservlet.api.chemistry.organic.dbs.pubchem.fda.model.FoodAdditiveSubstanceResponseDto;
 import org.example.assistantonsbservlet.convert.FoodAdditiveSubstanceToDtoListConverter;
-import org.example.assistantonsbservlet.db.pubchem.repo.FoodAdditiveSubstanceRepository;
+import org.example.db.pubchem.fda.repo.FoodAdditiveSubstanceRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,13 +30,13 @@ class FoodAdditiveSubstanceFacadeTest {
     @Mock
     private FoodAdditiveSubstanceRepository repositoryMock;
 
-    private FoodAdditiveSubstanceFacade facade;
+    private PubChemFdaFacade facade;
 
     @BeforeEach
     void setUp() {
         mockCloser = MockitoAnnotations.openMocks(this);
         ((DefaultConversionService) conversionService).addConverter(new FoodAdditiveSubstanceToDtoListConverter());
-        facade = new FoodAdditiveSubstanceFacade(repositoryMock, conversionService);
+        facade = new PubChemFdaFacade(repositoryMock, conversionService);
     }
 
     @AfterEach

@@ -1,4 +1,4 @@
-package org.example.assistantonsbservlet.db.pubchem.model;
+package org.example.db.pubchem.fda.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

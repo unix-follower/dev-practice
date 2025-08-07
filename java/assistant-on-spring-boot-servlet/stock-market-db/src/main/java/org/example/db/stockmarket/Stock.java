@@ -49,11 +49,15 @@ public class Stock implements Serializable {
 
         @Override
         public boolean equals(Object obj) {
-            if (this == obj) return true;
-            if (obj == null || getClass() != obj.getClass()) return false;
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null || getClass() != obj.getClass()) {
+                return false;
+            }
             StockId stockId = (StockId) obj;
             return Objects.equals(ticker, stockId.ticker) &&
-              Objects.equals(dateAt, stockId.dateAt);
+                Objects.equals(dateAt, stockId.dateAt);
         }
 
         @Override
@@ -165,12 +169,34 @@ public class Stock implements Serializable {
 
     @Override
     public boolean equals(Object o) {
-        if (!(o instanceof Stock stock)) return false;
-        return volume == stock.volume && Objects.equals(id, stock.id) && Objects.equals(open, stock.open) && Objects.equals(high, stock.high) && Objects.equals(low, stock.low) && Objects.equals(close, stock.close) && Objects.equals(adjustedClose, stock.adjustedClose) && Objects.equals(dividends, stock.dividends) && Objects.equals(stockSplits, stock.stockSplits) && Objects.equals(capitalGains, stock.capitalGains);
+        if (!(o instanceof Stock stock)) {
+            return false;
+        }
+        return volume == stock.volume &&
+            Objects.equals(id, stock.id) &&
+            Objects.equals(open, stock.open) &&
+            Objects.equals(high, stock.high) &&
+            Objects.equals(low, stock.low) &&
+            Objects.equals(close, stock.close) &&
+            Objects.equals(adjustedClose, stock.adjustedClose) &&
+            Objects.equals(dividends, stock.dividends) &&
+            Objects.equals(stockSplits, stock.stockSplits) &&
+            Objects.equals(capitalGains, stock.capitalGains);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, open, high, low, close, adjustedClose, volume, dividends, stockSplits, capitalGains);
+        return Objects.hash(
+            id,
+            open,
+            high,
+            low,
+            close,
+            adjustedClose,
+            volume,
+            dividends,
+            stockSplits,
+            capitalGains
+        );
     }
 }

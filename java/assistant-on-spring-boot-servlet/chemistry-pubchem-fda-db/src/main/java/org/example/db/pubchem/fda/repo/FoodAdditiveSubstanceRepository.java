@@ -1,6 +1,6 @@
-package org.example.assistantonsbservlet.db.pubchem.repo;
+package org.example.db.pubchem.fda.repo;
 
-import org.example.assistantonsbservlet.db.pubchem.model.FoodAdditiveSubstance;
+import org.example.db.pubchem.fda.model.FoodAdditiveSubstance;
 
 import java.util.List;
 
