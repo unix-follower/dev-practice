@@ -1,6 +1,6 @@
-package org.example.assistantonsbservlet.api.pubchem;
+package org.example.assistantonsbservlet.api.chemistry.organic.dbs.pubchem.fda;
 
-import org.example.assistantonsbservlet.api.pubchem.model.FoodAdditiveSubstanceResponseDto;
+import org.example.assistantonsbservlet.api.chemistry.organic.dbs.pubchem.fda.model.FoodAdditiveSubstanceResponseDto;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

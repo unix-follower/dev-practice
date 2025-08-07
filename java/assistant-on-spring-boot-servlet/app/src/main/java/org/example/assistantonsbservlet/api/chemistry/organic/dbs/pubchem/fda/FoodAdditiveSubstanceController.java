@@ -1,7 +1,7 @@
-package org.example.assistantonsbservlet.api.pubchem;
+package org.example.assistantonsbservlet.api.chemistry.organic.dbs.pubchem.fda;
 
-import org.example.assistantonsbservlet.api.pubchem.model.FoodAdditiveSubstanceResponseDto;
-import org.example.assistantonsbservlet.svc.FoodAdditiveSubstanceApiFacade;
+import org.example.assistantonsbservlet.api.chemistry.organic.dbs.pubchem.fda.model.FoodAdditiveSubstanceResponseDto;
+import org.example.assistantonsbservlet.svc.chemistry.PubChemFdaApiFacade;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -9,9 +9,9 @@ import java.util.List;
 
 @RestController
 public class FoodAdditiveSubstanceController implements FoodAdditiveSubstanceApi {
-    private final FoodAdditiveSubstanceApiFacade facade;
+    private final PubChemFdaApiFacade facade;
 
-    public FoodAdditiveSubstanceController(FoodAdditiveSubstanceApiFacade facade) {
+    public FoodAdditiveSubstanceController(PubChemFdaApiFacade facade) {
         this.facade = facade;
     }
 

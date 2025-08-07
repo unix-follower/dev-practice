@@ -1,7 +1,7 @@
 package org.example.assistantonsbservlet.convert;
 
-import org.example.assistantonsbservlet.api.pubchem.model.FoodAdditiveSubstanceResponseDto;
-import org.example.assistantonsbservlet.db.pubchem.model.FoodAdditiveSubstance;
+import org.example.assistantonsbservlet.api.chemistry.organic.dbs.pubchem.fda.model.FoodAdditiveSubstanceResponseDto;
+import org.example.db.pubchem.fda.model.FoodAdditiveSubstance;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.convert.WritingConverter;
 import org.springframework.stereotype.Component;
