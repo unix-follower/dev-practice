@@ -1,4 +1,5 @@
 import React from "react"
+import Navbar from "@/app/components/Navbar"
 
 export default function Layout({
   children,
@@ -7,7 +8,7 @@ export default function Layout({
 }>) {
   return (
     <>
-      <div>AutoMechanicLayout placeholder</div>
+      <Navbar />
       {children}
     </>
   )

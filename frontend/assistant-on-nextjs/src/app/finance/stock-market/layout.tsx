@@ -5,10 +5,5 @@ export default function Layout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  return (
-    <>
-      <div>StockMarket Layout placeholder</div>
-      {children}
-    </>
-  )
+  return <>{children}</>
 }
