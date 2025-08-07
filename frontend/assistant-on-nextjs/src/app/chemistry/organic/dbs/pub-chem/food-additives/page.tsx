@@ -8,7 +8,7 @@ import FoodAdditivesMUIDataGrid, {
   FoodAdditivesMUIDataGridWithRTK,
 } from "@/app/components/food-additives/FoodAdditivesMUIDataGrid"
 import { parsePaginationParams } from "@/app/components/utils/urlUtils"
-import Menu from "@/app/components/Menu"
+import Navbar from "@/app/components/Navbar"
 import { getI18nDictionary } from "@/app/[lang]/dictionaries"
 
 export default async function Page({
@@ -45,7 +45,7 @@ export default async function Page({
 
   return (
     <>
-      <Menu />
+      <Navbar />
       <Suspense fallback={<div>Loading...</div>}>
         <FoodAdditivesMUIDataGrid foodAdditivesPromise={foodAdditives} translations={translations} />
       </Suspense>
