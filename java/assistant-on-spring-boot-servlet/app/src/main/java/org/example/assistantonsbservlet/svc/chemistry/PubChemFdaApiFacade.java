@@ -5,5 +5,8 @@ import org.example.assistantonsbservlet.api.chemistry.organic.dbs.pubchem.fda.mo
 import java.util.List;
 
 public interface PubChemFdaApiFacade {
-    List<FoodAdditiveSubstanceResponseDto> getAll(int page, int size);
+    /**
+     * @param page 1-based page
+     */
+    List<FoodAdditiveSubstanceResponseDto> getAll(int page, int pageSize);
 }

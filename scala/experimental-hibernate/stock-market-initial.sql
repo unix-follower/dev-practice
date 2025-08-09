@@ -1,4 +1,6 @@
-CREATE TABLE stock (
+--DROP TABLE stock_market.stock;
+
+CREATE TABLE stock_market.stock (
   ticker VARCHAR(255) NOT NULL,
   date_at TIMESTAMP WITH TIME ZONE NOT NULL,
   open DOUBLE PRECISION NOT NULL,

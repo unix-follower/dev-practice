@@ -49,7 +49,7 @@ class FoodAdditiveSubstanceRepositoryImplTest {
             .thenReturn(additiveSubstanceTypedQuery);
 
         // when
-        final var dataList = repository.findAll(1, 50);
+        final var dataList = repository.findAll(0, 50);
 
         // then
         Mockito.verify(emMock, Mockito.only()).createQuery(
