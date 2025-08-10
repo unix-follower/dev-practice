@@ -27,4 +27,4 @@ createdb --echo --encoding='utf-8'
 # ALTER TABLE stock_market.stock OWNER TO stock_market;
 
 # \COPY stock_market.stock (date_at, ticker, open, high, low, close, adjusted_close, volume, dividends, stock_splits, capital_gains)
-# FROM './shuffled_stock_history-2024-05-15.csv' DELIMITER ',' CSV HEADER;
+# FROM './stock-market/shuffled_stock_history-2024-05-15.csv' DELIMITER ',' CSV HEADER;

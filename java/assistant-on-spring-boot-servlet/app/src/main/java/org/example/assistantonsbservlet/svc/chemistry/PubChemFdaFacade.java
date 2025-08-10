@@ -44,11 +44,13 @@ public class PubChemFdaFacade implements PubChemFdaApiFacade {
                 .toList();
             tx.commit();
             return responseDtoList;
+            // CHECKSTYLE:OFF: IllegalCatch
         } catch (Exception e) {
             if (tx.isActive()) {
                 tx.rollback();
             }
             throw new AppException(e, ErrorCode.UNKNOWN);
         }
+        // CHECKSTYLE:ON: IllegalCatch
     }
 }

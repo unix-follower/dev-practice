@@ -39,11 +39,13 @@ public class StockMarketFacade implements StockMarketApiFacade {
             final var stocks = appConversionService.convert(tuples, StocksResponseDto.class);
             tx.commit();
             return stocks;
+            // CHECKSTYLE:OFF: IllegalCatch
         } catch (Exception e) {
             if (tx.isActive()) {
                 tx.rollback();
             }
             throw new AppException(e, ErrorCode.UNKNOWN);
         }
+        // CHECKSTYLE:ON: IllegalCatch
     }
 }
