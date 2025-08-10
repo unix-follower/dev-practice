@@ -1,15 +1,16 @@
 import type { Action, ThunkAction } from "@reduxjs/toolkit"
 import { combineSlices, configureStore } from "@reduxjs/toolkit"
-import { foodAdditivesSlice } from "@/lib/features/chemistry/food-additives/foodAdditivesSlice"
+import { pubChemFdaSlice } from "@/lib/features/chemistry/pubChemFdaSlice"
+import { stockMarketSlice } from "@/lib/features/finance/stockMarketSlice"
 
-const rootReducer = combineSlices(foodAdditivesSlice)
+const rootReducer = combineSlices(pubChemFdaSlice, stockMarketSlice)
 export type RootState = ReturnType<typeof rootReducer>
 
 export const makeStore = () => {
   return configureStore({
     reducer: rootReducer,
     middleware: (getDefaultMiddleware) => {
-      return getDefaultMiddleware().concat(foodAdditivesSlice.middleware)
+      return getDefaultMiddleware().concat(pubChemFdaSlice.middleware).concat(stockMarketSlice.middleware)
     },
   })
 }

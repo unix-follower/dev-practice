@@ -1,5 +1,5 @@
 {
-  "chemistryFoodAdditives": {
+  "organicChemistryPubChemFoodAdditivesPage": {
     "compoundId": "Compound ID",
     "name": "Name",
     "synonyms": "Synonyms",
@@ -38,5 +38,18 @@
     "dataSource": "Data source",
     "dataSourceCategory": "Data source category",
     "taggedByPubChem": "Tagged by PubChem"
+  },
+  "financeStockMarketPage": {
+    "ticker": "Ticker",
+    "date": "Date",
+    "capitalGains": "Capital gains",
+    "open": "Open",
+    "high": "High",
+    "low": "Low",
+    "close": "Close",
+    "adjustedClose": "Adjusted close",
+    "volume": "Volume",
+    "dividends": "Dividends",
+    "stockSplits": "Stock splits"
   }
 }

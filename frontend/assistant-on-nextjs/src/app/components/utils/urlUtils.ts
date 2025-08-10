@@ -2,7 +2,7 @@ import { ReadonlyURLSearchParams } from "next/navigation"
 
 interface PaginationParams {
   page: string | null
-  size: string | null
+  pageSize: string | null
 }
 
 export function parsePaginationParams(searchParams: ReadonlyURLSearchParams | PaginationParams) {
@@ -13,7 +13,7 @@ export function parsePaginationParams(searchParams: ReadonlyURLSearchParams | Pa
     sizeStr = searchParams.get("size")
   } else {
     pageStr = searchParams.page
-    sizeStr = searchParams.size
+    sizeStr = searchParams.pageSize
   }
 
   let page = Number.parseInt(pageStr ?? "1")
