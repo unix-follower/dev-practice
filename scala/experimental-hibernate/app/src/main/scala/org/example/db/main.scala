@@ -1,7 +1,7 @@
 package org.example.db
 
 import jakarta.persistence.Persistence
-import org.example.db.stockmarket.{Stock, StockJpaRepository, StockJpaRepositoryImpl, StockSearchParams}
+import org.example.db.stockmarket.{Stock, StockRepository, StockRepositoryImpl, StockSearchParams}
 
 import java.util
 import scala.util.Using
@@ -15,7 +15,7 @@ def main(methodToExec: String, execStrategy: String, other: String*): Unit =
     properties.put("javax.persistence.jdbc.user", dbUser)
     properties.put("javax.persistence.jdbc.password", dbPassword)
 
-    val methodToExecMap = Map[String, StockJpaRepository => Any](
+    val methodToExecMap = Map[String, StockRepository => Any](
         "findByTicker" -> (repo => {
             // CLI args example:
             // findByTicker _ KO 10 0
@@ -54,7 +54,7 @@ def main(methodToExec: String, execStrategy: String, other: String*): Unit =
             val tx = em.getTransaction
             try {
                 tx.begin()
-                val stockRepository: StockJpaRepository = StockJpaRepositoryImpl(em)
+                val stockRepository: StockRepository = StockRepositoryImpl(em)
                 
                 methodToExecMap.get(methodToExec) match {
                     case Some(method) => method(stockRepository)

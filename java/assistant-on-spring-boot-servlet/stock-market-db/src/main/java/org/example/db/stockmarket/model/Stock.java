@@ -1,9 +1,10 @@
-package org.example.db.stockmarket;
+package org.example.db.stockmarket.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
+import jakarta.persistence.NamedQuery;
 import jakarta.persistence.Table;
 
 import java.io.Serializable;
@@ -13,7 +14,18 @@ import java.util.Objects;
 
 @Entity(name = "stock")
 @Table(name = "stock")
+@NamedQuery(
+    name = Stock.FIND_BY_TICKER_NQ,
+    query = """
+        SELECT COUNT(s.id) OVER () AS totalCount, s
+        FROM stock s
+        WHERE s.id.ticker = :ticker
+        ORDER BY s.id.dateAt DESC
+        """
+)
 public class Stock implements Serializable {
+    public static final String FIND_BY_TICKER_NQ = "findByTickerNQ";
+
     @Embeddable
     public static class StockId implements Serializable {
 

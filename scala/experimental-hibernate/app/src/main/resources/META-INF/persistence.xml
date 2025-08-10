@@ -1,22 +1,45 @@
-<persistence xmlns="http://java.sun.com/xml/ns/persistence"
-             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-             xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd"
-             version="2.0">
+<persistence xmlns="https://jakarta.ee/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             version="3.0"
+             xsi:schemalocation="https://jakarta.ee/xml/ns/persistence https://jakarta.ee/xml/ns/persistence/persistence_3_0.xsd">
+
+    <persistence-unit name="pubchem-unit">
+        <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+        <class>org.example.db.pubchem.fda.model.FoodAdditiveSubstance</class>
+        <!-- <shared-cache-mode>ENABLE_SELECTIVE</shared-cache-mode>-->
+        <!-- <validation-mode>CALLBACK</validation-mode>-->
+
+        <properties>
+            <property name="jakarta.persistence.jdbc.driver" value="org.postgresql.Driver"/>
+            <property name="jakarta.persistence.jdbc.url"
+                      value="jdbc:postgresql://192.168.105.8:32000/assistant_datahub?currentSchema=pubchem"/>
+            <property name="jakarta.persistence.jdbc.user" value="${PUBCHEM_DB_USERNAME}"/>
+            <property name="jakarta.persistence.jdbc.password" value="${PUBCHEM_DB_PASSWORD}"/>
+
+            <!-- <property name="jakarta.persistence.lock.timeout" value="100"/>-->
+            <!-- <property name="jakarta.persistence.query.timeout" value="100"/>-->
+
+            <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQLDialect"/>
+            <property name="hibernate.show_sql" value="true"/>
+            <property name="hibernate.format_sql" value="true"/>
+            <property name="hibernate.highlight_sql" value="true"/>
+        </properties>
+    </persistence-unit>
 
     <persistence-unit name="stock-market">
+        <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
         <class>org.example.db.stockmarket.Stock</class>
 
         <properties>
-            <property name="jakarta.persistence.jdbc.url" value="jdbc:postgresql://192.168.105.8:32000/stock_market" />
-            <property name="jakarta.persistence.jdbc.user" value="${STOCK_MARKET_DB_USERNAME}" />
-            <property name="jakarta.persistence.jdbc.password" value="${STOCK_MARKET_DB_PASSWORD}" />
+            <property name="jakarta.persistence.jdbc.url"
+                      value="jdbc:postgresql://192.168.105.8:32000/assistant_datahub?currentSchema=stock_market"/>
+            <property name="jakarta.persistence.jdbc.user" value="${STOCK_MARKET_DB_USERNAME}"/>
+            <property name="jakarta.persistence.jdbc.password" value="${STOCK_MARKET_DB_PASSWORD}"/>
 
-            <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQLDialect" />
-            <property name="hibernate.show_sql" value="true" />
-            <property name="hibernate.format_sql" value="true" />
-            <property name="hibernate.highlight_sql" value="true" />
+            <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQLDialect"/>
+            <property name="hibernate.show_sql" value="true"/>
+            <property name="hibernate.format_sql" value="true"/>
+            <property name="hibernate.highlight_sql" value="true"/>
         </properties>
-
     </persistence-unit>
 
 </persistence>

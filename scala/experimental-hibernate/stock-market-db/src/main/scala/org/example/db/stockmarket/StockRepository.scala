@@ -13,7 +13,7 @@ import java.util
 import scala.jdk.CollectionConverters.*
 
 
-trait StockJpaRepository {
+trait StockRepository {
     def findByTicker(ticker: String, limit: Int, offset: Int): List[persistence.Tuple]
 
     /**
@@ -157,7 +157,7 @@ private class CumulativeVolumeRow(
     def setCumulativeVolume(cumulativeVolume: Long): Unit = this.volume = volume
 }
 
-class StockJpaRepositoryImpl(em: EntityManager) extends StockJpaRepository {
+class StockRepositoryImpl(em: EntityManager) extends StockRepository {
     def findByTicker(ticker: String, limit: Int, offset: Int): List[persistence.Tuple] = {
         val sql =
             """

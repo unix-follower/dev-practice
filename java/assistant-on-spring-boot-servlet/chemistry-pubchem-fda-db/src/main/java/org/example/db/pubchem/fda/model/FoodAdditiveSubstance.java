@@ -3,6 +3,7 @@ package org.example.db.pubchem.fda.model;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 
@@ -10,6 +11,7 @@ import java.time.LocalDate;
 import java.util.Objects;
 
 @Entity
+@Table(name = "food_additive_substance")
 public class FoodAdditiveSubstance {
     @Id
     @Column(name = "compound_cid", nullable = false)

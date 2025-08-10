@@ -7,28 +7,14 @@ spring:
         enabled: false
   config:
     import: optional:configserver:http://localhost:8000
+  data:
+    jpa:
+      repositories:
+        enabled: false
   lifecycle:
     timeout-per-shutdown-phase: 30s
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:}
-  datasource:
-    driver-class-name: org.postgresql.Driver
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://192.168.105.8:32000/pubchem_food_additive}
-    username: ${SPRING_DATASOURCE_USERNAME:}
-    password: ${SPRING_DATASOURCE_PASSWORD:}
-    hikari:
-      maximum-pool-size: ${SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE:100}
-      minimum-idle: ${SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE:2}
-      pool-name: ${spring.application.name}-ds-pool
-      transaction-isolation: TRANSACTION_READ_COMMITTED
-  jpa:
-    show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
-  liquibase:
-    enabled: true
-    change-log: classpath:db/changelog/db.pubchem-food-additive-changelog-master.xml
 
 server:
   port: ${SERVER_PORT:8080}
@@ -69,3 +55,33 @@ app:
     access-control-max-age: ${APP_CORS_ACCESS_CONTROL_MAX_AGE:PT1h}
     access-control-allow-headers: ${APP_CORS_ACCESS_CONTROL_ALLOW_HEADERS:*}
     access-control-allow-methods: ${APP_CORS_ACCESS_CONTROL_ALLOW_METHODS:GET,POST,PUT,PATCH,DELETE,OPTIONS}
+  pubchem:
+    ds:
+      driver-class-name: org.postgresql.Driver
+      url: ${APP_PUBCHEM_DS_URL:jdbc:postgresql://192.168.105.8:32000/assistant_datahub?currentSchema=pubchem}
+      username: ${APP_PUBCHEM_DS_USERNAME:}
+      password: ${APP_PUBCHEM_DS_PASSWORD:}
+    hikari:
+      maximum-pool-size: ${APP_PUBCHEM_HIKARI_MAXIMUM_POOL_SIZE:100}
+      minimum-idle: ${APP_PUBCHEM_HIKARI_MINIMUM_IDLE:1}
+      pool-name: ${spring.application.name}-pubchem-pool
+      connection-timeout: ${APP_PUBCHEM_HIKARI_CONNECTION_TIMEOUT:30s}
+      validation-timeout: ${APP_PUBCHEM_HIKARI_VALIDATION_TIMEOUT:5s}
+      idle-timeout: ${APP_PUBCHEM_HIKARI_IDLE_TIMEOUT:10m}
+      max-lifetime: ${APP_PUBCHEM_HIKARI_MAX_LIFETIME:30m}
+      keep-alive-time: ${APP_PUBCHEM_HIKARI_KEEP_ALIVE_TIME:2m}
+  stock-market:
+    ds:
+      driver-class-name: org.postgresql.Driver
+      url: ${APP_STOCK_MARKET_DS_URL:jdbc:postgresql://192.168.105.8:32000/assistant_datahub?currentSchema=stock_market}
+      username: ${APP_STOCK_MARKET_DS_USERNAME:}
+      password: ${APP_STOCK_MARKET_DS_PASSWORD:}
+    hikari:
+      maximum-pool-size: ${APP_STOCK_MARKET_HIKARI_MAXIMUM_POOL_SIZE:100}
+      minimum-idle: ${APP_STOCK_MARKET_HIKARI_MINIMUM_IDLE:2}
+      pool-name: ${spring.application.name}-stock-market-pool
+      connection-timeout: ${APP_STOCK_MARKET_HIKARI_CONNECTION_TIMEOUT:3m}
+      validation-timeout: ${APP_STOCK_MARKET_HIKARI_VALIDATION_TIMEOUT:5s}
+      idle-timeout: ${APP_STOCK_MARKET_HIKARI_IDLE_TIMEOUT:10m}
+      max-lifetime: ${APP_STOCK_MARKET_HIKARI_MAX_LIFETIME:30m}
+      keep-alive-time: ${APP_STOCK_MARKET_HIKARI_KEEP_ALIVE_TIME:2m}

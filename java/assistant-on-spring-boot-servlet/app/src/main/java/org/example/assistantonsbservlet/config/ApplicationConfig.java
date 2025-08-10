@@ -1,6 +1,5 @@
 package org.example.assistantonsbservlet.config;
 
-import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -8,8 +7,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.convert.support.DefaultConversionService;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
-import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.zalando.logbook.Logbook;
 import org.zalando.logbook.autoconfigure.LogbookProperties;
 import org.zalando.logbook.core.Conditions;
@@ -24,13 +21,10 @@ import java.util.List;
     "org.example.assistantonsbservlet",
     "org.example.db",
 })
-@EnableJpaRepositories(basePackages = "org.example.db")
-@EntityScan(basePackages = "org.example.db")
-@EnableTransactionManagement
 @EnableConfigurationProperties({AppProperties.class})
 class ApplicationConfig {
     @Bean
-    ConversionService conversionService(List<Converter<?, ?>> converters) {
+    ConversionService appConversionService(List<Converter<?, ?>> converters) {
         final var service = new DefaultConversionService();
         converters.forEach(service::addConverter);
         return service;

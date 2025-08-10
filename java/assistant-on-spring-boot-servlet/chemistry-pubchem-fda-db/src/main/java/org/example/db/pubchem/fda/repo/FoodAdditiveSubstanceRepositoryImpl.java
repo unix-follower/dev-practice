@@ -1,31 +1,31 @@
 package org.example.db.pubchem.fda.repo;
 
-import org.example.db.pubchem.fda.model.FoodAdditiveSubstance;
 import jakarta.persistence.EntityManager;
+import org.example.db.pubchem.fda.model.FoodAdditiveSubstance;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Repository
-@Transactional(readOnly = true)
+@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
+@Lazy
 public class FoodAdditiveSubstanceRepositoryImpl implements FoodAdditiveSubstanceRepository {
     private final EntityManager em;
 
-    public FoodAdditiveSubstanceRepositoryImpl(final EntityManager em) {
+    public FoodAdditiveSubstanceRepositoryImpl(EntityManager em) {
         this.em = em;
     }
 
-    /**
-     * @param page 1-based page
-     */
     @Override
-    public List<FoodAdditiveSubstance> findAll(final int page, final int limit) {
+    public List<FoodAdditiveSubstance> findAll(final int offset, final int limit) {
         return em.createQuery(
                 "SELECT f FROM " + FoodAdditiveSubstance.class.getSimpleName() + " f",
                 FoodAdditiveSubstance.class
             )
-            .setFirstResult((page - 1) * limit)
+            .setFirstResult(offset)
             .setMaxResults(limit)
             .getResultList();
     }

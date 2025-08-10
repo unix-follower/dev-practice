@@ -6,6 +6,12 @@
     <property name="severity" value="warning"/>
 
     <module name="TreeWalker">
+        <!-- Enable suppression via comments -->
+        <module name="SuppressionCommentFilter">
+            <property name="offCommentFormat" value="CHECKSTYLE:OFF"/>
+            <property name="onCommentFormat" value="CHECKSTYLE:ON"/>
+        </module>
+
         <!-- Naming Conventions -->
         <module name="TypeName"/>
         <module name="MethodName"/>

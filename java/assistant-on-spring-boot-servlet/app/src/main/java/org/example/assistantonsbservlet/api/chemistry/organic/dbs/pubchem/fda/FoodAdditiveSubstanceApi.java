@@ -11,5 +11,8 @@ import java.util.List;
 @RequestMapping("/api/v1/chemistry/food-additives")
 public interface FoodAdditiveSubstanceApi {
     @GetMapping
-    ResponseEntity<List<FoodAdditiveSubstanceResponseDto>> getAll(@RequestParam int page, @RequestParam int size);
+    ResponseEntity<List<FoodAdditiveSubstanceResponseDto>> getAll(
+        @RequestParam(defaultValue = "1") int page,
+        @RequestParam(defaultValue = "10") int pageSize
+    );
 }

@@ -16,8 +16,8 @@ public class FoodAdditiveSubstanceController implements FoodAdditiveSubstanceApi
     }
 
     @Override
-    public ResponseEntity<List<FoodAdditiveSubstanceResponseDto>> getAll(int page, int size) {
-        final var substanceDtoList = facade.getAll(page, size);
+    public ResponseEntity<List<FoodAdditiveSubstanceResponseDto>> getAll(int page, int pageSize) {
+        final var substanceDtoList = facade.getAll(page, pageSize);
         return ResponseEntity.ok(substanceDtoList);
     }
 }
