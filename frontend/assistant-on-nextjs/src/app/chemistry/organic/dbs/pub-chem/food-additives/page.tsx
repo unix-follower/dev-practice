@@ -1,14 +1,8 @@
 import React, { Suspense } from "react"
-import ApiHttpClient, {
-  ApiHttpClientSettings,
-  ApiHttpClientType,
-} from "@/lib/features/chemistry/food-additives/ApiHttpClient"
+import ApiHttpClient, { ApiHttpClientSettings, ApiHttpClientType } from "@/lib/api/ApiHttpClient"
 import { getBackendURL } from "@/config/config"
-import FoodAdditivesMUIDataGrid, {
-  FoodAdditivesMUIDataGridWithRTK,
-} from "@/app/components/food-additives/FoodAdditivesMUIDataGrid"
+import PubChemFdaMUIDataGrid, { PubChemFdaMUIDataGridWithRTK } from "@/app/components/chemistry/PubChemFdaMUIDataGrid"
 import { parsePaginationParams } from "@/app/components/utils/urlUtils"
-import Navbar from "@/app/components/Navbar"
 import { getI18nDictionary } from "@/app/[lang]/dictionaries"
 
 export default async function Page({
@@ -16,13 +10,13 @@ export default async function Page({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }) {
-  const { mode, page, size, lang } = await searchParams
+  const { mode, page, pageSize, lang } = await searchParams
 
-  const params = { page: (page as string) || null, size: (size as string) || null }
+  const params = { page: (page as string) || null, pageSize: (pageSize as string) || null }
   const translations = await getI18nDictionary((lang as string) || "en")
 
   if (mode === "rtk") {
-    return <FoodAdditivesMUIDataGridWithRTK translations={translations} />
+    return <PubChemFdaMUIDataGridWithRTK translations={translations} />
   }
 
   let clientSettings: ApiHttpClientSettings
@@ -38,17 +32,14 @@ export default async function Page({
     }
   }
 
-  const [pageNumber, pageSize] = parsePaginationParams(params)
+  const [pageNumber, pageSizeNum] = parsePaginationParams(params)
 
   const client = new ApiHttpClient(clientSettings)
-  const foodAdditives = client.getAllFoodAdditives(pageNumber, pageSize)
+  const foodAdditives = client.getAllFoodAdditives(pageNumber, pageSizeNum)
 
   return (
-    <>
-      <Navbar />
-      <Suspense fallback={<div>Loading...</div>}>
-        <FoodAdditivesMUIDataGrid foodAdditivesPromise={foodAdditives} translations={translations} />
-      </Suspense>
-    </>
+    <Suspense fallback={<div>Loading...</div>}>
+      <PubChemFdaMUIDataGrid foodAdditivesPromise={foodAdditives} translations={translations} />
+    </Suspense>
   )
 }
