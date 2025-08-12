@@ -4,6 +4,7 @@ import { getBackendURL } from "@/config/config"
 import StockMUIDataGrid, { StockMUIDataGridWithRTK } from "@/app/components/finance/StockMUIDataGrid"
 import { parsePaginationParams } from "@/app/components/utils/urlUtils"
 import { getI18nDictionary } from "@/app/[lang]/dictionaries"
+import StockBasicChartCanvasJS from "@/app/components/finance/StockBasicChartCanvasJS"
 
 export default async function Page({
   searchParams,
@@ -41,6 +42,7 @@ export default async function Page({
   return (
     <Suspense fallback={<div>Loading...</div>}>
       <StockMUIDataGrid stocksResponsePromise={stocksPromise} translations={translations} />
+      <StockBasicChartCanvasJS stocksResponsePromise={stocksPromise} translations={translations} />
     </Suspense>
   )
 }
