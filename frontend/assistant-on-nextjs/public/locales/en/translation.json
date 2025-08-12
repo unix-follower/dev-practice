@@ -50,6 +50,8 @@
     "adjustedClose": "Adjusted close",
     "volume": "Volume",
     "dividends": "Dividends",
-    "stockSplits": "Stock splits"
+    "stockSplits": "Stock splits",
+    "chart": "Stats for {{ticker}} ticker",
+    "volumeChart": "The volume of {{ticker}} ticker"
   }
 }
