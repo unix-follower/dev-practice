@@ -7,4 +7,4 @@ pluginManagement {
 
 rootProject.name = "assistant-on-spring-boot-servlet"
 
-include("stock-market-db", "chemistry-pubchem-fda-db", "app")
+include("stock-market-db", "chemistry-pubchem-db", "app")

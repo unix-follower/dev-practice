@@ -103,4 +103,26 @@ class DbConfig {
         factoryBean.setJpaPropertyMap(jpaPropertyMap());
         return factoryBean;
     }
+
+    @Bean
+    DataSource pubChemGraphDataSource(AppProperties properties) {
+        final var pubChemProps = properties.pubChem();
+        final var ds = pubChemProps.pgAgeGraph();
+        final var hikari = pubChemProps.hikariPgAgeGraph();
+        return createHikariDataSource(ds, hikari);
+    }
+
+    @Bean
+    LocalContainerEntityManagerFactoryBean pubChemGraphEntityManagerFactory(
+        @Qualifier("pubChemGraphDataSource") DataSource ds
+    ) {
+        final var factoryBean = new LocalContainerEntityManagerFactoryBean();
+        factoryBean.setPersistenceUnitName("pubchem-graph-unit");
+        factoryBean.setPackagesToScan("org.example.db.pubchem.graph");
+        factoryBean.setDataSource(ds);
+        final var jpaVendorAdapter = newHibernateJpaVendorAdapter();
+        factoryBean.setJpaVendorAdapter(jpaVendorAdapter);
+        factoryBean.setJpaPropertyMap(jpaPropertyMap());
+        return factoryBean;
+    }
 }

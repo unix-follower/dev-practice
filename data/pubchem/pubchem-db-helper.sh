@@ -31,14 +31,25 @@ unpack() {
 }
 
 export PGHOST=$(minikube ip)
-export PGUSER=postgres
-export PGPORT=32000
-export PGDATABASE=pubchem_food_additive
+# export PGUSER=postgres
+export PGUSER=pubchem_graph
+export PGPORT=5432
+export PGDATABASE=pubchem_graph
 # export PGPASSWORD=<YOUR PASSWORD>
 
-create_pubchem_food_additive_db() {
-  dropdb --echo $PGDATABASE
+create_pubchem_graph() {
+  # dropdb --echo $PGDATABASE
   createdb --echo --encoding='utf-8'
 }
 
-create_pubchem_food_additive_db
+# DROP ROLE assistant_graph_svc;
+# DROP USER pubchem_graph;
+# CREATE ROLE assistant_graph_svc WITH
+#   NOSUPERUSER NOCREATEDB NOCREATEROLE INHERIT NOREPLICATION NOBYPASSRLS
+#   CONNECTION LIMIT 256
+#   PASSWORD '<PASSWORD_HERE>';
+# CREATE USER pubchem_graph WITH NOCREATEDB NOCREATEROLE PASSWORD '<PASSWORD_HERE>' ROLE assistant_graph_svc;
+
+# \du pubchem_graph
+
+create_pubchem_graph

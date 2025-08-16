@@ -8,6 +8,10 @@ public record PubChemProperties(
     @ConfigurationProperties
     DataSourceProperties ds,
     @ConfigurationProperties
-    HikariProperties hikari
+    HikariProperties hikari,
+    @ConfigurationProperties
+    DataSourceProperties pgAgeGraph,
+    @ConfigurationProperties
+    HikariProperties hikariPgAgeGraph
 ) {
 }
