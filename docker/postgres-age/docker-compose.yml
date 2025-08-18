@@ -1,0 +1,22 @@
+volumes:
+  postgres-age-data:
+
+networks:
+  local-bridge:
+    external: true
+
+services:
+  postgres-age:
+    image: apache/age:latest
+    container_name: postgres-age
+    hostname: postgres-age
+    restart: "no"
+    networks:
+      local-bridge:
+        ipv4_address: 192.168.2.2
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres-age-data:/var/lib/postgresql

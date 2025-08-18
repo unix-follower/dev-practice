@@ -5,24 +5,30 @@ interface PaginationParams {
   pageSize: string | null
 }
 
-export function parsePaginationParams(searchParams: ReadonlyURLSearchParams | PaginationParams) {
+export function parsePaginationParams(
+  searchParams: ReadonlyURLSearchParams | PaginationParams,
+  isZeroBasePage = false,
+) {
   let pageStr: string | null
   let sizeStr: string | null
   if (searchParams instanceof ReadonlyURLSearchParams) {
     pageStr = searchParams.get("page")
-    sizeStr = searchParams.get("size")
+    sizeStr = searchParams.get("pageSize")
   } else {
     pageStr = searchParams.page
     sizeStr = searchParams.pageSize
   }
 
-  let page = Number.parseInt(pageStr ?? "1")
-  let size = Number.parseInt(sizeStr ?? "10")
+  const defaultPageStr = isZeroBasePage ? "0" : "1"
+  const defaultPageSizeStr = "10"
+
+  let page = Number.parseInt(pageStr ?? defaultPageStr)
+  let size = Number.parseInt(sizeStr ?? defaultPageSizeStr)
   if (isNaN(page)) {
-    page = 1
+    page = Number.parseInt(defaultPageStr)
   }
   if (isNaN(page)) {
-    size = 10
+    size = Number.parseInt(defaultPageSizeStr)
   }
 
   return [page, size]

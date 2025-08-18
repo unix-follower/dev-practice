@@ -1,7 +1,35 @@
-export function makeGetAllFoodAdditivesUrl(baseUrl?: string) {
+export function makeUrlForGetAllFoodAdditives(baseUrl?: string) {
   return `${baseUrl ?? ""}/api/v1/chemistry/food-additives`
 }
 
-export function makeFinanceStockMarketGetByTickerUrl(baseUrl?: string) {
+export function makeUrlForFinanceStockMarketGetByTicker(baseUrl?: string) {
   return `${baseUrl ?? ""}/api/v1/finance/stock-market`
+}
+
+export function makeUrlForPubChemGraphGetAll({
+  baseUrl,
+  page,
+  pageSize,
+  name,
+}: {
+  baseUrl?: string
+  name?: string
+  page: number
+  pageSize: number
+}) {
+  const params = new URLSearchParams()
+  if (name) {
+    params.set("name", name)
+  }
+
+  if (page) {
+    params.set("page", String(page))
+  }
+
+  if (pageSize) {
+    params.set("pageSize", String(pageSize))
+  }
+
+  const query = params.size > 0 ? `?${params}` : ""
+  return `${baseUrl ?? ""}/api/v1/chemistry/graph/compound${query}`
 }

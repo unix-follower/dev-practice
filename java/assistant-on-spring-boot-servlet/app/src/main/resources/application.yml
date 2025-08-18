@@ -70,6 +70,20 @@ app:
       idle-timeout: ${APP_PUBCHEM_HIKARI_IDLE_TIMEOUT:10m}
       max-lifetime: ${APP_PUBCHEM_HIKARI_MAX_LIFETIME:30m}
       keep-alive-time: ${APP_PUBCHEM_HIKARI_KEEP_ALIVE_TIME:2m}
+    pg-age-graph:
+      driver-class-name: org.postgresql.Driver
+      url: ${APP_PG_AGE_GRAPH_URL:jdbc:postgresql://192.168.105.8:5432/pubchem_graph?currentSchema=ag_catalog}
+      username: ${APP_PG_AGE_GRAPH_USERNAME:}
+      password: ${APP_PG_AGE_GRAPH_PASSWORD:}
+    hikari-pg-age-graph:
+      maximum-pool-size: ${APP_PG_AGE_GRAPH_HIKARI_MAXIMUM_POOL_SIZE:100}
+      minimum-idle: ${APP_PG_AGE_GRAPH_HIKARI_MINIMUM_IDLE:1}
+      pool-name: ${spring.application.name}-pubchem-graph-pool
+      connection-timeout: ${APP_PG_AGE_GRAPH_HIKARI_CONNECTION_TIMEOUT:30s}
+      validation-timeout: ${APP_PG_AGE_GRAPH_HIKARI_VALIDATION_TIMEOUT:5s}
+      idle-timeout: ${APP_PG_AGE_GRAPH_HIKARI_IDLE_TIMEOUT:10m}
+      max-lifetime: ${APP_PG_AGE_GRAPH_HIKARI_MAX_LIFETIME:30m}
+      keep-alive-time: ${APP_PG_AGE_GRAPH_HIKARI_KEEP_ALIVE_TIME:2m}
   stock-market:
     ds:
       driver-class-name: org.postgresql.Driver

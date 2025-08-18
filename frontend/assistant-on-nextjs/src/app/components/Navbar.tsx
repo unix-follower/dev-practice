@@ -101,10 +101,11 @@ function ChemistryMenu() {
       title="Chemistry"
       href="/chemistry"
       links={[
+        { href: "/chemistry/dbs/pub-chem/fda", label: "PubChem FDA" },
+        { href: "/chemistry/dbs/pub-chem/graph/compound", label: "PubChem Graph Compound" },
         { href: "/chemistry/biochemistry", label: "Biochemistry" },
         { href: "/chemistry/inorganic", label: "Inorganic" },
         { href: "/chemistry/organic", label: "Organic" },
-        { href: "/chemistry/organic/dbs/pub-chem/food-additives", label: "PubChem db food additives" },
         { href: "/chemistry/physical", label: "Physical" },
       ]}
     />

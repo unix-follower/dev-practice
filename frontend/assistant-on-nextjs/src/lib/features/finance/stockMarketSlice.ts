@@ -1,14 +1,13 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react"
 import StocksResponseDto from "@/lib/api/finance/stockMarketModel"
 import { getBackendURL } from "@/config/config"
-import { makeFinanceStockMarketGetByTickerUrl } from "@/lib/api/utils"
+import { makeUrlForFinanceStockMarketGetByTicker } from "@/lib/api/utils"
+import { PaginationParams } from "@/lib/api/common"
 
 const tag = "FinanceStockMarket"
 
-interface GetByTickerQueryString {
+interface GetByTickerQueryString extends PaginationParams {
   ticker: string
-  page: number
-  pageSize: number
 }
 
 export const stockMarketSlice = createApi({
@@ -18,7 +17,7 @@ export const stockMarketSlice = createApi({
   endpoints: (build) => ({
     getByTicker: build.query<StocksResponseDto, GetByTickerQueryString>({
       query: ({ ticker, page = 1, pageSize = 10 }) =>
-        `${makeFinanceStockMarketGetByTickerUrl()}?ticker=${ticker}&page=${page}&pageSize=${pageSize}`,
+        `${makeUrlForFinanceStockMarketGetByTicker()}?ticker=${ticker}&page=${page}&pageSize=${pageSize}`,
       providesTags: [tag],
     }),
   }),

@@ -12,8 +12,18 @@ curl -v ${assistant_on_sb_servlet_url}/actuator | jq
 curl -v ${assistant_on_sb_servlet_url}/actuator/prometheus
 ```
 ## Chemistry
-### PubChem FDA
-#### Get food additives
+### PubChem
+#### Graph
+##### Get all
+```shell
+curl -v "${assistant_on_sb_servlet_url}/api/v1/chemistry/graph/compound?page=1&pageSize=10" | jq
+```
+##### Get by name
+```shell
+curl -v "${assistant_on_sb_servlet_url}/api/v1/chemistry/graph/compound?page=1&pageSize=10&name=1-Amino-2-propanol" | jq
+```
+#### FDA
+##### Get food additives
 ```shell
 curl -v "${assistant_on_sb_servlet_url}/api/v1/chemistry/food-additives?page=1&pageSize=10" | jq
 ```

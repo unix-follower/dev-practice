@@ -1,10 +1,16 @@
 import axios, { AxiosError, AxiosResponse } from "axios"
 import { FoodAdditiveSubstanceResponseDto } from "./chemistry/FoodAdditiveResponse"
-import { makeFinanceStockMarketGetByTickerUrl, makeGetAllFoodAdditivesUrl } from "./utils"
+import {
+  makeUrlForFinanceStockMarketGetByTicker,
+  makeUrlForGetAllFoodAdditives,
+  makeUrlForPubChemGraphGetAll,
+} from "./utils"
 import ApiError, { ApiErrorCode, type ApiErrorResponse, ErrorCode } from "./ApiError"
 import FinanceStockMarketApi from "./finance/FinanceStockMarketApi"
 import StocksResponseDto from "@/lib/api/finance/stockMarketModel"
 import OrganicChemistryApi from "@/lib/api/chemistry/OrganicChemistryApi"
+import CompoundGraphApi from "@/lib/api/chemistry/CompoundGraphApi"
+import { ChemistryGraphResponse } from "./chemistry/graphModels"
 
 function getApiErrorCode(response: ApiErrorResponse | unknown): ApiErrorCode {
   let errorCode = ApiErrorCode.UNKNOWN
@@ -24,7 +30,7 @@ export interface ApiHttpClientSettings {
   clientStrategy: ApiHttpClientType | undefined
 }
 
-export default class ApiHttpClient implements FinanceStockMarketApi {
+export default class ApiHttpClient implements FinanceStockMarketApi, CompoundGraphApi {
   private delegate: FetchHttpClient
 
   constructor(settings: ApiHttpClientSettings) {
@@ -37,6 +43,14 @@ export default class ApiHttpClient implements FinanceStockMarketApi {
       default:
         this.delegate = new FetchHttpClient(apiURL)
     }
+  }
+
+  doPubChemGraphGetCompoundDataByName(name: string, page: number, pageSize: number): Promise<ChemistryGraphResponse> {
+    return this.delegate.doPubChemGraphGetCompoundDataByName(name, page, pageSize)
+  }
+
+  doPubChemGraphGetAll(page: number, pageSize: number): Promise<ChemistryGraphResponse> {
+    return this.delegate.doPubChemGraphGetAll(page, pageSize)
   }
 
   getStockByTicker(ticker: string, page: number, pageSize: number): Promise<StocksResponseDto> {
@@ -91,17 +105,20 @@ abstract class AbstractHttpClient {
   }
 
   getAllFoodAdditivesUrl(page: number, pageSize: number) {
-    const url = makeGetAllFoodAdditivesUrl(this.apiURL)
+    const url = makeUrlForGetAllFoodAdditives(this.apiURL)
     return `${url}?page=${page}&pageSize=${pageSize}`
   }
 
   getFinanceStockMarketGetByTickerUrl(ticker: string, page: number, pageSize: number) {
-    const url = makeFinanceStockMarketGetByTickerUrl(this.apiURL)
+    const url = makeUrlForFinanceStockMarketGetByTicker(this.apiURL)
     return `${url}?ticker=${ticker}&page=${page}&pageSize=${pageSize}`
   }
 }
 
-class FetchHttpClient extends AbstractHttpClient implements OrganicChemistryApi, FinanceStockMarketApi {
+class FetchHttpClient
+  extends AbstractHttpClient
+  implements OrganicChemistryApi, FinanceStockMarketApi, CompoundGraphApi
+{
   async getAllPubChemFoodAdditives(page: number, pageSize: number): Promise<FoodAdditiveSubstanceResponseDto> {
     const options = {
       method: "GET",
@@ -121,9 +138,41 @@ class FetchHttpClient extends AbstractHttpClient implements OrganicChemistryApi,
     const apiCall = async () => fetch(url, options)
     return executeFetchCatching(apiCall)
   }
+
+  doPubChemGraphGetCompoundDataByName(name: string, page: number, pageSize: number): Promise<ChemistryGraphResponse> {
+    const options = {
+      method: "GET",
+    }
+
+    const url = makeUrlForPubChemGraphGetAll({
+      baseUrl: this.apiURL,
+      page,
+      pageSize,
+      name,
+    })
+    const apiCall = async () => fetch(url, options)
+    return executeFetchCatching(apiCall)
+  }
+
+  doPubChemGraphGetAll(page: number, pageSize: number): Promise<ChemistryGraphResponse> {
+    const options = {
+      method: "GET",
+    }
+
+    const url = makeUrlForPubChemGraphGetAll({
+      baseUrl: this.apiURL,
+      page,
+      pageSize,
+    })
+    const apiCall = async () => fetch(url, options)
+    return executeFetchCatching(apiCall)
+  }
 }
 
-class AxiosHttpClient extends AbstractHttpClient implements OrganicChemistryApi, FinanceStockMarketApi {
+class AxiosHttpClient
+  extends AbstractHttpClient
+  implements OrganicChemistryApi, FinanceStockMarketApi, CompoundGraphApi
+{
   async getAllPubChemFoodAdditives(page: number, pageSize: number): Promise<FoodAdditiveSubstanceResponseDto> {
     const url = this.getAllFoodAdditivesUrl(page, pageSize)
     const response = await axios.get(url)
@@ -132,6 +181,27 @@ class AxiosHttpClient extends AbstractHttpClient implements OrganicChemistryApi,
 
   async getStockByTicker(ticker: string, page: number, pageSize: number): Promise<StocksResponseDto> {
     const url = this.getFinanceStockMarketGetByTickerUrl(ticker, page, pageSize)
+    const apiCall = async () => axios.get(url)
+    return executeAxiosCatching(apiCall)
+  }
+
+  doPubChemGraphGetAll(page: number, pageSize: number): Promise<ChemistryGraphResponse> {
+    const url = makeUrlForPubChemGraphGetAll({
+      baseUrl: this.apiURL,
+      page,
+      pageSize,
+    })
+    const apiCall = async () => axios.get(url)
+    return executeAxiosCatching(apiCall)
+  }
+
+  doPubChemGraphGetCompoundDataByName(name: string, page: number, pageSize: number): Promise<ChemistryGraphResponse> {
+    const url = makeUrlForPubChemGraphGetAll({
+      baseUrl: this.apiURL,
+      page,
+      pageSize,
+      name,
+    })
     const apiCall = async () => axios.get(url)
     return executeAxiosCatching(apiCall)
   }
