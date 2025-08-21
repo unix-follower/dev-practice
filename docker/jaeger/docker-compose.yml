@@ -1,0 +1,28 @@
+volumes:
+  jaeger-data:
+
+networks:
+  local-bridge:
+    external: true
+
+services:
+  jaeger:
+    image: jaegertracing/all-in-one
+    container_name: jaeger
+    hostname: jaeger
+    restart: "no"
+    networks:
+      local-bridge:
+        ipv4_address: 192.168.2.4
+    ports:
+      - "16686:16686"
+      # - "4317:4317"
+      - "4318:4318"
+      # - "5778:5778"
+      # - "9411:9411"
+      # - "14250:14250"
+      # - "14268:14268"
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+    volumes:
+      - jaeger-data:/tmp

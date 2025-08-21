@@ -18,7 +18,8 @@ import java.util.TreeSet;
 
 @Component
 @WritingConverter
-public class CompoundDataProjectionListToDtoConverter implements Converter<List<CompoundDataProjection>, ChemistryGraphResponse> {
+public class CompoundDataProjectionListToDtoConverter implements
+    Converter<List<CompoundDataProjection>, ChemistryGraphResponse> {
     private final ObjectMapper mapper;
 
     public CompoundDataProjectionListToDtoConverter(ObjectMapper mapper) {

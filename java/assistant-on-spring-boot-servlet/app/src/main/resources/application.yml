@@ -49,6 +49,103 @@ logbook:
   exclude:
     - /actuator/**
 
+otel:
+  instrumentation:
+    common:
+      db-statement-sanitizer:
+        enabled: true
+    jdbc:
+      enabled: true
+      statement-sanitizer:
+        enabled: true
+    logback-appender:
+      enabled: true
+    logback-mdc:
+      enabled: true
+    spring-web:
+      enabled: true
+    spring-webmvc:
+      enabled: true
+  sdk:
+    disabled: false
+  logs:
+    exporter: none
+  metrics:
+    exemplar:
+      filter: TRACE_BASED
+    exporter: otlp
+  traces:
+    sampler: parentbased_always_on
+    exporter: otlp
+  exporter:
+    otlp:
+      endpoint: http://192.168.105.8:4318
+      compression: gzip
+      timeout: 10000
+      metrics:
+        default:
+          histogram:
+            aggregation: EXPLICIT_BUCKET_HISTOGRAM
+        temporality:
+          preference: CUMULATIVE
+  blrp:
+    export:
+      timeout: 30000
+    max:
+      export:
+        batch:
+          size: 512
+      queue:
+        size: 2048
+    schedule:
+      delay: 1000
+  metric:
+    export:
+      interval: 60000
+  span:
+    link:
+      count:
+        limit: 128
+    event:
+      count:
+        limit: 128
+    attribute:
+      count:
+        limit: 128
+      value:
+        length:
+          limit: 0
+  bsp:
+    export:
+      timeout: 30000
+    max:
+      export:
+        batch:
+          size: 512
+      queue:
+        size: 2048
+    schedule:
+      delay: 5000
+  java:
+    exporter:
+      memory_mode: reusable_data
+      otlp:
+        retry:
+          disabled: false
+    metrics:
+      cardinality:
+        limit: 2000
+  attribute:
+    count:
+      limit: 128
+    value:
+      length:
+        limit: 0
+  propagators:
+    - tracecontext
+    - baggage
+    - jaeger
+
 app:
   cors:
     access-control-allow-origin-patterns: ${APP_CORS_ACCESS_CONTROL_ALLOW_ORIGIN_PATTERN:http://localhost:3000,http://localhost:4200}

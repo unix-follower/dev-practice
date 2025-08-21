@@ -53,7 +53,9 @@ public class AgGraph {
 
     @Override
     public boolean equals(Object o) {
-        if (!(o instanceof AgGraph agGraph)) return false;
+        if (!(o instanceof AgGraph agGraph)) {
+            return false;
+        }
         return Objects.equals(id, agGraph.id) && Objects.equals(name, agGraph.name);
     }
 
