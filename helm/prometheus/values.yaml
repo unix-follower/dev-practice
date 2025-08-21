@@ -1,0 +1,19 @@
+server:
+  ingress:
+    enabled: true
+    hosts:
+      - prometheus.observability.svc.cluster.local
+  service:
+    servicePort: 9000
+    externalIPs:
+      - 192.168.105.8
+
+serverFiles:
+  prometheus.yml:
+    scrape_configs:
+      - job_name: assistant-on-spring-boot-servlet-actuator
+        scrape_interval: 5s
+        metrics_path: /actuator/prometheus
+        static_configs:
+          - targets:
+              - 192.168.1.2:8080

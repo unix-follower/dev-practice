@@ -1,5 +1,6 @@
 package org.example.assistantonsbservlet.svc.chemistry;
 
+import io.opentelemetry.instrumentation.annotations.WithSpan;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.PersistenceUnit;
 import org.example.assistantonsbservlet.api.ChemistryGraphResponse;
@@ -28,6 +29,7 @@ public class PubChemGraphFacade implements PubChemGraphApiFacade {
     }
 
     @Override
+    @WithSpan(value = "PubChemGraphFacade.getAll")
     public ChemistryGraphResponse getAll(int page, int pageSize) {
         final int offset = (page - 1) * pageSize;
 

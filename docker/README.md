@@ -1,4 +1,4 @@
-```shell script
+```shell
 docker network create \
   --driver=bridge \
   --subnet=192.168.2.0/24 \
