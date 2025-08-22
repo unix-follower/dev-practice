@@ -3,21 +3,30 @@
   "version": "0.0.0",
   "private": true,
   "engines": {
-    "node": ">=18.20.7"
+    "node": ">=22.16.0"
   },
   "_moduleAliases": {
     "@": "build"
   },
   "scripts": {
     "build": "tsc -b",
-    "prod": "node ./build/server.js",
+    "prod": "node --require ./build/instrumentation.js ./build/server.js",
     "start-local": "npm run build && NODE_ENV=local npm run prod",
-    "format": "prettier --log-level warn --write '**/*.{js,cjs,jsx,ts,tsx,json,css,html}'",
+    "check-format": "prettier --log-level error --check '**/*.{js,jsx,ts,tsx,cjs,mjs,json,css,html}'",
+    "format": "prettier --log-level warn --write '**/*.{js,jsx,ts,tsx,cjs,mjs,json,css,html}'",
     "lint": "eslint --cache --cache-location ./node_modules/.cache/eslint ."
   },
   "dependencies": {
     "@langchain/core": "^0.3.42",
     "@langchain/mistralai": "^0.2.0",
+    "@opentelemetry/api": "^1.9.0",
+    "@opentelemetry/auto-instrumentations-node": "^0.62.1",
+    "@opentelemetry/exporter-metrics-otlp-grpc": "^0.203.0",
+    "@opentelemetry/exporter-prometheus": "^0.203.0",
+    "@opentelemetry/exporter-trace-otlp-grpc": "^0.203.0",
+    "@opentelemetry/sdk-metrics": "^2.0.1",
+    "@opentelemetry/sdk-node": "^0.203.0",
+    "@opentelemetry/sdk-trace-node": "^2.0.1",
     "cookie-parser": "~1.4.4",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",

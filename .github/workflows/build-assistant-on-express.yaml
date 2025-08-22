@@ -1,0 +1,52 @@
+name: Build assistant-on-express
+on:
+  pull_request:
+    paths:
+      - ts-backend/assistant-on-express/**
+    types:
+      - opened
+      - reopened
+      - synchronize
+
+env:
+  ACTIONS_STEP_DEBUG: true
+
+jobs:
+  build:
+    runs-on:
+      - ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ts-backend/assistant-on-express/package.json
+        
+      - name: Install dependencies
+        working-directory: ts-backend/assistant-on-express
+        shell: bash
+        run: npm ci
+
+      - name: Check code formatting
+        working-directory: ts-backend/assistant-on-express
+        shell: bash
+        run: npm run check-format
+
+      - name: Run ESLint
+        working-directory: ts-backend/assistant-on-express
+        shell: bash
+        run: npm run lint
+
+      # - name: Run tests
+      #   working-directory: ts-backend/assistant-on-express
+      #   shell: bash
+      #   run: npm run test
+
+      - name: Build
+        working-directory: ts-backend/assistant-on-express
+        shell: bash
+        run: npm run build

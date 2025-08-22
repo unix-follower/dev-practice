@@ -20,8 +20,7 @@ function createLangChainFacade() {
   return new MistralAILangChainFacade(model)
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-router.get("/api/v1/ml/mistralai/chat", async function (req: Request, res: Response, next: NextFunction) {
+router.get("/api/v1/ml/mistralai/chat", async function (req: Request, res: Response, _: NextFunction) {
   const langChainFacade = createLangChainFacade()
   let messageChunk
   if (req.query.useTemplate) {
@@ -39,7 +38,7 @@ router.get("/api/v1/ml/mistralai/chat", async function (req: Request, res: Respo
   res.send(messageChunk)
 })
 
-router.get("/api/v1/ml/mistralai/chat/streaming", async function (req: Request, res: Response, next: NextFunction) {
+router.get("/api/v1/ml/mistralai/chat/streaming", async function (_: Request, res: Response, __: NextFunction) {
   const langChainFacade = createLangChainFacade()
   try {
     const abortController = new AbortController()

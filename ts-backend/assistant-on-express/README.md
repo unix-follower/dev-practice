@@ -6,6 +6,10 @@ npm i
 ```shell
 npm run start
 ```
+### Observability
+```shell
+curl -v http://localhost:9464/metrics
+```
 ### Define variables
 ```shell
 export SERVER_URL=localhost:3000

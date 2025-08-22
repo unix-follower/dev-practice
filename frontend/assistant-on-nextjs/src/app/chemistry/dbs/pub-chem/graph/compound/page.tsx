@@ -39,9 +39,14 @@ export default async function Page({
   const [pageNumber, pageSizeNum] = parsePaginationParams(params)
 
   const client = new ApiHttpClient(clientSettings)
-  const compoundDataPromise: Promise<ElementDefinition[]> = client
-    .doPubChemGraphGetAll(pageNumber, pageSizeNum)
-    .then(mapGraphResponse)
+  let compoundDataPromise: Promise<ElementDefinition[]>
+  if (name) {
+    compoundDataPromise = client
+      .doPubChemGraphGetCompoundDataByName(name as string, pageNumber, pageSizeNum)
+      .then(mapGraphResponse)
+  } else {
+    compoundDataPromise = client.doPubChemGraphGetAll(pageNumber, pageSizeNum).then(mapGraphResponse)
+  }
 
   return (
     <Suspense fallback={<div>Loading...</div>}>
