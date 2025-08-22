@@ -13,7 +13,7 @@
     "prod": "node --require ./build/instrumentation.js ./build/server.js",
     "start-local": "npm run build && NODE_ENV=local npm run prod",
     "check-format": "prettier --log-level error --check '**/*.{js,jsx,ts,tsx,cjs,mjs,json,css,html}'",
-    "format": "prettier --log-level warn --write '**/*.{js,cjs,jsx,ts,tsx,json,css,html}'",
+    "format": "prettier --log-level warn --write '**/*.{js,jsx,ts,tsx,cjs,mjs,json,css,html}'",
     "lint": "eslint --cache --cache-location ./node_modules/.cache/eslint ."
   },
   "dependencies": {
