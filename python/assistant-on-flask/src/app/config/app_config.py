@@ -1,9 +1,10 @@
-import os
 import dataclasses
+import os
+
 import keras
-# pylint: disable=import-error
 from keras.models import load_model
-from app.util import constants
+
+from src.app.util import constants
 
 _LSTM_MODEL_PATH = os.getenv("APP_LSTM_MODEL_PATH")
 _GRU_MODEL_PATH = os.getenv("APP_GRU_MODEL_PATH")
@@ -25,7 +26,7 @@ def _get_lstm_model():
     """
     Lazily init LSTM
     """
-    global _LSTM_MODEL  # pylint: disable=global-statement
+    global _LSTM_MODEL
     if _LSTM_MODEL is None:
         _LSTM_MODEL = load_model(_LSTM_MODEL_PATH)
     return _LSTM_MODEL
@@ -35,7 +36,7 @@ def _get_gru_model():
     """
     Lazily init GRU
     """
-    global _GRU_MODEL  # pylint: disable=global-statement
+    global _GRU_MODEL
     if _GRU_MODEL is None:
         _GRU_MODEL = load_model(_GRU_MODEL_PATH)
     return _GRU_MODEL

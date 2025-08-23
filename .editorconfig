@@ -19,6 +19,9 @@ ij_wrap_on_typing = false
 [{*.java}]
 ij_continuation_indent_size = 4
 
+[Makefile]
+indent_style = tab
+
 [{*.js,*.jsx,*.ts,*.tsx}]
 indent_size = 2
 tab_width = 2

@@ -1,8 +1,10 @@
-from typing import Callable
+from collections.abc import Callable
+
 import numpy as np
 from flask_healthz import HealthError
-from app.config import app_config
-from app.util import constants
+
+from src.app.config import app_config
+from src.app.util import constants
 
 
 def liveness():

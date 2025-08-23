@@ -1,14 +1,10 @@
-"""
-REST API for making price predictions.
-"""
-
 from logging import getLogger
 
 import numpy as np
 from flask import Blueprint, json, request
 
-from app.ml import predictor
-from app.util import util
+from src.app.ml import predictor
+from src.app.util import util
 
 predict_api_v1 = Blueprint("predict_api_v1", __name__)
 

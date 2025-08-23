@@ -5,12 +5,11 @@ from logging.config import dictConfig
 
 _current_working_directory = os.getcwd()
 _log_config_file_path = pathlib.Path(
-    f"{_current_working_directory}/app/config/log-config.json"
+    f"{_current_working_directory}/src/app/config/log-config.json"
 )
 with _log_config_file_path.open(encoding="utf-8") as file:
     dictConfig(json.load(file))
 
-# pylint: disable=invalid-name
 loglevel = "DEBUG"
 workers = 2
 timeout = 120
