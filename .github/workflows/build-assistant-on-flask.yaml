@@ -45,7 +45,7 @@ jobs:
         shell: bash
         run: make lint
 
-      - name: Run checks
+      - name: Build
         working-directory: python/assistant-on-flask/
         shell: bash
         run: uv build

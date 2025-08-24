@@ -12,10 +12,10 @@ on:
       python-version:
         description: Desired python version
         required: false
-        default: "3.13.2"
+        default: "3.12.11"
 
 env:
-  PYTHON_VERSION: ${{ inputs.python-version || '3.13.2' }}
+  PYTHON_VERSION: ${{ inputs.python-version || '3.12.11' }}
 
 jobs:
   build:
@@ -36,11 +36,15 @@ jobs:
         working-directory: python/assistant-on-fastapi
         shell: bash
         run: |
-          python -m pip install --upgrade pip
-          pip install pipenv
-          pipenv sync --dev
+          pip install uv
+          make i-dev
 
       - name: Run checks
         working-directory: python/assistant-on-fastapi
         shell: bash
-        run: pipenv run lint
+        run: make lint
+
+      - name: Build
+        working-directory: python/assistant-on-fastapi
+        shell: bash
+        run: uv build

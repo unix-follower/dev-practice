@@ -16,7 +16,7 @@ ij_smart_tabs = false
 ij_visual_guides = 
 ij_wrap_on_typing = false
 
-[{*.java}]
+[{*.java,*.py}]
 ij_continuation_indent_size = 4
 
 [Makefile]
