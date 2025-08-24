@@ -1,7 +1,3 @@
-### Install pipenv
-```shell
-make setup
-```
 ### Install dependencies
 ```shell
 make i
@@ -12,7 +8,8 @@ make run
 ```
 ### Define variables
 ```shell
-export SERVER_URL="$(minikube ip):8000"
+export SERVER_URL=http://localhost:8000
+#export SERVER_URL="$(minikube ip):8000"
 ```
 ### Health check
 ```shell
@@ -39,17 +36,7 @@ docker build -t assistant-on-flask:latest .
 ```
 #### Run tensorflow in interactive mode
 ```shell
-docker run -it --rm --name tensorflow tensorflow/tensorflow:2.15.0 /bin/bash
-```
-#### Run assistant-on-flask in interactive mode and override entry point
-```shell
-docker run -it --rm --name assistant-on-flask \
-  --entrypoint /bin/bash \
-  assistant-on-flask:latest
-```
-#### Create network
-```shell
-docker network create assistant-on-flask-net
+docker run -it --rm --name tensorflow tensorflow/tensorflow:2.16.2 /bin/bash
 ```
 #### Run assistant-on-flask
 ```shell
@@ -57,7 +44,7 @@ docker run \
   --rm \
   --name assistant-on-flask \
   --hostname assistant-on-flask \
-  --network assistant-on-flask-net \
+  --network local-bridge \
   --publish 8000:8000 \
   assistant-on-flask:latest
 ```

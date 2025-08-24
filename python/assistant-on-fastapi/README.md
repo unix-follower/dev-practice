@@ -1,24 +1,8 @@
-# Server based on FastAPI
+# Assistant on FastAPI
 ### Run locally
-To run the application in dev mode
+To run the application in dev mode with plain text logging mode (default is json)
 ```shell
-fastapi dev app/main.py
-```
-To run with plain text logging mode (default is json)
-```shell
-export APP_LOG_FORMAT_MODE=text
-export DEBUG_SQL=true
-fastapi dev app/main.py
-```
-### Run in production
-Execute the following command
-```shell
-uvicorn app.main:app \
-  --host 0.0.0.0 --port 8000 \
-  --log-config app/config/logging.json \
-  --workers 4 \
-  --access-log \
-  --timeout-graceful-shutdown 30
+make run-dev
 ```
 ## Define variables
 ```shell
@@ -29,19 +13,6 @@ To verify it is running
 curl -v $SERVER_URL/health/liveness
 curl -v $SERVER_URL/health/readiness
 curl -v $SERVER_URL/version
-```
-## Unit testing
-To run all tests
-```shell
-pipenv run test
-```
-To run all tests with code coverage
-```shell
-pipenv run coverage
-```
-To create HTML code coverage report
-```shell
-pipenv run coverage-html
 ```
 ## OpenAPI
 ```shell
@@ -60,5 +31,5 @@ curl -v $SERVER_URL/api/v1/chemistry/ml/food/predict \
       "description": "is not specified",
       "category": "unknown"
   }
-}' | jq > __tmp-response.json
+}' | jq
 ```
