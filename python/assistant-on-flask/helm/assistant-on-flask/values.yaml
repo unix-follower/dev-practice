@@ -19,7 +19,7 @@ securityContext: {}
 
 service:
   type: NodePort
-  port: 8000
+  port: 5000
 
 ingress:
   enabled: true

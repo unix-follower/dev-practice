@@ -2,14 +2,13 @@
 ```shell
 make i
 ```
-### Start server in debug mode
+### Start server in dev mode
 ```shell
-make run
+make run-dev
 ```
 ### Define variables
 ```shell
-export SERVER_URL=http://localhost:8000
-#export SERVER_URL="$(minikube ip):8000"
+export SERVER_URL=http://localhost:5000
 ```
 ### Health check
 ```shell
@@ -45,7 +44,7 @@ docker run \
   --name assistant-on-flask \
   --hostname assistant-on-flask \
   --network local-bridge \
-  --publish 8000:8000 \
+  --publish 5000:5000 \
   assistant-on-flask:latest
 ```
 #### Connect to running container 

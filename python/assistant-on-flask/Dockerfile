@@ -15,6 +15,6 @@ COPY src ./src
 ENV APP_LSTM_MODEL_PATH=/opt/app/models/lstm_model.keras
 ENV APP_GRU_MODEL_PATH=/opt/app/models/gru_model.keras
 
-EXPOSE 8000
+EXPOSE 5000
 
 CMD ["uv", "run", "gunicorn", "--config", "./src/app/config/gunicorn.conf.py", "src.app.app:app"]
