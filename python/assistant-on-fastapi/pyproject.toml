@@ -6,6 +6,10 @@ requires-python = ">=3.12"
 dependencies = [
     "fastapi-healthchecks>=1.1.0",
     "fastapi[standard]>=0.116.1",
+    "opentelemetry-distro>=0.57b0",
+    "opentelemetry-exporter-otlp>=1.36.0",
+    "opentelemetry-instrumentation>=0.57b0",
+    "pip>=25.2",
     "psycopg>=3.2.9",
     "pydantic-settings>=2.10.1",
     "python-dotenv>=1.1.1",

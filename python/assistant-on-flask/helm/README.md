@@ -22,7 +22,7 @@ kubectl events -n assistant assistant-on-flask-<ID>
 ```
 ### Verify external access
 ```shell
-nc -vz $(minikube ip) 8000
+nc -vz $(minikube ip) 5000
 ```
 ### Stop finance predictor
 ```shell

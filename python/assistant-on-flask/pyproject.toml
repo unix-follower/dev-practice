@@ -11,6 +11,10 @@ dependencies = [
     "rich>=14.1.0",
     "numpy==1.26.4",
     "scikit-learn>=1.7.1",
+    "opentelemetry-distro>=0.57b0",
+    "pip>=25.2",
+    "opentelemetry-instrumentation>=0.57b0",
+    "opentelemetry-exporter-otlp>=1.36.0",
 ]
 
 [dependency-groups]
