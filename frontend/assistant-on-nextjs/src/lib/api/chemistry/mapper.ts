@@ -7,6 +7,13 @@ export function mapGraphResponse(graphResponse: ChemistryGraphResponse) {
     data: {
       id: node.id,
       label: node.label,
+      position: { x: 100, y: 100 },
+      renderedPosition: { x: 200, y: 200 },
+      selected: false,
+      selectable: true,
+      locked: false,
+      grabbable: true,
+      pannable: false,
       ...node.properties,
     },
   }))

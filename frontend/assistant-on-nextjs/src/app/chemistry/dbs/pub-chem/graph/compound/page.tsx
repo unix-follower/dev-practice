@@ -2,25 +2,37 @@ import React, { use, Suspense } from "react"
 import { type ElementDefinition } from "cytoscape"
 import ApiHttpClient, { ApiHttpClientSettings, ApiHttpClientType } from "@/lib/api/ApiHttpClient"
 import { getBackendURL } from "@/config/config"
-import CompoundGraph from "@/app/components/chemistry/CompoundGraph"
-import CompoundGraphWithRTK, { CompoundGraphListWithRTK } from "@/app/components/chemistry/CompoundGraphWithRTK"
+import CompoundGraphViewer from "@/app/chemistry/dbs/pub-chem/graph/compound/_components/CompoundGraphViewer"
+import CompoundGraphWithRTK, {
+  CompoundGraphListWithRTK,
+} from "@/app/chemistry/dbs/pub-chem/graph/compound/_components/CompoundGraphWithRTK"
 import { parsePaginationParams } from "@/app/components/utils/urlUtils"
 import { mapGraphResponse } from "@/lib/api/chemistry/mapper"
+import { getI18nDictionary } from "@/app/[lang]/dictionaries"
 
 export default async function Page({
   searchParams,
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }) {
-  const { mode, name, page, pageSize } = await searchParams
+  const { mode, name, page, pageSize, lang } = await searchParams
 
   const params = { page: (page as string) || null, pageSize: (pageSize as string) || null }
+  const translations = await getI18nDictionary((lang as string) || "en")
 
   if (mode === "rtk") {
     if (name) {
-      return <CompoundGraphWithRTK />
+      return (
+        <ViewerLayout>
+          <CompoundGraphWithRTK translations={translations} />
+        </ViewerLayout>
+      )
     }
-    return <CompoundGraphListWithRTK />
+    return (
+      <ViewerLayout>
+        <CompoundGraphListWithRTK translations={translations} />
+      </ViewerLayout>
+    )
   }
 
   let clientSettings: ApiHttpClientSettings
@@ -49,17 +61,33 @@ export default async function Page({
   }
 
   return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <CompoundGraphProxy compoundDataPromise={compoundDataPromise} />
-    </Suspense>
+    <ViewerLayout>
+      <Suspense fallback={<div>Loading...</div>}>
+        <AwaitGraphData translations={translations} compoundDataPromise={compoundDataPromise} />
+      </Suspense>
+    </ViewerLayout>
   )
 }
 
-interface CompoundGraphProxyProps {
-  compoundDataPromise: Promise<ElementDefinition[]>
+function ViewerLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode
+}>) {
+  return (
+    <div id="compound-graph-viewer" className="grid grid-cols-[12%_88%] grid-rows-1 gap-4">
+      {children}
+    </div>
+  )
 }
 
-function CompoundGraphProxy({ compoundDataPromise }: CompoundGraphProxyProps) {
+interface AwaitGraphDataProps {
+  compoundDataPromise: Promise<ElementDefinition[]>
+  translations: Record<string, string | Record<string, string>>
+}
+
+function AwaitGraphData({ translations, compoundDataPromise }: AwaitGraphDataProps) {
   const compoundData = use(compoundDataPromise)
-  return <CompoundGraph compoundData={compoundData} />
+
+  return <CompoundGraphViewer translations={translations} compoundData={compoundData} />
 }

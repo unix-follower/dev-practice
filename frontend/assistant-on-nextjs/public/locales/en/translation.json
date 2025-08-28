@@ -39,6 +39,17 @@
     "dataSourceCategory": "Data source category",
     "taggedByPubChem": "Tagged by PubChem"
   },
+  "chemistryPubChemGraphCompoundPage": {
+    "graphManipulation": "Graph manipulation",
+    "add": "Add",
+    "addNode": "Add node",
+    "data": "Data",
+    "events": "Events",
+    "viewportManipulation": "Viewport manipulation",
+    "nodeId": "Node id",
+    "nodeLabel": "Node label",
+    "cancel": "Cancel"
+  },
   "financeStockMarketPage": {
     "ticker": "Ticker",
     "date": "Date",

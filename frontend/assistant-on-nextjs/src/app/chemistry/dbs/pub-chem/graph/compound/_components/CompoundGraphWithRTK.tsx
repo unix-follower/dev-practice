@@ -5,9 +5,13 @@ import { useSearchParams } from "next/navigation"
 import { parsePaginationParams } from "@/app/components/utils/urlUtils"
 import { useGetAllCompoundsQuery, useGetCompoundDataByNameQuery } from "@/lib/features/chemistry/pubChemGraphSlice"
 import { mapGraphResponse } from "@/lib/api/chemistry/mapper"
-import CompoundGraph from "@/app/components/chemistry/CompoundGraph"
+import CompoundGraphViewer from "./CompoundGraphViewer"
 
-export default function CompoundGraphWithRTK() {
+interface CompoundGraphWithRTKProps {
+  translations: Record<string, string | Record<string, string>>
+}
+
+export default function CompoundGraphWithRTK({ translations }: CompoundGraphWithRTKProps) {
   const searchParams = useSearchParams()
 
   const [page, pageSize] = parsePaginationParams(searchParams)
@@ -16,15 +20,15 @@ export default function CompoundGraphWithRTK() {
 
   if (!data) return null
   const compoundData = mapGraphResponse(data)
-  return <CompoundGraph compoundData={compoundData} />
+  return <CompoundGraphViewer translations={translations} compoundData={compoundData} />
 }
 
-export function CompoundGraphListWithRTK() {
+export function CompoundGraphListWithRTK({ translations }: CompoundGraphWithRTKProps) {
   const searchParams = useSearchParams()
   const [page, pageSize] = parsePaginationParams(searchParams)
 
   const { data } = useGetAllCompoundsQuery({ page, pageSize })
   if (!data) return null
   const compoundData = mapGraphResponse(data)
-  return <CompoundGraph compoundData={compoundData} />
+  return <CompoundGraphViewer translations={translations} compoundData={compoundData} />
 }
