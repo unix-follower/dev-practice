@@ -1,19 +1,26 @@
 "use client"
 
-import React, { useEffect, useRef } from "react"
+import React, { Suspense, useEffect, useRef, useState } from "react"
 import cytoscape, { type ElementDefinition } from "cytoscape"
+import CytoscapeContext from "@/lib/chemistryHooks"
+import ToolPanel from "./ToolPanel"
+import i18n from "@/config/i18n"
 
-interface CompoundGraphProps {
+interface CompoundGraphViewerProps {
+  compoundDataPromise?: Promise<ElementDefinition[]>
   compoundData: ElementDefinition[]
+  translations: Record<string, string | Record<string, string>>
 }
 
-export default function CompoundGraph({ compoundData }: CompoundGraphProps) {
-  const cyRef = useRef(null)
+export default function CompoundGraphViewer({ translations, compoundData }: CompoundGraphViewerProps) {
+  const cyContainerRef = useRef<HTMLDivElement>(null)
+  const [cyInstance, setCyInstance] = useState<cytoscape.Core | null>(null)
 
   useEffect(() => {
     const cy = cytoscape({
-      container: cyRef.current,
+      container: cyContainerRef.current,
       elements: compoundData,
+      layout: { name: "grid" },
       style: [
         {
           selector: "node[label='Element']",
@@ -64,8 +71,21 @@ export default function CompoundGraph({ compoundData }: CompoundGraphProps) {
       console.log("Node:", node.data())
     })
 
+    setCyInstance(cy)
+
     return () => cy.destroy()
   }, [compoundData])
 
-  return <div ref={cyRef} style={{ width: "100%", height: "500px" }} />
+  useEffect(() => {
+    i18n.addResourceBundle("en", "translation", translations, true, true)
+  }, [translations])
+
+  return (
+    <CytoscapeContext value={cyInstance}>
+      <Suspense fallback={<div>Loading Tool Panel...</div>}>
+        <ToolPanel />
+      </Suspense>
+      <div ref={cyContainerRef} style={{ width: "100%", height: "500px" }} />
+    </CytoscapeContext>
+  )
 }

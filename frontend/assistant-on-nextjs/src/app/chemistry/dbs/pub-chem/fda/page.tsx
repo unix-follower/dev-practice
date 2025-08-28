@@ -1,7 +1,9 @@
 import React, { Suspense } from "react"
 import ApiHttpClient, { ApiHttpClientSettings, ApiHttpClientType } from "@/lib/api/ApiHttpClient"
 import { getBackendURL } from "@/config/config"
-import PubChemFdaMUIDataGrid, { PubChemFdaMUIDataGridWithRTK } from "@/app/components/chemistry/PubChemFdaMUIDataGrid"
+import PubChemFdaMUIDataGrid, {
+  PubChemFdaMUIDataGridWithRTK,
+} from "@/app/chemistry/dbs/pub-chem/fda/_components/PubChemFdaMUIDataGrid"
 import { parsePaginationParams } from "@/app/components/utils/urlUtils"
 import { getI18nDictionary } from "@/app/[lang]/dictionaries"
 
