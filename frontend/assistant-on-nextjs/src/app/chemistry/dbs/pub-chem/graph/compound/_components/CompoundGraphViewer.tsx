@@ -1,10 +1,12 @@
 "use client"
 
-import React, { Suspense, useEffect, useRef, useState } from "react"
-import cytoscape, { type ElementDefinition } from "cytoscape"
+import React, { Suspense, useCallback, useEffect, useRef, useState } from "react"
+import cytoscape, { type ElementDefinition, NodeSingular } from "cytoscape"
 import CytoscapeContext from "@/lib/chemistryHooks"
 import ToolPanel from "./ToolPanel"
 import i18n from "@/config/i18n"
+import { useAppDispatch, useAppSelector } from "@/lib/hooks"
+import { getTappedNodeId, setTappedNodeId } from "@/lib/features/chemistry/compoundGraphViewerSlice"
 
 interface CompoundGraphViewerProps {
   compoundDataPromise?: Promise<ElementDefinition[]>
@@ -12,9 +14,36 @@ interface CompoundGraphViewerProps {
   translations: Record<string, string | Record<string, string>>
 }
 
+const ELEMENT_COLOR = "#0074D9"
+const COMPOUND_COLOR = "#FF851B"
+
+function getNodeColor(data: cytoscape.NodeDataDefinition) {
+  if (data.label === "Element") {
+    return ELEMENT_COLOR
+  }
+  return COMPOUND_COLOR
+}
+
 export default function CompoundGraphViewer({ translations, compoundData }: CompoundGraphViewerProps) {
   const cyContainerRef = useRef<HTMLDivElement>(null)
   const [cyInstance, setCyInstance] = useState<cytoscape.Core | null>(null)
+  const dispatch = useAppDispatch()
+  const tappedNodeId = useAppSelector(getTappedNodeId)
+
+  const handleTapNode = useCallback(
+    (event: cytoscape.EventObject) => {
+      const node = event.target as cytoscape.SingularData as NodeSingular
+      console.log("Node clicked:", node)
+      if (tappedNodeId && tappedNodeId === node.id()) {
+        node.style({ "background-color": getNodeColor(node.data()) })
+        dispatch(setTappedNodeId(null))
+      } else {
+        node.style("background-color", "black")
+        dispatch(setTappedNodeId(node.id()))
+      }
+    },
+    [dispatch, tappedNodeId],
+  )
 
   useEffect(() => {
     const cy = cytoscape({
@@ -25,7 +54,7 @@ export default function CompoundGraphViewer({ translations, compoundData }: Comp
         {
           selector: "node[label='Element']",
           style: {
-            "background-color": "#0074D9",
+            "background-color": ELEMENT_COLOR,
             "text-wrap": "wrap",
             "font-size": "12px",
             color: "#FFFFFF",
@@ -34,7 +63,7 @@ export default function CompoundGraphViewer({ translations, compoundData }: Comp
         {
           selector: "node[label='Compound']",
           style: {
-            "background-color": "#FF851B",
+            "background-color": COMPOUND_COLOR,
             "text-wrap": "wrap",
             "font-size": "12px",
             color: "#FFFFFF",
@@ -56,11 +85,6 @@ export default function CompoundGraphViewer({ translations, compoundData }: Comp
       ],
     })
 
-    cy.on("tap", "node", (event) => {
-      const node = event.target
-      console.log("Node clicked:", node.data())
-    })
-
     cy.on("tap", "edge", (event) => {
       const edge = event.target
       console.log("Edge clicked:", edge.data())
@@ -75,6 +99,12 @@ export default function CompoundGraphViewer({ translations, compoundData }: Comp
 
     return () => cy.destroy()
   }, [compoundData])
+
+  useEffect(() => {
+    if (cyInstance) {
+      cyInstance.on("tap", "node", handleTapNode)
+    }
+  }, [cyInstance, handleTapNode])
 
   useEffect(() => {
     i18n.addResourceBundle("en", "translation", translations, true, true)

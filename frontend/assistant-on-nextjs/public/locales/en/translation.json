@@ -48,7 +48,13 @@
     "viewportManipulation": "Viewport manipulation",
     "nodeId": "Node id",
     "nodeLabel": "Node label",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "remove": "Remove",
+    "removeNode": "Remove node",
+    "selector": "selector",
+    "examples": "Examples:",
+    "removeCompoundsByLblDescription": "Remove all compounds",
+    "removeElementByLblDescription": "Remove all elements"
   },
   "financeStockMarketPage": {
     "ticker": "Ticker",
