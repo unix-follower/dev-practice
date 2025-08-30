@@ -50,10 +50,12 @@ export default function RemoveNodeDraggableDialog() {
           <span>[id = &#34;1125899906842627&#34;]</span>
         </p>
         <p>
-          <span>[label *= &#34;Compound&#34;]</span> - {t("chemistryPubChemGraphCompoundPage.removeCompoundsByLblDescription")}
+          <span>[label *= &#34;Compound&#34;]</span> -{" "}
+          {t("chemistryPubChemGraphCompoundPage.removeCompoundsByLblDescription")}
         </p>
         <p>
-          <span>[label *= &#34;Element&#34;]</span> - {t("chemistryPubChemGraphCompoundPage.removeElementByLblDescription")}
+          <span>[label *= &#34;Element&#34;]</span> -{" "}
+          {t("chemistryPubChemGraphCompoundPage.removeElementByLblDescription")}
         </p>
         <form onSubmit={handleSubmit} id="removeNodeForm">
           <TextField

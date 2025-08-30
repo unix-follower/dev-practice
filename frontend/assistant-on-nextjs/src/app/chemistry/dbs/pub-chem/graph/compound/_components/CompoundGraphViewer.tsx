@@ -38,7 +38,8 @@ export default function CompoundGraphViewer({ translations, compoundData }: Comp
         node.style("background-color", getNodeColor(node.data()))
         dispatch(setTappedNodeId(null))
       } else {
-        const prevTappedNode = cyInstance?.nodes()
+        const prevTappedNode = cyInstance
+          ?.nodes()
           .filter((ele) => ele.id() == tappedNodeId)
           .first()
         if (prevTappedNode) {
