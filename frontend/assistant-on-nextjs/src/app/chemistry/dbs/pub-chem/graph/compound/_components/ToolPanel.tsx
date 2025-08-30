@@ -1,17 +1,41 @@
 import React from "react"
 import { useTranslation } from "react-i18next"
 import { useAppDispatch, useAppSelector } from "@/lib/hooks"
-import { getIsAddElementDialogOpen, setIsAddElementDialogOpen } from "@/lib/features/chemistry/compoundGraphViewerSlice"
+import {
+  getIsAddElementDialogOpened,
+  getIsRemoveElementDialogOpened,
+  getTappedNodeId,
+  setIsAddElementDialogOpened,
+  setIsRemoveElementDialogOpened,
+  setTappedNodeId,
+} from "@/lib/features/chemistry/compoundGraphViewerSlice"
 import Button from "@mui/material/Button"
-import DraggableDialog from "./DraggableDialog"
+import AddNodeDraggableDialog from "./AddNodeDraggableDialog"
+import RemoveNodeDraggableDialog from "./RemoveNodeDraggableDialog"
+import { useCytoscape } from "@/lib/chemistryHooks"
 
 export default function ToolPanel() {
-  const dispatch = useAppDispatch()
-  const isAddElementDialogOpen = useAppSelector(getIsAddElementDialogOpen)
   const { t } = useTranslation()
+  const cy = useCytoscape()
+  const dispatch = useAppDispatch()
+  const isAddElementDialogOpened = useAppSelector(getIsAddElementDialogOpened)
+  const isRemoveElementDialogOpened = useAppSelector(getIsRemoveElementDialogOpened)
+  const tappedNodeId = useAppSelector(getTappedNodeId)
 
-  function handleAddElementClick() {
-    dispatch(setIsAddElementDialogOpen(true))
+  function handleAddNodeClick() {
+    dispatch(setIsAddElementDialogOpened(true))
+  }
+
+  function handleRemoveNodeClick() {
+    if (tappedNodeId) {
+      cy?.nodes()
+        .filter((ele) => ele.id() == tappedNodeId)
+        .first()
+        .remove()
+      dispatch(setTappedNodeId(null))
+      return
+    }
+    dispatch(setIsRemoveElementDialogOpened(true))
   }
 
   return (
@@ -19,10 +43,16 @@ export default function ToolPanel() {
       <div>
         <span>{t("chemistryPubChemGraphCompoundPage.graphManipulation")}</span>
         <div>
-          <Button variant="outlined" onClick={handleAddElementClick}>
+          <Button variant="outlined" onClick={handleAddNodeClick}>
             {t("chemistryPubChemGraphCompoundPage.add")}
           </Button>
-          {isAddElementDialogOpen && <DraggableDialog />}
+          {isAddElementDialogOpened && <AddNodeDraggableDialog />}
+        </div>
+        <div>
+          <Button variant="outlined" onClick={handleRemoveNodeClick}>
+            {t("chemistryPubChemGraphCompoundPage.remove")}
+          </Button>
+          {isRemoveElementDialogOpened && <RemoveNodeDraggableDialog />}
         </div>
       </div>
       <div>

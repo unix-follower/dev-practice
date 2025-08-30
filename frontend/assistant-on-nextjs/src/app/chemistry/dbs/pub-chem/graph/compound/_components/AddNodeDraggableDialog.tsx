@@ -1,6 +1,9 @@
 import { useCytoscape } from "@/lib/chemistryHooks"
 import { useAppDispatch, useAppSelector } from "@/lib/hooks"
-import { getIsAddElementDialogOpen, setIsAddElementDialogOpen } from "@/lib/features/chemistry/compoundGraphViewerSlice"
+import {
+  getIsAddElementDialogOpened,
+  setIsAddElementDialogOpened,
+} from "@/lib/features/chemistry/compoundGraphViewerSlice"
 import React from "react"
 import Dialog from "@mui/material/Dialog"
 import DialogTitle from "@mui/material/DialogTitle"
@@ -8,36 +11,22 @@ import DialogContent from "@mui/material/DialogContent"
 import TextField from "@mui/material/TextField"
 import DialogActions from "@mui/material/DialogActions"
 import Button from "@mui/material/Button"
-import Paper, { PaperProps } from "@mui/material/Paper"
-import Draggable from "react-draggable"
 import { useTranslation } from "react-i18next"
-
-function PaperComponent(props: PaperProps) {
-  const nodeRef = React.useRef<HTMLDivElement>(null)
-  return (
-    <Draggable
-      nodeRef={nodeRef as React.RefObject<HTMLDivElement>}
-      handle="#draggable-dialog-title"
-      cancel={'[class*="MuiDialogContent-root"]'}
-    >
-      <Paper {...props} ref={nodeRef} />
-    </Draggable>
-  )
-}
+import PaperComponent from "./PaperComponent"
 
 const ID_FIELD = "id"
 const LABEL_FIELD = "label"
 const X_FIELD = "x"
 const Y_FIELD = "y"
 
-export default function DraggableDialog() {
+export default function AddNodeDraggableDialog() {
   const cy = useCytoscape()
   const dispatch = useAppDispatch()
-  const open = useAppSelector(getIsAddElementDialogOpen)
+  const open = useAppSelector(getIsAddElementDialogOpened)
   const { t } = useTranslation()
 
   function handleClose() {
-    dispatch(setIsAddElementDialogOpen(false))
+    dispatch(setIsAddElementDialogOpened(false))
   }
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
