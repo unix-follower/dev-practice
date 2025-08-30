@@ -18,10 +18,10 @@ const ELEMENT_COLOR = "#0074D9"
 const COMPOUND_COLOR = "#FF851B"
 
 function getNodeColor(data: cytoscape.NodeDataDefinition) {
-  if (data.label === "Element") {
-    return ELEMENT_COLOR
+  if (data && data.label === "Compound") {
+    return COMPOUND_COLOR
   }
-  return COMPOUND_COLOR
+  return ELEMENT_COLOR
 }
 
 export default function CompoundGraphViewer({ translations, compoundData }: CompoundGraphViewerProps) {
@@ -35,14 +35,21 @@ export default function CompoundGraphViewer({ translations, compoundData }: Comp
       const node = event.target as cytoscape.SingularData as NodeSingular
       console.log("Node clicked:", node)
       if (tappedNodeId && tappedNodeId === node.id()) {
-        node.style({ "background-color": getNodeColor(node.data()) })
+        node.style("background-color", getNodeColor(node.data()))
         dispatch(setTappedNodeId(null))
       } else {
+        const prevTappedNode = cyInstance?.nodes()
+          .filter((ele) => ele.id() == tappedNodeId)
+          .first()
+        if (prevTappedNode) {
+          prevTappedNode.style("background-color", getNodeColor(prevTappedNode.data()))
+        }
+
         node.style("background-color", "black")
         dispatch(setTappedNodeId(node.id()))
       }
     },
-    [dispatch, tappedNodeId],
+    [dispatch, cyInstance, tappedNodeId],
   )
 
   useEffect(() => {

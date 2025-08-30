@@ -32,10 +32,10 @@ export default function ToolPanel() {
         .filter((ele) => ele.id() == tappedNodeId)
         .first()
         .remove()
+      dispatch(setTappedNodeId(null))
       return
     }
     dispatch(setIsRemoveElementDialogOpened(true))
-    dispatch(setTappedNodeId(null))
   }
 
   return (
