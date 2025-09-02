@@ -25,6 +25,8 @@
     "@opentelemetry/api-logs": "^0.57.2",
     "@opentelemetry/instrumentation": "^0.57.2",
     "@opentelemetry/sdk-logs": "^0.57.2",
+    "@react-three/drei": "^10.7.4",
+    "@react-three/fiber": "^9.3.0",
     "@reduxjs/toolkit": "^2.8.2",
     "@vercel/otel": "^1.13.0",
     "axios": "^1.11.0",
@@ -32,12 +34,13 @@
     "i18next": "^25.3.2",
     "i18next-browser-languagedetector": "^8.2.0",
     "i18next-http-backend": "^3.0.2",
-    "next": "15.3.5",
+    "next": "^15.5.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-draggable": "^4.5.0",
     "react-i18next": "^15.6.0",
-    "react-redux": "^9.2.0"
+    "react-redux": "^9.2.0",
+    "three": "^0.179.1"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

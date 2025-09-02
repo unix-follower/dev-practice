@@ -3,7 +3,7 @@ package org.example.assistantonsbservlet.svc.chemistry;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.EntityTransaction;
-import org.example.assistantonsbservlet.api.chemistry.organic.dbs.pubchem.fda.model.FoodAdditiveSubstanceResponseDto;
+import org.example.assistantonsbservlet.api.chemistry.model.FoodAdditiveSubstanceResponseDto;
 import org.example.assistantonsbservlet.convert.FoodAdditiveSubstanceToDtoListConverter;
 import org.example.db.pubchem.fda.repo.FoodAdditiveSubstanceRepository;
 import org.junit.jupiter.api.AfterEach;

@@ -22,13 +22,12 @@ dependencies {
     implementation "org.springframework.boot:spring-boot-starter-security"
     implementation "org.springframework.boot:spring-boot-starter-web"
     implementation "io.micrometer:micrometer-tracing-bridge-brave"
-    implementation "io.zipkin.reporter2:zipkin-reporter-brave"
     implementation "org.liquibase:liquibase-core"
     implementation "org.springframework.cloud:spring-cloud-starter-circuitbreaker-resilience4j"
     implementation "org.springframework.cloud:spring-cloud-starter-config"
     // https://mvnrepository.com/artifact/org.zalando/logbook-spring-boot-starter
-    implementation "org.zalando:logbook-spring-boot-starter:3.12.2"
-    implementation "org.zalando:logbook-servlet:3.12.2:javax"
+    implementation "org.zalando:logbook-spring-boot-starter:${zalandoLogbookVersion}"
+    implementation "org.zalando:logbook-servlet:${zalandoLogbookVersion}:javax"
     // https://mvnrepository.com/artifact/net.logstash.logback/logstash-logback-encoder
     implementation "net.logstash.logback:logstash-logback-encoder:8.1"
     developmentOnly "org.springframework.boot:spring-boot-devtools"
@@ -37,6 +36,8 @@ dependencies {
     implementation("io.opentelemetry.instrumentation:opentelemetry-spring-boot-starter")
     // https://mvnrepository.com/artifact/io.opentelemetry/opentelemetry-extension-trace-propagators
     implementation 'io.opentelemetry:opentelemetry-extension-trace-propagators'
+    // https://mvnrepository.com/artifact/org.openscience.cdk/cdk-bundle
+    implementation "org.openscience.cdk:cdk-bundle:${cdkBundleVersion}"
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testImplementation "org.springframework.security:spring-security-test"
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"

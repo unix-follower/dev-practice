@@ -3,7 +3,7 @@ package org.example.assistantonsbservlet.svc.chemistry;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.PersistenceUnit;
 import org.example.assistantonsbservlet.api.ErrorCode;
-import org.example.assistantonsbservlet.api.chemistry.organic.dbs.pubchem.fda.model.FoodAdditiveSubstanceResponseDto;
+import org.example.assistantonsbservlet.api.chemistry.model.FoodAdditiveSubstanceResponseDto;
 import org.example.assistantonsbservlet.exception.AppException;
 import org.example.db.pubchem.fda.repo.FoodAdditiveSubstanceRepository;
 import org.springframework.beans.factory.annotation.Qualifier;
