@@ -6,7 +6,7 @@ export function makeUrlForFinanceStockMarketGetByTicker(baseUrl?: string) {
   return `${baseUrl ?? ""}/api/v1/finance/stock-market`
 }
 
-export function makeUrlForPubChemGraphGetAll({
+export function makeUrlForPubChemGetAllGraphs({
   baseUrl,
   page,
   pageSize,
@@ -31,5 +31,9 @@ export function makeUrlForPubChemGraphGetAll({
   }
 
   const query = params.size > 0 ? `?${params}` : ""
-  return `${baseUrl ?? ""}/api/v1/chemistry/graph/compound${query}`
+  return `${baseUrl ?? ""}/api/v1/chemistry/compound/graph${query}`
+}
+
+export function makeUrlForPubChemGetCompoundSDFDataByCid(cid: number, baseUrl?: string) {
+  return `${baseUrl ?? ""}/api/v1/chemistry/compound/${cid}`
 }

@@ -3,14 +3,15 @@ import { FoodAdditiveSubstanceResponseDto } from "./chemistry/FoodAdditiveRespon
 import {
   makeUrlForFinanceStockMarketGetByTicker,
   makeUrlForGetAllFoodAdditives,
-  makeUrlForPubChemGraphGetAll,
+  makeUrlForPubChemGetAllGraphs,
+  makeUrlForPubChemGetCompoundSDFDataByCid,
 } from "./utils"
 import ApiError, { ApiErrorCode, type ApiErrorResponse, ErrorCode } from "./ApiError"
 import FinanceStockMarketApi from "./finance/FinanceStockMarketApi"
 import StocksResponseDto from "@/lib/api/finance/stockMarketModel"
 import OrganicChemistryApi from "@/lib/api/chemistry/OrganicChemistryApi"
-import CompoundGraphApi from "@/lib/api/chemistry/CompoundGraphApi"
-import { ChemistryGraphResponse } from "./chemistry/graphModels"
+import CompoundApi from "@/lib/api/chemistry/CompoundApi"
+import { ChemistryGraphResponse, CompoundSDFDataResponse } from "./chemistry/compoundModels"
 
 function getApiErrorCode(response: ApiErrorResponse | unknown): ApiErrorCode {
   let errorCode = ApiErrorCode.UNKNOWN
@@ -30,7 +31,7 @@ export interface ApiHttpClientSettings {
   clientStrategy: ApiHttpClientType | undefined
 }
 
-export default class ApiHttpClient implements FinanceStockMarketApi, CompoundGraphApi {
+export default class ApiHttpClient implements FinanceStockMarketApi, CompoundApi {
   private delegate: FetchHttpClient
 
   constructor(settings: ApiHttpClientSettings) {
@@ -59,6 +60,10 @@ export default class ApiHttpClient implements FinanceStockMarketApi, CompoundGra
 
   getAllFoodAdditives(page: number, pageSize: number) {
     return this.delegate.getAllPubChemFoodAdditives(page, pageSize)
+  }
+
+  doPubChemGetCompoundSDFDataByCid(cid: number): Promise<CompoundSDFDataResponse> {
+    return this.delegate.doPubChemGetCompoundSDFDataByCid(cid)
   }
 }
 
@@ -115,10 +120,7 @@ abstract class AbstractHttpClient {
   }
 }
 
-class FetchHttpClient
-  extends AbstractHttpClient
-  implements OrganicChemistryApi, FinanceStockMarketApi, CompoundGraphApi
-{
+class FetchHttpClient extends AbstractHttpClient implements OrganicChemistryApi, FinanceStockMarketApi, CompoundApi {
   async getAllPubChemFoodAdditives(page: number, pageSize: number): Promise<FoodAdditiveSubstanceResponseDto> {
     const options = {
       method: "GET",
@@ -144,7 +146,7 @@ class FetchHttpClient
       method: "GET",
     }
 
-    const url = makeUrlForPubChemGraphGetAll({
+    const url = makeUrlForPubChemGetAllGraphs({
       baseUrl: this.apiURL,
       page,
       pageSize,
@@ -159,7 +161,7 @@ class FetchHttpClient
       method: "GET",
     }
 
-    const url = makeUrlForPubChemGraphGetAll({
+    const url = makeUrlForPubChemGetAllGraphs({
       baseUrl: this.apiURL,
       page,
       pageSize,
@@ -167,12 +169,19 @@ class FetchHttpClient
     const apiCall = async () => fetch(url, options)
     return executeFetchCatching(apiCall)
   }
+
+  doPubChemGetCompoundSDFDataByCid(cid: number): Promise<CompoundSDFDataResponse> {
+    const options = {
+      method: "GET",
+    }
+
+    const url = makeUrlForPubChemGetCompoundSDFDataByCid(cid, this.apiURL)
+    const apiCall = async () => fetch(url, options)
+    return executeFetchCatching(apiCall)
+  }
 }
 
-class AxiosHttpClient
-  extends AbstractHttpClient
-  implements OrganicChemistryApi, FinanceStockMarketApi, CompoundGraphApi
-{
+class AxiosHttpClient extends AbstractHttpClient implements OrganicChemistryApi, FinanceStockMarketApi, CompoundApi {
   async getAllPubChemFoodAdditives(page: number, pageSize: number): Promise<FoodAdditiveSubstanceResponseDto> {
     const url = this.getAllFoodAdditivesUrl(page, pageSize)
     const response = await axios.get(url)
@@ -186,7 +195,7 @@ class AxiosHttpClient
   }
 
   doPubChemGraphGetAll(page: number, pageSize: number): Promise<ChemistryGraphResponse> {
-    const url = makeUrlForPubChemGraphGetAll({
+    const url = makeUrlForPubChemGetAllGraphs({
       baseUrl: this.apiURL,
       page,
       pageSize,
@@ -196,12 +205,18 @@ class AxiosHttpClient
   }
 
   doPubChemGraphGetCompoundDataByName(name: string, page: number, pageSize: number): Promise<ChemistryGraphResponse> {
-    const url = makeUrlForPubChemGraphGetAll({
+    const url = makeUrlForPubChemGetAllGraphs({
       baseUrl: this.apiURL,
       page,
       pageSize,
       name,
     })
+    const apiCall = async () => axios.get(url)
+    return executeAxiosCatching(apiCall)
+  }
+
+  doPubChemGetCompoundSDFDataByCid(cid: number): Promise<CompoundSDFDataResponse> {
+    const url = makeUrlForPubChemGetCompoundSDFDataByCid(cid, this.apiURL)
     const apiCall = async () => axios.get(url)
     return executeAxiosCatching(apiCall)
   }

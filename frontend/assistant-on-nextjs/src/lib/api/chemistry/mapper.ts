@@ -1,4 +1,4 @@
-import { ChemistryGraphResponse } from "@/lib/api/chemistry/graphModels"
+import { ChemistryGraphResponse } from "@/lib/api/chemistry/compoundModels"
 import { ElementDefinition } from "cytoscape"
 
 export function mapGraphResponse(graphResponse: ChemistryGraphResponse) {

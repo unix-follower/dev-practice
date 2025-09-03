@@ -1,6 +1,6 @@
 package org.example.assistantonsbservlet.convert;
 
-import org.example.assistantonsbservlet.api.chemistry.organic.dbs.pubchem.fda.model.FoodAdditiveSubstanceResponseDto;
+import org.example.assistantonsbservlet.api.chemistry.model.FoodAdditiveSubstanceResponseDto;
 import org.example.db.pubchem.fda.model.FoodAdditiveSubstance;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.convert.WritingConverter;

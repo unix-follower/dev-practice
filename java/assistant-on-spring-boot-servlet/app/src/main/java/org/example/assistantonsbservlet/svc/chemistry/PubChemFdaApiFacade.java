@@ -1,6 +1,6 @@
 package org.example.assistantonsbservlet.svc.chemistry;
 
-import org.example.assistantonsbservlet.api.chemistry.organic.dbs.pubchem.fda.model.FoodAdditiveSubstanceResponseDto;
+import org.example.assistantonsbservlet.api.chemistry.model.FoodAdditiveSubstanceResponseDto;
 
 import java.util.List;
 

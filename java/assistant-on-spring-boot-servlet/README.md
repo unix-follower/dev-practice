@@ -13,14 +13,18 @@ curl -v ${assistant_on_sb_servlet_url}/actuator/prometheus
 ```
 ## Chemistry
 ### PubChem
-#### Graph
-##### Get all
+#### Compound
+##### Get all graphs
 ```shell
-curl -v "${assistant_on_sb_servlet_url}/api/v1/chemistry/graph/compound?page=1&pageSize=10" | jq
+curl -v "${assistant_on_sb_servlet_url}/api/v1/chemistry/compound/graph?page=1&pageSize=10" | jq
 ```
-##### Get by name
+###### Get graph data by name
 ```shell
-curl -v "${assistant_on_sb_servlet_url}/api/v1/chemistry/graph/compound?page=1&pageSize=10&name=1-Amino-2-propanol" | jq
+curl -v "${assistant_on_sb_servlet_url}/api/v1/chemistry/compound/graph?page=1&pageSize=10&name=1-Amino-2-propanol" | jq
+```
+###### Get SDF data by cid
+```shell
+curl -v "${assistant_on_sb_servlet_url}/api/v1/chemistry/compound/4" | jq
 ```
 #### FDA
 ##### Get food additives
