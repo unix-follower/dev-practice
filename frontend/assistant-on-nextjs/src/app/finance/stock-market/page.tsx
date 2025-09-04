@@ -1,17 +1,18 @@
 import React, { Suspense } from "react"
 import ApiHttpClient, { ApiHttpClientSettings, ApiHttpClientType } from "@/lib/api/ApiHttpClient"
 import { getBackendURL } from "@/config/config"
-import StockMUIDataGrid, { StockMUIDataGridWithRTK } from "@/app/components/finance/StockMUIDataGrid"
+import StockMUIDataGrid, { StockMUIDataGridWithRTK } from "./_components/StockMUIDataGrid"
 import { parsePaginationParams } from "@/app/components/utils/urlUtils"
 import { getI18nDictionary } from "@/app/[lang]/dictionaries"
-import StockBasicChartCanvasJS from "@/app/components/finance/StockBasicChartCanvasJS"
+import StockBasicChartCanvasJS from "./_components/StockBasicChartCanvasJS"
+import StockD3 from "./_components/StockD3"
 
 export default async function Page({
   searchParams,
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }) {
-  const { mode, ticker, page, pageSize, lang } = await searchParams
+  const { mode, view, ticker, page, pageSize, lang } = await searchParams
 
   const params = { page: (page as string) || null, pageSize: (pageSize as string) || null }
   const translations = await getI18nDictionary((lang as string) || "en")
@@ -38,6 +39,14 @@ export default async function Page({
   const client = new ApiHttpClient(clientSettings)
   const tickerToSearchFor = (ticker as string) || "KO"
   const stocksPromise = client.getStockByTicker(tickerToSearchFor, pageNumber, pageSizeNum)
+
+  if (view === "d3") {
+    return (
+      <Suspense fallback={<div>Loading...</div>}>
+        <StockD3 stocksResponsePromise={stocksPromise} translations={translations} />
+      </Suspense>
+    )
+  }
 
   return (
     <Suspense fallback={<div>Loading...</div>}>
