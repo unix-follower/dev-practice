@@ -70,5 +70,9 @@
     "stockSplits": "Stock splits",
     "chart": "Stats for {{ticker}} ticker",
     "volumeChart": "The volume of {{ticker}} ticker"
+  },
+  "geometry3DEditorPage": {
+    "primitives": "Primitives",
+    "lights": "Lights"
   }
 }
