@@ -66,7 +66,7 @@ export default function GeometryThreeJsEditor({ translations }: GeometryThreeJsE
   )
 }
 
-export function ToolPanel() {
+function ToolPanel() {
   const { t } = useTranslation()
 
   return (
