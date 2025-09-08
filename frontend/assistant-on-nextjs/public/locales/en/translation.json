@@ -1,4 +1,10 @@
 {
+  "common": {
+    "cancel": "Cancel",
+    "width": "Width",
+    "height": "Height",
+    "draw": "Draw"
+  },
   "organicChemistryPubChemFoodAdditivesPage": {
     "compoundId": "Compound ID",
     "name": "Name",
@@ -48,7 +54,6 @@
     "viewportManipulation": "Viewport manipulation",
     "nodeId": "Node id",
     "nodeLabel": "Node label",
-    "cancel": "Cancel",
     "remove": "Remove",
     "removeNode": "Remove node",
     "selector": "selector",
@@ -74,5 +79,11 @@
   "geometry3DEditorPage": {
     "primitives": "Primitives",
     "lights": "Lights"
+  },
+  "geometry2DEditorPage": {
+    "primitives": "Primitives",
+    "rectangle": "Rectangle",
+    "drawRect": "Draw rectangle",
+    "clearCanvas": "Clear canvas"
   }
 }

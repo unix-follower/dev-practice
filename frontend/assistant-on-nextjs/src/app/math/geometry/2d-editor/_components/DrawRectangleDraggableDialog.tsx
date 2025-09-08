@@ -1,9 +1,4 @@
-import { useCytoscape } from "@/lib/chemistryHooks"
 import { useAppDispatch, useAppSelector } from "@/lib/hooks"
-import {
-  getIsAddElementDialogOpened,
-  setIsAddElementDialogOpened,
-} from "@/lib/features/chemistry/compoundGraphViewerSlice"
 import React from "react"
 import Dialog from "@mui/material/Dialog"
 import DialogTitle from "@mui/material/DialogTitle"
@@ -13,73 +8,55 @@ import DialogActions from "@mui/material/DialogActions"
 import Button from "@mui/material/Button"
 import { useTranslation } from "react-i18next"
 import PaperComponent from "@/app/_components/common/PaperComponent"
+import {
+  getIsDrawRectangleDialogOpened,
+  setIsDrawRectangleDialogOpened,
+} from "@/lib/features/math/geometry/geometryCanvasEditorSlice"
 import { X_FIELD, Y_FIELD } from "@/lib/constants"
 
-const ID_FIELD = "id"
-const LABEL_FIELD = "label"
+const WIDTH_FIELD = "width"
+const HEIGHT_FIELD = "height"
 
-export default function AddNodeDraggableDialog() {
-  const cy = useCytoscape()
-  const dispatch = useAppDispatch()
-  const open = useAppSelector(getIsAddElementDialogOpened)
+export interface NewRectangle {
+  x: number
+  y: number
+  width: number
+  height: number
+}
+
+interface DrawRectangleDraggableDialogProps {
+  onSubmit: (data: NewRectangle) => void
+}
+
+export default function DrawRectangleDraggableDialog({ onSubmit }: DrawRectangleDraggableDialogProps) {
   const { t } = useTranslation()
+  const dispatch = useAppDispatch()
+  const open = useAppSelector(getIsDrawRectangleDialogOpened)
 
   function handleClose() {
-    dispatch(setIsAddElementDialogOpened(false))
+    dispatch(setIsDrawRectangleDialogOpened(false))
   }
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
     const formData = new FormData(event.currentTarget)
-    const id = formData.get(ID_FIELD)!.toString()
-    const label = formData.get(LABEL_FIELD)
     const x = Number.parseFloat(formData.get(X_FIELD)?.toString() || "0")
     const y = Number.parseFloat(formData.get(Y_FIELD)?.toString() || "0")
+    const width = Number.parseFloat(formData.get(WIDTH_FIELD)?.toString() || "0")
+    const height = Number.parseFloat(formData.get(HEIGHT_FIELD)?.toString() || "0")
 
-    if (cy) {
-      cy.add({
-        group: "nodes",
-        data: {
-          id,
-          label,
-          position: { x, y },
-        },
-      })
-    }
-
+    onSubmit({ x, y, width, height })
     handleClose()
   }
 
   return (
     <Dialog open={open} onClose={handleClose} PaperComponent={PaperComponent} aria-labelledby="draggable-dialog-title">
       <DialogTitle style={{ cursor: "move" }} id="draggable-dialog-title">
-        {t("chemistryPubChemGraphCompoundPage.addNode")}
+        {t("geometry2DEditorPage.drawRect")}
       </DialogTitle>
       <DialogContent>
-        <form onSubmit={handleSubmit} id="addNodeForm">
-          <TextField
-            autoFocus
-            required
-            margin="dense"
-            id={ID_FIELD}
-            name={ID_FIELD}
-            label={t("chemistryPubChemGraphCompoundPage.nodeId")}
-            type="text"
-            fullWidth
-            variant="standard"
-          />
-          <TextField
-            autoFocus
-            required
-            margin="dense"
-            id={LABEL_FIELD}
-            name={LABEL_FIELD}
-            label={t("chemistryPubChemGraphCompoundPage.nodeLabel")}
-            type="text"
-            fullWidth
-            variant="standard"
-          />
+        <form onSubmit={handleSubmit} id="draw-rect-form">
           <TextField
             autoFocus
             margin="dense"
@@ -100,11 +77,31 @@ export default function AddNodeDraggableDialog() {
             fullWidth
             variant="standard"
           />
+          <TextField
+            autoFocus
+            margin="dense"
+            id={WIDTH_FIELD}
+            name={WIDTH_FIELD}
+            label={t("common.width")}
+            type="number"
+            fullWidth
+            variant="standard"
+          />
+          <TextField
+            autoFocus
+            margin="dense"
+            id={HEIGHT_FIELD}
+            name={HEIGHT_FIELD}
+            label={t("common.height")}
+            type="number"
+            fullWidth
+            variant="standard"
+          />
         </form>
       </DialogContent>
       <DialogActions>
-        <Button type="submit" form="addNodeForm">
-          {t("chemistryPubChemGraphCompoundPage.add")}
+        <Button type="submit" form="draw-rect-form">
+          {t("common.draw")}
         </Button>
         <Button autoFocus onClick={handleClose}>
           {t("common.cancel")}

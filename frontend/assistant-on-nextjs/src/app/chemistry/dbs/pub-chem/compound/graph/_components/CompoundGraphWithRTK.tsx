@@ -2,7 +2,7 @@
 
 import React from "react"
 import { useSearchParams } from "next/navigation"
-import { parsePaginationParams } from "@/app/components/utils/urlUtils"
+import { parsePaginationParams } from "@/app/_components/utils/urlUtils"
 import {
   useGetCompoundGraphDataByNameQuery,
   useGetAllGraphsQuery,

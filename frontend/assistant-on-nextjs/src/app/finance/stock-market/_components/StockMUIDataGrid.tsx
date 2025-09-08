@@ -9,7 +9,7 @@ import { DataGrid, GridColDef } from "@mui/x-data-grid"
 import Paper from "@mui/material/Paper"
 
 import StocksResponseDto, { StockDto } from "@/lib/api/finance/stockMarketModel"
-import { parsePaginationParams } from "@/app/components/utils/urlUtils"
+import { parsePaginationParams } from "@/app/_components/utils/urlUtils"
 import { useGetByTickerQuery } from "@/lib/features/finance/stockMarketSlice"
 
 const getRowId = (value: StockDto) => `${value.ticker}_${value.dateAt}`

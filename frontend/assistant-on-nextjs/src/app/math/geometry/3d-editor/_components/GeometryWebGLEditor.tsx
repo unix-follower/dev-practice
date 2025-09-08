@@ -125,7 +125,7 @@ export default function GeometryWebGLEditor({ translations }: GeometryWebGLEdito
   })
 
   return (
-    <div id="geometry-threejs-editor" className="grid grid-cols-[12%_88%] grid-rows-1 gap-4">
+    <div id="geometry-webgl-editor" className="grid grid-cols-[12%_88%] grid-rows-1 gap-4">
       <ToolPanel />
       <canvas ref={canvasRef} style={{ width: "100vw", height: "100vh" }} />
     </div>
@@ -136,7 +136,7 @@ function ToolPanel() {
   const { t } = useTranslation()
 
   return (
-    <div id="geometry-threejs-editor-tool-panel" className="grid grid-cols-1 grid-rows-3">
+    <div id="geometry-webgl-editor-tool-panel" className="grid grid-cols-1 grid-rows-3">
       <div>
         <span>{t("geometry3DEditorPage.primitives")}</span>
       </div>

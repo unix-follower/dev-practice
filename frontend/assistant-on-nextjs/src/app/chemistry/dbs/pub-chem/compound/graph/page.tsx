@@ -6,7 +6,7 @@ import CompoundGraphViewer from "@/app/chemistry/dbs/pub-chem/compound/graph/_co
 import CompoundGraphWithRTK, {
   CompoundGraphListWithRTK,
 } from "@/app/chemistry/dbs/pub-chem/compound/graph/_components/CompoundGraphWithRTK"
-import { parsePaginationParams } from "@/app/components/utils/urlUtils"
+import { parsePaginationParams } from "@/app/_components/utils/urlUtils"
 import { mapGraphResponse } from "@/lib/api/chemistry/mapper"
 import { getI18nDictionary } from "@/app/[lang]/dictionaries"
 
