@@ -4,7 +4,7 @@ import { getBackendURL } from "@/config/config"
 import PubChemFdaMUIDataGrid, {
   PubChemFdaMUIDataGridWithRTK,
 } from "@/app/chemistry/dbs/pub-chem/fda/_components/PubChemFdaMUIDataGrid"
-import { parsePaginationParams } from "@/app/components/utils/urlUtils"
+import { parsePaginationParams } from "@/app/_components/utils/urlUtils"
 import { getI18nDictionary } from "@/app/[lang]/dictionaries"
 
 export default async function Page({

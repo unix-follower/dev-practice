@@ -12,7 +12,7 @@ import TextField from "@mui/material/TextField"
 import DialogActions from "@mui/material/DialogActions"
 import Button from "@mui/material/Button"
 import { useTranslation } from "react-i18next"
-import PaperComponent from "./PaperComponent"
+import PaperComponent from "@/app/_components/common/PaperComponent"
 
 const SELECTOR_FIELD = "selector"
 
@@ -76,7 +76,7 @@ export default function RemoveNodeDraggableDialog() {
           {t("chemistryPubChemGraphCompoundPage.remove")}
         </Button>
         <Button autoFocus onClick={handleClose}>
-          {t("chemistryPubChemGraphCompoundPage.cancel")}
+          {t("common.cancel")}
         </Button>
       </DialogActions>
     </Dialog>

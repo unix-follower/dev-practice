@@ -9,7 +9,7 @@ import { DataGrid, GridColDef } from "@mui/x-data-grid"
 import Paper from "@mui/material/Paper"
 
 import { FoodAdditiveSubstanceDto, FoodAdditiveSubstanceResponseDto } from "@/lib/api/chemistry/FoodAdditiveResponse"
-import { parsePaginationParams } from "@/app/components/utils/urlUtils"
+import { parsePaginationParams } from "@/app/_components/utils/urlUtils"
 import { useGetAllQuery } from "@/lib/features/chemistry/pubChemFdaSlice"
 
 const getRowId = (value: FoodAdditiveSubstanceDto) => value.compoundCid
