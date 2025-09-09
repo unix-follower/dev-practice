@@ -17,11 +17,12 @@ def write_image(sdf_file_path: str, out_dir: str):
 
 def main():
     data_directory = env.get_data_dir()
+    work_directory = f"{data_directory}/pubchem/cid_4"
 
-    sdf_file_path = f"{data_directory}/Conformer3D_COMPOUND_CID_4.sdf"
+    sdf_file_path = f"{work_directory}/Conformer3D_COMPOUND_CID_4.sdf"
     sdf_supplier = Chem.SDMolSupplier(sdf_file_path)
 
-    out_dir = f"{data_directory}/out"
+    out_dir = f"{work_directory}/out"
     fs.create_dir_if_doesnt_exist(out_dir)
 
     atom_data = []
@@ -41,7 +42,7 @@ def main():
                     "isAromatic": atom.GetIsAromatic(),
                     "mass": atom.GetMass(),
                     "hybridization": str(atom.GetHybridization()),
-                    "properties": atom.GetPropsAsDict()
+                    "properties": atom.GetPropsAsDict(),
                 }
                 atom_data.append(atom_properties)
 
