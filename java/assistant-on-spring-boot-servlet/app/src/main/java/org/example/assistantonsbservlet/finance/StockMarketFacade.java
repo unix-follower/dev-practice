@@ -1,4 +1,4 @@
-package org.example.assistantonsbservlet.svc.finance;
+package org.example.assistantonsbservlet.finance;
 
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.PersistenceUnit;
@@ -7,12 +7,14 @@ import org.example.assistantonsbservlet.api.finance.stockmarket.model.StocksResp
 import org.example.assistantonsbservlet.exception.AppException;
 import org.example.db.stockmarket.repo.StockRepository;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Component;
 
 @Component
-public class StockMarketFacade implements StockMarketApiFacade {
+@ConditionalOnBooleanProperty("app.stock-market.ds.enabled")
+public final class StockMarketFacade implements StockMarketApiFacade {
     private final ApplicationContext appContext;
     private final ConversionService appConversionService;
     private EntityManagerFactory emf;
@@ -47,5 +49,14 @@ public class StockMarketFacade implements StockMarketApiFacade {
             throw new AppException(e, ErrorCode.UNKNOWN);
         }
         // CHECKSTYLE:ON: IllegalCatch
+    }
+}
+
+@Component
+@ConditionalOnBooleanProperty(value = "app.stock-market.ds.enabled", havingValue = false)
+final class StockMarketNoopFacade implements StockMarketApiFacade {
+    @Override
+    public StocksResponseDto findByTicker(String ticker, int page, int pageSize) {
+        throw new UnsupportedOperationException();
     }
 }

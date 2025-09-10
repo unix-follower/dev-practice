@@ -154,6 +154,7 @@ app:
     access-control-allow-methods: ${APP_CORS_ACCESS_CONTROL_ALLOW_METHODS:GET,POST,PUT,PATCH,DELETE,OPTIONS}
   pubchem:
     ds:
+      enabled: ${APP_PUBCHEM_DS_ENABLED:true}
       driver-class-name: org.postgresql.Driver
       url: ${APP_PUBCHEM_DS_URL:jdbc:postgresql://192.168.105.8:32000/assistant_datahub?currentSchema=pubchem}
       username: ${APP_PUBCHEM_DS_USERNAME:}
@@ -168,6 +169,7 @@ app:
       max-lifetime: ${APP_PUBCHEM_HIKARI_MAX_LIFETIME:30m}
       keep-alive-time: ${APP_PUBCHEM_HIKARI_KEEP_ALIVE_TIME:2m}
     pg-age-graph:
+      enabled: ${APP_PG_AGE_GRAPH_ENABLED:true}
       driver-class-name: org.postgresql.Driver
       url: ${APP_PG_AGE_GRAPH_URL:jdbc:postgresql://192.168.105.8:5432/pubchem_graph?currentSchema=ag_catalog}
       username: ${APP_PG_AGE_GRAPH_USERNAME:}
@@ -183,6 +185,7 @@ app:
       keep-alive-time: ${APP_PG_AGE_GRAPH_HIKARI_KEEP_ALIVE_TIME:2m}
   stock-market:
     ds:
+      enabled: ${APP_STOCK_MARKET_ENABLED:true}
       driver-class-name: org.postgresql.Driver
       url: ${APP_STOCK_MARKET_DS_URL:jdbc:postgresql://192.168.105.8:32000/assistant_datahub?currentSchema=stock_market}
       username: ${APP_STOCK_MARKET_DS_USERNAME:}

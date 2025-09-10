@@ -1,7 +1,7 @@
 package org.example.assistantonsbservlet.api.finance.stockmarket;
 
 import org.example.assistantonsbservlet.api.finance.stockmarket.model.StocksResponseDto;
-import org.example.assistantonsbservlet.svc.finance.StockMarketApiFacade;
+import org.example.assistantonsbservlet.finance.StockMarketApiFacade;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 

@@ -1,8 +1,8 @@
-package org.example.assistantonsbservlet.svc.chemistry;
+package org.example.assistantonsbservlet.chemistry;
 
 import org.example.assistantonsbservlet.api.ChemistryGraphResponse;
 
-public interface PubChemGraphService {
+public sealed interface PubChemGraphService permits PubChemGraphServiceImpl, PubChemGraphNoopService {
     ChemistryGraphResponse getAllGraphs(int page, int pageSize);
 
     ChemistryGraphResponse getCompoundDataByName(String compoundName, int page, int pageSize);

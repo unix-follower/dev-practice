@@ -1,6 +1,6 @@
 package org.example.assistantonsbservlet.api.chemistry;
 
-import org.example.assistantonsbservlet.svc.chemistry.PubChemFdaApiFacade;
+import org.example.assistantonsbservlet.chemistry.PubChemFdaFacade;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,7 +22,7 @@ class FoodAdditiveSubstanceControllerTest {
     private AutoCloseable mockCloser;
 
     @Mock
-    private PubChemFdaApiFacade facadeMock;
+    private PubChemFdaFacade facadeMock;
     private FoodAdditiveSubstanceController controller;
 
     @BeforeEach

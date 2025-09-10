@@ -1,7 +1,7 @@
 package org.example.assistantonsbservlet.api.chemistry;
 
 import org.example.assistantonsbservlet.api.chemistry.model.FoodAdditiveSubstanceResponseDto;
-import org.example.assistantonsbservlet.svc.chemistry.PubChemFdaApiFacade;
+import org.example.assistantonsbservlet.chemistry.PubChemFdaApiFacade;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 

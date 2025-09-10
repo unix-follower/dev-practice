@@ -1,9 +1,9 @@
-package org.example.assistantonsbservlet.svc.chemistry;
+package org.example.assistantonsbservlet.chemistry;
 
 import org.example.assistantonsbservlet.api.ChemistryGraphResponse;
 import org.example.assistantonsbservlet.api.chemistry.model.CompoundSDFDataResponse;
 
-public interface PubChemFacade {
+public sealed interface PubChemApiFacade permits PubChemFacade {
     ChemistryGraphResponse getAllGraphs(int page, int pageSize);
 
     ChemistryGraphResponse getCompoundDataByName(String compoundName, int page, int pageSize);
