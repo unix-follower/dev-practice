@@ -1,10 +1,10 @@
-package org.example.assistantonsbservlet.svc.chemistry;
+package org.example.assistantonsbservlet.chemistry;
 
 import org.example.assistantonsbservlet.api.chemistry.model.FoodAdditiveSubstanceResponseDto;
 
 import java.util.List;
 
-public interface PubChemFdaApiFacade {
+public sealed interface PubChemFdaApiFacade permits PubChemFdaFacade, PubChemFdaNoopFacade {
     /**
      * @param page 1-based page
      */

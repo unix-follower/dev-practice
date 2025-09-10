@@ -3,7 +3,6 @@ package org.example.assistantonsbservlet.exception;
 import jakarta.persistence.EntityNotFoundException;
 import org.example.assistantonsbservlet.api.AppErrorResponse;
 import org.example.assistantonsbservlet.api.ErrorCode;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -12,8 +11,18 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 @RestControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(EntityNotFoundException.class)
-    public ResponseEntity<Object> handleEntityNotFoundException(EntityNotFoundException e) {
-        final var body = new AppErrorResponse(ErrorCode.ENTITY_NOT_FOUND.getCode());
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
+    public ResponseEntity<AppErrorResponse> handleEntityNotFoundException(EntityNotFoundException e) {
+        final var entityNotFound = ErrorCode.ENTITY_NOT_FOUND;
+        final var body = new AppErrorResponse(entityNotFound.getCode());
+        logger.warn(e.getMessage(), e);
+        return ResponseEntity.status(entityNotFound.getHttpStatus()).body(body);
+    }
+
+    @ExceptionHandler(ChemistryApiException.class)
+    public ResponseEntity<AppErrorResponse> handleChemistryApiException(ChemistryApiException e) {
+        final var errorCode = e.getErrorCode();
+        final var body = new AppErrorResponse(errorCode.getCode());
+        logger.error(e.getMessage(), e);
+        return ResponseEntity.status(errorCode.getHttpStatus()).body(body);
     }
 }

@@ -1,4 +1,4 @@
-package org.example.assistantonsbservlet.svc.chemistry;
+package org.example.assistantonsbservlet.chemistry;
 
 import io.opentelemetry.instrumentation.annotations.WithSpan;
 import jakarta.persistence.EntityManagerFactory;
@@ -8,12 +8,14 @@ import org.example.assistantonsbservlet.api.ErrorCode;
 import org.example.assistantonsbservlet.exception.AppException;
 import org.example.db.pubchem.graph.CompoundRepository;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Service;
 
 @Service
-public class PubChemGraphServiceImpl implements PubChemGraphService {
+@ConditionalOnBooleanProperty("app.pg-age-graph.enabled")
+public final class PubChemGraphServiceImpl implements PubChemGraphService {
     private final ApplicationContext appContext;
     private final ConversionService appConversionService;
     private EntityManagerFactory emf;
@@ -71,5 +73,19 @@ public class PubChemGraphServiceImpl implements PubChemGraphService {
             throw new AppException(e, ErrorCode.UNKNOWN);
         }
         // CHECKSTYLE:ON: IllegalCatch
+    }
+}
+
+@Service
+@ConditionalOnBooleanProperty(value = "app.pg-age-graph.enabled", havingValue = false)
+final class PubChemGraphNoopService implements PubChemGraphService {
+    @Override
+    public ChemistryGraphResponse getAllGraphs(int page, int pageSize) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public ChemistryGraphResponse getCompoundDataByName(String compoundName, int page, int pageSize) {
+        throw new UnsupportedOperationException();
     }
 }

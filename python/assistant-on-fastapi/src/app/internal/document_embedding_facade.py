@@ -3,7 +3,7 @@ from operator import attrgetter
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, AsyncSessionTransaction
 
 from src.app.db.document_embedding_repository import DocumentEmbeddingRepository
-from src.app.internal.mapper import document_embedding_mapper
+from src.app.mapper import document_embedding_mapper
 from src.app.models.document_embedding import (
     CreateDocumentEmbeddingRequestDto,
     SearchVectorSimilarityRequestDto,

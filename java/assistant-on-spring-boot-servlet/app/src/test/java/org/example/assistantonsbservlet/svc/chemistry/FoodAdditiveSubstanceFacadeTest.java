@@ -4,6 +4,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.EntityTransaction;
 import org.example.assistantonsbservlet.api.chemistry.model.FoodAdditiveSubstanceResponseDto;
+import org.example.assistantonsbservlet.chemistry.PubChemFdaFacade;
 import org.example.assistantonsbservlet.convert.FoodAdditiveSubstanceToDtoListConverter;
 import org.example.db.pubchem.fda.repo.FoodAdditiveSubstanceRepository;
 import org.junit.jupiter.api.AfterEach;

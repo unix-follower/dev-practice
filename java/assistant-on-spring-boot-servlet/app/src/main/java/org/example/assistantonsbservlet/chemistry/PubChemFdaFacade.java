@@ -1,4 +1,4 @@
-package org.example.assistantonsbservlet.svc.chemistry;
+package org.example.assistantonsbservlet.chemistry;
 
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.PersistenceUnit;
@@ -7,6 +7,7 @@ import org.example.assistantonsbservlet.api.chemistry.model.FoodAdditiveSubstanc
 import org.example.assistantonsbservlet.exception.AppException;
 import org.example.db.pubchem.fda.repo.FoodAdditiveSubstanceRepository;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Component;
@@ -14,7 +15,8 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Component
-public class PubChemFdaFacade implements PubChemFdaApiFacade {
+@ConditionalOnBooleanProperty("app.pubchem.ds.enabled")
+public final class PubChemFdaFacade implements PubChemFdaApiFacade {
     private final ApplicationContext appContext;
     private final ConversionService appConversionService;
     private EntityManagerFactory emf;
@@ -52,5 +54,14 @@ public class PubChemFdaFacade implements PubChemFdaApiFacade {
             throw new AppException(e, ErrorCode.UNKNOWN);
         }
         // CHECKSTYLE:ON: IllegalCatch
+    }
+}
+
+@Component
+@ConditionalOnBooleanProperty(value = "app.pubchem.ds.enabled", havingValue = false)
+final class PubChemFdaNoopFacade implements PubChemFdaApiFacade {
+    @Override
+    public List<FoodAdditiveSubstanceResponseDto> getAll(int page, int pageSize) {
+        throw new UnsupportedOperationException();
     }
 }

@@ -1,4 +1,4 @@
-package org.example.assistantonsbservlet.svc.chemistry;
+package org.example.assistantonsbservlet.chemistry;
 
 import org.example.assistantonsbservlet.api.ChemistryGraphResponse;
 import org.example.assistantonsbservlet.api.chemistry.model.CompoundSDFDataResponse;
@@ -13,13 +13,13 @@ import org.springframework.stereotype.Component;
 import java.io.StringReader;
 
 @Component
-public class PubChemFacadeImpl implements PubChemFacade {
-    private static final Logger LOGGER = LoggerFactory.getLogger(PubChemFacadeImpl.class);
+public final class PubChemFacade implements PubChemApiFacade {
+    private static final Logger LOGGER = LoggerFactory.getLogger(PubChemFacade.class);
 
     private final ConversionService appConversionService;
     private final PubChemGraphService pubChemGraphService;
 
-    public PubChemFacadeImpl(ApplicationContext appContext) {
+    public PubChemFacade(ApplicationContext appContext) {
         this.appConversionService = appContext.getBean("appConversionService", ConversionService.class);
         this.pubChemGraphService = appContext.getBean(PubChemGraphService.class);
     }

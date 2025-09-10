@@ -3,6 +3,7 @@ package org.example.assistantonsbservlet.config;
 import com.zaxxer.hikari.HikariDataSource;
 import liquibase.integration.spring.SpringLiquibase;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
@@ -17,6 +18,7 @@ import java.util.Map;
 @Configuration
 class DbConfig {
     @Bean
+    @ConditionalOnBooleanProperty("app.pubchem.ds.enabled")
     DataSource pubChemDataSource(AppProperties properties) {
         final var pubChemProps = properties.pubChem();
         final var ds = pubChemProps.ds();
@@ -45,14 +47,7 @@ class DbConfig {
     }
 
     @Bean
-    DataSource stockMarketDataSource(AppProperties properties) {
-        final var stockedMarketProps = properties.stockMarket();
-        final var ds = stockedMarketProps.ds();
-        final var hikari = stockedMarketProps.hikari();
-        return createHikariDataSource(ds, hikari);
-    }
-
-    @Bean
+    @ConditionalOnBooleanProperty("app.pubchem.ds.enabled")
     SpringLiquibase pubChemLiquibase(@Qualifier("pubChemDataSource") DataSource dataSource) {
         final var liquibase = new SpringLiquibase();
         liquibase.setDataSource(dataSource);
@@ -63,6 +58,7 @@ class DbConfig {
     }
 
     @Bean
+    @ConditionalOnBooleanProperty("app.pubchem.ds.enabled")
     LocalContainerEntityManagerFactoryBean pubChemEntityManagerFactory(
         @Qualifier("pubChemDataSource") DataSource ds
     ) {
@@ -91,6 +87,16 @@ class DbConfig {
     }
 
     @Bean
+    @ConditionalOnBooleanProperty("app.stock-market.ds.enabled")
+    DataSource stockMarketDataSource(AppProperties properties) {
+        final var stockedMarketProps = properties.stockMarket();
+        final var ds = stockedMarketProps.ds();
+        final var hikari = stockedMarketProps.hikari();
+        return createHikariDataSource(ds, hikari);
+    }
+
+    @Bean
+    @ConditionalOnBooleanProperty("app.stock-market.ds.enabled")
     LocalContainerEntityManagerFactoryBean stockMarketEntityManagerFactory(
         @Qualifier("stockMarketDataSource") DataSource ds
     ) {
@@ -105,6 +111,7 @@ class DbConfig {
     }
 
     @Bean
+    @ConditionalOnBooleanProperty("app.pg-age-graph.enabled")
     DataSource pubChemGraphDataSource(AppProperties properties) {
         final var pubChemProps = properties.pubChem();
         final var ds = pubChemProps.pgAgeGraph();
@@ -113,6 +120,7 @@ class DbConfig {
     }
 
     @Bean
+    @ConditionalOnBooleanProperty("app.pg-age-graph.enabled")
     LocalContainerEntityManagerFactoryBean pubChemGraphEntityManagerFactory(
         @Qualifier("pubChemGraphDataSource") DataSource ds
     ) {

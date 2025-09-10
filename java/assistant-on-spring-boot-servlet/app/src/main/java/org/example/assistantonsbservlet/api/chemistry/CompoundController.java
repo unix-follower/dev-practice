@@ -2,15 +2,15 @@ package org.example.assistantonsbservlet.api.chemistry;
 
 import org.example.assistantonsbservlet.api.ChemistryGraphResponse;
 import org.example.assistantonsbservlet.api.chemistry.model.CompoundSDFDataResponse;
-import org.example.assistantonsbservlet.svc.chemistry.PubChemFacade;
+import org.example.assistantonsbservlet.chemistry.PubChemApiFacade;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class CompoundController implements CompoundApi {
-    private final PubChemFacade facade;
+    private final PubChemApiFacade facade;
 
-    public CompoundController(PubChemFacade facade) {
+    public CompoundController(PubChemApiFacade facade) {
         this.facade = facade;
     }
 

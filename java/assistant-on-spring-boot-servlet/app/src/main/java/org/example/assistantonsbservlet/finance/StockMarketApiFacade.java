@@ -1,8 +1,8 @@
-package org.example.assistantonsbservlet.svc.finance;
+package org.example.assistantonsbservlet.finance;
 
 import org.example.assistantonsbservlet.api.finance.stockmarket.model.StocksResponseDto;
 
-public interface StockMarketApiFacade {
+public sealed interface StockMarketApiFacade permits StockMarketFacade, StockMarketNoopFacade {
     /**
      * @param page 1-based page
      */

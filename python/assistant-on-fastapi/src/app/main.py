@@ -16,6 +16,7 @@ from src.app.errors.app_exception import AppException
 from src.app.errors.error_code import ErrorCode, to_http_status_code
 from src.app.models.common import AppVersionModel
 from src.app.routers import document_embedding_router, food_router
+from src.app.routers.chemistry import calculator_router
 
 configure_logging()
 
@@ -40,6 +41,7 @@ def configure_router(fastapi_app: FastAPI):
     configure_healthcheck(fastapi_app)
     fastapi_app.include_router(document_embedding_router.router)
     fastapi_app.include_router(food_router.router)
+    fastapi_app.include_router(calculator_router.router)
 
 
 @asynccontextmanager
