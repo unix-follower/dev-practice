@@ -1,7 +1,7 @@
 package org.example.assistantonsbservlet.chemistry;
 
 import org.example.assistantonsbservlet.api.ErrorCode;
-import org.example.assistantonsbservlet.api.chemistry.model.resp.ChemistryCalculatorResp;
+import org.example.assistantonsbservlet.api.model.resp.CalculatorResponse;
 import org.example.assistantonsbservlet.exception.ChemistryApiException;
 import org.openscience.cdk.DefaultChemObjectBuilder;
 import org.openscience.cdk.config.Elements;
@@ -33,7 +33,7 @@ public final class MolarMassCalc implements MolarMassCalculator {
     }
 
     @Override
-    public ChemistryCalculatorResp calculate(String input) {
+    public CalculatorResponse calculate(String input) {
         double molarMass;
         final var execStrategy = strategy != null ? strategy : "default";
         if (execStrategy.equals("custom")) {
@@ -49,7 +49,7 @@ public final class MolarMassCalc implements MolarMassCalculator {
             }
         }
 
-        return new ChemistryCalculatorResp(molarMass);
+        return new CalculatorResponse(molarMass);
     }
 
     private double calculateFromSmiles(String smiles) {

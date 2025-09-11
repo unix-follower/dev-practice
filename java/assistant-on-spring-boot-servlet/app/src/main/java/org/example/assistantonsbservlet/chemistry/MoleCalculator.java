@@ -1,10 +1,10 @@
 package org.example.assistantonsbservlet.chemistry;
 
 import org.example.assistantonsbservlet.api.chemistry.model.req.ChemCalculateMoleReq;
-import org.example.assistantonsbservlet.api.chemistry.model.resp.ChemistryCalculatorResp;
+import org.example.assistantonsbservlet.api.model.resp.CalculatorResponse;
 
-public sealed interface MoleCalculator permits MoleCalc {
+public sealed interface MoleCalculator extends StoichiometryCalculator permits MoleCalc {
     void setInputType(String inputType);
 
-    ChemistryCalculatorResp calculate(ChemCalculateMoleReq request);
+    CalculatorResponse calculate(ChemCalculateMoleReq request);
 }
