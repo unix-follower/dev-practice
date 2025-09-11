@@ -18,8 +18,8 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return ResponseEntity.status(entityNotFound.getHttpStatus()).body(body);
     }
 
-    @ExceptionHandler(ChemistryApiException.class)
-    public ResponseEntity<AppErrorResponse> handleChemistryApiException(ChemistryApiException e) {
+    @ExceptionHandler(AppException.class)
+    public ResponseEntity<AppErrorResponse> handleAppException(AppException e) {
         final var errorCode = e.getErrorCode();
         final var body = new AppErrorResponse(errorCode.getCode());
         logger.error(e.getMessage(), e);

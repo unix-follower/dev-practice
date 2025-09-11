@@ -11,6 +11,32 @@ curl -v $SERVER_URL/actuator | jq
 ```shell
 curl -v $SERVER_URL/actuator/prometheus
 ```
+## Math
+### Triangle calculator
+#### Solve for sides
+```shell
+curl -v $SERVER_URL/api/v1/math/calculator/right-triangle \
+  --header 'Content-Type: application/json' \
+  --data '{"cathetusA": 3, "cathetusB": 4}' | jq
+```
+#### Solve for leg a and hypotenuse
+```shell
+curl -v $SERVER_URL/api/v1/math/calculator/right-triangle \
+  --header 'Content-Type: application/json' \
+  --data '{"cathetusA": 3, "hypotenuse": 5}' | jq
+```
+#### Solve for leg b and hypotenuse
+```shell
+curl -v $SERVER_URL/api/v1/math/calculator/right-triangle \
+  --header 'Content-Type: application/json' \
+  --data '{"cathetusB": 4, "hypotenuse": 5}' | jq
+```
+#### Try to solve for invalid hypotenuse
+```shell
+curl -v $SERVER_URL/api/v1/math/calculator/right-triangle \
+  --header 'Content-Type: application/json' \
+  --data '{"cathetusB": 6, "hypotenuse": 5}' | jq
+```
 ## Chemistry
 ### PubChem
 #### Compound

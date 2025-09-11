@@ -4,27 +4,27 @@ import org.example.assistantonsbservlet.api.ErrorCode;
 import org.example.assistantonsbservlet.api.chemistry.model.req.ChemCalculatorFormulaInput;
 import org.example.assistantonsbservlet.api.chemistry.model.req.ChemCalculateMolarMassReq;
 import org.example.assistantonsbservlet.api.chemistry.model.req.ChemCalculateMoleReq;
-import org.example.assistantonsbservlet.api.chemistry.model.resp.ChemistryCalculatorResp;
+import org.example.assistantonsbservlet.api.model.resp.CalculatorResponse;
+import org.example.assistantonsbservlet.chemistry.ChemCalculatorApiFacade;
 import org.example.assistantonsbservlet.exception.ChemistryApiException;
-import org.example.assistantonsbservlet.chemistry.CalculatorApiFacade;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-public class CalculatorController implements CalculatorApi {
-    private final CalculatorApiFacade facade;
+public class ChemCalculatorController implements CalculatorApi {
+    private final ChemCalculatorApiFacade facade;
 
-    public CalculatorController(CalculatorApiFacade facade) {
+    public ChemCalculatorController(ChemCalculatorApiFacade facade) {
         this.facade = facade;
     }
 
     @Override
-    public ResponseEntity<ChemistryCalculatorResp> calculateMolarMass(ChemCalculateMolarMassReq body) {
+    public ResponseEntity<CalculatorResponse> calculate(ChemCalculateMolarMassReq body) {
         if (isUnknownSubstance(body)) {
             throw new ChemistryApiException(ErrorCode.INVALID_INPUT);
         }
 
-        final var response = facade.calculateMolarMass(body);
+        final var response = facade.calculate(body);
         return ResponseEntity.ok(response);
     }
 
@@ -33,12 +33,12 @@ public class CalculatorController implements CalculatorApi {
     }
 
     @Override
-    public ResponseEntity<ChemistryCalculatorResp> calculateMole(ChemCalculateMoleReq body) {
+    public ResponseEntity<CalculatorResponse> calculate(ChemCalculateMoleReq body) {
         if (isUnknownSubstance(body) && body.mass() == null && body.molecularWeight() == null) {
             throw new ChemistryApiException(ErrorCode.INVALID_INPUT);
         }
 
-        final var response = facade.calculateMole(body);
+        final var response = facade.calculate(body);
         return ResponseEntity.ok(response);
     }
 }
