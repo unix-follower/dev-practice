@@ -44,6 +44,24 @@ curl -v $SERVER_URL/api/v1/chemistry/calculator/molar-mass \
   --header 'Content-Type: application/json' \
   --data '{"smiles": "[OH2]"}' | jq
 ```
+###### Calculate mole by formula
+```shell
+curl -v $SERVER_URL/api/v1/chemistry/calculator/mole \
+  --header 'Content-Type: application/json' \
+  --data '{"formula": "HCl", "mass": 10}' | jq
+```
+###### Calculate mole by smiles
+```shell
+curl -v $SERVER_URL/api/v1/chemistry/calculator/mole \
+  --header 'Content-Type: application/json' \
+  --data '{"smiles": "[H]Cl", "mass": 10}' | jq
+```
+###### Calculate mole by mass and molecular weight
+```shell
+curl -v $SERVER_URL/api/v1/chemistry/calculator/mole \
+  --header 'Content-Type: application/json' \
+  --data '{"mass": 10, "molecularWeight": 36.5}' | jq
+```
 #### FDA
 ##### Get food additives
 ```shell

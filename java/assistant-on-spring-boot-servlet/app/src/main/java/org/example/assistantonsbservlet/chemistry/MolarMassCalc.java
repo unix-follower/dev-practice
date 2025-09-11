@@ -37,12 +37,12 @@ public final class MolarMassCalc implements MolarMassCalculator {
         double molarMass;
         final var execStrategy = strategy != null ? strategy : "default";
         if (execStrategy.equals("custom")) {
-            if (MolarMassCalculator.SMILES_IN_TYPE.equals(inputType)) {
+            if (Constants.SMILES_IN_TYPE.equals(inputType)) {
                 throw new UnsupportedOperationException();
             }
             molarMass = customCalculateFromFormula(input);
         } else {
-            if (MolarMassCalculator.FORMULA_IN_TYPE.equals(inputType)) {
+            if (Constants.FORMULA_IN_TYPE.equals(inputType)) {
                 molarMass = calculateFromFormula(input);
             } else {
                 molarMass = calculateFromSmiles(input);
