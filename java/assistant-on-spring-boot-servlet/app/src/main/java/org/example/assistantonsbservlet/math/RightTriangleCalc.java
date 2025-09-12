@@ -3,7 +3,7 @@ package org.example.assistantonsbservlet.math;
 import org.example.assistantonsbservlet.api.math.model.CalculateRightTriangleReq;
 import org.example.assistantonsbservlet.api.model.resp.CalculatorResponse;
 
-public class RightTriangleCalc implements RightTriangleCalculator {
+public final class RightTriangleCalc implements RightTriangleCalculator {
     @Override
     public CalculatorResponse calculate(CalculateRightTriangleReq request) {
         if (request.cathetusA() != null && request.cathetusB() != null) {
