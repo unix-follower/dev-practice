@@ -2,10 +2,10 @@ package org.example.assistantonsbservlet.chemistry;
 
 import org.example.assistantonsbservlet.api.chemistry.model.req.ChemCalculateMolarMassReq;
 import org.example.assistantonsbservlet.api.chemistry.model.req.ChemCalculateMoleReq;
-import org.example.assistantonsbservlet.api.model.resp.CalculatorResponse;
+import org.example.assistantonsbservlet.api.model.resp.CalculatorScalarResponse;
 
 public sealed interface ChemCalculatorApiFacade permits ChemCalculatorFacade {
-    CalculatorResponse calculate(ChemCalculateMolarMassReq body);
+    CalculatorScalarResponse calculate(ChemCalculateMolarMassReq body);
 
-    CalculatorResponse calculate(ChemCalculateMoleReq body);
+    CalculatorScalarResponse calculate(ChemCalculateMoleReq body);
 }

@@ -2,8 +2,10 @@ package org.example.assistantonsbservlet.api.math;
 
 import org.example.assistantonsbservlet.api.ErrorCode;
 import org.example.assistantonsbservlet.api.math.model.CalculateHypotenuseReq;
+import org.example.assistantonsbservlet.api.math.model.CalculateMatrixAddReq;
 import org.example.assistantonsbservlet.api.math.model.CalculateRightTriangleReq;
-import org.example.assistantonsbservlet.api.model.resp.CalculatorResponse;
+import org.example.assistantonsbservlet.api.model.resp.CalculatorMatrixResponse;
+import org.example.assistantonsbservlet.api.model.resp.CalculatorScalarResponse;
 import org.example.assistantonsbservlet.exception.MathApiException;
 import org.example.assistantonsbservlet.math.MathCalculatorApiFacade;
 import org.springframework.http.ResponseEntity;
@@ -18,7 +20,7 @@ public class MathCalculatorController implements CalculatorApi {
     }
 
     @Override
-    public ResponseEntity<CalculatorResponse> calculate(CalculateRightTriangleReq body) {
+    public ResponseEntity<CalculatorScalarResponse> calculate(CalculateRightTriangleReq body) {
         validate(body);
         final var response = facade.calculate(body);
         return ResponseEntity.ok(response);
@@ -52,7 +54,13 @@ public class MathCalculatorController implements CalculatorApi {
     }
 
     @Override
-    public ResponseEntity<CalculatorResponse> calculate(CalculateHypotenuseReq body) {
+    public ResponseEntity<CalculatorScalarResponse> calculate(CalculateHypotenuseReq body) {
+        final var response = facade.calculate(body);
+        return ResponseEntity.ok(response);
+    }
+
+    @Override
+    public ResponseEntity<CalculatorMatrixResponse> calculate(CalculateMatrixAddReq body) {
         final var response = facade.calculate(body);
         return ResponseEntity.ok(response);
     }

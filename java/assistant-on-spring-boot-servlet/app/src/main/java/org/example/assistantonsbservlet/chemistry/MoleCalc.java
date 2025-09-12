@@ -2,7 +2,7 @@ package org.example.assistantonsbservlet.chemistry;
 
 import org.example.assistantonsbservlet.api.ErrorCode;
 import org.example.assistantonsbservlet.api.chemistry.model.req.ChemCalculateMoleReq;
-import org.example.assistantonsbservlet.api.model.resp.CalculatorResponse;
+import org.example.assistantonsbservlet.api.model.resp.CalculatorScalarResponse;
 import org.example.assistantonsbservlet.exception.ChemistryApiException;
 import org.openscience.cdk.DefaultChemObjectBuilder;
 import org.openscience.cdk.exception.CDKException;
@@ -19,7 +19,7 @@ public final class MoleCalc implements MoleCalculator {
     }
 
     @Override
-    public CalculatorResponse calculate(ChemCalculateMoleReq request) {
+    public CalculatorScalarResponse calculate(ChemCalculateMoleReq request) {
         double moles;
         if (Constants.FORMULA_IN_TYPE.equals(inputType)) {
             moles = calculateFromFormula(request);
@@ -28,7 +28,7 @@ public final class MoleCalc implements MoleCalculator {
         } else {
             moles = calculateUnknownSubstance(request.mass(), request.molecularWeight());
         }
-        return new CalculatorResponse(moles);
+        return new CalculatorScalarResponse(moles);
     }
 
     private double calculateUnknownSubstance(double massInGrams, double molecularWeight) {

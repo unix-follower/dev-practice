@@ -2,11 +2,11 @@ package org.example.assistantonsbservlet.math;
 
 import org.example.assistantonsbservlet.api.math.model.CalculateHypotenuseReq;
 import org.example.assistantonsbservlet.api.model.AngleUnit;
-import org.example.assistantonsbservlet.api.model.resp.CalculatorResponse;
+import org.example.assistantonsbservlet.api.model.resp.CalculatorScalarResponse;
 
 public final class HypotenuseCalc implements HypotenuseCalculator {
     @Override
-    public CalculatorResponse calculate(CalculateHypotenuseReq request) {
+    public CalculatorScalarResponse calculate(CalculateHypotenuseReq request) {
         switch (request.solveFor()) {
             case Constants.SIDE_AND_OPPOSITE_ANGLE -> {
                 return solveForSideAndOppositeAngle(request);
@@ -21,7 +21,7 @@ public final class HypotenuseCalc implements HypotenuseCalculator {
         }
     }
 
-    private CalculatorResponse solveForSideAndOppositeAngle(CalculateHypotenuseReq request) {
+    private CalculatorScalarResponse solveForSideAndOppositeAngle(CalculateHypotenuseReq request) {
         final double oppositeSide;
         final double oppositeAngleInRadians;
         if (request.cathetusA() != null) {
@@ -33,10 +33,10 @@ public final class HypotenuseCalc implements HypotenuseCalculator {
         }
 
         final double hypotenuse = oppositeSide / Math.sin(oppositeAngleInRadians);
-        return new CalculatorResponse(hypotenuse);
+        return new CalculatorScalarResponse(hypotenuse);
     }
 
-    private CalculatorResponse solveForSideAndAdjacentAngle(CalculateHypotenuseReq request) {
+    private CalculatorScalarResponse solveForSideAndAdjacentAngle(CalculateHypotenuseReq request) {
         final double adjacentSide;
         final double adjacentAngleInRadians;
         if (request.cathetusA() != null) {
@@ -48,10 +48,10 @@ public final class HypotenuseCalc implements HypotenuseCalculator {
         }
 
         final double hypotenuse = adjacentSide / Math.cos(adjacentAngleInRadians);
-        return new CalculatorResponse(hypotenuse);
+        return new CalculatorScalarResponse(hypotenuse);
     }
 
-    private CalculatorResponse solveForAreaAndSide(CalculateHypotenuseReq request) {
+    private CalculatorScalarResponse solveForAreaAndSide(CalculateHypotenuseReq request) {
         final double side;
         if (request.cathetusA() != null) {
             side = request.cathetusA();
@@ -60,6 +60,6 @@ public final class HypotenuseCalc implements HypotenuseCalculator {
         }
 
         final double hypotenuse = Math.sqrt(Math.pow(side, 2) + Math.pow(request.area() * 2 / side, 2));
-        return new CalculatorResponse(hypotenuse);
+        return new CalculatorScalarResponse(hypotenuse);
     }
 }

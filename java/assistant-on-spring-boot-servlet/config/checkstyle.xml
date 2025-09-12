@@ -41,6 +41,7 @@
         <module name="EqualsAvoidNull"/>
         <module name="IllegalCatch"/>
         <module name="IllegalThrows"/>
+        <module name="PatternVariableName"/>
     </module>
 
     <!-- Code Style -->

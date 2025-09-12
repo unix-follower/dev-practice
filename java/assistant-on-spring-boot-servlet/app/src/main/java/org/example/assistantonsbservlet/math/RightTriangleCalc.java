@@ -1,11 +1,11 @@
 package org.example.assistantonsbservlet.math;
 
 import org.example.assistantonsbservlet.api.math.model.CalculateRightTriangleReq;
-import org.example.assistantonsbservlet.api.model.resp.CalculatorResponse;
+import org.example.assistantonsbservlet.api.model.resp.CalculatorScalarResponse;
 
 public final class RightTriangleCalc implements RightTriangleCalculator {
     @Override
-    public CalculatorResponse calculate(CalculateRightTriangleReq request) {
+    public CalculatorScalarResponse calculate(CalculateRightTriangleReq request) {
         if (request.cathetusA() != null && request.cathetusB() != null) {
             return solveForSides(request);
         } else if (request.cathetusA() != null) {
@@ -15,14 +15,14 @@ public final class RightTriangleCalc implements RightTriangleCalculator {
         }
     }
 
-    private CalculatorResponse solveForSides(CalculateRightTriangleReq request) {
+    private CalculatorScalarResponse solveForSides(CalculateRightTriangleReq request) {
         final double sumOfSquares = Math.pow(request.cathetusA(), 2) + Math.pow(request.cathetusB(), 2);
         final double hypotenuse = Math.sqrt(sumOfSquares);
-        return new CalculatorResponse(hypotenuse);
+        return new CalculatorScalarResponse(hypotenuse);
     }
 
-    private CalculatorResponse solveForSideAndHypotenuse(double side, double hypotenuse) {
+    private CalculatorScalarResponse solveForSideAndHypotenuse(double side, double hypotenuse) {
         final double unknownSide = Math.sqrt(Math.pow(hypotenuse, 2) - Math.pow(side, 2));
-        return new CalculatorResponse(unknownSide);
+        return new CalculatorScalarResponse(unknownSide);
     }
 }
