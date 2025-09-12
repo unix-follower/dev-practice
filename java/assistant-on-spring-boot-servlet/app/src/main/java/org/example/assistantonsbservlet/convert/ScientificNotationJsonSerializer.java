@@ -6,9 +6,8 @@ import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 
 import java.io.IOException;
 
-public class ScientificNotationSerializer extends StdSerializer<Double> {
-
-    protected ScientificNotationSerializer() {
+public class ScientificNotationJsonSerializer extends StdSerializer<Double> {
+    protected ScientificNotationJsonSerializer() {
         super(Double.class);
     }
 

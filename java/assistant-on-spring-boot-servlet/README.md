@@ -37,6 +37,25 @@ curl -v $SERVER_URL/api/v1/math/calculator/right-triangle \
   --header 'Content-Type: application/json' \
   --data '{"cathetusB": 6, "hypotenuse": 5}' | jq
 ```
+### Hypotenuse calculator
+#### Solve for side and opposite angle
+```shell
+curl -v $SERVER_URL/api/v1/math/calculator/hypotenuse \
+  --header 'Content-Type: application/json' \
+  --data '{"solveFor": "side_and_opposite_angle", "cathetusA": 3, "angleAlpha": 60, "alphaAngleUnit": "degrees"}' | jq
+```
+#### Solve for side and adjacent angle
+```shell
+curl -v $SERVER_URL/api/v1/math/calculator/hypotenuse \
+  --header 'Content-Type: application/json' \
+  --data '{"solveFor": "side_and_adjacent_angle", "cathetusA": 3, "angleBeta": 30, "betaAngleUnit": "degrees"}' | jq
+```
+#### Solve for area and one side
+```shell
+curl -v $SERVER_URL/api/v1/math/calculator/hypotenuse \
+  --header 'Content-Type: application/json' \
+  --data '{"solveFor": "area_and_side", "cathetusA": 3, "area": 3.464}' | jq
+```
 ## Chemistry
 ### PubChem
 #### Compound

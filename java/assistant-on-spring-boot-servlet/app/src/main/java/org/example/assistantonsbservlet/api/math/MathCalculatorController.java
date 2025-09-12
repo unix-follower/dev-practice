@@ -1,6 +1,7 @@
 package org.example.assistantonsbservlet.api.math;
 
 import org.example.assistantonsbservlet.api.ErrorCode;
+import org.example.assistantonsbservlet.api.math.model.CalculateHypotenuseReq;
 import org.example.assistantonsbservlet.api.math.model.CalculateRightTriangleReq;
 import org.example.assistantonsbservlet.api.model.resp.CalculatorResponse;
 import org.example.assistantonsbservlet.exception.MathApiException;
@@ -48,5 +49,11 @@ public class MathCalculatorController implements CalculatorApi {
             }
             checkHypotenuse(body);
         }
+    }
+
+    @Override
+    public ResponseEntity<CalculatorResponse> calculate(CalculateHypotenuseReq body) {
+        final var response = facade.calculate(body);
+        return ResponseEntity.ok(response);
     }
 }
