@@ -2,13 +2,13 @@ package org.example.assistantonsbservlet.chemistry;
 
 import org.example.assistantonsbservlet.api.chemistry.model.req.ChemCalculateMolarMassReq;
 import org.example.assistantonsbservlet.api.chemistry.model.req.ChemCalculateMoleReq;
-import org.example.assistantonsbservlet.api.model.resp.CalculatorResponse;
+import org.example.assistantonsbservlet.api.model.resp.CalculatorScalarResponse;
 import org.springframework.stereotype.Component;
 
 @Component
 public final class ChemCalculatorFacade implements ChemCalculatorApiFacade {
     @Override
-    public CalculatorResponse calculate(ChemCalculateMolarMassReq body) {
+    public CalculatorScalarResponse calculate(ChemCalculateMolarMassReq body) {
         final var calc = new MolarMassCalc();
         calc.setStrategy(body.strategy());
         if (body.formula() != null) {
@@ -21,7 +21,7 @@ public final class ChemCalculatorFacade implements ChemCalculatorApiFacade {
     }
 
     @Override
-    public CalculatorResponse calculate(ChemCalculateMoleReq body) {
+    public CalculatorScalarResponse calculate(ChemCalculateMoleReq body) {
         final var calc = new MoleCalc();
         if (body.formula() != null) {
             calc.setInputType(Constants.FORMULA_IN_TYPE);

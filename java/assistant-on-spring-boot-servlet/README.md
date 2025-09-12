@@ -56,6 +56,27 @@ curl -v $SERVER_URL/api/v1/math/calculator/hypotenuse \
   --header 'Content-Type: application/json' \
   --data '{"solveFor": "area_and_side", "cathetusA": 3, "area": 3.464}' | jq
 ```
+### Linear algebra calculator
+#### Matrix addition
+```shell
+curl -v $SERVER_URL/api/v1/math/calculator/linear-algebra/matrix-addition \
+  --header 'Content-Type: application/json' \
+  --data '{
+  "solveFor": "a+b",
+  "a": [[1, 2], [3, 4]],
+  "b": [[1, 2], [3, 4]]
+}' | jq
+```
+#### Matrix + scalar
+```shell
+curl -v $SERVER_URL/api/v1/math/calculator/linear-algebra/matrix-addition \
+  --header 'Content-Type: application/json' \
+  --data '{
+  "solveFor": "a+scalar",
+  "a": [[1, 2], [3, 4]],
+  "scalar": 2
+}' | jq
+```
 ## Chemistry
 ### PubChem
 #### Compound

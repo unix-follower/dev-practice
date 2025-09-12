@@ -4,7 +4,7 @@ import org.example.assistantonsbservlet.api.ErrorCode;
 import org.example.assistantonsbservlet.api.chemistry.model.req.ChemCalculatorFormulaInput;
 import org.example.assistantonsbservlet.api.chemistry.model.req.ChemCalculateMolarMassReq;
 import org.example.assistantonsbservlet.api.chemistry.model.req.ChemCalculateMoleReq;
-import org.example.assistantonsbservlet.api.model.resp.CalculatorResponse;
+import org.example.assistantonsbservlet.api.model.resp.CalculatorScalarResponse;
 import org.example.assistantonsbservlet.chemistry.ChemCalculatorApiFacade;
 import org.example.assistantonsbservlet.exception.ChemistryApiException;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +19,7 @@ public class ChemCalculatorController implements CalculatorApi {
     }
 
     @Override
-    public ResponseEntity<CalculatorResponse> calculate(ChemCalculateMolarMassReq body) {
+    public ResponseEntity<CalculatorScalarResponse> calculate(ChemCalculateMolarMassReq body) {
         if (isUnknownSubstance(body)) {
             throw new ChemistryApiException(ErrorCode.INVALID_INPUT);
         }
@@ -33,7 +33,7 @@ public class ChemCalculatorController implements CalculatorApi {
     }
 
     @Override
-    public ResponseEntity<CalculatorResponse> calculate(ChemCalculateMoleReq body) {
+    public ResponseEntity<CalculatorScalarResponse> calculate(ChemCalculateMoleReq body) {
         if (isUnknownSubstance(body) && body.mass() == null && body.molecularWeight() == null) {
             throw new ChemistryApiException(ErrorCode.INVALID_INPUT);
         }

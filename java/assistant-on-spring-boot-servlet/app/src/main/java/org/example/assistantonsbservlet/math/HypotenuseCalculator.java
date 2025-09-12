@@ -1,8 +1,8 @@
 package org.example.assistantonsbservlet.math;
 
 import org.example.assistantonsbservlet.api.math.model.CalculateHypotenuseReq;
-import org.example.assistantonsbservlet.api.model.resp.CalculatorResponse;
+import org.example.assistantonsbservlet.api.model.resp.CalculatorScalarResponse;
 
 public sealed interface HypotenuseCalculator extends TriangleCalculator permits HypotenuseCalc {
-    CalculatorResponse calculate(CalculateHypotenuseReq request);
+    CalculatorScalarResponse calculate(CalculateHypotenuseReq request);
 }
