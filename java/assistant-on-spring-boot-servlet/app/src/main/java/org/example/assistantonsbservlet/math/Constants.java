@@ -8,6 +8,9 @@ public final class Constants {
     public static final String MATRIX_PLUS_MATRIX = "a+b";
     public static final String MATRIX_A_PLUS_SCALAR = "a+scalar";
 
+    public static final String COSINE = "cosine";
+    public static final String SIDES = "sides";
+
     private Constants() {
     }
 }

@@ -11,4 +11,12 @@ public enum AngleUnit {
         }
         return result;
     }
+
+    public static AngleUnit getResultUnitOrRadians(AngleUnit unit) {
+        var resultUnit = AngleUnit.RADIANS;
+        if (unit != null) {
+            resultUnit = unit;
+        }
+        return resultUnit;
+    }
 }

@@ -1,5 +1,6 @@
 package org.example.assistantonsbservlet.math;
 
+import org.example.assistantonsbservlet.api.math.model.CalculateCosineReq;
 import org.example.assistantonsbservlet.api.math.model.CalculateHypotenuseReq;
 import org.example.assistantonsbservlet.api.math.model.CalculateMatrixAddReq;
 import org.example.assistantonsbservlet.api.math.model.CalculateRightTriangleReq;
@@ -24,6 +25,12 @@ public final class MathCalculatorFacade implements MathCalculatorApiFacade {
     @Override
     public CalculatorMatrixResponse calculate(CalculateMatrixAddReq body) {
         final var calc = new MatrixCalc();
+        return calc.calculate(body);
+    }
+
+    @Override
+    public CalculatorScalarResponse calculate(CalculateCosineReq body) {
+        final var calc = new TrigCalc();
         return calc.calculate(body);
     }
 }
