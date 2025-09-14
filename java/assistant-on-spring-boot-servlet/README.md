@@ -67,6 +67,37 @@ curl -v $SERVER_URL/api/v1/math/calculator/linear-algebra/matrix-addition \
   "b": [[1, 2], [3, 4]]
 }' | jq
 ```
+### Trigonometry calculator
+#### Solve for angle
+```shell
+curl -v $SERVER_URL/api/v1/math/calculator/trigonometry/cos \
+  --header 'Content-Type: application/json' \
+  --data '{
+  "angleAlpha": 40,
+  "alphaAngleUnit": "DEGREES"
+}' | jq
+```
+#### Solve for sides
+```shell
+curl -v $SERVER_URL/api/v1/math/calculator/trigonometry/cos \
+  --header 'Content-Type: application/json' \
+  --data '{
+  "solveFor": "sides",
+  "adjacent": 3,
+  "hypotenuse": 4
+}' | jq
+```
+#### Solve for cosine
+```shell
+curl -v $SERVER_URL/api/v1/math/calculator/trigonometry/cos \
+  --header 'Content-Type: application/json' \
+  --data '{
+  "solveFor": "cosine",
+  "resultUnit": "DEGREES",
+  "cosine": 0.766,
+  "cosineAngleUnit": "RADIANS"
+}' | jq
+```
 #### Matrix + scalar
 ```shell
 curl -v $SERVER_URL/api/v1/math/calculator/linear-algebra/matrix-addition \

@@ -1,6 +1,7 @@
 package org.example.assistantonsbservlet.api.math;
 
 import org.example.assistantonsbservlet.api.ErrorCode;
+import org.example.assistantonsbservlet.api.math.model.CalculateCosineReq;
 import org.example.assistantonsbservlet.api.math.model.CalculateHypotenuseReq;
 import org.example.assistantonsbservlet.api.math.model.CalculateMatrixAddReq;
 import org.example.assistantonsbservlet.api.math.model.CalculateRightTriangleReq;
@@ -61,6 +62,12 @@ public class MathCalculatorController implements CalculatorApi {
 
     @Override
     public ResponseEntity<CalculatorMatrixResponse> calculate(CalculateMatrixAddReq body) {
+        final var response = facade.calculate(body);
+        return ResponseEntity.ok(response);
+    }
+
+    @Override
+    public ResponseEntity<CalculatorScalarResponse> calculate(CalculateCosineReq body) {
         final var response = facade.calculate(body);
         return ResponseEntity.ok(response);
     }
