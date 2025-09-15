@@ -128,7 +128,7 @@ curl -v $SERVER_URL/api/v1/math/calculator/trigonometry/sin \
   "hypotenuse": 5
 }' | jq
 ```
-##### Solve for cosine
+##### Solve for sine
 ```shell
 curl -v $SERVER_URL/api/v1/math/calculator/trigonometry/sin \
   --header 'Content-Type: application/json' \
@@ -136,6 +136,36 @@ curl -v $SERVER_URL/api/v1/math/calculator/trigonometry/sin \
   "solveFor": "sine",
   "resultUnit": "DEGREES",
   "sine": 0.766
+}' | jq
+```
+#### Tan
+##### Solve for angle
+```shell
+curl -v $SERVER_URL/api/v1/math/calculator/trigonometry/tan \
+  --header 'Content-Type: application/json' \
+  --data '{
+  "angleAlpha": 40,
+  "alphaAngleUnit": "DEGREES"
+}' | jq
+```
+##### Solve for sides
+```shell
+curl -v $SERVER_URL/api/v1/math/calculator/trigonometry/tan \
+  --header 'Content-Type: application/json' \
+  --data '{
+  "solveFor": "sides",
+  "opposite": 3,
+  "adjacent": 4
+}' | jq
+```
+##### Solve for tan
+```shell
+curl -v $SERVER_URL/api/v1/math/calculator/trigonometry/tan \
+  --header 'Content-Type: application/json' \
+  --data '{
+  "solveFor": "tan",
+  "resultUnit": "DEGREES",
+  "tan": 0.766
 }' | jq
 ```
 ## Chemistry
