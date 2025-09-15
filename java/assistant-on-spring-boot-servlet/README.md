@@ -67,8 +67,19 @@ curl -v $SERVER_URL/api/v1/math/calculator/linear-algebra/matrix-addition \
   "b": [[1, 2], [3, 4]]
 }' | jq
 ```
+#### Matrix + scalar
+```shell
+curl -v $SERVER_URL/api/v1/math/calculator/linear-algebra/matrix-addition \
+  --header 'Content-Type: application/json' \
+  --data '{
+  "solveFor": "a+scalar",
+  "a": [[1, 2], [3, 4]],
+  "scalar": 2
+}' | jq
+```
 ### Trigonometry calculator
-#### Solve for angle
+#### Cosine
+##### Solve for angle
 ```shell
 curl -v $SERVER_URL/api/v1/math/calculator/trigonometry/cos \
   --header 'Content-Type: application/json' \
@@ -77,7 +88,7 @@ curl -v $SERVER_URL/api/v1/math/calculator/trigonometry/cos \
   "alphaAngleUnit": "DEGREES"
 }' | jq
 ```
-#### Solve for sides
+##### Solve for sides
 ```shell
 curl -v $SERVER_URL/api/v1/math/calculator/trigonometry/cos \
   --header 'Content-Type: application/json' \
@@ -87,25 +98,44 @@ curl -v $SERVER_URL/api/v1/math/calculator/trigonometry/cos \
   "hypotenuse": 4
 }' | jq
 ```
-#### Solve for cosine
+##### Solve for cosine
 ```shell
 curl -v $SERVER_URL/api/v1/math/calculator/trigonometry/cos \
   --header 'Content-Type: application/json' \
   --data '{
   "solveFor": "cosine",
   "resultUnit": "DEGREES",
-  "cosine": 0.766,
-  "cosineAngleUnit": "RADIANS"
+  "cosine": 0.766
 }' | jq
 ```
-#### Matrix + scalar
+#### Sine
+##### Solve for angle
 ```shell
-curl -v $SERVER_URL/api/v1/math/calculator/linear-algebra/matrix-addition \
+curl -v $SERVER_URL/api/v1/math/calculator/trigonometry/sin \
   --header 'Content-Type: application/json' \
   --data '{
-  "solveFor": "a+scalar",
-  "a": [[1, 2], [3, 4]],
-  "scalar": 2
+  "angleAlpha": 40,
+  "alphaAngleUnit": "DEGREES"
+}' | jq
+```
+##### Solve for sides
+```shell
+curl -v $SERVER_URL/api/v1/math/calculator/trigonometry/sin \
+  --header 'Content-Type: application/json' \
+  --data '{
+  "solveFor": "sides",
+  "opposite": 3,
+  "hypotenuse": 5
+}' | jq
+```
+##### Solve for cosine
+```shell
+curl -v $SERVER_URL/api/v1/math/calculator/trigonometry/sin \
+  --header 'Content-Type: application/json' \
+  --data '{
+  "solveFor": "sine",
+  "resultUnit": "DEGREES",
+  "sine": 0.766
 }' | jq
 ```
 ## Chemistry

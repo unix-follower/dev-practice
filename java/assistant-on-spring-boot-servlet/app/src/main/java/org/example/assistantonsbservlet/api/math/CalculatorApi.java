@@ -4,6 +4,7 @@ import org.example.assistantonsbservlet.api.math.model.CalculateCosineReq;
 import org.example.assistantonsbservlet.api.math.model.CalculateHypotenuseReq;
 import org.example.assistantonsbservlet.api.math.model.CalculateMatrixAddReq;
 import org.example.assistantonsbservlet.api.math.model.CalculateRightTriangleReq;
+import org.example.assistantonsbservlet.api.math.model.CalculateSineReq;
 import org.example.assistantonsbservlet.api.model.resp.CalculatorMatrixResponse;
 import org.example.assistantonsbservlet.api.model.resp.CalculatorScalarResponse;
 import org.springframework.http.ResponseEntity;
@@ -24,4 +25,7 @@ public interface CalculatorApi {
 
     @PostMapping(value = "/trigonometry/cos")
     ResponseEntity<CalculatorScalarResponse> calculate(@RequestBody CalculateCosineReq body);
+
+    @PostMapping(value = "/trigonometry/sin")
+    ResponseEntity<CalculatorScalarResponse> calculate(@RequestBody CalculateSineReq body);
 }
