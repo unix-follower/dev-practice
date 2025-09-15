@@ -5,6 +5,7 @@ import org.example.assistantonsbservlet.api.math.model.CalculateHypotenuseReq;
 import org.example.assistantonsbservlet.api.math.model.CalculateMatrixAddReq;
 import org.example.assistantonsbservlet.api.math.model.CalculateRightTriangleReq;
 import org.example.assistantonsbservlet.api.math.model.CalculateSineReq;
+import org.example.assistantonsbservlet.api.math.model.CalculateTanReq;
 import org.example.assistantonsbservlet.api.model.resp.CalculatorMatrixResponse;
 import org.example.assistantonsbservlet.api.model.resp.CalculatorScalarResponse;
 import org.springframework.stereotype.Component;
@@ -37,6 +38,12 @@ public final class MathCalculatorFacade implements MathCalculatorApiFacade {
 
     @Override
     public CalculatorScalarResponse calculate(CalculateSineReq body) {
+        final var calc = new TrigCalc();
+        return calc.calculate(body);
+    }
+
+    @Override
+    public CalculatorScalarResponse calculate(CalculateTanReq body) {
         final var calc = new TrigCalc();
         return calc.calculate(body);
     }

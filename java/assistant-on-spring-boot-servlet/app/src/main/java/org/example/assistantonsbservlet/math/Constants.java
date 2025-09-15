@@ -12,6 +12,7 @@ public final class Constants {
     public static final String COSINE = "cosine";
     public static final String SINE = "sine";
     public static final String SIDES = "sides";
+    public static final String TAN = "tan";
 
     private Constants() {
     }

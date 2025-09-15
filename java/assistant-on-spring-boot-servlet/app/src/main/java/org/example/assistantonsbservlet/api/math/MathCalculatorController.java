@@ -6,6 +6,7 @@ import org.example.assistantonsbservlet.api.math.model.CalculateHypotenuseReq;
 import org.example.assistantonsbservlet.api.math.model.CalculateMatrixAddReq;
 import org.example.assistantonsbservlet.api.math.model.CalculateRightTriangleReq;
 import org.example.assistantonsbservlet.api.math.model.CalculateSineReq;
+import org.example.assistantonsbservlet.api.math.model.CalculateTanReq;
 import org.example.assistantonsbservlet.api.model.resp.CalculatorMatrixResponse;
 import org.example.assistantonsbservlet.api.model.resp.CalculatorScalarResponse;
 import org.example.assistantonsbservlet.exception.MathApiException;
@@ -75,6 +76,12 @@ public class MathCalculatorController implements CalculatorApi {
 
     @Override
     public ResponseEntity<CalculatorScalarResponse> calculate(CalculateSineReq body) {
+        final var response = facade.calculate(body);
+        return ResponseEntity.ok(response);
+    }
+
+    @Override
+    public ResponseEntity<CalculatorScalarResponse> calculate(CalculateTanReq body) {
         final var response = facade.calculate(body);
         return ResponseEntity.ok(response);
     }
