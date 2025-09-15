@@ -8,6 +8,22 @@ export function Square() {
   )
 }
 
+export function Triangle() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" height="32" width="32" viewBox="0 0 640 640">
+      <path d="M160 416C147.1 416 135.4 408.2 130.4 396.2C125.4 384.2 128.2 370.5 137.4 361.4L297.4 201.4C309.9 188.9 330.2 188.9 342.7 201.4L502.7 361.4C511.9 370.6 514.6 384.3 509.6 396.3C504.6 408.3 492.9 416 480 416L160 416z" />
+    </svg>
+  )
+}
+
+export function Circle() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" height="32" width="32" viewBox="0 0 640 640">
+      <path d="M64 320C64 178.6 178.6 64 320 64C461.4 64 576 178.6 576 320C576 461.4 461.4 576 320 576C178.6 576 64 461.4 64 320z" />
+    </svg>
+  )
+}
+
 export function Eraser() {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" height="32" width="32" viewBox="0 0 640 640">
