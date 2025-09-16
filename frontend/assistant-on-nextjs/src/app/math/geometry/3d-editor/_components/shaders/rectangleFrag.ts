@@ -1,4 +1,4 @@
-const rectangleFragmentShader = `#version 300 es
+const smallRectangleFragmentShader = `#version 300 es
 
 precision highp float;
 out vec4 outColor;
@@ -9,4 +9,17 @@ void main() {
 }
 `
 
-export default rectangleFragmentShader
+export default smallRectangleFragmentShader
+
+export const rectangleFragmentShader = `#version 300 es
+
+precision highp float;
+
+in vec4 v_color;
+
+out vec4 outColor;
+
+void main() {
+  outColor = v_color;
+}
+`
