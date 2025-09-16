@@ -4,12 +4,12 @@ import React, { useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import i18n from "@/config/i18n"
 import * as webglUtils from "@/lib/utils/webglUtils"
-import { Triangle } from "@/app/_components/common/fontAwesomeIcons"
+import { Square, Triangle } from "@/app/_components/common/fontAwesomeIcons"
 import Tooltip from "@mui/material/Tooltip"
 import WebGLRenderingCtx, { useWebGLRenderingCtx } from "@/lib/hooks/mathHooks"
 import { translate, rotate, scale, projection } from "@/lib/features/math/linalgUtils"
-import rectangleVertexShader from "./shaders/rectangleVert"
-import rectangleFragmentShader from "./shaders/rectangleFrag"
+import smallRectangleVertexShader, { rectangleVertexShader } from "./shaders/rectangleVert"
+import smallRectangleFragmentShader, { rectangleFragmentShader } from "./shaders/rectangleFrag"
 import triangleVertexShader from "./shaders/triangleVert"
 import triangleFragmentShader from "./shaders/triangleFrag"
 
@@ -50,7 +50,10 @@ export default function GeometryWebGLEditor({ translations }: GeometryWebGLEdito
       }
       setWebGLContext(gl)
 
-      const program = webglUtils.createProgramFromSources(gl, [rectangleVertexShader, rectangleFragmentShader])!
+      const program = webglUtils.createProgramFromSources(gl, [
+        smallRectangleVertexShader,
+        smallRectangleFragmentShader,
+      ])!
 
       const positionAttributeLocation = gl.getAttribLocation(program, "a_position")
       const resolutionUniformLocation = gl.getUniformLocation(program, "u_resolution")
@@ -194,6 +197,119 @@ function ToolPanel() {
     drawIsoscelesTriangle(gl)
   }
 
+  function handleDrawRectangleClick() {
+    function main() {
+      if (!gl) {
+        return
+      }
+
+      // setup GLSL program
+      const program = webglUtils.createProgramFromSources(gl, [rectangleVertexShader, rectangleFragmentShader])!
+
+      // look up where the vertex data needs to go.
+      const positionLocation = gl.getAttribLocation(program, "a_position")
+      const colorLocation = gl.getAttribLocation(program, "a_color")
+
+      // lookup uniforms
+      const matrixLocation = gl.getUniformLocation(program, "u_matrix")
+
+      // Create set of attributes
+      const vao = gl.createVertexArray()
+      gl.bindVertexArray(vao)
+
+      // Create a buffer for the positons.
+      let buffer = gl.createBuffer()
+      gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
+
+      // Set Geometry.
+      setGeometry(gl)
+
+      // tell the position attribute how to pull data out of the current ARRAY_BUFFER
+      gl.enableVertexAttribArray(positionLocation)
+      let size = 2
+      const type = gl.FLOAT
+      const normalize = false
+      const stride = 0
+      const offset = 0
+      gl.vertexAttribPointer(positionLocation, size, type, normalize, stride, offset)
+
+      // Create a buffer for the colors.
+      buffer = gl.createBuffer()
+      gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
+      // Set the colors.
+      setColors(gl)
+
+      // tell the color attribute how to pull data out of the current ARRAY_BUFFER
+      gl.enableVertexAttribArray(colorLocation)
+      size = 4
+      gl.vertexAttribPointer(colorLocation, size, type, normalize, stride, offset)
+
+      function computeMatrix(gl: WebGL2RenderingContext) {
+        let matrix = projection(gl.canvas.width, gl.canvas.height)
+        matrix = translate(matrix, 200, 150)
+        matrix = rotate(matrix, 0)
+        return scale(matrix, 1, 1)
+      }
+
+      drawScene(gl)
+
+      // Draw the scene.
+      function drawScene(gl: WebGL2RenderingContext) {
+        webglUtils.resizeCanvasToDisplaySize(gl.canvas as HTMLCanvasElement)
+
+        gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
+
+        // Clear the canvas
+        gl.clearColor(0, 0, 0, 0)
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+
+        // Tell it to use our program (pair of shaders)
+        gl.useProgram(program)
+
+        // Bind the attribute/buffer set we want.
+        gl.bindVertexArray(vao)
+
+        const matrix = computeMatrix(gl)
+        // Set the matrix.
+        gl.uniformMatrix3fv(matrixLocation, false, matrix)
+
+        // Draw the geometry.
+        const offset = 0
+        const count = 6
+        gl.drawArrays(gl.TRIANGLES, offset, count)
+      }
+    }
+
+    // Fill the buffer with the values that define a rectangle.
+    function setGeometry(gl: WebGL2RenderingContext) {
+      gl.bufferData(
+        gl.ARRAY_BUFFER,
+        new Float32Array([-150, -100, 150, -100, -150, 100, 150, -100, -150, 100, 150, 100]),
+        gl.STATIC_DRAW,
+      )
+    }
+
+    // Fill the buffer with colors for the 2 triangles
+    // that make the rectangle.
+    function setColors(gl: WebGL2RenderingContext) {
+      // Pick 2 random colors.
+      const r1 = Math.random()
+      const b1 = Math.random()
+      const g1 = Math.random()
+      const r2 = Math.random()
+      const b2 = Math.random()
+      const g2 = Math.random()
+
+      gl.bufferData(
+        gl.ARRAY_BUFFER,
+        new Float32Array([r1, b1, g1, 1, r1, b1, g1, 1, r1, b1, g1, 1, r2, b2, g2, 1, r2, b2, g2, 1, r2, b2, g2, 1]),
+        gl.STATIC_DRAW,
+      )
+    }
+
+    main()
+  }
+
   return (
     <div id="geometry-webgl-editor-tool-panel" className="grid grid-cols-1 grid-rows-3">
       <div>
@@ -202,6 +318,11 @@ function ToolPanel() {
       <Tooltip title="Triangle" placement="bottom-end">
         <button onClick={handleDrawIsoscelesTriangleClick}>
           <Triangle />
+        </button>
+      </Tooltip>
+      <Tooltip title="Rectangle" placement="bottom-end">
+        <button onClick={handleDrawRectangleClick}>
+          <Square />
         </button>
       </Tooltip>
       <div>
