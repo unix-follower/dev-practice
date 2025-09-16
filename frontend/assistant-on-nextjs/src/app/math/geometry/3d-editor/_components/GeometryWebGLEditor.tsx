@@ -1,40 +1,17 @@
 "use client"
 
-import React, { useEffect, useRef } from "react"
+import React, { useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import i18n from "@/config/i18n"
 import * as webglUtils from "@/lib/utils/webglUtils"
-
-const vertexShaderSource = `#version 300 es
-
-in vec2 a_position;
-
-uniform vec2 u_resolution;
-
-void main() {
-  // convert the position from pixels to 0.0 to 1.0
-  vec2 zeroToOne = a_position / u_resolution;
-
-  // convert from 0->1 to 0->2
-  vec2 zeroToTwo = zeroToOne * 2.0;
-
-  // convert from 0->2 to -1->+1 (clipspace)
-  vec2 clipSpace = zeroToTwo - 1.0;
-
-  gl_Position = vec4(clipSpace, 0, 1);
-}
-`
-
-const fragmentShaderSource = `#version 300 es
-
-precision highp float;
-out vec4 outColor;
-
-void main() {
-  // redish-purple
-  outColor = vec4(1, 0, 0.5, 1);
-}
-`
+import { Triangle } from "@/app/_components/common/fontAwesomeIcons"
+import Tooltip from "@mui/material/Tooltip"
+import WebGLRenderingCtx, { useWebGLRenderingCtx } from "@/lib/hooks/mathHooks"
+import { translate, rotate, scale, projection } from "@/lib/features/math/linalgUtils"
+import rectangleVertexShader from "./shaders/rectangleVert"
+import rectangleFragmentShader from "./shaders/rectangleFrag"
+import triangleVertexShader from "./shaders/triangleVert"
+import triangleFragmentShader from "./shaders/triangleFrag"
 
 interface GeometryWebGLEditorProps {
   translations: Record<string, string | Record<string, string>>
@@ -46,6 +23,7 @@ export default function GeometryWebGLEditor({ translations }: GeometryWebGLEdito
   }, [translations])
 
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const [webGLContext, setWebGLContext] = useState<WebGL2RenderingContext | null>(null)
 
   useEffect(() => {
     const { current: currentCanvasRef } = canvasRef
@@ -70,8 +48,9 @@ export default function GeometryWebGLEditor({ translations }: GeometryWebGLEdito
       if (!gl) {
         return
       }
+      setWebGLContext(gl)
 
-      const program = webglUtils.createProgramFromSources(gl, [vertexShaderSource, fragmentShaderSource])!
+      const program = webglUtils.createProgramFromSources(gl, [rectangleVertexShader, rectangleFragmentShader])!
 
       const positionAttributeLocation = gl.getAttribLocation(program, "a_position")
       const resolutionUniformLocation = gl.getUniformLocation(program, "u_resolution")
@@ -125,21 +104,106 @@ export default function GeometryWebGLEditor({ translations }: GeometryWebGLEdito
   })
 
   return (
-    <div id="geometry-webgl-editor" className="grid grid-cols-[12%_88%] grid-rows-1 gap-4">
-      <ToolPanel />
-      <canvas ref={canvasRef} style={{ width: "100vw", height: "100vh" }} />
-    </div>
+    <WebGLRenderingCtx value={webGLContext}>
+      <div id="geometry-webgl-editor" className="grid grid-cols-[12%_88%] grid-rows-1 gap-4">
+        <ToolPanel />
+        <canvas ref={canvasRef} style={{ width: "100vw", height: "100vh" }} />
+      </div>
+    </WebGLRenderingCtx>
   )
 }
 
 function ToolPanel() {
   const { t } = useTranslation()
+  const gl = useWebGLRenderingCtx()
+
+  function handleDrawIsoscelesTriangleClick() {
+    if (!gl) {
+      return
+    }
+
+    function drawIsoscelesTriangle(gl: WebGL2RenderingContext) {
+      const program = webglUtils.createProgramFromSources(gl, [triangleVertexShader, triangleFragmentShader])!
+
+      // look up where the vertex data needs to go.
+      const positionLocation = gl.getAttribLocation(program, "a_position")
+
+      // lookup uniforms
+      const matrixLocation = gl.getUniformLocation(program, "u_matrix")
+
+      // Create set of attributes
+      const vao = gl.createVertexArray()
+      gl.bindVertexArray(vao)
+
+      // Create a buffer.
+      const buffer = gl.createBuffer()
+      gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
+
+      // Set Geometry.
+      setGeometry(gl)
+
+      // tell the position attribute how to pull data out of the current ARRAY_BUFFER
+      gl.enableVertexAttribArray(positionLocation)
+      const size = 2
+      const type = gl.FLOAT
+      const normalize = false
+      const stride = 0
+      const offset = 0
+      gl.vertexAttribPointer(positionLocation, size, type, normalize, stride, offset)
+
+      function computeMatrix(gl: WebGL2RenderingContext) {
+        let matrix = projection(gl.canvas.width, gl.canvas.height)
+        matrix = translate(matrix, 200, 150)
+        matrix = rotate(matrix, 0)
+        return scale(matrix, 1, 1)
+      }
+
+      function drawScene(gl: WebGL2RenderingContext) {
+        webglUtils.resizeCanvasToDisplaySize(gl.canvas as HTMLCanvasElement)
+
+        gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
+
+        // Clear the canvas
+        gl.clearColor(0, 0, 0, 0)
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+
+        // Tell it to use the pair of shaders
+        gl.useProgram(program)
+
+        // Bind the attribute/buffer set we want.
+        gl.bindVertexArray(vao)
+
+        const matrix = computeMatrix(gl)
+        // Set the matrix.
+        gl.uniformMatrix3fv(matrixLocation, false, matrix)
+
+        // Draw the geometry.
+        const offset = 0
+        const count = 3
+        gl.drawArrays(gl.TRIANGLES, offset, count)
+      }
+
+      drawScene(gl)
+    }
+
+    // Fill the buffer with the values that define a triangle.
+    function setGeometry(gl: WebGL2RenderingContext) {
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([0, -100, 150, 125, -175, 100]), gl.STATIC_DRAW)
+    }
+
+    drawIsoscelesTriangle(gl)
+  }
 
   return (
     <div id="geometry-webgl-editor-tool-panel" className="grid grid-cols-1 grid-rows-3">
       <div>
         <span>{t("geometry3DEditorPage.primitives")}</span>
       </div>
+      <Tooltip title="Triangle" placement="bottom-end">
+        <button onClick={handleDrawIsoscelesTriangleClick}>
+          <Triangle />
+        </button>
+      </Tooltip>
       <div>
         <span>{t("geometry3DEditorPage.lights")}</span>
       </div>

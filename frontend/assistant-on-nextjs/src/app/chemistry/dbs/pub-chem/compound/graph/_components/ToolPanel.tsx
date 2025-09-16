@@ -1,6 +1,6 @@
 import React from "react"
 import { useTranslation } from "react-i18next"
-import { useAppDispatch, useAppSelector } from "@/lib/hooks"
+import { useAppDispatch, useAppSelector } from "@/lib/hooks/hooks"
 import {
   getIsAddElementDialogOpened,
   getIsRemoveElementDialogOpened,
@@ -12,7 +12,7 @@ import {
 import Button from "@mui/material/Button"
 import AddNodeDraggableDialog from "./AddNodeDraggableDialog"
 import RemoveNodeDraggableDialog from "./RemoveNodeDraggableDialog"
-import { useCytoscape } from "@/lib/chemistryHooks"
+import { useCytoscape } from "@/lib/hooks/chemistryHooks"
 
 export default function ToolPanel() {
   const { t } = useTranslation()
