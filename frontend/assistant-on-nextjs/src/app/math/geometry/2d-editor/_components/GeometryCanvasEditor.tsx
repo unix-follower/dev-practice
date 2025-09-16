@@ -3,7 +3,7 @@
 import React, { useEffect, useRef } from "react"
 import Tooltip from "@mui/material/Tooltip"
 import i18n from "@/config/i18n"
-import { useAppDispatch, useAppSelector } from "@/lib/hooks"
+import { useAppDispatch, useAppSelector } from "@/lib/hooks/hooks"
 import { Square, Triangle, Eraser, Circle } from "@/app/_components/common/fontAwesomeIcons"
 import {
   getIsDrawRectangleDialogOpened,

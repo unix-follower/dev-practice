@@ -2,10 +2,10 @@
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from "react"
 import cytoscape, { type ElementDefinition, NodeSingular } from "cytoscape"
-import CytoscapeContext from "@/lib/chemistryHooks"
+import CytoscapeContext from "@/lib/hooks/chemistryHooks"
 import ToolPanel from "./ToolPanel"
 import i18n from "@/config/i18n"
-import { useAppDispatch, useAppSelector } from "@/lib/hooks"
+import { useAppDispatch, useAppSelector } from "@/lib/hooks/hooks"
 import { getTappedNodeId, setTappedNodeId } from "@/lib/features/chemistry/compoundGraphViewerSlice"
 
 interface CompoundGraphViewerProps {

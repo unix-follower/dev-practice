@@ -1,5 +1,5 @@
-import { useCytoscape } from "@/lib/chemistryHooks"
-import { useAppDispatch, useAppSelector } from "@/lib/hooks"
+import { useCytoscape } from "@/lib/hooks/chemistryHooks"
+import { useAppDispatch, useAppSelector } from "@/lib/hooks/hooks"
 import {
   getIsRemoveElementDialogOpened,
   setIsRemoveElementDialogOpened,
