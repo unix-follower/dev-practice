@@ -4,6 +4,8 @@ import React, { useEffect, useRef, useState } from "react"
 import * as THREE from "three"
 import { OrbitControls } from "three/addons/controls/OrbitControls.js"
 import WebGL from "three/addons/capabilities/WebGL.js"
+import { ParametricGeometry } from "three/addons/geometries/ParametricGeometry.js"
+import { plane, klein, mobius } from "three/addons/geometries/ParametricFunctions.js"
 import GUI from "lil-gui"
 import { useTranslation } from "react-i18next"
 import i18n from "@/config/i18n"
@@ -309,6 +311,161 @@ function ToolPanel() {
     scene.add(mesh)
   }
 
+  function handleDrawOctahedronClick() {
+    if (!scene) {
+      return
+    }
+
+    const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 })
+    const mesh = new THREE.Mesh(new THREE.OctahedronGeometry(2), material)
+    mesh.position.set(10, 10, 0)
+    scene.add(mesh)
+  }
+
+  function handleDrawTetrahedronClick() {
+    if (!scene) {
+      return
+    }
+
+    const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 })
+    const mesh = new THREE.Mesh(new THREE.TetrahedronGeometry(2), material)
+    mesh.position.set(11, 11, 0)
+    scene.add(mesh)
+  }
+
+  function handleDrawPlaneClick() {
+    if (!scene) {
+      return
+    }
+
+    const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 })
+    const mesh = new THREE.Mesh(new THREE.PlaneGeometry(6, 6, 4, 4), material)
+    mesh.position.set(12, 12, 0)
+    scene.add(mesh)
+  }
+
+  function handleDrawCircleClick() {
+    if (!scene) {
+      return
+    }
+
+    const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 })
+    const mesh = new THREE.Mesh(new THREE.CircleGeometry(2, 10, 2, 2), material)
+    mesh.position.set(13, 13, 0)
+    scene.add(mesh)
+  }
+
+  function handleDrawRingClick() {
+    if (!scene) {
+      return
+    }
+
+    const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 })
+    const mesh = new THREE.Mesh(new THREE.RingGeometry(2, 6, 20, 5, 0, Math.PI * 2), material)
+    mesh.position.set(14, 14, 0)
+    scene.add(mesh)
+  }
+
+  function handleDrawCylinderClick() {
+    if (!scene) {
+      return
+    }
+
+    const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 })
+    const mesh = new THREE.Mesh(new THREE.CylinderGeometry(2, 2, 6, 20, 5), material)
+    mesh.position.set(15, 15, 0)
+    scene.add(mesh)
+  }
+
+  function handleDrawLatheClick() {
+    if (!scene) {
+      return
+    }
+
+    const points = []
+    for (let i = 0; i < 10; i++) {
+      points.push(new THREE.Vector2(Math.sin(i * 0.2) * Math.sin(i * 0.1) * 15 + 5, (i - 5) * 2))
+    }
+
+    const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 })
+    const mesh = new THREE.Mesh(new THREE.LatheGeometry(points, 6), material)
+    mesh.position.set(16, 16, 0)
+    scene.add(mesh)
+  }
+
+  function handleDrawTorusClick() {
+    if (!scene) {
+      return
+    }
+
+    const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 })
+    const mesh = new THREE.Mesh(new THREE.TorusGeometry(2, 5, 4, 4), material)
+    mesh.position.set(17, 17, 0)
+    scene.add(mesh)
+  }
+
+  function handleDrawTorusKnotClick() {
+    if (!scene) {
+      return
+    }
+
+    const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 })
+    const mesh = new THREE.Mesh(new THREE.TorusKnotGeometry(2, 5, 4, 4), material)
+    mesh.position.set(18, 18, 0)
+    scene.add(mesh)
+  }
+
+  function handleDrawCapsuleClick() {
+    if (!scene) {
+      return
+    }
+
+    const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 })
+    const mesh = new THREE.Mesh(new THREE.CapsuleGeometry(2, 6), material)
+    mesh.position.set(19, 19, 0)
+    scene.add(mesh)
+  }
+
+  function handleDrawPlaneParametricGeometryClick() {
+    if (!scene) {
+      return
+    }
+
+    const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 })
+    const planeParamGeometry = new ParametricGeometry(plane, 10, 10)
+    planeParamGeometry.scale(5, 5, 5)
+    planeParamGeometry.center()
+    const mesh = new THREE.Mesh(planeParamGeometry, material)
+    mesh.position.set(10, 0, 0)
+    scene.add(mesh)
+  }
+
+  function handleDrawKleinParametricGeometryClick() {
+    if (!scene) {
+      return
+    }
+
+    const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 })
+    const paramGeometry = new ParametricGeometry(klein, 10, 10)
+    const mesh = new THREE.Mesh(paramGeometry, material)
+    mesh.position.set(11, 0, 0)
+    mesh.scale.multiplyScalar(0.5)
+    scene.add(mesh)
+  }
+
+  function handleDrawMobiusParametricGeometryClick() {
+    if (!scene) {
+      return
+    }
+
+    const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 })
+    const paramGeometry = new ParametricGeometry(mobius, 10, 10)
+    const mesh = new THREE.Mesh(paramGeometry, material)
+    mesh.position.set(12, 0, 0)
+    mesh.scale.multiplyScalar(2)
+    scene.add(mesh)
+  }
+
   function handleAddAmbientLightClick() {
     if (!scene) {
       return
@@ -350,6 +507,71 @@ function ToolPanel() {
       <Tooltip title="Icosahedron" placement="bottom-end">
         <button onClick={handleDrawIcosahedronClick}>
           <i>Icosahedron</i>
+        </button>
+      </Tooltip>
+      <Tooltip title="Octahedron" placement="bottom-end">
+        <button onClick={handleDrawOctahedronClick}>
+          <i>Octahedron</i>
+        </button>
+      </Tooltip>
+      <Tooltip title="Tetrahedron" placement="bottom-end">
+        <button onClick={handleDrawTetrahedronClick}>
+          <i>Tetrahedron</i>
+        </button>
+      </Tooltip>
+      <Tooltip title="Plane" placement="bottom-end">
+        <button onClick={handleDrawPlaneClick}>
+          <i>Plane</i>
+        </button>
+      </Tooltip>
+      <Tooltip title="Circle" placement="bottom-end">
+        <button onClick={handleDrawCircleClick}>
+          <i>Circle</i>
+        </button>
+      </Tooltip>
+      <Tooltip title="Ring" placement="bottom-end">
+        <button onClick={handleDrawRingClick}>
+          <i>Ring</i>
+        </button>
+      </Tooltip>
+      <Tooltip title="Cylinder" placement="bottom-end">
+        <button onClick={handleDrawCylinderClick}>
+          <i>Cylinder</i>
+        </button>
+      </Tooltip>
+      <Tooltip title="Lathe" placement="bottom-end">
+        <button onClick={handleDrawLatheClick}>
+          <i>Lathe</i>
+        </button>
+      </Tooltip>
+      <Tooltip title="Torus" placement="bottom-end">
+        <button onClick={handleDrawTorusClick}>
+          <i>Torus</i>
+        </button>
+      </Tooltip>
+      <Tooltip title="Torus knot" placement="bottom-end">
+        <button onClick={handleDrawTorusKnotClick}>
+          <i>Torus knot</i>
+        </button>
+      </Tooltip>
+      <Tooltip title="Capsule" placement="bottom-end">
+        <button onClick={handleDrawCapsuleClick}>
+          <i>Capsule</i>
+        </button>
+      </Tooltip>
+      <Tooltip title="Plane Parametric Geometry" placement="bottom-end">
+        <button onClick={handleDrawPlaneParametricGeometryClick}>
+          <i>Plane PGeo</i>
+        </button>
+      </Tooltip>
+      <Tooltip title="Klein Parametric Geometry" placement="bottom-end">
+        <button onClick={handleDrawKleinParametricGeometryClick}>
+          <i>Klein PGeo</i>
+        </button>
+      </Tooltip>
+      <Tooltip title="Mobius Parametric Geometry" placement="bottom-end">
+        <button onClick={handleDrawMobiusParametricGeometryClick}>
+          <i>Mobius PGeo</i>
         </button>
       </Tooltip>
       <div>
