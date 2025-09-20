@@ -4,9 +4,9 @@ import React, { useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import i18n from "@/config/i18n"
 import * as webglUtils from "@/lib/utils/webglUtils"
-import { Square, Triangle } from "@/app/_components/common/fontAwesomeIcons"
+import { SquareIcon, TriangleIcon } from "@/app/_components/common/fontAwesomeIcons"
 import Tooltip from "@mui/material/Tooltip"
-import WebGLRenderingCtx, { useWebGLRenderingCtx } from "@/lib/hooks/mathHooks"
+import WebGLRenderingCtx, { useWebGLRenderingCtx } from "@/lib/hooks/webGLHooks"
 import { translate, rotate, scale, projection } from "@/lib/features/math/linalgUtils"
 import smallRectangleVertexShader, { rectangleVertexShader } from "./shaders/rectangleVert"
 import smallRectangleFragmentShader, { rectangleFragmentShader } from "./shaders/rectangleFrag"
@@ -317,12 +317,12 @@ function ToolPanel() {
       </div>
       <Tooltip title="Triangle" placement="bottom-end">
         <button onClick={handleDrawIsoscelesTriangleClick}>
-          <Triangle />
+          <TriangleIcon />
         </button>
       </Tooltip>
       <Tooltip title="Rectangle" placement="bottom-end">
         <button onClick={handleDrawRectangleClick}>
-          <Square />
+          <SquareIcon />
         </button>
       </Tooltip>
       <div>
