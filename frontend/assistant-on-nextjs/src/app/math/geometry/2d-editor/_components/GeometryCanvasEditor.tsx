@@ -4,7 +4,7 @@ import React, { useEffect, useRef } from "react"
 import Tooltip from "@mui/material/Tooltip"
 import i18n from "@/config/i18n"
 import { useAppDispatch, useAppSelector } from "@/lib/hooks/hooks"
-import { Square, Triangle, Eraser, Circle } from "@/app/_components/common/fontAwesomeIcons"
+import { SquareIcon, TriangleIcon, EraserIcon, CircleIcon } from "@/app/_components/common/fontAwesomeIcons"
 import {
   getIsDrawRectangleDialogOpened,
   setIsDrawRectangleDialogOpened,
@@ -129,18 +129,18 @@ function ToolPanel({ canvasRef }: ToolPanelProps) {
         </div>
         <Tooltip title="Rectangle" placement="bottom-end">
           <button onClick={handleDrawRectangleClick}>
-            <Square />
+            <SquareIcon />
           </button>
         </Tooltip>
         {isDrawRectangleDialogOpened && <DrawRectangleDraggableDialog onSubmit={drawRectangle} />}
         <Tooltip title="Right triangle" placement="bottom-end">
           <button onClick={handleDrawRightTriangleClick}>
-            <Triangle />
+            <TriangleIcon />
           </button>
         </Tooltip>
         <Tooltip title="Circle" placement="bottom-end">
           <button onClick={handleDrawCircleClick}>
-            <Circle />
+            <CircleIcon />
           </button>
         </Tooltip>
         <Tooltip title="Sine" placement="bottom-end">
@@ -150,7 +150,7 @@ function ToolPanel({ canvasRef }: ToolPanelProps) {
         </Tooltip>
         <Tooltip title="Clear canvas" placement="bottom-end">
           <button onClick={clearCanvas}>
-            <Eraser />
+            <EraserIcon />
           </button>
         </Tooltip>
       </div>
