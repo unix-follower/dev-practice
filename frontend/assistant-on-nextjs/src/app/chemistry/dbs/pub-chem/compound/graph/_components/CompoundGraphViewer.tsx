@@ -2,6 +2,8 @@
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from "react"
 import cytoscape, { type ElementDefinition, NodeSingular } from "cytoscape"
+import Box from "@mui/material/Box"
+import TextField from "@mui/material/TextField"
 import CytoscapeContext from "@/lib/hooks/chemistryHooks"
 import ToolPanel from "./ToolPanel"
 import i18n from "@/config/i18n"
@@ -23,11 +25,19 @@ function getNodeColor(data: cytoscape.NodeDataDefinition) {
   return ELEMENT_COLOR
 }
 
+const operations = [
+  {
+    value: "getElementById",
+  },
+]
+
 export default function CompoundGraphViewer({ translations, compoundData }: CompoundGraphViewerProps) {
   const cyContainerRef = useRef<HTMLDivElement>(null)
   const [cyInstance, setCyInstance] = useState<cytoscape.Core | null>(null)
   const dispatch = useAppDispatch()
   const tappedNodeId = useAppSelector(getTappedNodeId)
+
+  const [searchInGraphQuery, setSearchInGraphQuery] = useState("")
 
   const handleTapNode = useCallback(
     (event: cytoscape.EventObject) => {
@@ -117,12 +127,67 @@ export default function CompoundGraphViewer({ translations, compoundData }: Comp
     i18n.addResourceBundle("en", "translation", translations, true, true)
   }, [translations])
 
+  function handleSearchInGraphChange(event: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) {
+    const { value } = event.target
+    setSearchInGraphQuery(value)
+    const elementById = cyInstance?.getElementById(value)
+    if (elementById) {
+      elementById.style("background-color", "yellow")
+    }
+  }
+
   return (
     <CytoscapeContext value={cyInstance}>
-      <Suspense fallback={<div>Loading Tool Panel...</div>}>
-        <ToolPanel />
-      </Suspense>
-      <div ref={cyContainerRef} style={{ width: "100%", height: "500px" }} />
+      <div className="mb-2 flex h-15 gap-2 pt-1">
+        <Box
+          component="form"
+          sx={{ "& .MuiTextField-root": { m: 1, width: "100%" } }}
+          className="flex-1/2 flex-grow-1"
+          noValidate
+          autoComplete="off"
+        >
+          <TextField
+            id="cy-op-search"
+            label="Search in the graph"
+            type="search"
+            value={searchInGraphQuery}
+            onChange={handleSearchInGraphChange}
+          />
+        </Box>
+        <Box
+          component="form"
+          sx={{ "& .MuiTextField-root": { m: 1, width: "100px" } }}
+          className="w-90%"
+          noValidate
+          autoComplete="off"
+        >
+          <div>
+            <TextField
+              id="select-operation"
+              select
+              label="Operation"
+              value={operations[0]}
+              slotProps={{
+                select: {
+                  native: true,
+                },
+              }}
+            >
+              {operations.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.value}
+                </option>
+              ))}
+            </TextField>
+          </div>
+        </Box>
+      </div>
+      <div className="grid grid-cols-[10%_90%] grid-rows-1 gap-4">
+        <Suspense fallback={<div>Loading Tool Panel...</div>}>
+          <ToolPanel />
+        </Suspense>
+        <div ref={cyContainerRef} style={{ width: "100%", height: "500px" }} />
+      </div>
     </CytoscapeContext>
   )
 }

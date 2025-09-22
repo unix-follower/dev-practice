@@ -38,6 +38,10 @@ export default function ToolPanel() {
     dispatch(setIsRemoveElementDialogOpened(true))
   }
 
+  function handleCollectionClick() {
+    cy?.collection([{ data: { id: "a" } }, { data: { id: "b" } }])
+  }
+
   return (
     <div id="compound-graph-viewer-tool-panel" className="grid grid-cols-1 grid-rows-3">
       <div>
@@ -53,6 +57,11 @@ export default function ToolPanel() {
             {t("chemistryPubChemGraphCompoundPage.remove")}
           </Button>
           {isRemoveElementDialogOpened && <RemoveNodeDraggableDialog />}
+        </div>
+        <div>
+          <Button variant="outlined" onClick={handleCollectionClick}>
+            {t("chemistryPubChemGraphCompoundPage.collection")}
+          </Button>
         </div>
       </div>
       <div>
