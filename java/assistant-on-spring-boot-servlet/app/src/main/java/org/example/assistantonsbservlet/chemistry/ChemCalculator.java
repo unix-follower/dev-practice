@@ -1,10 +1,10 @@
 package org.example.assistantonsbservlet.chemistry;
 
-public class ChemCalculator {
+public final class ChemCalculator {
     private ChemCalculator() {
     }
 
-    public static class General {
+    public static final class General {
         private General() {
         }
 
@@ -35,7 +35,21 @@ public class ChemCalculator {
         }
 
         static double atomicMass(int protons, int neutrons) {
+            checkProtonsNum(protons);
+            checkNeutronsNum(neutrons);
             return (double) protons + neutrons;
+        }
+
+        private static void checkNeutronsNum(int neutrons) {
+            if (neutrons < 1 || neutrons > 177) {
+                throw new IllegalArgumentException("Invalid neutrons number");
+            }
+        }
+
+        private static void checkProtonsNum(int protons) {
+            if (protons < 1 || protons > 118) {
+                throw new IllegalArgumentException("Invalid protons number");
+            }
         }
 
         static int charge(int protons, int electrons) {
