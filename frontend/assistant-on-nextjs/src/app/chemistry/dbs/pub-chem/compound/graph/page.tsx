@@ -74,11 +74,7 @@ function ViewerLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  return (
-    <div id="compound-graph-viewer" className="grid grid-cols-[12%_88%] grid-rows-1 gap-4">
-      {children}
-    </div>
-  )
+  return <div id="compound-graph-viewer">{children}</div>
 }
 
 interface AwaitGraphDataProps {

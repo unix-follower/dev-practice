@@ -59,7 +59,8 @@
     "selector": "selector",
     "examples": "Examples:",
     "removeCompoundsByLblDescription": "Remove all compounds",
-    "removeElementByLblDescription": "Remove all elements"
+    "removeElementByLblDescription": "Remove all elements",
+    "collection": "Collection"
   },
   "financeStockMarketPage": {
     "ticker": "Ticker",

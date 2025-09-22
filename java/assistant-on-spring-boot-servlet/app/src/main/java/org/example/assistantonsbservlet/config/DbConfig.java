@@ -111,7 +111,7 @@ class DbConfig {
     }
 
     @Bean
-    @ConditionalOnBooleanProperty("app.pg-age-graph.enabled")
+    @ConditionalOnBooleanProperty("app.pubchem.pg-age-graph.enabled")
     DataSource pubChemGraphDataSource(AppProperties properties) {
         final var pubChemProps = properties.pubChem();
         final var ds = pubChemProps.pgAgeGraph();
@@ -120,7 +120,7 @@ class DbConfig {
     }
 
     @Bean
-    @ConditionalOnBooleanProperty("app.pg-age-graph.enabled")
+    @ConditionalOnBooleanProperty("app.pubchem.pg-age-graph.enabled")
     LocalContainerEntityManagerFactoryBean pubChemGraphEntityManagerFactory(
         @Qualifier("pubChemGraphDataSource") DataSource ds
     ) {

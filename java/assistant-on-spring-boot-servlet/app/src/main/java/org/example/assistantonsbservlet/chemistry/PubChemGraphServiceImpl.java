@@ -14,8 +14,8 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Service;
 
 @Service
-@ConditionalOnBooleanProperty("app.pg-age-graph.enabled")
-public final class PubChemGraphServiceImpl implements PubChemGraphService {
+@ConditionalOnBooleanProperty("app.pubchem.pg-age-graph.enabled")
+public non-sealed class PubChemGraphServiceImpl implements PubChemGraphService {
     private final ApplicationContext appContext;
     private final ConversionService appConversionService;
     private EntityManagerFactory emf;
@@ -77,8 +77,8 @@ public final class PubChemGraphServiceImpl implements PubChemGraphService {
 }
 
 @Service
-@ConditionalOnBooleanProperty(value = "app.pg-age-graph.enabled", havingValue = false)
-final class PubChemGraphNoopService implements PubChemGraphService {
+@ConditionalOnBooleanProperty(value = "app.pubchem.pg-age-graph.enabled", havingValue = false)
+non-sealed class PubChemGraphNoopService implements PubChemGraphService {
     @Override
     public ChemistryGraphResponse getAllGraphs(int page, int pageSize) {
         throw new UnsupportedOperationException();
