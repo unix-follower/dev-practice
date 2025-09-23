@@ -3,6 +3,7 @@ import { configureStore } from "@reduxjs/toolkit"
 import { pubChemFdaSlice } from "@/lib/features/chemistry/pubChemFdaSlice"
 import { pubChemCompoundApiSlice } from "@/lib/features/chemistry/pubChemCompoundApiSlice"
 import { stockMarketSlice } from "@/lib/features/finance/stockMarketSlice"
+import { d3Slice } from "@/lib/features/finance/d3Slice"
 import { compoundGraphViewerSlice } from "@/lib/features/chemistry/compoundGraphViewerSlice"
 import { geometryCanvasEditorSlice } from "@/lib/features/math/geometry/geometryCanvasEditorSlice"
 
@@ -12,6 +13,7 @@ const rootReducer = combineSlices(
   pubChemCompoundApiSlice,
   compoundGraphViewerSlice,
   geometryCanvasEditorSlice,
+  d3Slice,
 )
 export type RootState = ReturnType<typeof rootReducer>
 
