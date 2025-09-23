@@ -1,9 +1,13 @@
 "use client"
 
-import React, { use, useEffect, useRef } from "react"
+import React, { use, useEffect, useRef, useState } from "react"
 import * as d3 from "d3"
 import StocksResponseDto from "@/lib/api/finance/stockMarketModel"
 import { type D3SelectSVGSVGElement } from "@/lib/utils/d3Utils"
+import D3ToolPanel from "@/app/finance/stock-market/_components/D3ToolPanel"
+import { useAppDispatch } from "@/lib/hooks/hooks"
+import { D3LINE_PLOT, D3LINE_PLOT_X_AXIS } from "@/lib/features/finance/constants"
+import { setXAxisDomain } from "@/lib/features/finance/d3Slice"
 
 interface DataPoint {
   x: Date
@@ -16,9 +20,14 @@ interface StockDataProps {
   adjustedClosePrices: DataPoint[]
   lowPrices: DataPoint[]
   highPrices: DataPoint[]
+  setSelectedChart: (svg: SVGSVGElement | null) => void
 }
 
-type SeriesConfig = { key: keyof StockDataProps; color: string; label: string }[]
+type SeriesConfig = {
+  key: keyof Omit<StockDataProps, "setSelectedChart">
+  color: string
+  label: string
+}[]
 
 function createSeriesConfig(): SeriesConfig {
   return [
@@ -70,6 +79,15 @@ function createScales({
 }
 
 function LinePlot(props: StockDataProps) {
+  const dispatch = useAppDispatch()
+  const svgRef = useRef<SVGSVGElement | null>(null)
+
+  function handleSelectChart() {
+    if (svgRef.current) {
+      props.setSelectedChart(svgRef.current)
+    }
+  }
+
   const width = 640
   const height = 400
   const margin = { top: 20, right: 20, bottom: 30, left: 50 }
@@ -90,20 +108,22 @@ function LinePlot(props: StockDataProps) {
     .x((d) => xScale(d.x))
     .y((d) => yScale(d.y))
 
-  const xAxisRef = React.useRef<SVGGElement>(null)
-  const yAxisRef = React.useRef<SVGGElement>(null)
+  const xAxisRef = useRef<SVGGElement>(null)
+  const yAxisRef = useRef<SVGGElement>(null)
 
   useEffect(() => {
     if (xAxisRef.current) {
+      const domain = xScale.domain().map((axis) => axis.toString())
+      dispatch(setXAxisDomain({ chartId: D3LINE_PLOT, data: domain }))
       d3.select(xAxisRef.current).call(d3.axisBottom<Date>(xScale).ticks(6).tickFormat(d3.timeFormat("%b %d")))
     }
     if (yAxisRef.current) {
       d3.select(yAxisRef.current).call(d3.axisLeft(yScale))
     }
-  }, [xScale, yScale])
+  }, [dispatch, xScale, yScale])
 
   return (
-    <svg width={width} height={height}>
+    <svg id={D3LINE_PLOT} ref={svgRef} onClick={handleSelectChart} width={width} height={height}>
       {/* Series lines */}
       {seriesConfig.map((cfg) => (
         <path key={cfg.key} fill="none" stroke={cfg.color} strokeWidth="1.5" d={line(props[cfg.key]) ?? undefined} />
@@ -118,7 +138,7 @@ function LinePlot(props: StockDataProps) {
       ))}
 
       {/* Axes */}
-      <g ref={xAxisRef} transform={`translate(0,${height - margin.bottom})`} />
+      <g id={D3LINE_PLOT_X_AXIS} ref={xAxisRef} transform={`translate(0,${height - margin.bottom})`} />
       <g ref={yAxisRef} transform={`translate(${margin.left},0)`} />
 
       {/* Legend */}
@@ -138,6 +158,12 @@ function LinePlot(props: StockDataProps) {
 
 function ScatterPlot(props: StockDataProps) {
   const svgRef = useRef<SVGSVGElement>(null)
+
+  function handleSelectChart() {
+    if (svgRef.current) {
+      props.setSelectedChart(svgRef.current)
+    }
+  }
 
   const width = 640
   const height = 400
@@ -204,7 +230,7 @@ function ScatterPlot(props: StockDataProps) {
     addLegend(svg, seriesConfig, margin)
   }, [props])
 
-  return <svg ref={svgRef} width={width} height={height}></svg>
+  return <svg ref={svgRef} onClick={handleSelectChart} width={width} height={height}></svg>
 }
 
 interface StockD3Props {
@@ -214,6 +240,8 @@ interface StockD3Props {
 
 export default function StockD3({ stocksResponsePromise }: StockD3Props) {
   const stocksResponse = use(stocksResponsePromise)
+
+  const [selectedChart, setSelectedChart] = useState<SVGSVGElement | null>(null)
 
   const mapStockData = (key: keyof (typeof stocksResponse.stocks)[number]) => {
     return stocksResponse.stocks
@@ -231,21 +259,26 @@ export default function StockD3({ stocksResponsePromise }: StockD3Props) {
   const highPrices = mapStockData("high")
 
   return (
-    <>
-      <LinePlot
-        openPrices={openPrices}
-        closePrices={closePrices}
-        adjustedClosePrices={adjustedClosePrices}
-        lowPrices={lowPrices}
-        highPrices={highPrices}
-      />
-      <ScatterPlot
-        openPrices={openPrices}
-        closePrices={closePrices}
-        adjustedClosePrices={adjustedClosePrices}
-        lowPrices={lowPrices}
-        highPrices={highPrices}
-      />
-    </>
+    <div className="grid grid-cols-[10%_90%] grid-rows-1 gap-4">
+      <D3ToolPanel selectedChart={selectedChart} />
+      <div>
+        <LinePlot
+          openPrices={openPrices}
+          closePrices={closePrices}
+          adjustedClosePrices={adjustedClosePrices}
+          lowPrices={lowPrices}
+          highPrices={highPrices}
+          setSelectedChart={setSelectedChart}
+        />
+        <ScatterPlot
+          openPrices={openPrices}
+          closePrices={closePrices}
+          adjustedClosePrices={adjustedClosePrices}
+          lowPrices={lowPrices}
+          highPrices={highPrices}
+          setSelectedChart={setSelectedChart}
+        />
+      </div>
+    </div>
   )
 }
