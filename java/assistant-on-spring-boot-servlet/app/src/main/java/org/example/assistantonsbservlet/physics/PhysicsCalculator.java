@@ -102,7 +102,7 @@ public final class PhysicsCalculator {
         }
 
         /**
-         * @return B = m / (C × A)
+         * @return B = m / (C × A). The unit is lb/in²
          */
         static double ballisticCoefficient(
             double projectileMass, double dragCoefficient, double crossSectionArea) {
@@ -128,29 +128,75 @@ public final class PhysicsCalculator {
         }
 
         /**
-         * @return p = mv
+         * @return p = mv. The unit is kg*m/s
          */
         static double momentum(double mass, double velocity) {
             return mass * velocity;
         }
 
         /**
-         * @return √(pₓ² + pᵧ² + p_z²)
+         * @return v = p/m. The unit is kg*m/s
          */
-        static double momentumMagnitude(double[] momentum) {
-            return Math.sqrt(Arrays.stream(momentum).map(m -> m * m).sum());
+        static double velocityOfDesiredMomentum(double momentum, double mass) {
+            return momentum / mass;
         }
 
         /**
+         * @return ||p|| = m * √(vₓ² + vᵧ² + v_z²) ⇒ ||p|| = m * ||v||
+         */
+        static double velocityMagnitude(double[] velocityVector) {
+            return Math.sqrt(Arrays.stream(velocityVector).map(m -> m * m).sum());
+        }
+
+        /**
+         * @return ||p|| = m * ||v||
+         */
+        static double momentumMagnitude(double mass, double[] velocityVector) {
+            return mass * velocityMagnitude(velocityVector);
+        }
+
+        /**
+         * Calculate the object2 final velocity in m/s when the collision type is unknown or partially elastic.
          * @return m₁u₁ + m₂u₂ = m₁v₁ + m₂v₂
          */
         static double conservationOfMomentum(
-            double massObj1, double obj1InitialVelocity, double obj1FinalVelocity,
-            double massObj2, double obj2InitialVelocity) {
-            final double initialMomentum = massObj1 * obj1InitialVelocity + massObj2 * obj2InitialVelocity;
-            final double obj1FinalMomentum = massObj1 * obj1FinalVelocity;
+            double obj1Mass, double obj1InitialVelocity, double obj1FinalVelocity,
+            double obj2Mass, double obj2InitialVelocity) {
+            final double initialMomentum = obj1Mass * obj1InitialVelocity + obj2Mass * obj2InitialVelocity;
+            final double obj1FinalMomentum = obj1Mass * obj1FinalVelocity;
             final double obj2FinalMomentum = initialMomentum - obj1FinalMomentum;
-            return obj2FinalMomentum / massObj2;
+            return obj2FinalMomentum / obj2Mass;
+        }
+
+        /**
+         * Calculate the conservation of momentum for perfectly elastic/inelastic collision type.
+         * For perfectly elastic collision:
+         * v₁ = ((m₁ - m₂) / m₁ + m₂) * u₁ + ((2m₂) / m₁ + m₂) * u₂
+         * v₂ = ((2m₂) / m₁ + m₂) * u₁ + ((m₂ - m₁) / m₁ + m₂) * u₂
+         * For perfectly inelastic collision:
+         * m₁u₁ + m₂u₂ = (m₁ + m₂)V
+         * V = (m₁u₁ + m₂u₂) / (m₁ + m₂)
+         * @return final velocity vector in m/s.
+         */
+        static double[] conservationOfMomentum(
+            double obj1Mass, double obj1InitialVelocity,
+            double obj2Mass, double obj2InitialVelocity, CollisionType type) {
+            switch (type) {
+                case PERFECTLY_ELASTIC -> {
+                    final double massSum = obj1Mass + obj2Mass;
+                    final double obj1FinalVelocity = ((obj1Mass - obj2Mass) / massSum) * obj1InitialVelocity
+                        + ((2 * obj2Mass) / massSum) * obj2InitialVelocity;
+                    final double obj2FinalVelocity = ((2 * obj1Mass) / massSum) * obj1InitialVelocity
+                        + ((obj2Mass - obj1Mass) / massSum) * obj2InitialVelocity;
+                    return new double[] {obj1FinalVelocity, obj2FinalVelocity};
+                }
+                case PERFECTLY_INELASTIC -> {
+                    final double finalVelocity = (obj1Mass * obj1InitialVelocity + obj2Mass * obj2InitialVelocity)
+                        / (obj1Mass + obj2Mass);
+                    return new double[]{finalVelocity, finalVelocity};
+                }
+                default -> throw new IllegalArgumentException();
+            }
         }
 
         /**
