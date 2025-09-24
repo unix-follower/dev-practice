@@ -37,5 +37,35 @@ class ConversionCalculatorTest {
             // then
             assertEquals(8093.71, result, 0.1);
         }
+
+        @Test
+        void calculateAcresToSquareFeet() {
+            // given
+            final double acres = 0.25;
+            // when
+            final double result = ConversionCalculator.LengthAndArea.acresToSquareFeet(acres);
+            // then
+            assertEquals(10_890, result, 0.1);
+        }
+
+        @Test
+        void calculateAcresToSquareMiles() {
+            // given
+            final double acres = 8;
+            // when
+            final double result = ConversionCalculator.LengthAndArea.acresToSquareMiles(acres);
+            // then
+            assertEquals(0.0125, result, 0.1);
+        }
+
+        @Test
+        void calculateSquareMetersToSquareYards() {
+            // given
+            final double squareMeters = 50;
+            // when
+            final double result = ConversionCalculator.LengthAndArea.squareMetersToSquareYards(squareMeters);
+            // then
+            assertEquals(59.7995, result, 0.1);
+        }
     }
 }
