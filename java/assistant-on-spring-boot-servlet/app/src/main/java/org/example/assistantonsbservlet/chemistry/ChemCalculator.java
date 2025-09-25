@@ -1,5 +1,7 @@
 package org.example.assistantonsbservlet.chemistry;
 
+import java.util.Arrays;
+
 public final class ChemCalculator {
     private ChemCalculator() {
     }
@@ -54,6 +56,25 @@ public final class ChemCalculator {
 
         static int charge(int protons, int electrons) {
             return protons - electrons;
+        }
+
+        static double averageAtomicMass(double[][] isotopes) {
+            if (isotopes.length < 1 || isotopes.length > 10) {
+                throw new IllegalArgumentException();
+            }
+
+            final double isotopesSum = Arrays.stream(isotopes)
+                .mapToDouble(isotopeData -> {
+                    if (isotopeData.length < 2) {
+                        throw new IllegalArgumentException();
+                    }
+
+                    final double isotopeMass = isotopeData[0];
+                    final double isotopeNaturalAbundance = isotopeData[1];
+                    return isotopeMass * isotopeNaturalAbundance;
+                })
+                .sum();
+            return isotopesSum / 100;
         }
     }
 }
