@@ -67,5 +67,25 @@ class ConversionCalculatorTest {
             // then
             assertEquals(59.7995, result, 0.1);
         }
+
+        @Test
+        void calculateAresToHectares() {
+            // given
+            final double ares = 100;
+            // when
+            final double result = ConversionCalculator.LengthAndArea.aresToHectares(ares);
+            // then
+            assertEquals(1, result, 0.1);
+        }
+
+        @Test
+        void calculateHectaresToAres() {
+            // given
+            final double hectares = 1;
+            // when
+            final double result = ConversionCalculator.LengthAndArea.hectaresToAres(hectares);
+            // then
+            assertEquals(100, result, 0.1);
+        }
     }
 }
