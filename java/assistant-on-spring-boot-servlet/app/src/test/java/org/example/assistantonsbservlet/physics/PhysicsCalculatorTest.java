@@ -166,5 +166,42 @@ class PhysicsCalculatorTest {
             assertEquals(6.667, finalVelocities[0], 0.001);
             assertEquals(6.667, finalVelocities[1], 0.001);
         }
+
+        @Test
+        void calculateDisplacementUsingConstantVelocity() {
+            // given
+            final long time = ConversionCalculator.Time.hoursToSeconds(2);
+            final double averageVelocity = 31.3889; // m/s
+            // when
+            final double displacement = PhysicsCalculator.Kinematics.displacement(averageVelocity, time);
+            // then
+            assertEquals(226_000, displacement, 0.1);
+        }
+
+        @Test
+        void calculateDisplacementUsingAccelerationAndInitialVelocity() {
+            // given
+            final long time = ConversionCalculator.Time.hoursToSeconds(2);
+            final double initialVelocity = 2; // m/s
+            final double acceleration = 0.5; // m/s²
+            // when
+            final double displacementInMeters = PhysicsCalculator.Kinematics.displacement(
+                acceleration, initialVelocity, time);
+            // then
+            assertEquals(12_974_400, displacementInMeters);
+        }
+
+        @Test
+        void calculateDisplacementUsingInitialAndFinalVelocity() {
+            // given
+            final long time = ConversionCalculator.Time.hoursToSeconds(2);
+            final double initialVelocity = 2; // m/s
+            final double finalVelocity = 3602; // m/s
+            // when
+            final double displacementInMeters = PhysicsCalculator.Kinematics.displacementOfVelocities(
+                initialVelocity, finalVelocity, time);
+            // then
+            assertEquals(12_974_400, displacementInMeters, 0.1);
+        }
     }
 }

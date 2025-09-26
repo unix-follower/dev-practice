@@ -60,13 +60,24 @@ public final class ConversionCalculator {
     }
 
     public static final class VolumeAndWeight {
-        public static final double ONE_G_IN_LB = 0.00220462;
+        public static final double ONE_GRAM_IN_POUND = 0.00220462;
 
         private VolumeAndWeight() {
         }
 
         public static double gramsToPounds(double grams) {
-            return grams * ONE_G_IN_LB;
+            return grams * ONE_GRAM_IN_POUND;
+        }
+    }
+
+    public static final class Time {
+        public static final int ONE_HOUR_IN_SECONDS = 3600;
+
+        private Time() {
+        }
+
+        public static long hoursToSeconds(long hours) {
+            return hours * ONE_HOUR_IN_SECONDS;
         }
     }
 }

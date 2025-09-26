@@ -102,7 +102,7 @@ public final class PhysicsCalculator {
         }
 
         /**
-         * @return B = m / (C × A). The unit is lb/in²
+         * @return B = m / (C × A). The units are lb/in²
          */
         static double ballisticCoefficient(
             double projectileMass, double dragCoefficient, double crossSectionArea) {
@@ -128,14 +128,14 @@ public final class PhysicsCalculator {
         }
 
         /**
-         * @return p = mv. The unit is kg*m/s
+         * @return p = mv. The units are kg*m/s
          */
         static double momentum(double mass, double velocity) {
             return mass * velocity;
         }
 
         /**
-         * @return v = p/m. The unit is kg*m/s
+         * @return v = p/m. The units are kg*m/s
          */
         static double velocityOfDesiredMomentum(double momentum, double mass) {
             return momentum / mass;
@@ -200,17 +200,25 @@ public final class PhysicsCalculator {
         }
 
         /**
-         * @return d = v * t
+         * Calculate displacement using constant velocity
+         * @return d = v * t. The units are meters
          */
-        static double displacement(double averageVelocity, long totalTime) {
-            return averageVelocity * totalTime;
+        static double displacement(double averageVelocity, long timeInSeconds) {
+            return averageVelocity * timeInSeconds;
         }
 
         /**
-         * @return d = (1 / 2) * a * t² + v₀ * t
+         * @return d = (1 / 2) * a * t² + v₀ * t. The units are meters
          */
-        static double displacement(double acceleration, double initialVelocity, long totalTime) {
-            return 0.5 * acceleration * totalTime * totalTime + initialVelocity * totalTime;
+        static double displacement(double acceleration, double initialVelocity, long timeInSeconds) {
+            return 0.5 * acceleration * timeInSeconds * timeInSeconds + initialVelocity * timeInSeconds;
+        }
+
+        /**
+         * @return d = (1 / 2) * (v₁ + v₀) * t. The units are meters
+         */
+        static double displacementOfVelocities(double initialVelocity, double finalVelocity, long timeInSeconds) {
+            return 0.5 * (finalVelocity + initialVelocity) * timeInSeconds;
         }
 
         /**
