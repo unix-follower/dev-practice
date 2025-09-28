@@ -9,7 +9,7 @@ class ConversionCalculatorTest {
     @Nested
     class LengthAndArea {
         @Test
-        void calculateHectaresToAcres() {
+        void convertHectaresToAcres() {
             // given
             final double hectares = 2;
             // when
@@ -19,7 +19,7 @@ class ConversionCalculatorTest {
         }
 
         @Test
-        void calculateAcresToHectares() {
+        void convertAcresToHectares() {
             // given
             final double acres = 4.94211;
             // when
@@ -29,7 +29,7 @@ class ConversionCalculatorTest {
         }
 
         @Test
-        void calculateAcresToSquareMeters() {
+        void convertAcresToSquareMeters() {
             // given
             final double acres = 2;
             // when
@@ -39,7 +39,7 @@ class ConversionCalculatorTest {
         }
 
         @Test
-        void calculateAcresToSquareFeet() {
+        void convertAcresToSquareFeet() {
             // given
             final double acres = 0.25;
             // when
@@ -49,7 +49,7 @@ class ConversionCalculatorTest {
         }
 
         @Test
-        void calculateAcresToSquareMiles() {
+        void convertAcresToSquareMiles() {
             // given
             final double acres = 8;
             // when
@@ -59,7 +59,7 @@ class ConversionCalculatorTest {
         }
 
         @Test
-        void calculateSquareMetersToSquareYards() {
+        void convertSquareMetersToSquareYards() {
             // given
             final double squareMeters = 50;
             // when
@@ -69,7 +69,7 @@ class ConversionCalculatorTest {
         }
 
         @Test
-        void calculateAresToHectares() {
+        void convertAresToHectares() {
             // given
             final double ares = 100;
             // when
@@ -79,13 +79,63 @@ class ConversionCalculatorTest {
         }
 
         @Test
-        void calculateHectaresToAres() {
+        void convertHectaresToAres() {
             // given
             final double hectares = 1;
             // when
             final double result = ConversionCalculator.LengthAndArea.hectaresToAres(hectares);
             // then
             assertEquals(100, result, 0.1);
+        }
+
+        @Test
+        void convertMetersToAstronomicalUnits() {
+            // given
+            final double meters = 149_597_870_700.0;
+            // when
+            final double result = ConversionCalculator.LengthAndArea.metersToAstronomicalUnits(meters);
+            // then
+            assertEquals(1, result, 0.1);
+        }
+
+        @Test
+        void convertJupiterDistanceFromSunInAstronomicalUnitsToMeters() {
+            // given
+            final double au = 5.2;
+            // when
+            final double result = ConversionCalculator.LengthAndArea.astronomicalUnitsToMeters(au);
+            // then
+            assertEquals(777_908_927_640.0, result, 0.1);
+        }
+
+        @Test
+        void convertJupiterDistanceFromSunInAstronomicalUnitsToKilometers() {
+            // given
+            final double au = 5.2;
+            // when
+            final double result = ConversionCalculator.LengthAndArea.astronomicalUnitsToKilometers(au);
+            // then
+            assertEquals(777_908_927.64, result, 0.01);
+        }
+
+        @Test
+        void convertDistanceToProximaCentauriInLightYearsToAstronomicalUnits() {
+            // given
+            final double lightYears = 4.2465;
+            // when
+            final double resultAu = ConversionCalculator.LengthAndArea.lightYearsToAstronomicalUnits(lightYears);
+            // then
+            assertEquals(268_552.9065, resultAu, 0.0001);
+        }
+
+        @Test
+        void convertAstronomicalUnitsToParsecs() {
+            // given
+            final double au = 206_264.8;
+            // when
+            final double resultPc = ConversionCalculator.LengthAndArea.astronomicalUnitsToParsecs(au);
+            // then
+            assertEquals(1, resultPc, 0.1);
         }
     }
 }

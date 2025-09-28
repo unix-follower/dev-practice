@@ -203,5 +203,88 @@ class PhysicsCalculatorTest {
             // then
             assertEquals(12_974_400, displacementInMeters, 0.1);
         }
+
+        @Test
+        void calculateFreeFallVelocity() {
+            // given
+            final int timeInSec = 8;
+            final int initialVelocity = 0;
+            // when
+            final double velocity = PhysicsCalculator.Kinematics.freeFallVelocity(initialVelocity, timeInSec);
+            // then
+            assertEquals(78.45, velocity, 0.01); // m/s
+        }
+
+        @Test
+        void calculateFreeFallDistance() {
+            // given
+            final int timeInSec = 8;
+            // when
+            final double distanceInM = PhysicsCalculator.Kinematics.freeFallDistance(timeInSec);
+            // then
+            assertEquals(313.81, distanceInM, 0.01);
+        }
+
+        @Test
+        void calculateFreeFallDistanceWithAirResistance() {
+            // given
+            final double airResistanceCoef = 0.24;
+            final double terminalVelocity = 55.4;
+            // when
+            final double dragForce = PhysicsCalculator.Kinematics.freeFallDistanceWithAirResistance(
+                airResistanceCoef, terminalVelocity);
+            // then
+            assertEquals(736.6, dragForce, 0.1);
+        }
+
+        @Test
+        void calculateWeightOfFreeFallingBody() {
+            // given
+            final double massInKg = 60;
+            // when
+            final double weight = PhysicsCalculator.Kinematics.weightOfFreeFallingBody(massInKg);
+            // then
+            assertEquals(588.399, weight, 0.01);
+        }
+    }
+
+    @Nested
+    class Dynamics {
+        @Test
+        void calculateAccelerationWithSpeedDifference() {
+            // given
+            final int deltaTimeInSec = 6;
+            final int initialVelocity = 100; // m/s
+            final int finalVelocity = 120; // m/s
+            // when
+            final double acceleration = PhysicsCalculator.Dynamics.acceleration(
+                initialVelocity, finalVelocity, deltaTimeInSec);
+            // then
+            assertEquals(3.333, acceleration, 0.001);
+        }
+
+        @Test
+        void calculateAccelerationWithMassAndForce() {
+            // given
+            final int massInKg = 60;
+            final int netForceInNewtons = 1000;
+            // when
+            final double acceleration = PhysicsCalculator.Dynamics.acceleration(massInKg, netForceInNewtons);
+            // then
+            assertEquals(16.667, acceleration, 0.001);
+        }
+
+        @Test
+        void calculateAccelerationWithDistanceTraveled() {
+            // given
+            final int initialVelocity = 100; // m/s
+            final int distanceInM = 200;
+            final int timeInSec = 6;
+            // when
+            final double acceleration = PhysicsCalculator.Dynamics.accelerationWithDeltaDistance(
+                initialVelocity, distanceInM, timeInSec);
+            // then
+            assertEquals(-22.22, acceleration, 0.01);
+        }
     }
 }

@@ -12,6 +12,13 @@ public final class ConversionCalculator {
         public static final double ONE_SQUARE_METER_IN_SQUARE_YARD = 1.19599;
         public static final double ONE_SQUARE_MILLIMETER_IN_SQUARE_INCH = 0.00155;
         public static final double ONE_ARE_IN_HECTARE = 100;
+        public static final double ONE_KILOMETER_IN_METERS = 1000;
+        public static final double ONE_ASTRONOMICAL_UNIT_IN_METERS = 149_597_870_700.0;
+        public static final double ONE_ASTRONOMICAL_UNIT_IN_KILOMETERS = 149_597_870.7;
+        public static final double ONE_ASTRONOMICAL_UNIT_IN_MILES = 92_955_807;
+        public static final double ONE_ASTRONOMICAL_UNIT_IN_LIGHT_YEARS = 0.000015813;
+        public static final double ONE_LIGHT_YEAR_IN_ASTRONOMICAL_UNITS = 63_241;
+        public static final double ARCSECOND_IN_RADIANS = Math.PI / (180 * 3600);
 
         private LengthAndArea() {
         }
@@ -56,6 +63,39 @@ public final class ConversionCalculator {
          */
         public static double hectaresToAres(double areaInHectares) {
             return areaInHectares * ONE_ARE_IN_HECTARE;
+        }
+
+        public static double metersToKilometers(double meters) {
+            return meters / ONE_KILOMETER_IN_METERS;
+        }
+
+        public static double metersToAstronomicalUnits(double meters) {
+            return meters / ONE_ASTRONOMICAL_UNIT_IN_METERS;
+        }
+
+        public static double astronomicalUnitsToMeters(double au) {
+            return au * ONE_ASTRONOMICAL_UNIT_IN_METERS;
+        }
+
+        public static double astronomicalUnitsToKilometers(double au) {
+            return au * ONE_ASTRONOMICAL_UNIT_IN_KILOMETERS;
+        }
+
+        public static double astronomicalUnitsToMiles(double au) {
+            return au * ONE_ASTRONOMICAL_UNIT_IN_MILES;
+        }
+
+        public static double lightYearsToAstronomicalUnits(double lightYears) {
+            return lightYears * ONE_LIGHT_YEAR_IN_ASTRONOMICAL_UNITS;
+        }
+
+        public static double astronomicalUnitsToLightYears(double au) {
+            return au * ONE_ASTRONOMICAL_UNIT_IN_LIGHT_YEARS;
+        }
+
+        public static double astronomicalUnitsToParsecs(double au) {
+            final double auToParsec = 1 / Math.tan(ARCSECOND_IN_RADIANS);
+            return au / auToParsec;
         }
     }
 
