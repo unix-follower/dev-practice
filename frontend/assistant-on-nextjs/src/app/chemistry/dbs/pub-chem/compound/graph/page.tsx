@@ -1,7 +1,6 @@
 import React, { use, Suspense } from "react"
 import { type ElementDefinition } from "cytoscape"
-import ApiHttpClient, { ApiHttpClientSettings, ApiHttpClientType } from "@/lib/api/ApiHttpClient"
-import { getBackendURL } from "@/config/config"
+import { getApiHttpClient } from "@/lib/api/ApiHttpClient"
 import CompoundGraphViewer from "@/app/chemistry/dbs/pub-chem/compound/graph/_components/CompoundGraphViewer"
 import CompoundGraphWithRTK, {
   CompoundGraphListWithRTK,
@@ -35,22 +34,9 @@ export default async function Page({
     )
   }
 
-  let clientSettings: ApiHttpClientSettings
-  if (mode === "axios") {
-    clientSettings = {
-      apiURL: getBackendURL(),
-      clientStrategy: ApiHttpClientType.AXIOS,
-    }
-  } else {
-    clientSettings = {
-      apiURL: getBackendURL(),
-      clientStrategy: ApiHttpClientType.FETCH,
-    }
-  }
-
   const [pageNumber, pageSizeNum] = parsePaginationParams(params)
 
-  const client = new ApiHttpClient(clientSettings)
+  const [, client] = getApiHttpClient(mode as string)
   let compoundDataPromise: Promise<ElementDefinition[]>
   if (name) {
     compoundDataPromise = client

@@ -1,6 +1,5 @@
 import React, { Suspense } from "react"
-import ApiHttpClient, { ApiHttpClientSettings, ApiHttpClientType } from "@/lib/api/ApiHttpClient"
-import { getBackendURL } from "@/config/config"
+import { getApiHttpClient } from "@/lib/api/ApiHttpClient"
 import StockMUIDataGrid, { StockMUIDataGridWithRTK } from "./_components/StockMUIDataGrid"
 import { parsePaginationParams } from "@/app/_components/utils/urlUtils"
 import { getI18nDictionary } from "@/app/[lang]/dictionaries"
@@ -21,22 +20,9 @@ export default async function Page({
     return <StockMUIDataGridWithRTK translations={translations} />
   }
 
-  let clientSettings: ApiHttpClientSettings
-  if (mode === "axios") {
-    clientSettings = {
-      apiURL: getBackendURL(),
-      clientStrategy: ApiHttpClientType.AXIOS,
-    }
-  } else {
-    clientSettings = {
-      apiURL: getBackendURL(),
-      clientStrategy: ApiHttpClientType.FETCH,
-    }
-  }
-
   const [pageNumber, pageSizeNum] = parsePaginationParams(params)
 
-  const client = new ApiHttpClient(clientSettings)
+  const [, client] = getApiHttpClient(mode as string)
   const tickerToSearchFor = (ticker as string) || "KO"
   const stocksPromise = client.getStockByTicker(tickerToSearchFor, pageNumber, pageSizeNum)
 
