@@ -13,7 +13,7 @@ public final class PhysicsCalculator {
         /**
          * @return velocity = distance / time
          */
-        static double velocity(double distance, long time) {
+        public static double velocity(double distance, long time) {
             checkTimeInput(time);
             return distance / time;
         }
@@ -21,14 +21,14 @@ public final class PhysicsCalculator {
         /**
          * @return u = v − a * t
          */
-        static double initialVelocity(double finalVelocity, double acceleration, long time) {
+        public static double initialVelocity(double finalVelocity, double acceleration, long time) {
             return finalVelocity - acceleration * time;
         }
 
         /**
          * @return u = 2 * (s / t) - v
          */
-        static double initialVelocityFromDisplacement(double displacement, double finalVelocity, long time) {
+        public static double initialVelocityFromDisplacement(double displacement, double finalVelocity, long time) {
             checkTimeInput(time);
             return 2 * (displacement / time) - finalVelocity;
         }
@@ -36,7 +36,7 @@ public final class PhysicsCalculator {
         /**
          * @return u = √(v² − 2as)
          */
-        static double initialVelocityFromDisplacement(
+        public static double initialVelocityFromDisplacement(
             double displacement, double finalVelocity, double acceleration) {
             final double value = finalVelocity * finalVelocity - 2 * acceleration * displacement;
             if (value < 0) {
@@ -48,7 +48,7 @@ public final class PhysicsCalculator {
         /**
          * @return u = (s / t) − (at / 2)
          */
-        static double initialVelocityFromDisplacementAndAcceleration(
+        public static double initialVelocityFromDisplacementAndAcceleration(
             double displacement, double acceleration, long time) {
             checkTimeInput(time);
             return (displacement / time) - (acceleration * time / 2.0);
@@ -63,22 +63,63 @@ public final class PhysicsCalculator {
         /**
          * @return v = u + at
          */
-        static double finalVelocity(double initialVelocity, double acceleration, long time) {
+        public static double finalVelocity(double initialVelocity, double acceleration, long time) {
             return initialVelocity + acceleration * time;
         }
 
         /**
          * @return v = 2 * (s / t) − u
          */
-        static double finalVelocityFromDisplacement(double displacement, double initialVelocity, long time) {
+        public static double finalVelocityFromDisplacement(double displacement, double initialVelocity, long time) {
             checkTimeInput(time);
             return 2 * (displacement / time) - initialVelocity;
         }
 
         /**
+         * @return v_t = √((2mg)/(pC_dA))
+         */
+        public static double terminalVelocity(
+            double massInKg, double gravitationalAcceleration, double airDensity,
+            double dragCoef, double crossSectionalArea) {
+            return Math.sqrt(
+                (2 * massInKg * gravitationalAcceleration)
+                    / (airDensity * dragCoef * crossSectionalArea)
+            );
+        }
+
+        /**
+         * @return t = (v_t/g) * tanh^(-1)(h/v_t)
+         */
+        public static double timeOfFall(double terminalVelocity, double gravitationalAcceleration, double altitudeInM) {
+            if (terminalVelocity <= 0) {
+                throw new IllegalArgumentException("Terminal velocity must be greater than 0");
+            }
+
+            final double altitudeRatio = altitudeInM / terminalVelocity;
+
+            if (altitudeRatio >= 1 || altitudeRatio <= -1) {
+                throw new IllegalArgumentException(
+                    "Altitude and terminal velocity result in invalid range for tanh^-1 calculation");
+            }
+
+            final double atanh = 0.5 * Math.log((1 + altitudeRatio) / (1 - altitudeRatio));
+            return (terminalVelocity / gravitationalAcceleration) * atanh;
+        }
+
+        /**
+         * @return v(t) = v_t(1 - e^(-(gt)/v_t)
+         */
+        public static double instantaneousSpeed(
+            double terminalVelocity, double gravitationalAcceleration, double timeElapsedInSec) {
+            return terminalVelocity * (1 - Math.exp(
+                -(gravitationalAcceleration * timeElapsedInSec) / terminalVelocity)
+            );
+        }
+
+        /**
          * @return v = (s / t) + (at / 2)
          */
-        static double finalVelocityFromDisplacementAndAcceleration(
+        public static double finalVelocityFromDisplacementAndAcceleration(
             double displacement, double acceleration, long time) {
             checkTimeInput(time);
             return (displacement / time) + (acceleration * time / 2.0);
@@ -94,7 +135,7 @@ public final class PhysicsCalculator {
          * @param drawWeight       Draw weight in pounds.
          * @return v = IBO + (L − 30) * 10 − W/3 + min(0, −(A−5D)/3)
          */
-        static double arrowSpeed(
+        public static double arrowSpeed(
             double ibo, double drawLengthOfBow, double drawWeight, double additionalWeight, double arrowWeight) {
             // Calculate the actual arrow speed using the formula
             return ibo + (drawLengthOfBow - 30) * 10 - additionalWeight / 3.0
@@ -102,9 +143,9 @@ public final class PhysicsCalculator {
         }
 
         /**
-         * @return B = m / (C × A). The units are lb/in²
+         * @return B = m / (C * A). The units are lb/in²
          */
-        static double ballisticCoefficient(
+        public static double ballisticCoefficient(
             double projectileMass, double dragCoefficient, double crossSectionArea) {
             if (dragCoefficient == 0 || crossSectionArea == 0) {
                 throw new IllegalArgumentException("Drag Coefficient and Cross Section Area cannot be zero.");
@@ -113,45 +154,51 @@ public final class PhysicsCalculator {
         }
 
         /**
-         * @return k = ρ × A × C / 2
+         * @return k = ρ * A * C / 2
          */
-        static double airResistanceCoefficient(
+        public static double airResistanceCoefficient(
             double mediumDensity, double crossSectionalArea, double dimensionlessDragCoef) {
             return mediumDensity * crossSectionalArea * dimensionlessDragCoef / 2.0;
         }
 
         /**
-         * @return F_d = −b * v²
+         * F_d = (1/2) * ρ * v² * A * C
+         * where:
+         * ρ: Air density
+         * v: Instantaneous velocity
+         * A: Cross-sectional area
+         * C: Drag coefficient
          */
-        static double dragForce(double airResistanceCoeff, double carVelocity) {
-            return -airResistanceCoeff * carVelocity * carVelocity;
+        public static double dragForce(
+            double airDensity, double instantaneousSpeed, double crossSectionalArea, double dragCoef) {
+            return 0.5 * airDensity * Math.pow(instantaneousSpeed, 2) * crossSectionalArea * dragCoef;
         }
 
         /**
          * @return p = mv. The units are kg*m/s
          */
-        static double momentum(double mass, double velocity) {
+        public static double momentum(double mass, double velocity) {
             return mass * velocity;
         }
 
         /**
          * @return v = p/m. The units are kg*m/s
          */
-        static double velocityOfDesiredMomentum(double momentum, double mass) {
+        public static double velocityOfDesiredMomentum(double momentum, double mass) {
             return momentum / mass;
         }
 
         /**
          * @return ||p|| = m * √(vₓ² + vᵧ² + v_z²) ⇒ ||p|| = m * ||v||
          */
-        static double velocityMagnitude(double[] velocityVector) {
+        public static double velocityMagnitude(double[] velocityVector) {
             return Math.sqrt(Arrays.stream(velocityVector).map(m -> m * m).sum());
         }
 
         /**
          * @return ||p|| = m * ||v||
          */
-        static double momentumMagnitude(double mass, double[] velocityVector) {
+        public static double momentumMagnitude(double mass, double[] velocityVector) {
             return mass * velocityMagnitude(velocityVector);
         }
 
@@ -159,7 +206,7 @@ public final class PhysicsCalculator {
          * Calculate the object2 final velocity in m/s when the collision type is unknown or partially elastic.
          * @return m₁u₁ + m₂u₂ = m₁v₁ + m₂v₂
          */
-        static double conservationOfMomentum(
+        public static double conservationOfMomentum(
             double obj1Mass, double obj1InitialVelocity, double obj1FinalVelocity,
             double obj2Mass, double obj2InitialVelocity) {
             final double initialMomentum = obj1Mass * obj1InitialVelocity + obj2Mass * obj2InitialVelocity;
@@ -178,7 +225,7 @@ public final class PhysicsCalculator {
          * V = (m₁u₁ + m₂u₂) / (m₁ + m₂)
          * @return final velocity vector in m/s.
          */
-        static double[] conservationOfMomentum(
+        public static double[] conservationOfMomentum(
             double obj1Mass, double obj1InitialVelocity,
             double obj2Mass, double obj2InitialVelocity, CollisionType type) {
             switch (type) {
@@ -203,49 +250,66 @@ public final class PhysicsCalculator {
          * Calculate displacement using constant velocity
          * @return d = v * t. The units are meters
          */
-        static double displacement(double averageVelocity, long timeInSeconds) {
+        public static double displacement(double averageVelocity, long timeInSeconds) {
             return averageVelocity * timeInSeconds;
         }
 
         /**
          * @return d = (1 / 2) * a * t² + v₀ * t. The units are meters
          */
-        static double displacement(double acceleration, double initialVelocity, long timeInSeconds) {
+        public static double displacement(double acceleration, double initialVelocity, long timeInSeconds) {
             return 0.5 * acceleration * timeInSeconds * timeInSeconds + initialVelocity * timeInSeconds;
         }
 
         /**
          * @return d = (1 / 2) * (v₁ + v₀) * t. The units are meters
          */
-        static double displacementOfVelocities(double initialVelocity, double finalVelocity, long timeInSeconds) {
+        public static double displacementOfVelocities(
+            double initialVelocity, double finalVelocity, long timeInSeconds) {
             return 0.5 * (finalVelocity + initialVelocity) * timeInSeconds;
         }
 
         /**
-         * @return v = v₀ + g * t
+         * @return v = v₀ + g * t. The units are m/s
          */
-        static double freeFall(double initialVelocity, long fallTime) {
+        public static double freeFallVelocity(double initialVelocity, long fallTime) {
             return initialVelocity + Constants.GRAVITATIONAL_ACCELERATION_IN_M_PER_S2 * fallTime;
         }
 
         /**
-         * @return s = (1 / 2) * g * t²
+         * @return s = (1 / 2) * g * t². The units are meters
          */
-        static double freeFallDistance(long fallTime) {
-            return 0.5 * Constants.GRAVITATIONAL_ACCELERATION_IN_M_PER_S2 * fallTime * fallTime;
+        public static double freeFallDistance(long fallTimeInSec) {
+            return 0.5 * Constants.GRAVITATIONAL_ACCELERATION_IN_M_PER_S2 * fallTimeInSec * fallTimeInSec;
+        }
+
+        /**
+         * F = k * v²
+         * where v is the instantaneous speed, and k is the air resistance coefficient, measured in kilograms per meter.
+         * The units are Newtons
+         */
+        public static double freeFallDistanceWithAirResistance(double airResistanceCoef, double terminalVelocity) {
+            return airResistanceCoef * terminalVelocity * terminalVelocity;
+        }
+
+        /**
+         * @return W = mg. The units are Newtons
+         */
+        public static double weightOfFreeFallingBody(double mass) {
+            return mass * Constants.GRAVITATIONAL_ACCELERATION_IN_M_PER_S2;
         }
 
         /**
          * @return F = μ * N
          */
-        static double friction(double frictionCoefficient, double normalForce) {
+        public static double friction(double frictionCoefficient, double normalForce) {
             return frictionCoefficient * normalForce;
         }
 
         /**
          * @return v_g = √(v_a² + v_w² - (2 * v_a * v_w * cos(δ) - w + α))
          */
-        static double groundSpeed(
+        public static double groundSpeed(
             double trueAirspeed, double windSpeed, double course,
             double windDirection, double windCorrectionAngle) {
             return Math.sqrt(
@@ -257,28 +321,28 @@ public final class PhysicsCalculator {
         /**
          * @return J = Δp = p₂ - p₁
          */
-        static double impulse(double initialMomentum, double finalMomentum) {
+        public static double impulse(double initialMomentum, double finalMomentum) {
             return initialMomentum - finalMomentum;
         }
 
         /**
          * @return J = Δp = p₂ − p₁ = m * V₂ - m * V₁ = m * ΔV
          */
-        static double impulse(double mass, double initialVelocity, double finalVelocity) {
+        public static double impulse(double mass, double initialVelocity, double finalVelocity) {
             return mass * initialVelocity - mass * finalVelocity;
         }
 
         /**
          * @return a = √(a₁² + a₂² + a₃²)
          */
-        static double magnitudeOfAcceleration(double[] accelerationComponents) {
+        public static double magnitudeOfAcceleration(double[] accelerationComponents) {
             return Math.sqrt(Arrays.stream(accelerationComponents).sum());
         }
 
         /**
          * @return |a| = |v₁ - v₂| / Δt
          */
-        static double[] magnitudeOfAcceleration(
+        public static double[] magnitudeOfAcceleration(
             long timeDifference,
             double initialVelocityX, double initialVelocityY,
             double finalVelocityX, double finalVelocityY) {
@@ -293,32 +357,32 @@ public final class PhysicsCalculator {
         /**
          * @return J = π/2 * R⁴
          */
-        static double polarMomentOfSolidCircle(double radius) {
+        public static double polarMomentOfSolidCircle(double radius) {
             return Math.PI / 2 * Math.pow(radius, 4);
         }
 
         /**
          * @return J = π/32 * D⁴
          */
-        static double polarMomentOfSolidCircleFromDiameter(double diameter) {
+        public static double polarMomentOfSolidCircleFromDiameter(double diameter) {
             return Math.PI / 32 * Math.pow(diameter, 4);
         }
 
         /**
          * @return J = π/2 * (R⁴ - Rᵢ⁴)
          */
-        static double polarMomentOfHollowCylinder(double innerRadius, double outerRadius) {
+        public static double polarMomentOfHollowCylinder(double innerRadius, double outerRadius) {
             return Math.PI / 2 * (Math.pow(outerRadius, 4) - Math.pow(innerRadius, 4));
         }
 
         /**
          * @return J = π/32 * (D⁴ - d⁴)
          */
-        static double polarMomentOfHollowCylinderFromDiameters(double innerDiameter, double outerDiameter) {
+        public static double polarMomentOfHollowCylinderFromDiameters(double innerDiameter, double outerDiameter) {
             return Math.PI / 32 * (Math.pow(outerDiameter, 4) - Math.pow(innerDiameter, 4));
         }
 
-        static double[] calculateQuarterMile(double etConstant, double fsConstant, double weight, double power) {
+        public static double[] calculateQuarterMile(double etConstant, double fsConstant, double weight, double power) {
             final double elapsedTime = etConstant * Math.pow((weight / power), (double) 1 / 3);
             final double finalSpeed = fsConstant * Math.pow((power / weight), (double) 1 / 3);
             return new double[]{elapsedTime, finalSpeed};
@@ -329,7 +393,7 @@ public final class PhysicsCalculator {
          * <p/>
          * Final speed = 224 * (Power / Weight)^⅓
          */
-        static double[] huntingtonQuarterMile(double weight, double power) {
+        public static double[] huntingtonQuarterMile(double weight, double power) {
             return calculateQuarterMile(6.290, 224, weight, power);
         }
 
@@ -338,7 +402,7 @@ public final class PhysicsCalculator {
          * <p/>
          * Final speed = 230 * (Power / Weight)^⅓
          */
-        static double[] foxQuarterMile(double weight, double power) {
+        public static double[] foxQuarterMile(double weight, double power) {
             return calculateQuarterMile(6.269, 230, weight, power);
         }
 
@@ -347,8 +411,35 @@ public final class PhysicsCalculator {
          * <p/>
          * Final speed = 234 * (Power / Weight)^⅓
          */
-        static double[] haleQuarterMile(double weight, double power) {
+        public static double[] haleQuarterMile(double weight, double power) {
             return calculateQuarterMile(5.825, 234, weight, power);
+        }
+    }
+
+    public static final class Dynamics {
+        private Dynamics() {
+        }
+
+        /**
+         * @return a = (vf − vi) / Δt. The units are m/s²
+         */
+        public static double acceleration(double initialVelocity, double finalVelocity, long changeInTime) {
+            return (finalVelocity - initialVelocity) / changeInTime;
+        }
+
+        /**
+         * @return a = 2 * (Δd − vi * Δt) / Δt². The units are m/s²
+         */
+        public static double accelerationWithDeltaDistance(
+            double initialVelocity, double distanceTraveled, long changeInTime) {
+            return 2 * (distanceTraveled - initialVelocity * changeInTime) / (changeInTime * changeInTime);
+        }
+
+        /**
+         * @return a = F / m. The units are m/s²
+         */
+        public static double acceleration(double mass, double netForce) {
+            return netForce / mass;
         }
     }
 }

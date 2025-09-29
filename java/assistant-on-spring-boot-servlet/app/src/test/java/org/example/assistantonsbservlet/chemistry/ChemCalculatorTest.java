@@ -2,7 +2,10 @@ package org.example.assistantonsbservlet.chemistry;
 
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.openscience.cdk.DefaultChemObjectBuilder;
 import org.openscience.cdk.config.Isotopes;
+import org.openscience.cdk.exception.InvalidSmilesException;
+import org.openscience.cdk.smiles.SmilesParser;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -115,6 +118,34 @@ class ChemCalculatorTest {
             final double charge = ChemCalculator.General.charge(sulfurProtons, sulfurElectrons);
             // then
             assertEquals(-2, charge);
+        }
+
+        @Test
+        void calculateBondOrderH2() throws InvalidSmilesException {
+            // given
+            final int bondingElectrons = 2;
+            final int antibondingElectrons = 0;
+            // when
+            final int bondOrder = ChemCalculator.General.bondOrder(bondingElectrons, antibondingElectrons);
+            // then
+            final var smilesParser = new SmilesParser(DefaultChemObjectBuilder.getInstance());
+            final var molecule = smilesParser.parseSmiles("[H][H]");
+            final var expectedBondOrder = molecule.bonds().iterator().next().getOrder().numeric();
+            assertEquals(expectedBondOrder, bondOrder);
+        }
+
+        @Test
+        void calculateBondOrderCO() throws InvalidSmilesException {
+            // given
+            final int bondingElectrons = 8;
+            final int antibondingElectrons = 2;
+            // when
+            final int bondOrder = ChemCalculator.General.bondOrder(bondingElectrons, antibondingElectrons);
+            // then
+            final var smilesParser = new SmilesParser(DefaultChemObjectBuilder.getInstance());
+            final var molecule = smilesParser.parseSmiles("[C-]#[O+]");
+            final var expectedBondOrder = molecule.bonds().iterator().next().getOrder().numeric();
+            assertEquals(expectedBondOrder, bondOrder);
         }
     }
 }

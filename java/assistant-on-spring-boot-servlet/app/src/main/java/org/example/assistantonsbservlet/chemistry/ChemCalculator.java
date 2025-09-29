@@ -6,6 +6,27 @@ public final class ChemCalculator {
     private ChemCalculator() {
     }
 
+    private static void checkProtonsNum(int protons) {
+        if (protons < 1 || protons > 118) {
+            throw new IllegalArgumentException("Invalid protons number");
+        }
+    }
+
+    public static boolean isNeutralCharge(int protons, int electrons) {
+        checkProtonsNum(protons);
+        return protons == electrons;
+    }
+
+    public static boolean isCation(int protons, int electrons) {
+        checkProtonsNum(protons);
+        return protons > electrons;
+    }
+
+    public static boolean isAnion(int protons, int electrons) {
+        checkProtonsNum(protons);
+        return protons < electrons;
+    }
+
     public static final class General {
         private General() {
         }
@@ -13,30 +34,30 @@ public final class ChemCalculator {
         /**
          * @return Number of protons = Atomic Number
          */
-        static int protons(int atomicNumber) {
+        public static int protons(int atomicNumber) {
             return atomicNumber;
         }
 
-        static int atomicNumber(int protons) {
+        public static int atomicNumber(int protons) {
             return protons;
         }
 
-        static double neutrons(double atomicMass, int atomicNumber) {
+        public static double neutrons(double atomicMass, int atomicNumber) {
             return atomicMass - atomicNumber;
         }
 
-        static double electrons(int atomicNumber, double charge) {
+        public static double electrons(int atomicNumber, double charge) {
             return atomicNumber - charge;
         }
 
         /**
          * @return The number of neutral electrons i.e. no charge
          */
-        static double neutralElectrons(int atomicNumber) {
+        public static double neutralElectrons(int atomicNumber) {
             return electrons(atomicNumber, 0);
         }
 
-        static double atomicMass(int protons, int neutrons) {
+        public static double atomicMass(int protons, int neutrons) {
             checkProtonsNum(protons);
             checkNeutronsNum(neutrons);
             return (double) protons + neutrons;
@@ -48,17 +69,11 @@ public final class ChemCalculator {
             }
         }
 
-        private static void checkProtonsNum(int protons) {
-            if (protons < 1 || protons > 118) {
-                throw new IllegalArgumentException("Invalid protons number");
-            }
-        }
-
-        static int charge(int protons, int electrons) {
+        public static int charge(int protons, int electrons) {
             return protons - electrons;
         }
 
-        static double averageAtomicMass(double[][] isotopes) {
+        public static double averageAtomicMass(double[][] isotopes) {
             if (isotopes.length < 1 || isotopes.length > 10) {
                 throw new IllegalArgumentException();
             }
@@ -75,6 +90,19 @@ public final class ChemCalculator {
                 })
                 .sum();
             return isotopesSum / 100;
+        }
+
+        public static int bondOrder(int bondingElectrons, int antibondingElectrons) {
+            if (bondingElectrons < 0 || antibondingElectrons < 0) {
+                throw new IllegalArgumentException("The input must be non-negative");
+            }
+
+            if (bondingElectrons < antibondingElectrons) {
+                throw new IllegalArgumentException(
+                    "There are always more bonding electrons than antibonding electrons");
+            }
+
+            return (bondingElectrons - antibondingElectrons) / 2;
         }
     }
 }
