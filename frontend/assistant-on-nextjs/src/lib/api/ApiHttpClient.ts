@@ -12,6 +12,7 @@ import StocksResponseDto from "@/lib/api/finance/stockMarketModel"
 import OrganicChemistryApi from "@/lib/api/chemistry/OrganicChemistryApi"
 import CompoundApi from "@/lib/api/chemistry/CompoundApi"
 import { ChemistryGraphResponse, CompoundSDFDataResponse } from "./chemistry/compoundModels"
+import { getBackendURL } from "@/config/config"
 
 function getApiErrorCode(response: ApiErrorResponse | unknown): ApiErrorCode {
   let errorCode = ApiErrorCode.UNKNOWN
@@ -24,6 +25,28 @@ function getApiErrorCode(response: ApiErrorResponse | unknown): ApiErrorCode {
 export enum ApiHttpClientType {
   FETCH,
   AXIOS,
+}
+
+export function getApiHttpClientSettings(apiURLSupplier: () => string, provider?: string) {
+  let clientSettings: ApiHttpClientSettings
+  if (provider === "axios") {
+    clientSettings = {
+      apiURL: apiURLSupplier(),
+      clientStrategy: ApiHttpClientType.AXIOS,
+    }
+  } else {
+    clientSettings = {
+      apiURL: apiURLSupplier(),
+      clientStrategy: ApiHttpClientType.FETCH,
+    }
+  }
+  return clientSettings
+}
+
+export function getApiHttpClient(provider?: string): [ApiHttpClientSettings, ApiHttpClient] {
+  const clientSettings = getApiHttpClientSettings(getBackendURL, provider)
+  const client = new ApiHttpClient(clientSettings)
+  return [clientSettings, client]
 }
 
 export interface ApiHttpClientSettings {

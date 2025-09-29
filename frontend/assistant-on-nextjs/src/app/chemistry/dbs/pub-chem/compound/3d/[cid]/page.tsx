@@ -1,6 +1,5 @@
 import React, { Suspense, use } from "react"
-import ApiHttpClient, { ApiHttpClientSettings, ApiHttpClientType } from "@/lib/api/ApiHttpClient"
-import { getBackendURL } from "@/config/config"
+import { getApiHttpClient } from "@/lib/api/ApiHttpClient"
 import SDFViewer from "./_components/SDFViewer"
 import SDFWithRTK from "./_components/SDFWithRTK"
 import { CompoundSDFDataResponse } from "@/lib/api/chemistry/compoundModels"
@@ -19,20 +18,7 @@ export default async function Page({
     return <SDFWithRTK />
   }
 
-  let clientSettings: ApiHttpClientSettings
-  if (mode === "axios") {
-    clientSettings = {
-      apiURL: getBackendURL(),
-      clientStrategy: ApiHttpClientType.AXIOS,
-    }
-  } else {
-    clientSettings = {
-      apiURL: getBackendURL(),
-      clientStrategy: ApiHttpClientType.FETCH,
-    }
-  }
-
-  const client = new ApiHttpClient(clientSettings)
+  const [, client] = getApiHttpClient(mode as string)
   const compoundDataPromise = client.doPubChemGetCompoundSDFDataByCid(cid)
 
   return (
