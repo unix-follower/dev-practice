@@ -238,6 +238,51 @@ class PhysicsCalculatorTest {
         }
 
         @Test
+        void calculateTerminalVelocityOfHumanSkydiver() {
+            // given
+            final int massInKg = 75;
+            final double gravitationalAcceleration = 9.81; // m/s²
+            final double densityOfFluid = 1.204; // kg/m³
+            final double crossSectionalArea = 0.18; // m²
+            final double dragCoef = 0.7;
+            // when
+            final double terminalVelocity = PhysicsCalculator.Kinematics.terminalVelocity(
+                massInKg, gravitationalAcceleration, densityOfFluid, dragCoef, crossSectionalArea);
+            // then
+            assertEquals(98.48, terminalVelocity, 0.01);
+        }
+
+        @Test
+        void calculateTerminalVelocityOfBaseball() {
+            // given
+            final double massInKg = 0.14883;
+            final double gravitationalAcceleration = 9.81; // m/s²
+            final double densityOfFluid = 1.2041; // kg/m³
+            final double crossSectionalArea = 0.004393; // m²
+            final double dragCoef = PhysicsCalculator.DragCoefficient.BASEBALL;
+            // when
+            final double terminalVelocity = PhysicsCalculator.Kinematics.terminalVelocity(
+                massInKg, gravitationalAcceleration, densityOfFluid, dragCoef, crossSectionalArea);
+            // then
+            assertEquals(41.056, terminalVelocity, 0.001);
+        }
+
+        @Test
+        void calculateTerminalVelocityOfGolfBall() {
+            // given
+            final double massInKg = 0.03544;
+            final double gravitationalAcceleration = 9.81; // m/s²
+            final double densityOfFluid = 1.2041; // kg/m³
+            final double crossSectionalArea = 0.001385442; // m²
+            final double dragCoef = PhysicsCalculator.DragCoefficient.GOLF_BALL;
+            // when
+            final double terminalVelocity = PhysicsCalculator.Kinematics.terminalVelocity(
+                massInKg, gravitationalAcceleration, densityOfFluid, dragCoef, crossSectionalArea);
+            // then
+            assertEquals(32.734, terminalVelocity, 0.001);
+        }
+
+        @Test
         void calculateWeightOfFreeFallingBody() {
             // given
             final double massInKg = 60;
@@ -245,6 +290,32 @@ class PhysicsCalculatorTest {
             final double weight = PhysicsCalculator.Kinematics.weightOfFreeFallingBody(massInKg);
             // then
             assertEquals(588.399, weight, 0.01);
+        }
+
+        @Test
+        void calculateFriction() {
+            // given
+            final double frictionCoef = 0.13;
+            final double normalForceInNewtons = 250;
+            // when
+            final double friction = PhysicsCalculator.Kinematics.friction(frictionCoef, normalForceInNewtons);
+            // then
+            assertEquals(32.5, friction, 0.1);
+        }
+
+        @Test
+        void calculateEnergyLostToFriction() {
+            // given
+            final double frictionCoef = 0.13;
+            final double distanceTraveled = 100;
+            final double massInKg = 0.03544;
+            final double gravitationalAcceleration = 9.81; // m/s²
+            final double theta = 0.1;
+            // when
+            final double friction = PhysicsCalculator.Kinematics.energyLostToFriction(
+                frictionCoef, distanceTraveled, massInKg, gravitationalAcceleration, theta);
+            // then
+            assertEquals(4.49, friction, 0.01);
         }
     }
 
