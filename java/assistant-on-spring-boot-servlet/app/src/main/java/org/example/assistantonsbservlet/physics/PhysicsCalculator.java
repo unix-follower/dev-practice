@@ -6,6 +6,23 @@ public final class PhysicsCalculator {
     private PhysicsCalculator() {
     }
 
+    public static final class DragCoefficient {
+        public static final double SPHERE = 0.47;
+        public static final double HEMISPHERE = 0.42;
+        public static final double CONE = 0.5;
+        public static final double CUBE = 1.05;
+        public static final double ANGLED_CUBE = 0.8;
+        public static final double LONG_CYLINDER = 0.82;
+        public static final double SHORT_CYLINDER = 1.15;
+        public static final double STREAMLINED_BODY = 0.04;
+        public static final double STREAMLINED_HALF_BODY = 0.09;
+        public static final double GOLF_BALL = 0.389;
+        public static final double BASEBALL = 0.3275;
+
+        private DragCoefficient() {
+        }
+    }
+
     public static final class Kinematics {
         private Kinematics() {
         }
@@ -76,14 +93,14 @@ public final class PhysicsCalculator {
         }
 
         /**
-         * @return v_t = √((2mg)/(pC_dA))
+         * @return v_t = √((2mg)/(pC_dA)). The units are m/s
          */
         public static double terminalVelocity(
-            double massInKg, double gravitationalAcceleration, double airDensity,
+            double massInKg, double gravitationalAcceleration, double fluidDensity,
             double dragCoef, double crossSectionalArea) {
             return Math.sqrt(
                 (2 * massInKg * gravitationalAcceleration)
-                    / (airDensity * dragCoef * crossSectionalArea)
+                    / (fluidDensity * crossSectionalArea * dragCoef)
             );
         }
 
@@ -304,6 +321,14 @@ public final class PhysicsCalculator {
          */
         public static double friction(double frictionCoefficient, double normalForce) {
             return frictionCoefficient * normalForce;
+        }
+
+        /**
+         * @return E = μ * (m * g * cos(θ)) * d
+         */
+        public static double energyLostToFriction(double frictionCoef, double distanceTraveled, double massInKg,
+                                                  double gravitationalAcceleration, double theta) {
+            return frictionCoef * (massInKg * gravitationalAcceleration * Math.cos(theta) * distanceTraveled);
         }
 
         /**
