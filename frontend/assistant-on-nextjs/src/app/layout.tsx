@@ -2,6 +2,7 @@ import React from "react"
 import type { Metadata } from "next"
 import { Geist, Geist_Mono } from "next/font/google"
 import "./styles/globals.css"
+import { NextIntlClientProvider } from "next-intl"
 import { StoreProvider } from "./StoreProvider"
 
 const geistSans = Geist({
@@ -32,7 +33,9 @@ export default async function RootLayout({ children, params }: Readonly<RootLayo
   return (
     <StoreProvider>
       <html lang={(await params).lang}>
-        <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>{children}</body>
+        <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+          <NextIntlClientProvider>{children}</NextIntlClientProvider>
+        </body>
       </html>
     </StoreProvider>
   )
