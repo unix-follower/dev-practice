@@ -20,7 +20,13 @@
 }
 
 div#computer-science-hardware-page div.tw-template1 p {
+    /* typography */
     @apply font-bold;
+}
+
+div#computer-science-hardware-page div.tw-template2 p {
+    /* typography */
+    @apply font-extralight;
 }
 
 body {

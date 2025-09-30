@@ -1,7 +1,7 @@
-import { useTranslation } from "react-i18next"
 import React from "react"
 import { useStyleEngine } from "@/lib/hooks/styleEngineHooks"
 import styles from "./gpuDetails.module.css"
+import { useTranslations } from "next-intl"
 
 interface GpuDetailsProps {
   id: string
@@ -15,7 +15,7 @@ details.set(
 )
 
 export default function GpuDetails({ id, className }: GpuDetailsProps) {
-  const { t } = useTranslation()
+  const t = useTranslations("computerScienceHardwarePage")
   const { styleEngine } = useStyleEngine()
 
   let style = className
@@ -33,7 +33,7 @@ export default function GpuDetails({ id, className }: GpuDetailsProps) {
 
   return (
     <div className={style}>
-      <p>{t("common.noData")}</p>
+      <p>{t("noData")}</p>
     </div>
   )
 }

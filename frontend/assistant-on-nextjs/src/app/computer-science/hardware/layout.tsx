@@ -10,10 +10,5 @@ export default function Layout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  return (
-    <QueryClientProvider client={queryClient}>
-      <div>Hardware layout placeholder</div>
-      {children}
-    </QueryClientProvider>
-  )
+  return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
 }

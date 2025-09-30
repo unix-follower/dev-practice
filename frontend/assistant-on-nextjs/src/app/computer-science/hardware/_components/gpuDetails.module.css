@@ -1,3 +1,9 @@
 div.template1 p {
+    /* typography */
     font-weight: bold;
+}
+
+div.template2 p {
+    /* typography */
+    font-weight: 200;
 }
