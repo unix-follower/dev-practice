@@ -68,6 +68,11 @@ export default function PageStyleSettingsDialog({
     setCssTemplate(event.target.value as string)
   }
 
+  const selectMenuItems = []
+  for (let i = 1; i <= 4; i++) {
+    selectMenuItems.push(<MenuItem value={`template${i}`}>{t("templateNo", { no: i })}</MenuItem>)
+  }
+
   return (
     <Dialog
       open={open}
@@ -101,8 +106,7 @@ export default function PageStyleSettingsDialog({
             <MenuItem value="">
               <em>{t("none")}</em>
             </MenuItem>
-            <MenuItem value="template1">{t("templateNo", { no: 1 })}</MenuItem>
-            <MenuItem value="template2">{t("templateNo", { no: 2 })}</MenuItem>
+            {selectMenuItems}
           </Select>
           <div>{t("typography")}</div>
           <FormControlLabel
