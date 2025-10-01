@@ -332,14 +332,28 @@ public final class PhysicsCalculator {
         }
 
         /**
-         * @return v_g = √(v_a² + v_w² - (2 * v_a * v_w * cos(δ) - w + α))
+         * @return ѱ = δ + ⍺. The units are radians
          */
-        public static double groundSpeed(
-            double trueAirspeed, double windSpeed, double course,
-            double windDirection, double windCorrectionAngle) {
+        public static double aircraftHeading(double course, double windCorrectionAngle) {
+            return course + windCorrectionAngle;
+        }
+
+        /**
+         * @return α = sin^(-1)[(v_w / v_a) * sin(ω - δ)]. The units are radians
+         */
+        public static double windCorrectionAngle(
+            double trueAirspeed, double windSpeed, double course, double windDirection) {
+            return Math.asin((windSpeed / trueAirspeed) * Math.sin(windDirection - course));
+        }
+
+        /**
+         * @return v_g = √(v_a² + v_w² - (2 * v_a * v_w * cos(δ) - ω + α)). The units are knots (kn)
+         */
+        public static double groundSpeed(double trueAirspeed, double windSpeed, double course, double windDirection) {
+            final double windCorAngle = windCorrectionAngle(trueAirspeed, windSpeed, course, windDirection);
             return Math.sqrt(
                 trueAirspeed * trueAirspeed + windSpeed * windSpeed
-                    - (2 * trueAirspeed * windSpeed * Math.cos(course) - windDirection + windCorrectionAngle)
+                    - (2 * trueAirspeed * windSpeed * Math.cos(course) - windDirection + windCorAngle)
             );
         }
 
