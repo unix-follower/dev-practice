@@ -19,26 +19,6 @@
     }
 }
 
-div#computer-science-hardware-page div.tw-template1 p {
-    /* typography */
-    @apply line-clamp-1 align-super leading-none font-bold tracking-wide break-keep whitespace-pre text-current lowercase italic line-through decoration-sky-500;
-}
-
-div#computer-science-hardware-page div.tw-template2 p {
-    /* typography */
-    @apply truncate text-right align-bottom font-sans text-sm leading-none font-extralight tracking-normal break-all text-inherit decoration-pink-500 decoration-solid decoration-1;
-}
-
-div#computer-science-hardware-page div.tw-template3 p {
-    /* typography */
-    @apply line-clamp-none list-decimal border-stone-500 align-text-bottom leading-3 capitalize font-stretch-condensed underline-offset-1;
-}
-
-div#computer-science-hardware-page div.tw-template4 p {
-    /* typography */
-    @apply line-clamp-1 bg-blue-700 text-red-200;
-}
-
 body {
     background: var(--background);
     color: var(--foreground);
