@@ -52,6 +52,7 @@ div.template3 p {
     text-decoration-line: underline;
     text-underline-offset: 1px;
     border-color: oklch(0.553 0.013 58.071);
+    background-color: color-mix(in oklab, oklch(37.3% 0.034 259.733) 70%, transparent);
 }
 
 div.template4 p {
@@ -62,4 +63,9 @@ div.template4 p {
     -webkit-line-clamp: 1;
     background-color: oklch(0.488 0.243 264.376);
     color: oklch(0.885 0.062 18.334);
+}
+
+div.template5 p {
+    border-color: color-mix(in oklab, oklch(27.7% 0.046 192.524) 30%, transparent);
+    background-color: color-mix(in oklab, oklch(71.8% 0.202 349.761) 85.2%, transparent);
 }
