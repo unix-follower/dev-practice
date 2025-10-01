@@ -317,6 +317,22 @@ class PhysicsCalculatorTest {
             // then
             assertEquals(4.49, friction, 0.01);
         }
+
+        @Test
+        void calculateAircraftHeading() {
+            // given
+            final int trueAirspeedInKnots = 100;
+            final int windSpeedInKnots = 20;
+            final double courseInRadians = 0.08726646259971647;
+            final double windDirectionInRadians = 1.0471975511965976;
+            final double windCorrectionAngle = PhysicsCalculator.Kinematics.windCorrectionAngle(
+                trueAirspeedInKnots, windSpeedInKnots, courseInRadians, windDirectionInRadians);
+            // when
+            final double headingInRadians = PhysicsCalculator.Kinematics.aircraftHeading(
+                courseInRadians, windCorrectionAngle);
+            // then
+            assertEquals(0.252, headingInRadians, 0.001);
+        }
     }
 
     @Nested

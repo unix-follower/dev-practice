@@ -4,6 +4,13 @@ public final class ConversionCalculator {
     private ConversionCalculator() {
     }
 
+    /**
+     * @return radians = π/180° * degrees
+     */
+    public static double degreesToRadians(double degrees) {
+        return Math.toRadians(degrees);
+    }
+
     public static final class LengthAndArea {
         public static final double ONE_HECTARE_IN_ACRE = 2.471054;
         public static final double ONE_ACRE_IN_SQUARE_METER = 4_046.85642;
