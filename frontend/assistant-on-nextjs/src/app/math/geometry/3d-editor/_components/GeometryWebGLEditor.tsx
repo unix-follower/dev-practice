@@ -12,6 +12,10 @@ import smallRectangleVertexShader, { rectangleVertexShader } from "./shaders/rec
 import smallRectangleFragmentShader, { rectangleFragmentShader } from "./shaders/rectangleFrag"
 import triangleVertexShader from "./shaders/triangleVert"
 import triangleFragmentShader from "./shaders/triangleFrag"
+import letterFVertexShader from "./shaders/letterFVert"
+import letterFFragmentShader from "./shaders/letterFFrag"
+import imgProcessingVertexShader from "./shaders/imageProcessingVert"
+import imgProcessingFragmentShader from "./shaders/imageProcessingFrag"
 import { X_AXIS_INDEX, Y_AXIS_INDEX } from "@/lib/constants"
 
 interface SceneSettings {
@@ -49,13 +53,21 @@ function setRectangleGeometry(gl: WebGL2RenderingContext) {
   )
 }
 
-// function setRectangle(gl: WebGL2RenderingContext, x: number, y: number, width: number, height: number) {
-//   const x1 = x
-//   const x2 = x + width
-//   const y1 = y
-//   const y2 = y + height
-//   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([x1, y1, x2, y1, x1, y2, x1, y2, x2, y1, x2, y2]), gl.STATIC_DRAW)
-// }
+function setRectangle(gl: WebGL2RenderingContext, x: number, y: number, width: number, height: number) {
+  const x1 = x
+  const x2 = x + width
+  const y1 = y
+  const y2 = y + height
+  // prettier-ignore
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+    x1, y1,
+    x2, y1,
+    x1, y2,
+    x1, y2,
+    x2, y1,
+    x2, y2
+  ]), gl.STATIC_DRAW)
+}
 
 function setRandomRectangleColors(gl: WebGL2RenderingContext) {
   // Pick 2 random colors.
@@ -69,6 +81,38 @@ function setRandomRectangleColors(gl: WebGL2RenderingContext) {
   gl.bufferData(
     gl.ARRAY_BUFFER,
     new Float32Array([r1, b1, g1, 1, r1, b1, g1, 1, r1, b1, g1, 1, r2, b2, g2, 1, r2, b2, g2, 1, r2, b2, g2, 1]),
+    gl.STATIC_DRAW,
+  )
+}
+
+function setLetterFGeometry(gl: WebGL2RenderingContext) {
+  gl.bufferData(
+    gl.ARRAY_BUFFER,
+    // prettier-ignore
+    new Float32Array([
+      // left column
+      0, 0,
+      30, 0,
+      0, 150,
+      0, 150,
+      30, 0,
+      30, 150,
+
+      // top rung
+      30, 0,
+      100, 0,
+      30, 30,
+      30, 30,
+      100, 0,
+      100, 30,
+
+      // middle rung
+      30, 60,
+      67, 60,
+      30, 90,
+      30, 90,
+      67, 60,
+      67, 90]),
     gl.STATIC_DRAW,
   )
 }
@@ -221,6 +265,253 @@ function drawRectangle({ gl, translateX, translateY }: SceneSettings) {
   drawTriangles({ gl })
 }
 
+function drawLetterF({ gl, translateX = 0, translateY = 0 }: SceneSettings) {
+  const program = webglUtils.createProgramFromSources(gl, [letterFVertexShader, letterFFragmentShader])!
+
+  const positionAttributeLocation = gl.getAttribLocation(program, "a_position")
+  const resolutionUniformLocation = gl.getUniformLocation(program, "u_resolution")
+  const colorLocation = gl.getUniformLocation(program, "u_color")
+  const translationLocation = gl.getUniformLocation(program, "u_translation")
+
+  const positionBuffer = gl.createBuffer()
+
+  const vao = gl.createVertexArray()
+  gl.bindVertexArray(vao)
+
+  gl.enableVertexAttribArray(positionAttributeLocation)
+  gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer)
+
+  setLetterFGeometry(gl)
+
+  const size = 2 // 2 components per iteration
+  const type = gl.FLOAT // the data is 32bit floats
+  const normalize = false
+  const stride = 0 // 0 = move forward size * sizeof(type) each iteration to get the next position
+  const offset = 0
+  gl.vertexAttribPointer(positionAttributeLocation, size, type, normalize, stride, offset)
+
+  const translation = [translateX, translateY]
+  const color = [Math.random(), Math.random(), Math.random(), 1]
+
+  webglUtils.resizeCanvasToDisplaySize(gl.canvas as HTMLCanvasElement)
+
+  gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
+  clearCanvas(gl)
+  gl.useProgram(program)
+  gl.bindVertexArray(vao)
+
+  gl.uniform2f(resolutionUniformLocation, gl.canvas.width, gl.canvas.height)
+  gl.uniform4fv(colorLocation, color)
+  gl.uniform2fv(translationLocation, translation)
+
+  const primitiveType = gl.TRIANGLES
+  const count = 18
+  gl.drawArrays(primitiveType, offset, count)
+}
+
+function createConvolutionKernal() {
+  // prettier-ignore
+  return {
+    normal: [
+      0, 0, 0,
+      0, 1, 0,
+      0, 0, 0,
+    ],
+    gaussianBlur: [
+      0.045, 0.122, 0.045,
+      0.122, 0.332, 0.122,
+      0.045, 0.122, 0.045,
+    ],
+    gaussianBlur2: [
+      1, 2, 1,
+      2, 4, 2,
+      1, 2, 1,
+    ],
+    gaussianBlur3: [
+      0, 1, 0,
+      1, 1, 1,
+      0, 1, 0,
+    ],
+    unsharpen: [
+      -1, -1, -1,
+      -1,  9, -1,
+      -1, -1, -1,
+    ],
+    sharpness: [
+       0, -1,  0,
+      -1,  5, -1,
+       0, -1,  0,
+    ],
+    sharpen: [
+      -1, -1, -1,
+      -1, 16, -1,
+      -1, -1, -1,
+    ],
+    edgeDetect: [
+      -0.125, -0.125, -0.125,
+      -0.125,  1,     -0.125,
+      -0.125, -0.125, -0.125,
+    ],
+    edgeDetect2: [
+      -1, -1, -1,
+      -1,  8, -1,
+      -1, -1, -1,
+    ],
+    edgeDetect3: [
+      -5, 0, 0,
+       0, 0, 0,
+       0, 0, 5,
+    ],
+    edgeDetect4: [
+      -1, -1, -1,
+       0,  0,  0,
+       1,  1,  1,
+    ],
+    edgeDetect5: [
+      -1, -1, -1,
+       2,  2,  2,
+      -1, -1, -1,
+    ],
+    edgeDetect6: [
+      -5, -5, -5,
+      -5, 39, -5,
+      -5, -5, -5,
+    ],
+    sobelHorizontal: [
+       1,  2,  1,
+       0,  0,  0,
+      -1, -2, -1,
+    ],
+    sobelVertical: [
+      1,  0, -1,
+      2,  0, -2,
+      1,  0, -1,
+    ],
+    previtHorizontal: [
+       1,  1,  1,
+       0,  0,  0,
+      -1, -1, -1,
+    ],
+    previtVertical: [
+      1,  0, -1,
+      1,  0, -1,
+      1,  0, -1,
+    ],
+    boxBlur: [
+      0.111, 0.111, 0.111,
+      0.111, 0.111, 0.111,
+      0.111, 0.111, 0.111,
+    ],
+    triangleBlur: [
+      0.0625, 0.125, 0.0625,
+      0.125,  0.25,  0.125,
+      0.0625, 0.125, 0.0625,
+    ],
+    emboss: [
+      -2, -1,  0,
+      -1,  1,  1,
+       0,  1,  2,
+    ],
+  }
+}
+
+interface RenderImageParams {
+  gl: WebGL2RenderingContext
+  image: HTMLImageElement
+  convolutionKernels: ReturnType<typeof createConvolutionKernal>
+  convolutionKernel: string
+}
+
+function renderImage({ gl, image, convolutionKernels, convolutionKernel }: RenderImageParams) {
+  if (!gl) {
+    return
+  }
+
+  const program = webglUtils.createProgramFromSources(gl, [imgProcessingVertexShader, imgProcessingFragmentShader])!
+
+  const positionAttributeLocation = gl.getAttribLocation(program, "a_position")
+  const texCoordAttributeLocation = gl.getAttribLocation(program, "a_texCoord")
+
+  const resolutionLocation = gl.getUniformLocation(program, "u_resolution")
+  const imageLocation = gl.getUniformLocation(program, "u_image")
+  const kernelLocation = gl.getUniformLocation(program, "u_kernel[0]")
+  const kernelWeightLocation = gl.getUniformLocation(program, "u_kernelWeight")
+
+  const vao = gl.createVertexArray()
+  gl.bindVertexArray(vao)
+
+  const positionBuffer = gl.createBuffer()
+  gl.enableVertexAttribArray(positionAttributeLocation)
+  gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer)
+
+  const size = 2
+  const type = gl.FLOAT
+  const normalize = false
+  const stride = 0
+  const offset = 0
+  gl.vertexAttribPointer(positionAttributeLocation, size, type, normalize, stride, offset)
+
+  const textureCoordinatesBuffer = gl.createBuffer()
+  gl.bindBuffer(gl.ARRAY_BUFFER, textureCoordinatesBuffer)
+  // prettier-ignore
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+    0.0,  0.0,
+    1.0,  0.0,
+    0.0,  1.0,
+    0.0,  1.0,
+    1.0,  0.0,
+    1.0,  1.0,
+  ]), gl.STATIC_DRAW)
+
+  gl.enableVertexAttribArray(texCoordAttributeLocation)
+  gl.vertexAttribPointer(texCoordAttributeLocation, size, type, normalize, stride, offset)
+
+  const texture = gl.createTexture()
+  gl.activeTexture(gl.TEXTURE0)
+  gl.bindTexture(gl.TEXTURE_2D, texture)
+
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
+
+  // Upload the image into the texture.
+  const mipLevel = 0
+  const internalFormat = gl.RGBA
+  const srcFormat = gl.RGBA
+  const srcType = gl.UNSIGNED_BYTE
+  gl.texImage2D(gl.TEXTURE_2D, mipLevel, internalFormat, srcFormat, srcType, image)
+
+  gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer)
+  setRectangle(gl, 0, 0, image.width, image.height)
+
+  drawWithKernel(convolutionKernel, convolutionKernels)
+
+  function computeKernelWeight(kernel: number[]) {
+    const weight = kernel.reduce((prev, curr) => prev + curr)
+    return weight <= 0 ? 1 : weight
+  }
+
+  function drawWithKernel(name: string, kernels: { [key: string]: number[] }) {
+    webglUtils.resizeCanvasToDisplaySize(gl.canvas as HTMLCanvasElement)
+
+    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
+    clearCanvas(gl)
+    gl.useProgram(program)
+
+    gl.bindVertexArray(vao)
+    gl.uniform2f(resolutionLocation, gl.canvas.width, gl.canvas.height)
+    gl.uniform1i(imageLocation, 0)
+    gl.uniform1fv(kernelLocation, kernels[name])
+    gl.uniform1f(kernelWeightLocation, computeKernelWeight(kernels[name]))
+
+    const primitiveType = gl.TRIANGLES
+    const offset = 0
+    const count = 6
+    gl.drawArrays(primitiveType, offset, count)
+  }
+}
+
 interface GeometryWebGLEditorProps {
   translations: Record<string, string | Record<string, string>>
 }
@@ -269,7 +560,10 @@ function ToolPanel() {
   const { t } = useTranslation()
   const [geometricTranslation, setGeometricTranslation] = useState([0, 0])
   const [sceneRenderFn, setSceneRenderFn] = useState<((settings: SceneSettings) => void) | null>()
+  const [convolutionKernelSelected, setConvolutionKernelSelected] = useState("edgeDetect2")
   const gl = useWebGLRenderingCtx()
+
+  const convKernels = createConvolutionKernal()
 
   useEffect(() => {
     if (sceneRenderFn && gl) {
@@ -295,6 +589,35 @@ function ToolPanel() {
     setSceneRenderFn(() => (settings: SceneSettings) => drawRectangle(settings))
   }
 
+  function handleDrawLetterFClick() {
+    if (!gl) {
+      return
+    }
+    setSceneRenderFn(() => (settings: SceneSettings) => drawLetterF(settings))
+  }
+
+  function handleConvKernelOnChange(event: React.ChangeEvent<HTMLSelectElement>) {
+    setConvolutionKernelSelected(event.currentTarget.value)
+  }
+
+  function handleDrawImageClick() {
+    if (!gl) {
+      return
+    }
+
+    const image = new Image()
+    image.src = "/images/wall.jpg"
+    setSceneRenderFn(
+      () => () =>
+        renderImage({
+          gl,
+          image,
+          convolutionKernels: convKernels,
+          convolutionKernel: convolutionKernelSelected,
+        }),
+    )
+  }
+
   function updatePosition(axisIndex: number, position: number) {
     const translation = [...geometricTranslation]
     translation[axisIndex] = position
@@ -311,6 +634,8 @@ function ToolPanel() {
     updatePosition(Y_AXIS_INDEX, y)
   }
 
+  const kernelOptions = Object.keys(convKernels).map((kernel) => <option key={kernel}>{kernel}</option>)
+
   return (
     <div id="geometry-webgl-editor-tool-panel" className="grid grid-cols-1 grid-rows-3">
       <div>
@@ -326,6 +651,17 @@ function ToolPanel() {
           <SquareIcon />
         </button>
       </Tooltip>
+      <Tooltip title="Letter F" placement="bottom-end">
+        <button onClick={handleDrawLetterFClick}>
+          <i>Letter F</i>
+        </button>
+      </Tooltip>
+      <Tooltip title="Image" placement="bottom-end">
+        <button onClick={handleDrawImageClick}>
+          <i>Image</i>
+        </button>
+      </Tooltip>
+      <select onChange={handleConvKernelOnChange}>{kernelOptions}</select>
       <div>
         <span>{t("geometry3DEditorPage.lights")}</span>
       </div>
