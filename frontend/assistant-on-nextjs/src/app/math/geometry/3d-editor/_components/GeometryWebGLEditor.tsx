@@ -1,6 +1,13 @@
 "use client"
 
 import React, { useEffect, useRef, useState } from "react"
+import OutlinedInput from "@mui/material/OutlinedInput"
+import InputLabel from "@mui/material/InputLabel"
+import MenuItem from "@mui/material/MenuItem"
+import FormControl from "@mui/material/FormControl"
+import ListItemText from "@mui/material/ListItemText"
+import Select, { SelectChangeEvent } from "@mui/material/Select"
+import Checkbox from "@mui/material/Checkbox"
 import { useTranslation } from "react-i18next"
 import i18n from "@/config/i18n"
 import * as webglUtils from "@/lib/utils/webglUtils"
@@ -415,14 +422,32 @@ function createConvolutionKernal() {
   }
 }
 
+function createAndSetupTexture(gl: WebGL2RenderingContext) {
+  const texture = gl.createTexture()
+  gl.activeTexture(gl.TEXTURE0)
+  gl.bindTexture(gl.TEXTURE_2D, texture)
+
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
+  return texture
+}
+
+function computeKernelWeight(kernels: number[]) {
+  const weight = kernels.reduce((prev, curr) => prev + curr)
+  return weight <= 0 ? 1 : weight
+}
+
 interface RenderImageParams {
   gl: WebGL2RenderingContext
   image: HTMLImageElement
   convolutionKernels: ReturnType<typeof createConvolutionKernal>
   convolutionKernel: string
+  effects: string[]
 }
 
-function renderImage({ gl, image, convolutionKernels, convolutionKernel }: RenderImageParams) {
+function renderImage({ gl, image, convolutionKernels, convolutionKernel, effects }: RenderImageParams) {
   if (!gl) {
     return
   }
@@ -436,6 +461,7 @@ function renderImage({ gl, image, convolutionKernels, convolutionKernel }: Rende
   const imageLocation = gl.getUniformLocation(program, "u_image")
   const kernelLocation = gl.getUniformLocation(program, "u_kernel[0]")
   const kernelWeightLocation = gl.getUniformLocation(program, "u_kernelWeight")
+  const flipYLocation = gl.getUniformLocation(program, "u_flipY")
 
   const vao = gl.createVertexArray()
   gl.bindVertexArray(vao)
@@ -466,15 +492,7 @@ function renderImage({ gl, image, convolutionKernels, convolutionKernel }: Rende
   gl.enableVertexAttribArray(texCoordAttributeLocation)
   gl.vertexAttribPointer(texCoordAttributeLocation, size, type, normalize, stride, offset)
 
-  const texture = gl.createTexture()
-  gl.activeTexture(gl.TEXTURE0)
-  gl.bindTexture(gl.TEXTURE_2D, texture)
-
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
-
+  const originalImageTexture = createAndSetupTexture(gl)
   // Upload the image into the texture.
   const mipLevel = 0
   const internalFormat = gl.RGBA
@@ -482,26 +500,28 @@ function renderImage({ gl, image, convolutionKernels, convolutionKernel }: Rende
   const srcType = gl.UNSIGNED_BYTE
   gl.texImage2D(gl.TEXTURE_2D, mipLevel, internalFormat, srcFormat, srcType, image)
 
+  const textures: WebGLTexture[] = []
+  const framebuffers: WebGLFramebuffer[] = []
+  for (let i = 0; i < 2; i++) {
+    const texture = createAndSetupTexture(gl)
+    textures.push(texture)
+
+    const border = 0
+    const data = null // no data = create a blank texture
+    gl.texImage2D(gl.TEXTURE_2D, mipLevel, internalFormat, image.width, image.height, border, srcFormat, srcType, data)
+
+    const fbo = gl.createFramebuffer()
+    framebuffers.push(fbo)
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fbo)
+
+    const attachmentPoint = gl.COLOR_ATTACHMENT0
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, attachmentPoint, gl.TEXTURE_2D, texture, mipLevel)
+  }
+
   gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer)
   setRectangle(gl, 0, 0, image.width, image.height)
 
-  drawWithKernel(convolutionKernel, convolutionKernels)
-
-  function computeKernelWeight(kernel: number[]) {
-    const weight = kernel.reduce((prev, curr) => prev + curr)
-    return weight <= 0 ? 1 : weight
-  }
-
   function drawWithKernel(name: string, kernels: { [key: string]: number[] }) {
-    webglUtils.resizeCanvasToDisplaySize(gl.canvas as HTMLCanvasElement)
-
-    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
-    clearCanvas(gl)
-    gl.useProgram(program)
-
-    gl.bindVertexArray(vao)
-    gl.uniform2f(resolutionLocation, gl.canvas.width, gl.canvas.height)
-    gl.uniform1i(imageLocation, 0)
     gl.uniform1fv(kernelLocation, kernels[name])
     gl.uniform1f(kernelWeightLocation, computeKernelWeight(kernels[name]))
 
@@ -510,6 +530,51 @@ function renderImage({ gl, image, convolutionKernels, convolutionKernel }: Rende
     const count = 6
     gl.drawArrays(primitiveType, offset, count)
   }
+
+  function drawEffects() {
+    webglUtils.resizeCanvasToDisplaySize(gl.canvas as HTMLCanvasElement)
+
+    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
+    clearCanvas(gl)
+    gl.useProgram(program)
+
+    gl.bindVertexArray(vao)
+
+    // start with the original image on unit 0
+    gl.activeTexture(gl.TEXTURE0)
+    gl.bindTexture(gl.TEXTURE_2D, originalImageTexture)
+    gl.uniform1i(imageLocation, 0)
+
+    // don't y flip images while drawing to the textures
+    gl.uniform1f(flipYLocation, 1)
+
+    let count = 0
+    for (const effect of effects) {
+      const index = count % 2
+      setFramebuffer(framebuffers[index], image.width, image.height)
+      drawWithKernel(effect, convolutionKernels)
+
+      // for the next draw, use the texture we just rendered to
+      gl.bindTexture(gl.TEXTURE_2D, textures[index])
+
+      // increment count so we use the other texture next time
+      count++
+    }
+
+    gl.uniform1f(flipYLocation, -1) // need to y flip for canvas
+    setFramebuffer(null, gl.canvas.width, gl.canvas.height)
+
+    clearCanvas(gl)
+    drawWithKernel(convolutionKernel, convolutionKernels)
+  }
+
+  function setFramebuffer(fbo: WebGLFramebuffer | null, width: number, height: number) {
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fbo)
+    gl.uniform2f(resolutionLocation, width, height)
+    gl.viewport(0, 0, width, height)
+  }
+
+  drawEffects()
 }
 
 interface GeometryWebGLEditorProps {
@@ -556,11 +621,48 @@ export default function GeometryWebGLEditor({ translations }: GeometryWebGLEdito
   )
 }
 
+const ITEM_HEIGHT = 42
+const ITEM_PADDING_TOP = 8
+const MenuProps = {
+  PaperProps: {
+    style: {
+      maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
+      width: 100,
+    },
+  },
+}
+
+function createImageEffects() {
+  return [
+    "normal",
+    "gaussianBlur",
+    "gaussianBlur2",
+    "gaussianBlur3",
+    "unsharpen",
+    "sharpness",
+    "sharpen",
+    "edgeDetect",
+    "edgeDetect2",
+    "edgeDetect3",
+    "edgeDetect4",
+    "edgeDetect5",
+    "edgeDetect6",
+    "sobelHorizontal",
+    "sobelVertical",
+    "previtHorizontal",
+    "previtVertical",
+    "boxBlur",
+    "triangleBlur",
+    "emboss",
+  ]
+}
+
 function ToolPanel() {
   const { t } = useTranslation()
   const [geometricTranslation, setGeometricTranslation] = useState([0, 0])
   const [sceneRenderFn, setSceneRenderFn] = useState<((settings: SceneSettings) => void) | null>()
-  const [convolutionKernelSelected, setConvolutionKernelSelected] = useState("edgeDetect2")
+  const [selectedConvolutionKernel, setSelectedConvolutionKernel] = useState("normal")
+  const [selectedImageEffects, setSelectedImageEffects] = useState<string[]>([])
   const gl = useWebGLRenderingCtx()
 
   const convKernels = createConvolutionKernal()
@@ -597,7 +699,7 @@ function ToolPanel() {
   }
 
   function handleConvKernelOnChange(event: React.ChangeEvent<HTMLSelectElement>) {
-    setConvolutionKernelSelected(event.currentTarget.value)
+    setSelectedConvolutionKernel(event.currentTarget.value)
   }
 
   function handleDrawImageClick() {
@@ -613,7 +715,8 @@ function ToolPanel() {
           gl,
           image,
           convolutionKernels: convKernels,
-          convolutionKernel: convolutionKernelSelected,
+          convolutionKernel: selectedConvolutionKernel,
+          effects: selectedImageEffects,
         }),
     )
   }
@@ -632,6 +735,13 @@ function ToolPanel() {
   function handleYPositionSliderInput(e: React.ChangeEvent<HTMLInputElement>) {
     const y = Number.parseInt(e.target.value)
     updatePosition(Y_AXIS_INDEX, y)
+  }
+
+  const imageEffects = createImageEffects()
+
+  function handleSelectImageEffectsOnChange(event: SelectChangeEvent<typeof imageEffects>) {
+    const { value } = event.target
+    setSelectedImageEffects(typeof value === "string" ? value.split(",") : value)
   }
 
   const kernelOptions = Object.keys(convKernels).map((kernel) => <option key={kernel}>{kernel}</option>)
@@ -662,6 +772,26 @@ function ToolPanel() {
         </button>
       </Tooltip>
       <select onChange={handleConvKernelOnChange}>{kernelOptions}</select>
+      <FormControl sx={{ m: 1, width: 200 }}>
+        <InputLabel id="select-image-effects-label">Tag</InputLabel>
+        <Select
+          labelId="select-image-effects-label"
+          id="select-image-effects"
+          multiple
+          value={selectedImageEffects}
+          onChange={handleSelectImageEffectsOnChange}
+          input={<OutlinedInput label="Effect" />}
+          renderValue={(selected) => selected.join(", ")}
+          MenuProps={MenuProps}
+        >
+          {imageEffects.map((name) => (
+            <MenuItem key={name} value={name}>
+              <Checkbox checked={selectedImageEffects.includes(name)} />
+              <ListItemText primary={name} />
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
       <div>
         <span>{t("geometry3DEditorPage.lights")}</span>
       </div>

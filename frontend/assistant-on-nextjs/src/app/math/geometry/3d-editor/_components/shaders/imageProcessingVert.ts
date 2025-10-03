@@ -4,6 +4,7 @@ in vec2 a_position;
 in vec2 a_texCoord;
 
 uniform vec2 u_resolution;
+uniform float u_flipY;
 
 out vec2 v_texCoord;
 
@@ -17,7 +18,7 @@ void main() {
   // convert from 0->2 to -1->+1 (clip space)
   vec2 clipSpace = zeroToTwo - 1.0;
 
-  gl_Position = vec4(clipSpace * vec2(1, -1), 0, 1);
+  gl_Position = vec4(clipSpace * vec2(1, u_flipY), 0, 1);
 
   v_texCoord = a_texCoord;
 }
