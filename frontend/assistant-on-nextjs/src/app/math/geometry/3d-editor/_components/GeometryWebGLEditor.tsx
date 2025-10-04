@@ -24,11 +24,16 @@ import letterFFragmentShader from "./shaders/letterFFrag"
 import imgProcessingVertexShader from "./shaders/imageProcessingVert"
 import imgProcessingFragmentShader from "./shaders/imageProcessingFrag"
 import { X_AXIS_INDEX, Y_AXIS_INDEX } from "@/lib/constants"
+import InputSlider from "./InputSlider"
+import { toRadians } from "@/lib/features/math/conversionCalculator"
+import UnitCircle from "@/app/math/geometry/_components/UnitCircle"
 
 interface SceneSettings {
   gl: WebGL2RenderingContext
   translateX?: number
   translateY?: number
+  rotationX?: number
+  rotationY?: number
 }
 
 function clearCanvas(gl: WebGL2RenderingContext) {
@@ -272,13 +277,14 @@ function drawRectangle({ gl, translateX, translateY }: SceneSettings) {
   drawTriangles({ gl })
 }
 
-function drawLetterF({ gl, translateX = 0, translateY = 0 }: SceneSettings) {
+function drawLetterF({ gl, translateX = 0, translateY = 0, rotationX = 0, rotationY = 1 }: SceneSettings) {
   const program = webglUtils.createProgramFromSources(gl, [letterFVertexShader, letterFFragmentShader])!
 
   const positionAttributeLocation = gl.getAttribLocation(program, "a_position")
   const resolutionUniformLocation = gl.getUniformLocation(program, "u_resolution")
   const colorLocation = gl.getUniformLocation(program, "u_color")
   const translationLocation = gl.getUniformLocation(program, "u_translation")
+  const rotationLocation = gl.getUniformLocation(program, "u_rotation")
 
   const positionBuffer = gl.createBuffer()
 
@@ -298,6 +304,7 @@ function drawLetterF({ gl, translateX = 0, translateY = 0 }: SceneSettings) {
   gl.vertexAttribPointer(positionAttributeLocation, size, type, normalize, stride, offset)
 
   const translation = [translateX, translateY]
+  const rotation = [rotationX, rotationY]
   const color = [Math.random(), Math.random(), Math.random(), 1]
 
   webglUtils.resizeCanvasToDisplaySize(gl.canvas as HTMLCanvasElement)
@@ -310,6 +317,7 @@ function drawLetterF({ gl, translateX = 0, translateY = 0 }: SceneSettings) {
   gl.uniform2f(resolutionUniformLocation, gl.canvas.width, gl.canvas.height)
   gl.uniform4fv(colorLocation, color)
   gl.uniform2fv(translationLocation, translation)
+  gl.uniform2fv(rotationLocation, rotation)
 
   const primitiveType = gl.TRIANGLES
   const count = 18
@@ -613,9 +621,10 @@ export default function GeometryWebGLEditor({ translations }: GeometryWebGLEdito
 
   return (
     <WebGLRenderingCtx value={webGLContext}>
-      <div id="geometry-webgl-editor" className="grid grid-cols-[12%_88%] grid-rows-1 gap-4">
+      <div id="geometry-webgl-editor" className="grid grid-cols-[20%_60%_20%] grid-rows-1 gap-4">
         <ToolPanel />
-        <canvas ref={canvasRef} style={{ width: "100vw", height: "100vh" }} />
+        <canvas ref={canvasRef} style={{ width: "100%", height: "100%" }} />
+        <UnitCircle />
       </div>
     </WebGLRenderingCtx>
   )
@@ -659,23 +668,27 @@ function createImageEffects() {
 
 function ToolPanel() {
   const { t } = useTranslation()
+  const gl = useWebGLRenderingCtx()
   const [geometricTranslation, setGeometricTranslation] = useState([0, 0])
   const [sceneRenderFn, setSceneRenderFn] = useState<((settings: SceneSettings) => void) | null>()
   const [selectedConvolutionKernel, setSelectedConvolutionKernel] = useState("normal")
   const [selectedImageEffects, setSelectedImageEffects] = useState<string[]>([])
-  const gl = useWebGLRenderingCtx()
+  const [rotationDegrees, setRotationDegrees] = useState(0)
 
   const convKernels = createConvolutionKernal()
 
   useEffect(() => {
     if (sceneRenderFn && gl) {
+      const rotationRad = toRadians(rotationDegrees)
       sceneRenderFn({
         gl,
         translateX: geometricTranslation[X_AXIS_INDEX],
         translateY: geometricTranslation[Y_AXIS_INDEX],
+        rotationX: Math.sin(rotationRad),
+        rotationY: Math.cos(rotationRad),
       })
     }
-  }, [sceneRenderFn, gl, geometricTranslation])
+  }, [sceneRenderFn, gl, geometricTranslation, rotationDegrees])
 
   function handleDrawIsoscelesTriangleClick() {
     if (!gl) {
@@ -773,14 +786,14 @@ function ToolPanel() {
       </Tooltip>
       <select onChange={handleConvKernelOnChange}>{kernelOptions}</select>
       <FormControl sx={{ m: 1, width: 200 }}>
-        <InputLabel id="select-image-effects-label">Tag</InputLabel>
+        <InputLabel id="select-image-effects-label">Effect</InputLabel>
         <Select
           labelId="select-image-effects-label"
           id="select-image-effects"
           multiple
           value={selectedImageEffects}
           onChange={handleSelectImageEffectsOnChange}
-          input={<OutlinedInput label="Effect" />}
+          input={<OutlinedInput label="select-image-effects-label" />}
           renderValue={(selected) => selected.join(", ")}
           MenuProps={MenuProps}
         >
@@ -826,6 +839,7 @@ function ToolPanel() {
           />
         </p>
       </div>
+      <InputSlider label="Rotation" value={rotationDegrees} setValue={setRotationDegrees} />
     </div>
   )
 }
