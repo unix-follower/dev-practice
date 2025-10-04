@@ -245,7 +245,7 @@ export default function UnitCircle({
   value = Math.PI / 5,
   xLabel = "X=",
   yLabel = "Y=",
-  onAngleChange
+  onAngleChange,
 }: UnitCircleProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
 
