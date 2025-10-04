@@ -12,7 +12,7 @@ import {
 import DrawRectangleDraggableDialog, {
   NewRectangle,
 } from "@/app/math/geometry/2d-editor/_components/DrawRectangleDraggableDialog"
-import { toRadians } from "@/lib/features/math/unitUtils"
+import { toRadians } from "@/lib/features/math/conversionCalculator"
 
 interface GeometryCanvasEditorProps {
   translations: Record<string, string | Record<string, string>>
