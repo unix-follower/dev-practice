@@ -14,12 +14,12 @@ import * as webglUtils from "@/lib/utils/webglUtils"
 import { SquareIcon, TriangleIcon } from "@/app/_components/common/fontAwesomeIcons"
 import Tooltip from "@mui/material/Tooltip"
 import WebGLRenderingCtx, { useWebGLRenderingCtx } from "@/lib/hooks/webGLHooks"
-import { translate, rotate, scale, projection } from "@/lib/features/math/linalgUtils"
+import { translate, rotate, scale, projection } from "@/lib/features/math/linalgCalculator"
 import smallRectangleVertexShader, { rectangleVertexShader } from "./shaders/rectangleVert"
 import smallRectangleFragmentShader, { rectangleFragmentShader } from "./shaders/rectangleFrag"
 import triangleVertexShader from "./shaders/triangleVert"
 import triangleFragmentShader from "./shaders/triangleFrag"
-import letterFVertexShader from "./shaders/letterFVert"
+import letterFVertexShader, { letterFWithTransformedMatrixVertexShader } from "./shaders/letterFVert"
 import letterFFragmentShader from "./shaders/letterFFrag"
 import imgProcessingVertexShader from "./shaders/imageProcessingVert"
 import imgProcessingFragmentShader from "./shaders/imageProcessingFrag"
@@ -27,13 +27,18 @@ import { X_AXIS_INDEX, Y_AXIS_INDEX } from "@/lib/constants"
 import InputSlider from "./InputSlider"
 import { toRadians } from "@/lib/features/math/conversionCalculator"
 import UnitCircle from "@/app/math/geometry/_components/UnitCircle"
+import * as linalg from "@/lib/features/math/linalgCalculator"
 
 interface SceneSettings {
   gl: WebGL2RenderingContext
   translateX?: number
   translateY?: number
+  rotationInRadians?: number
   rotationX?: number
   rotationY?: number
+  scaleX?: number
+  scaleY?: number
+  transformedMatrix?: Float32Array
 }
 
 function clearCanvas(gl: WebGL2RenderingContext) {
@@ -277,14 +282,24 @@ function drawRectangle({ gl, translateX, translateY }: SceneSettings) {
   drawTriangles({ gl })
 }
 
-function drawLetterF({ gl, translateX = 0, translateY = 0, rotationX = 0, rotationY = 1 }: SceneSettings) {
+function drawLetterF({
+  gl,
+  translateX = 0,
+  translateY = 0,
+  rotationX = 0,
+  rotationY = 1,
+  scaleX = 1,
+  scaleY = 1,
+}: SceneSettings) {
   const program = webglUtils.createProgramFromSources(gl, [letterFVertexShader, letterFFragmentShader])!
 
   const positionAttributeLocation = gl.getAttribLocation(program, "a_position")
-  const resolutionUniformLocation = gl.getUniformLocation(program, "u_resolution")
   const colorLocation = gl.getUniformLocation(program, "u_color")
+
+  const resolutionUniformLocation = gl.getUniformLocation(program, "u_resolution")
   const translationLocation = gl.getUniformLocation(program, "u_translation")
   const rotationLocation = gl.getUniformLocation(program, "u_rotation")
+  const scaleLocation = gl.getUniformLocation(program, "u_scale")
 
   const positionBuffer = gl.createBuffer()
 
@@ -305,7 +320,8 @@ function drawLetterF({ gl, translateX = 0, translateY = 0, rotationX = 0, rotati
 
   const translation = [translateX, translateY]
   const rotation = [rotationX, rotationY]
-  const color = [Math.random(), Math.random(), Math.random(), 1]
+  const scale = [scaleX, scaleY]
+  const color = [0, 255, 0, 1]
 
   webglUtils.resizeCanvasToDisplaySize(gl.canvas as HTMLCanvasElement)
 
@@ -315,9 +331,57 @@ function drawLetterF({ gl, translateX = 0, translateY = 0, rotationX = 0, rotati
   gl.bindVertexArray(vao)
 
   gl.uniform2f(resolutionUniformLocation, gl.canvas.width, gl.canvas.height)
-  gl.uniform4fv(colorLocation, color)
   gl.uniform2fv(translationLocation, translation)
   gl.uniform2fv(rotationLocation, rotation)
+  gl.uniform2fv(scaleLocation, scale)
+  gl.uniform4fv(colorLocation, color)
+
+  const primitiveType = gl.TRIANGLES
+  const count = 18
+  gl.drawArrays(primitiveType, offset, count)
+}
+
+function drawLetterFWithTransformedMatrix({ gl, transformedMatrix }: SceneSettings) {
+  if (!transformedMatrix) {
+    throw Error("The transformed matrix is not provided")
+  }
+  const program = webglUtils.createProgramFromSources(gl, [
+    letterFWithTransformedMatrixVertexShader,
+    letterFFragmentShader,
+  ])!
+
+  const positionAttributeLocation = gl.getAttribLocation(program, "a_position")
+  const colorLocation = gl.getUniformLocation(program, "u_color")
+
+  const positionBuffer = gl.createBuffer()
+
+  const vao = gl.createVertexArray()
+  gl.bindVertexArray(vao)
+
+  gl.enableVertexAttribArray(positionAttributeLocation)
+  gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer)
+
+  setLetterFGeometry(gl)
+
+  const size = 2 // 2 components per iteration
+  const type = gl.FLOAT // the data is 32bit floats
+  const normalize = false
+  const stride = 0 // 0 = move forward size * sizeof(type) each iteration to get the next position
+  const offset = 0
+  gl.vertexAttribPointer(positionAttributeLocation, size, type, normalize, stride, offset)
+
+  webglUtils.resizeCanvasToDisplaySize(gl.canvas as HTMLCanvasElement)
+
+  gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
+  clearCanvas(gl)
+  gl.useProgram(program)
+  gl.bindVertexArray(vao)
+
+  const color = [0, 255, 0, 1]
+
+  const matrixLocation = gl.getUniformLocation(program, "u_matrix")
+  gl.uniformMatrix3fv(matrixLocation, false, transformedMatrix)
+  gl.uniform4fv(colorLocation, color)
 
   const primitiveType = gl.TRIANGLES
   const count = 18
@@ -621,7 +685,7 @@ export default function GeometryWebGLEditor({ translations }: GeometryWebGLEdito
 
   return (
     <WebGLRenderingCtx value={webGLContext}>
-      <div id="geometry-webgl-editor" className="grid grid-cols-[20%_60%_20%] grid-rows-1 gap-4">
+      <div id="geometry-webgl-editor" className="grid grid-cols-[20%_60%_20%] grid-rows-1 gap-4 p-3">
         <ToolPanel />
         <canvas ref={canvasRef} style={{ width: "100%", height: "100%" }} />
         <UnitCircle />
@@ -666,10 +730,19 @@ function createImageEffects() {
   ]
 }
 
+const transformationSequences = {
+  TRS: ["translate", "rotate", "scale"],
+  TSR: ["translate", "scale", "rotate"],
+  SRT: ["scale", "rotate", "translate"],
+}
+
+type TransformationSequenceKey = keyof typeof transformationSequences
+
 function ToolPanel() {
   const { t } = useTranslation()
   const gl = useWebGLRenderingCtx()
   const [geometricTranslation, setGeometricTranslation] = useState([0, 0])
+  const [scale, setScale] = useState([1, 1])
   const [sceneRenderFn, setSceneRenderFn] = useState<((settings: SceneSettings) => void) | null>()
   const [selectedConvolutionKernel, setSelectedConvolutionKernel] = useState("normal")
   const [selectedImageEffects, setSelectedImageEffects] = useState<string[]>([])
@@ -679,16 +752,20 @@ function ToolPanel() {
 
   useEffect(() => {
     if (sceneRenderFn && gl) {
-      const rotationRad = toRadians(rotationDegrees)
+      const rotationInRadians = toRadians(rotationDegrees)
+
       sceneRenderFn({
         gl,
         translateX: geometricTranslation[X_AXIS_INDEX],
         translateY: geometricTranslation[Y_AXIS_INDEX],
-        rotationX: Math.sin(rotationRad),
-        rotationY: Math.cos(rotationRad),
+        rotationInRadians,
+        rotationX: Math.sin(rotationInRadians),
+        rotationY: Math.cos(rotationInRadians),
+        scaleX: scale[X_AXIS_INDEX],
+        scaleY: scale[Y_AXIS_INDEX],
       })
     }
-  }, [sceneRenderFn, gl, geometricTranslation, rotationDegrees])
+  }, [sceneRenderFn, gl, geometricTranslation, rotationDegrees, scale])
 
   function handleDrawIsoscelesTriangleClick() {
     if (!gl) {
@@ -704,11 +781,31 @@ function ToolPanel() {
     setSceneRenderFn(() => (settings: SceneSettings) => drawRectangle(settings))
   }
 
-  function handleDrawLetterFClick() {
+  function handleDrawLetterFClick(transformationSeq?: string[]) {
     if (!gl) {
       return
     }
-    setSceneRenderFn(() => (settings: SceneSettings) => drawLetterF(settings))
+
+    setSceneRenderFn(() => (settings: SceneSettings) => {
+      if (transformationSeq) {
+        const { translateX, translateY, rotationInRadians, scaleX, scaleY } = settings
+
+        let matrix = linalg.projection(gl.canvas.width, gl.canvas.height)
+        for (const transform of transformationSeq) {
+          if (transform === "translate" && translateX && translateY) {
+            matrix = linalg.translate(matrix, translateX, translateY)
+          } else if (transform === "rotate" && rotationInRadians) {
+            matrix = linalg.rotate(matrix, rotationInRadians)
+          } else if (transform === "scale" && scaleX && scaleY) {
+            matrix = linalg.scale(matrix, scaleX, scaleY)
+          }
+        }
+        settings.transformedMatrix = matrix
+        drawLetterFWithTransformedMatrix(settings)
+      } else {
+        drawLetterF(settings)
+      }
+    })
   }
 
   function handleConvKernelOnChange(event: React.ChangeEvent<HTMLSelectElement>) {
@@ -734,7 +831,7 @@ function ToolPanel() {
     )
   }
 
-  function updatePosition(axisIndex: number, position: number) {
+  function updateTranslation(axisIndex: number, position: number) {
     const translation = [...geometricTranslation]
     translation[axisIndex] = position
     setGeometricTranslation(translation)
@@ -742,12 +839,28 @@ function ToolPanel() {
 
   function handleXPositionSliderInput(e: React.ChangeEvent<HTMLInputElement>) {
     const x = Number.parseInt(e.target.value)
-    updatePosition(X_AXIS_INDEX, x)
+    updateTranslation(X_AXIS_INDEX, x)
   }
 
   function handleYPositionSliderInput(e: React.ChangeEvent<HTMLInputElement>) {
     const y = Number.parseInt(e.target.value)
-    updatePosition(Y_AXIS_INDEX, y)
+    updateTranslation(Y_AXIS_INDEX, y)
+  }
+
+  function updateScale(axisIndex: number, position: number) {
+    const newScale = [...scale]
+    newScale[axisIndex] = position
+    setScale(newScale)
+  }
+
+  function handleScaleXSliderInput(e: React.ChangeEvent<HTMLInputElement>) {
+    const x = Number.parseInt(e.target.value)
+    updateScale(X_AXIS_INDEX, x)
+  }
+
+  function handleScaleYSliderInput(e: React.ChangeEvent<HTMLInputElement>) {
+    const y = Number.parseInt(e.target.value)
+    updateScale(Y_AXIS_INDEX, y)
   }
 
   const imageEffects = createImageEffects()
@@ -775,10 +888,22 @@ function ToolPanel() {
         </button>
       </Tooltip>
       <Tooltip title="Letter F" placement="bottom-end">
-        <button onClick={handleDrawLetterFClick}>
+        <button onClick={() => handleDrawLetterFClick()}>
           <i>Letter F</i>
         </button>
       </Tooltip>
+      {Object.keys(transformationSequences).map((key) => (
+        <Tooltip key={key} title={`Letter F (${key})`} placement="bottom-end">
+          <button
+            onClick={() => {
+              const transformationSeq = transformationSequences[key as TransformationSequenceKey]
+              handleDrawLetterFClick(transformationSeq)
+            }}
+          >
+            <i>Letter F ({key})</i>
+          </button>
+        </Tooltip>
+      ))}
       <Tooltip title="Image" placement="bottom-end">
         <button onClick={handleDrawImageClick}>
           <i>Image</i>
@@ -812,6 +937,7 @@ function ToolPanel() {
         <span>Transformations</span>
       </div>
       <div className="slide-container">
+        <span>Translate</span>
         <p>
           <label htmlFor="x-position-slider">x</label>
           <input
@@ -839,7 +965,36 @@ function ToolPanel() {
           />
         </p>
       </div>
-      <InputSlider label="Rotation" value={rotationDegrees} setValue={setRotationDegrees} />
+      <div className="slide-container">
+        <span>Scale</span>
+        <p>
+          <label htmlFor="scale-x-slider">x</label>
+          <input
+            id="scale-x-slider"
+            className="slider"
+            type="range"
+            min="-5"
+            max={5}
+            step="0.01"
+            value={scale[X_AXIS_INDEX]}
+            onInput={handleScaleXSliderInput}
+          />
+        </p>
+        <p>
+          <label htmlFor="scale-y-slider">y</label>
+          <input
+            id="scale-y-slider"
+            className="slider"
+            type="range"
+            min="-5"
+            max={5}
+            step="0.01"
+            value={scale[Y_AXIS_INDEX]}
+            onInput={handleScaleYSliderInput}
+          />
+        </p>
+      </div>
+      <InputSlider label="Rotate" value={rotationDegrees} setValue={setRotationDegrees} />
     </div>
   )
 }
