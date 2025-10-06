@@ -22,8 +22,9 @@ twStyleMap.set(
   "tw-template3",
   "line-clamp-none list-decimal border-stone-500 align-text-bottom leading-3 capitalize font-stretch-condensed underline-offset-1 bg-gray-700/70",
 )
-twStyleMap.set("tw-template4", "line-clamp-1 bg-blue-700 text-red-200")
-twStyleMap.set("tw-template5", "border-teal-950/30 bg-pink-400/[85.2%]")
+twStyleMap.set("tw-template4", "line-clamp-1 bg-blue-700 text-red-200 ps-1 pe-3 pl-3 pt-5 pb-2 me-px -mt-1 -mb-2")
+twStyleMap.set("tw-template5", "border-teal-950/30 bg-pink-400/[85.2%] pr-1 px-4 py-16 m-2 mb-auto")
+twStyleMap.set("tw-template6", "-space-y-px -space-x-3")
 
 interface GpuDetailsProps {
   id: string
