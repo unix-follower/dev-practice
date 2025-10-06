@@ -63,9 +63,38 @@ div.template4 p {
     -webkit-line-clamp: 1;
     background-color: oklch(0.488 0.243 264.376);
     color: oklch(0.885 0.062 18.334);
+    /* Spacing */
+    padding-inline-start: calc(var(--spacing) * 1);
+    padding-inline-end: calc(var(--spacing) * 3);
+    padding-left: calc(var(--spacing) * 3);
+    padding-top: calc(var(--spacing) * 5);
+    padding-bottom: calc(var(--spacing) * 2);
+    margin-inline-end: 1px;
+    margin-top: calc(var(--spacing) * -1);
+    margin-bottom: calc(var(--spacing) * -2);
 }
 
 div.template5 p {
+    /* Typography */
     border-color: color-mix(in oklab, oklch(27.7% 0.046 192.524) 30%, transparent);
     background-color: color-mix(in oklab, oklch(71.8% 0.202 349.761) 85.2%, transparent);
+    /* Spacing */
+    padding-inline: calc(var(--spacing) * 4);
+    padding-right: calc(var(--spacing) * 1);
+    padding-block: calc(var(--spacing) * 16);
+    margin: calc(var(--spacing) * 2);
+    margin-bottom: auto;
+}
+
+div.template6 p {
+    & > :not(:last-child) {
+        --tw-space-y-reverse: 0;
+        margin-block-start: calc(-1px * var(--tw-space-y-reverse));
+        margin-block-end: calc(-1px * calc(1 - var(--tw-space-y-reverse)));
+    };
+    & > :not(:last-child) {
+        --tw-space-x-reverse: 0;
+        margin-inline-start: calc(calc(var(--spacing) * -3) * var(--tw-space-x-reverse));
+        margin-inline-end: calc(calc(var(--spacing) * -3) * calc(1 - var(--tw-space-x-reverse)));
+    };
 }
