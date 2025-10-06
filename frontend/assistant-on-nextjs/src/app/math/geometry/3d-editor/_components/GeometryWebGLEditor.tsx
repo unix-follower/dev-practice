@@ -19,11 +19,14 @@ import smallRectangleVertexShader, { rectangleVertexShader } from "./shaders/rec
 import smallRectangleFragmentShader, { rectangleFragmentShader } from "./shaders/rectangleFrag"
 import triangleVertexShader from "./shaders/triangleVert"
 import triangleFragmentShader from "./shaders/triangleFrag"
-import letterFVertexShader, { letterFWithTransformedMatrixVertexShader } from "./shaders/letterFVert"
-import letterFFragmentShader from "./shaders/letterFFrag"
+import letterFVertexShader, {
+  letterFWithTransformedMatrixVertexShader,
+  letterFWithTransformedMatrixVertex3dShader,
+} from "./shaders/letterFVert"
+import letterFFragmentShader, { letterFFragment3dShader } from "./shaders/letterFFrag"
 import imgProcessingVertexShader from "./shaders/imageProcessingVert"
 import imgProcessingFragmentShader from "./shaders/imageProcessingFrag"
-import { X_AXIS_INDEX, Y_AXIS_INDEX } from "@/lib/constants"
+import { X_AXIS_INDEX, Y_AXIS_INDEX, Z_AXIS_INDEX } from "@/lib/constants"
 import InputSlider from "./InputSlider"
 import { toRadians } from "@/lib/features/math/conversionCalculator"
 import UnitCircle from "@/app/math/geometry/_components/UnitCircle"
@@ -31,14 +34,18 @@ import * as linalg from "@/lib/features/math/linalgCalculator"
 
 interface SceneSettings {
   gl: WebGL2RenderingContext
+  translation?: number[]
   translateX?: number
   translateY?: number
   rotationInRadians?: number
+  rotation?: number[]
   rotationX?: number
   rotationY?: number
+  scale?: number[]
   scaleX?: number
   scaleY?: number
-  transformedMatrix?: Float32Array
+  transformedMatrix?: Float32Array | number[]
+  threeD?: boolean
 }
 
 function clearCanvas(gl: WebGL2RenderingContext) {
@@ -134,16 +141,149 @@ function setLetterFGeometry(gl: WebGL2RenderingContext) {
   )
 }
 
+function setLetterFGeometry3d(gl: WebGL2RenderingContext) {
+  gl.bufferData(
+    gl.ARRAY_BUFFER,
+    // prettier-ignore
+    new Float32Array([
+      // left column front
+      0,   0,  0,
+      0, 150,  0,
+      30,   0,  0,
+      0, 150,  0,
+      30, 150,  0,
+      30,   0,  0,
+
+      // top rung front
+      30,   0,  0,
+      30,  30,  0,
+      100,   0,  0,
+      30,  30,  0,
+      100,  30,  0,
+      100,   0,  0,
+
+      // middle rung front
+      30,  60,  0,
+      30,  90,  0,
+      67,  60,  0,
+      30,  90,  0,
+      67,  90,  0,
+      67,  60,  0,
+
+      // left column back
+      0,   0,  30,
+      30,   0,  30,
+      0, 150,  30,
+      0, 150,  30,
+      30,   0,  30,
+      30, 150,  30,
+
+      // top rung back
+      30,   0,  30,
+      100,   0,  30,
+      30,  30,  30,
+      30,  30,  30,
+      100,   0,  30,
+      100,  30,  30,
+
+      // middle rung back
+      30,  60,  30,
+      67,  60,  30,
+      30,  90,  30,
+      30,  90,  30,
+      67,  60,  30,
+      67,  90,  30,
+
+      // top
+      0,   0,   0,
+      100,   0,   0,
+      100,   0,  30,
+      0,   0,   0,
+      100,   0,  30,
+      0,   0,  30,
+
+      // top rung right
+      100,   0,   0,
+      100,  30,   0,
+      100,  30,  30,
+      100,   0,   0,
+      100,  30,  30,
+      100,   0,  30,
+
+      // under top rung
+      30,   30,   0,
+      30,   30,  30,
+      100,  30,  30,
+      30,   30,   0,
+      100,  30,  30,
+      100,  30,   0,
+
+      // between top rung and middle
+      30,   30,   0,
+      30,   60,  30,
+      30,   30,  30,
+      30,   30,   0,
+      30,   60,   0,
+      30,   60,  30,
+
+      // top of middle rung
+      30,   60,   0,
+      67,   60,  30,
+      30,   60,  30,
+      30,   60,   0,
+      67,   60,   0,
+      67,   60,  30,
+
+      // right of middle rung
+      67,   60,   0,
+      67,   90,  30,
+      67,   60,  30,
+      67,   60,   0,
+      67,   90,   0,
+      67,   90,  30,
+
+      // bottom of middle rung.
+      30,   90,   0,
+      30,   90,  30,
+      67,   90,  30,
+      30,   90,   0,
+      67,   90,  30,
+      67,   90,   0,
+
+      // right of bottom
+      30,   90,   0,
+      30,  150,  30,
+      30,   90,  30,
+      30,   90,   0,
+      30,  150,   0,
+      30,  150,  30,
+
+      // bottom
+      0,   150,   0,
+      0,   150,  30,
+      30,  150,  30,
+      0,   150,   0,
+      30,  150,  30,
+      30,  150,   0,
+
+      // left side
+      0,   0,   0,
+      0,   0,  30,
+      0, 150,  30,
+      0,   0,   0,
+      0, 150,  30,
+      0, 150,   0,
+    ]),
+    gl.STATIC_DRAW,
+  )
+}
+
 function drawIsoscelesTriangle({ gl, translateX = 200, translateY = 150 }: SceneSettings) {
   const program = webglUtils.createProgramFromSources(gl, [triangleVertexShader, triangleFragmentShader])!
 
-  // look up where the vertex data needs to go.
   const positionLocation = gl.getAttribLocation(program, "a_position")
-
-  // lookup uniforms
   const matrixLocation = gl.getUniformLocation(program, "u_matrix")
 
-  // Create set of attributes
   const vao = gl.createVertexArray()
   gl.bindVertexArray(vao)
 
@@ -151,7 +291,6 @@ function drawIsoscelesTriangle({ gl, translateX = 200, translateY = 150 }: Scene
   gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
   setTriangleGeometry(gl)
 
-  // tell the position attribute how to pull data out of the current ARRAY_BUFFER
   gl.enableVertexAttribArray(positionLocation)
   const size = 2
   const type = gl.FLOAT
@@ -166,14 +305,10 @@ function drawIsoscelesTriangle({ gl, translateX = 200, translateY = 150 }: Scene
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
     clearCanvas(gl)
 
-    // Tell it to use the pair of shaders
     gl.useProgram(program)
-
-    // Bind the attribute/buffer set we want.
     gl.bindVertexArray(vao)
 
     const matrix = computeMatrix({ gl, translateX, translateY })
-    // Set the matrix.
     gl.uniformMatrix3fv(matrixLocation, false, matrix)
 
     drawTriangles({ gl, count: 3 })
@@ -277,20 +412,11 @@ function drawRectangle({ gl, translateX, translateY }: SceneSettings) {
   gl.bindVertexArray(vao)
 
   const matrix = computeMatrix({ gl, translateX, translateY })
-  // Set the matrix.
   gl.uniformMatrix3fv(matrixLocation, false, matrix)
   drawTriangles({ gl })
 }
 
-function drawLetterF({
-  gl,
-  translateX = 0,
-  translateY = 0,
-  rotationX = 0,
-  rotationY = 1,
-  scaleX = 1,
-  scaleY = 1,
-}: SceneSettings) {
+function drawLetterF({ gl, translation = [0, 0, 0], rotation = [0, 0, 0], scale = [1, 1, 0] }: SceneSettings) {
   const program = webglUtils.createProgramFromSources(gl, [letterFVertexShader, letterFFragmentShader])!
 
   const positionAttributeLocation = gl.getAttribLocation(program, "a_position")
@@ -318,9 +444,6 @@ function drawLetterF({
   const offset = 0
   gl.vertexAttribPointer(positionAttributeLocation, size, type, normalize, stride, offset)
 
-  const translation = [translateX, translateY]
-  const rotation = [rotationX, rotationY]
-  const scale = [scaleX, scaleY]
   const color = [0, 255, 0, 1]
 
   webglUtils.resizeCanvasToDisplaySize(gl.canvas as HTMLCanvasElement)
@@ -331,9 +454,9 @@ function drawLetterF({
   gl.bindVertexArray(vao)
 
   gl.uniform2f(resolutionUniformLocation, gl.canvas.width, gl.canvas.height)
-  gl.uniform2fv(translationLocation, translation)
-  gl.uniform2fv(rotationLocation, rotation)
-  gl.uniform2fv(scaleLocation, scale)
+  gl.uniform2fv(translationLocation, translation?.slice(0, 1))
+  gl.uniform2fv(rotationLocation, rotation?.slice(0, 1))
+  gl.uniform2fv(scaleLocation, scale?.slice(0, 1))
   gl.uniform4fv(colorLocation, color)
 
   const primitiveType = gl.TRIANGLES
@@ -341,51 +464,234 @@ function drawLetterF({
   gl.drawArrays(primitiveType, offset, count)
 }
 
-function drawLetterFWithTransformedMatrix({ gl, transformedMatrix }: SceneSettings) {
+function drawLetterFWithTransformedMatrix({ gl, transformedMatrix, threeD = false }: SceneSettings) {
   if (!transformedMatrix) {
     throw Error("The transformed matrix is not provided")
   }
-  const program = webglUtils.createProgramFromSources(gl, [
-    letterFWithTransformedMatrixVertexShader,
-    letterFFragmentShader,
-  ])!
 
-  const positionAttributeLocation = gl.getAttribLocation(program, "a_position")
-  const colorLocation = gl.getUniformLocation(program, "u_color")
-
-  const positionBuffer = gl.createBuffer()
-
-  const vao = gl.createVertexArray()
-  gl.bindVertexArray(vao)
-
-  gl.enableVertexAttribArray(positionAttributeLocation)
-  gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer)
-
-  setLetterFGeometry(gl)
-
-  const size = 2 // 2 components per iteration
-  const type = gl.FLOAT // the data is 32bit floats
-  const normalize = false
-  const stride = 0 // 0 = move forward size * sizeof(type) each iteration to get the next position
   const offset = 0
-  gl.vertexAttribPointer(positionAttributeLocation, size, type, normalize, stride, offset)
+  if (threeD) {
+    const program = webglUtils.createProgramFromSources(gl, [
+      letterFWithTransformedMatrixVertex3dShader,
+      letterFFragment3dShader,
+    ])!
+    const positionAttributeLocation = gl.getAttribLocation(program, "a_position")
+    const colorAttributeLocation = gl.getAttribLocation(program, "a_color")
 
-  webglUtils.resizeCanvasToDisplaySize(gl.canvas as HTMLCanvasElement)
+    const matrixLocation = gl.getUniformLocation(program, "u_matrix")
 
-  gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
-  clearCanvas(gl)
-  gl.useProgram(program)
-  gl.bindVertexArray(vao)
+    const positionBuffer = gl.createBuffer()
 
-  const color = [0, 255, 0, 1]
+    const vao = gl.createVertexArray()
+    gl.bindVertexArray(vao)
 
-  const matrixLocation = gl.getUniformLocation(program, "u_matrix")
-  gl.uniformMatrix3fv(matrixLocation, false, transformedMatrix)
-  gl.uniform4fv(colorLocation, color)
+    gl.enableVertexAttribArray(positionAttributeLocation)
+    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer)
 
-  const primitiveType = gl.TRIANGLES
-  const count = 18
-  gl.drawArrays(primitiveType, offset, count)
+    setLetterFGeometry3d(gl)
+
+    const size = 3
+    let type: number = gl.FLOAT // the data is 32bit floats
+    let normalize = false
+    const stride = 0 // 0 = move forward size * sizeof(type) each iteration to get the next position
+    gl.vertexAttribPointer(positionAttributeLocation, size, type, normalize, stride, offset)
+
+    const colorBuffer = gl.createBuffer()
+    gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer)
+    setLetterFColors(gl)
+    gl.enableVertexAttribArray(colorAttributeLocation)
+
+    type = gl.UNSIGNED_BYTE // the data is 8bit unsigned bytes
+    normalize = true // convert from 0-255 to 0.0-1.0
+    gl.vertexAttribPointer(colorAttributeLocation, size, type, normalize, stride, offset)
+
+    webglUtils.resizeCanvasToDisplaySize(gl.canvas as HTMLCanvasElement)
+
+    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
+    clearCanvas(gl)
+
+    gl.enable(gl.DEPTH_TEST)
+    gl.enable(gl.CULL_FACE)
+    gl.useProgram(program)
+    gl.bindVertexArray(vao)
+    gl.uniformMatrix4fv(matrixLocation, false, transformedMatrix)
+    drawTriangles({ gl, offset, count: 16 * 6 })
+  } else {
+    const program = webglUtils.createProgramFromSources(gl, [
+      letterFWithTransformedMatrixVertexShader,
+      letterFFragmentShader,
+    ])!
+
+    const positionAttributeLocation = gl.getAttribLocation(program, "a_position")
+    const colorLocation = gl.getUniformLocation(program, "u_color")
+
+    const positionBuffer = gl.createBuffer()
+
+    const vao = gl.createVertexArray()
+    gl.bindVertexArray(vao)
+
+    gl.enableVertexAttribArray(positionAttributeLocation)
+    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer)
+
+    setLetterFGeometry(gl)
+
+    const size = 2 // 2 components per iteration
+    const type = gl.FLOAT // the data is 32bit floats
+    const normalize = false
+    const stride = 0 // 0 = move forward size * sizeof(type) each iteration to get the next position
+    gl.vertexAttribPointer(positionAttributeLocation, size, type, normalize, stride, offset)
+
+    webglUtils.resizeCanvasToDisplaySize(gl.canvas as HTMLCanvasElement)
+
+    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
+    clearCanvas(gl)
+    gl.useProgram(program)
+    gl.bindVertexArray(vao)
+
+    const color = [0, 255, 0, 1]
+
+    const matrixLocation = gl.getUniformLocation(program, "u_matrix")
+    gl.uniformMatrix3fv(matrixLocation, false, transformedMatrix)
+    gl.uniform4fv(colorLocation, color)
+    drawTriangles({ gl, offset, count: 18 })
+  }
+}
+
+function setLetterFColors(gl: WebGLRenderingContext) {
+  gl.bufferData(
+    gl.ARRAY_BUFFER,
+    // prettier-ignore
+    new Uint8Array([
+      // left column front
+      200,  70, 120,
+      200,  70, 120,
+      200,  70, 120,
+      200,  70, 120,
+      200,  70, 120,
+      200,  70, 120,
+
+      // top rung front
+      200,  70, 120,
+      200,  70, 120,
+      200,  70, 120,
+      200,  70, 120,
+      200,  70, 120,
+      200,  70, 120,
+
+      // middle rung front
+      200,  70, 120,
+      200,  70, 120,
+      200,  70, 120,
+      200,  70, 120,
+      200,  70, 120,
+      200,  70, 120,
+
+      // left column back
+      80, 70, 200,
+      80, 70, 200,
+      80, 70, 200,
+      80, 70, 200,
+      80, 70, 200,
+      80, 70, 200,
+
+      // top rung back
+      80, 70, 200,
+      80, 70, 200,
+      80, 70, 200,
+      80, 70, 200,
+      80, 70, 200,
+      80, 70, 200,
+
+      // middle rung back
+      80, 70, 200,
+      80, 70, 200,
+      80, 70, 200,
+      80, 70, 200,
+      80, 70, 200,
+      80, 70, 200,
+
+      // top
+      70, 200, 210,
+      70, 200, 210,
+      70, 200, 210,
+      70, 200, 210,
+      70, 200, 210,
+      70, 200, 210,
+
+      // top rung right
+      200, 200, 70,
+      200, 200, 70,
+      200, 200, 70,
+      200, 200, 70,
+      200, 200, 70,
+      200, 200, 70,
+
+      // under top rung
+      210, 100, 70,
+      210, 100, 70,
+      210, 100, 70,
+      210, 100, 70,
+      210, 100, 70,
+      210, 100, 70,
+
+      // between top rung and middle
+      210, 160, 70,
+      210, 160, 70,
+      210, 160, 70,
+      210, 160, 70,
+      210, 160, 70,
+      210, 160, 70,
+
+      // top of middle rung
+      70, 180, 210,
+      70, 180, 210,
+      70, 180, 210,
+      70, 180, 210,
+      70, 180, 210,
+      70, 180, 210,
+
+      // right of middle rung
+      100, 70, 210,
+      100, 70, 210,
+      100, 70, 210,
+      100, 70, 210,
+      100, 70, 210,
+      100, 70, 210,
+
+      // bottom of middle rung.
+      76, 210, 100,
+      76, 210, 100,
+      76, 210, 100,
+      76, 210, 100,
+      76, 210, 100,
+      76, 210, 100,
+
+      // right of bottom
+      140, 210, 80,
+      140, 210, 80,
+      140, 210, 80,
+      140, 210, 80,
+      140, 210, 80,
+      140, 210, 80,
+
+      // bottom
+      90, 130, 110,
+      90, 130, 110,
+      90, 130, 110,
+      90, 130, 110,
+      90, 130, 110,
+      90, 130, 110,
+
+      // left side
+      160, 160, 220,
+      160, 160, 220,
+      160, 160, 220,
+      160, 160, 220,
+      160, 160, 220,
+      160, 160, 220,
+    ]),
+    gl.STATIC_DRAW,
+  )
 }
 
 function createConvolutionKernal() {
@@ -741,12 +1047,14 @@ type TransformationSequenceKey = keyof typeof transformationSequences
 function ToolPanel() {
   const { t } = useTranslation()
   const gl = useWebGLRenderingCtx()
-  const [geometricTranslation, setGeometricTranslation] = useState([0, 0])
-  const [scale, setScale] = useState([1, 1])
+  const [threeD, setThreeD] = useState(true)
+  const [translation, setTranslation] = useState([0, 0, 0])
+  const [rotation, setRotation] = useState([0, 0, 0])
+  const [rotationDegrees, setRotationDegrees] = useState(0)
+  const [scale, setScale] = useState([1, 1, 1])
   const [sceneRenderFn, setSceneRenderFn] = useState<((settings: SceneSettings) => void) | null>()
   const [selectedConvolutionKernel, setSelectedConvolutionKernel] = useState("normal")
   const [selectedImageEffects, setSelectedImageEffects] = useState<string[]>([])
-  const [rotationDegrees, setRotationDegrees] = useState(0)
 
   const convKernels = createConvolutionKernal()
 
@@ -756,16 +1064,24 @@ function ToolPanel() {
 
       sceneRenderFn({
         gl,
-        translateX: geometricTranslation[X_AXIS_INDEX],
-        translateY: geometricTranslation[Y_AXIS_INDEX],
+        translation,
+        rotation: [
+          toRadians(rotation[X_AXIS_INDEX]),
+          toRadians(rotation[Y_AXIS_INDEX]),
+          toRadians(rotation[Z_AXIS_INDEX]),
+        ],
+        scale,
+        translateX: translation[X_AXIS_INDEX],
+        translateY: translation[Y_AXIS_INDEX],
         rotationInRadians,
         rotationX: Math.sin(rotationInRadians),
         rotationY: Math.cos(rotationInRadians),
         scaleX: scale[X_AXIS_INDEX],
         scaleY: scale[Y_AXIS_INDEX],
+        threeD,
       })
     }
-  }, [sceneRenderFn, gl, geometricTranslation, rotationDegrees, scale])
+  }, [sceneRenderFn, gl, translation, rotation, rotationDegrees, scale, threeD])
 
   function handleDrawIsoscelesTriangleClick() {
     if (!gl) {
@@ -788,16 +1104,46 @@ function ToolPanel() {
 
     setSceneRenderFn(() => (settings: SceneSettings) => {
       if (transformationSeq) {
-        const { translateX, translateY, rotationInRadians, scaleX, scaleY } = settings
+        const {
+          translation: translateCoord,
+          rotation: rotateCoord,
+          scale: scaleCoord,
+          translateX,
+          translateY,
+          rotationInRadians,
+          scaleX,
+          scaleY,
+          threeD: is3d,
+        } = settings
 
-        let matrix = linalg.projection(gl.canvas.width, gl.canvas.height)
-        for (const transform of transformationSeq) {
-          if (transform === "translate" && translateX && translateY) {
-            matrix = linalg.translate(matrix, translateX, translateY)
-          } else if (transform === "rotate" && rotationInRadians) {
-            matrix = linalg.rotate(matrix, rotationInRadians)
-          } else if (transform === "scale" && scaleX && scaleY) {
-            matrix = linalg.scale(matrix, scaleX, scaleY)
+        let matrix: Float32Array<ArrayBufferLike> | number[]
+        if (is3d) {
+          matrix = linalg.projection3d(gl.canvas.width, gl.canvas.height, 400)
+
+          for (const transform of transformationSeq) {
+            if (transform === "translate" && translateCoord) {
+              const [x, y, z] = translateCoord
+              matrix = linalg.translate3d(matrix, x, y, z)
+            } else if (transform === "rotate" && rotateCoord) {
+              const [x, y, z] = rotateCoord
+              matrix = linalg.xRotate(matrix, x)
+              matrix = linalg.yRotate(matrix, y)
+              matrix = linalg.zRotate(matrix, z)
+            } else if (transform === "scale" && scaleCoord) {
+              const [x, y, z] = scaleCoord
+              matrix = linalg.scale3d(matrix, x, y, z)
+            }
+          }
+        } else {
+          matrix = linalg.projection(gl.canvas.width, gl.canvas.height)
+          for (const transform of transformationSeq) {
+            if (transform === "translate" && translateX && translateY) {
+              matrix = linalg.translate(matrix, translateX, translateY)
+            } else if (transform === "rotate" && rotationInRadians) {
+              matrix = linalg.rotate(matrix, rotationInRadians)
+            } else if (transform === "scale" && scaleX && scaleY) {
+              matrix = linalg.scale(matrix, scaleX, scaleY)
+            }
           }
         }
         settings.transformedMatrix = matrix
@@ -832,9 +1178,9 @@ function ToolPanel() {
   }
 
   function updateTranslation(axisIndex: number, position: number) {
-    const translation = [...geometricTranslation]
-    translation[axisIndex] = position
-    setGeometricTranslation(translation)
+    const newTranslation = [...translation]
+    newTranslation[axisIndex] = position
+    setTranslation(newTranslation)
   }
 
   function handleXPositionSliderInput(e: React.ChangeEvent<HTMLInputElement>) {
@@ -847,6 +1193,11 @@ function ToolPanel() {
     updateTranslation(Y_AXIS_INDEX, y)
   }
 
+  function handleZPositionSliderInput(e: React.ChangeEvent<HTMLInputElement>) {
+    const z = Number.parseInt(e.target.value)
+    updateTranslation(Z_AXIS_INDEX, z)
+  }
+
   function updateScale(axisIndex: number, position: number) {
     const newScale = [...scale]
     newScale[axisIndex] = position
@@ -854,13 +1205,24 @@ function ToolPanel() {
   }
 
   function handleScaleXSliderInput(e: React.ChangeEvent<HTMLInputElement>) {
-    const x = Number.parseInt(e.target.value)
+    const x = Number.parseInt(e.target.value) / 100
     updateScale(X_AXIS_INDEX, x)
   }
 
   function handleScaleYSliderInput(e: React.ChangeEvent<HTMLInputElement>) {
-    const y = Number.parseInt(e.target.value)
+    const y = Number.parseInt(e.target.value) / 100
     updateScale(Y_AXIS_INDEX, y)
+  }
+
+  function handleScaleZSliderInput(e: React.ChangeEvent<HTMLInputElement>) {
+    const z = Number.parseInt(e.target.value) / 100
+    updateScale(Z_AXIS_INDEX, z)
+  }
+
+  function updateRotation(axisIndex: number, position: number) {
+    const newRotation = [...rotation]
+    newRotation[axisIndex] = position
+    setRotation(newRotation)
   }
 
   const imageEffects = createImageEffects()
@@ -892,6 +1254,10 @@ function ToolPanel() {
           <i>Letter F</i>
         </button>
       </Tooltip>
+      <div>
+        <label htmlFor="3d-mode">3D</label>
+        <input id="3d-mode" type="checkbox" checked={threeD} onChange={(event) => setThreeD(event.target.checked)} />
+      </div>
       {Object.keys(transformationSequences).map((key) => (
         <Tooltip key={key} title={`Letter F (${key})`} placement="bottom-end">
           <button
@@ -947,9 +1313,10 @@ function ToolPanel() {
             min="0"
             max={gl?.canvas.width}
             step="1"
-            value={geometricTranslation[X_AXIS_INDEX]}
+            value={translation[X_AXIS_INDEX]}
             onInput={handleXPositionSliderInput}
           />
+          <span>{translation[X_AXIS_INDEX]}</span>
         </p>
         <p>
           <label htmlFor="y-position-slider">y</label>
@@ -960,9 +1327,24 @@ function ToolPanel() {
             min="0"
             max={gl?.canvas.height}
             step="1"
-            value={geometricTranslation[Y_AXIS_INDEX]}
+            value={translation[Y_AXIS_INDEX]}
             onInput={handleYPositionSliderInput}
           />
+          <span>{translation[Y_AXIS_INDEX]}</span>
+        </p>
+        <p>
+          <label htmlFor="z-position-slider">z</label>
+          <input
+            id="z-position-slider"
+            className="slider"
+            type="range"
+            min="0"
+            max={gl?.canvas.height}
+            step="1"
+            value={translation[Z_AXIS_INDEX]}
+            onInput={handleZPositionSliderInput}
+          />
+          <span>{translation[Z_AXIS_INDEX]}</span>
         </p>
       </div>
       <div className="slide-container">
@@ -973,12 +1355,13 @@ function ToolPanel() {
             id="scale-x-slider"
             className="slider"
             type="range"
-            min="-5"
-            max={5}
-            step="0.01"
-            value={scale[X_AXIS_INDEX]}
+            min="-500"
+            max="500"
+            step="any"
+            value={scale[X_AXIS_INDEX] * 100}
             onInput={handleScaleXSliderInput}
           />
+          <span>{scale[X_AXIS_INDEX]}</span>
         </p>
         <p>
           <label htmlFor="scale-y-slider">y</label>
@@ -986,15 +1369,33 @@ function ToolPanel() {
             id="scale-y-slider"
             className="slider"
             type="range"
-            min="-5"
-            max={5}
-            step="0.01"
-            value={scale[Y_AXIS_INDEX]}
+            min="-500"
+            max="500"
+            step="any"
+            value={scale[Y_AXIS_INDEX] * 100}
             onInput={handleScaleYSliderInput}
           />
+          <span>{scale[Y_AXIS_INDEX]}</span>
+        </p>
+        <p>
+          <label htmlFor="scale-z-slider">z</label>
+          <input
+            id="scale-z-slider"
+            className="slider"
+            type="range"
+            min="-500"
+            max="500"
+            step="any"
+            value={scale[Z_AXIS_INDEX] * 100}
+            onInput={handleScaleZSliderInput}
+          />
+          <span>{scale[Z_AXIS_INDEX]}</span>
         </p>
       </div>
       <InputSlider label="Rotate" value={rotationDegrees} setValue={setRotationDegrees} />
+      <InputSlider label="Rotate x" value={rotation[X_AXIS_INDEX]} setValue={(x) => updateRotation(X_AXIS_INDEX, x)} />
+      <InputSlider label="Rotate y" value={rotation[Y_AXIS_INDEX]} setValue={(y) => updateRotation(Y_AXIS_INDEX, y)} />
+      <InputSlider label="Rotate z" value={rotation[Z_AXIS_INDEX]} setValue={(z) => updateRotation(Z_AXIS_INDEX, z)} />
     </div>
   )
 }
