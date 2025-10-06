@@ -44,6 +44,62 @@ export function multiply(
   return dst
 }
 
+export function multiply3d(a: Float32Array | Array<number>, b: Float32Array | Array<number>) {
+  const a00 = a[0] // 0 * 4 + 0
+  const a01 = a[1] // 0 * 4 + 1
+  const a02 = a[2] // 0 * 4 + 2
+  const a03 = a[3] // 0 * 4 + 3
+  const a10 = a[4] // 1 * 4 + 0
+  const a11 = a[5] // 1 * 4 + 1
+  const a12 = a[6] // 1 * 4 + 2
+  const a13 = a[7] // 1 * 4 + 3
+  const a20 = a[8] // 2 * 4 + 0
+  const a21 = a[9] // 2 * 4 + 1
+  const a22 = a[10] // 2 * 4 + 2
+  const a23 = a[11] // 2 * 4 + 3
+  const a30 = a[12] // 3 * 4 + 0
+  const a31 = a[13] // 3 * 4 + 1
+  const a32 = a[14] // 3 * 4 + 2
+  const a33 = a[15] // 3 * 4 + 3
+
+  const b00 = b[0] // 0 * 4 + 0
+  const b01 = b[1] // 0 * 4 + 1
+  const b02 = b[2] // 0 * 4 + 2
+  const b03 = b[3] // 0 * 4 + 3
+  const b10 = b[4] // 1 * 4 + 0
+  const b11 = b[5] // 1 * 4 + 1
+  const b12 = b[6] // 1 * 4 + 2
+  const b13 = b[7] // 1 * 4 + 3
+  const b20 = b[8] // 2 * 4 + 0
+  const b21 = b[9] // 2 * 4 + 1
+  const b22 = b[10] // 2 * 4 + 2
+  const b23 = b[11] // 2 * 4 + 3
+  const b30 = b[12] // 3 * 4 + 0
+  const b31 = b[13] // 3 * 4 + 1
+  const b32 = b[14] // 3 * 4 + 2
+  const b33 = b[15] // 3 * 4 + 3
+
+  // prettier-ignore
+  return [
+    b00 * a00 + b01 * a10 + b02 * a20 + b03 * a30,
+    b00 * a01 + b01 * a11 + b02 * a21 + b03 * a31,
+    b00 * a02 + b01 * a12 + b02 * a22 + b03 * a32,
+    b00 * a03 + b01 * a13 + b02 * a23 + b03 * a33,
+    b10 * a00 + b11 * a10 + b12 * a20 + b13 * a30,
+    b10 * a01 + b11 * a11 + b12 * a21 + b13 * a31,
+    b10 * a02 + b11 * a12 + b12 * a22 + b13 * a32,
+    b10 * a03 + b11 * a13 + b12 * a23 + b13 * a33,
+    b20 * a00 + b21 * a10 + b22 * a20 + b23 * a30,
+    b20 * a01 + b21 * a11 + b22 * a21 + b23 * a31,
+    b20 * a02 + b21 * a12 + b22 * a22 + b23 * a32,
+    b20 * a03 + b21 * a13 + b22 * a23 + b23 * a33,
+    b30 * a00 + b31 * a10 + b32 * a20 + b33 * a30,
+    b30 * a01 + b31 * a11 + b32 * a21 + b33 * a31,
+    b30 * a02 + b31 * a12 + b32 * a22 + b33 * a32,
+    b30 * a03 + b31 * a13 + b32 * a23 + b33 * a33,
+  ]
+}
+
 /**
  * @param dst an optional matrix to store the result
  * @return a 3x3 identity matrix
@@ -64,10 +120,27 @@ export function identity(dst?: Float32Array) {
 }
 
 /**
+ * @return a projection matrix that converts from pixels to clip space.
+ */
+export function orthographic(left: number, right: number, bottom: number, top: number, near: number, far: number) {
+  // prettier-ignore
+  return [
+    2 / (right - left), 0, 0, 0,
+    0, 2 / (top - bottom), 0, 0,
+    0, 0, 2 / (near - far), 0,
+
+    (left + right) / (left - right),
+    (bottom + top) / (bottom - top),
+    (near + far) / (near - far),
+    1,
+  ]
+}
+
+/**
  * @param width width in pixels
  * @param height height in pixels
  * @param dst an optional matrix to store the result
- * @return a projection matrix that converts from pixels to clipspace with Y = 0 at the top.
+ * @return a projection matrix that converts from pixels to clip space with Y = 0 at the top.
  */
 export function projection(width: number, height: number, dst?: Float32Array) {
   dst = destinationMatrix(dst)
@@ -84,6 +157,17 @@ export function projection(width: number, height: number, dst?: Float32Array) {
   dst[8] = 1
 
   return dst
+}
+
+export function projection3d(width: number, height: number, depth: number) {
+  // Note: This matrix flips the Y axis so 0 is at the top.
+  // prettier-ignore
+  return [
+    2 / width, 0, 0, 0,
+    0, -2 / height, 0, 0,
+    0, 0, 2 / depth, 0,
+    -1, 1, 0, 1,
+  ]
 }
 
 /**
@@ -113,6 +197,16 @@ export function translation(translateX: number, translateY: number, dst?: Float3
   return dst
 }
 
+export function translation3d(tx: number, ty: number, tz: number) {
+  // prettier-ignore
+  return [
+    1,  0,  0,  0,
+    0,  1,  0,  0,
+    0,  0,  1,  0,
+    tx, ty, tz, 1,
+  ]
+}
+
 /**
  * @return the result of multiplication by a 2D translation matrix
  */
@@ -123,6 +217,10 @@ export function translate(
   dst?: Float32Array,
 ) {
   return multiply(matrix, translation(translateX, translateY), dst)
+}
+
+export function translate3d(matrix: Float32Array | Array<number>, tx: number, ty: number, tz: number) {
+  return multiply3d(matrix, translation3d(tx, ty, tz))
 }
 
 /**
@@ -149,11 +247,62 @@ export function rotation(angleInRadians: number, dst?: Float32Array) {
   return dst
 }
 
+export function xRotation(angleInRadians: number) {
+  const c = Math.cos(angleInRadians)
+  const s = Math.sin(angleInRadians)
+
+  // prettier-ignore
+  return [
+    1, 0, 0, 0,
+    0, c, s, 0,
+    0, -s, c, 0,
+    0, 0, 0, 1,
+  ]
+}
+
+export function yRotation(angleInRadians: number) {
+  const c = Math.cos(angleInRadians)
+  const s = Math.sin(angleInRadians)
+
+  // prettier-ignore
+  return [
+    c, 0, -s, 0,
+    0, 1, 0, 0,
+    s, 0, c, 0,
+    0, 0, 0, 1,
+  ]
+}
+
+export function zRotation(angleInRadians: number) {
+  const c = Math.cos(angleInRadians)
+  const s = Math.sin(angleInRadians)
+
+  // prettier-ignore
+  return [
+    c, s, 0, 0,
+    -s, c, 0, 0,
+    0, 0, 1, 0,
+    0, 0, 0, 1,
+  ]
+}
+
 /**
  * @return the result of multiplication by a 2D rotation matrix
  */
 export function rotate(matrix: Float32Array | Array<number>, angleInRadians: number, dst?: Float32Array) {
   return multiply(matrix, rotation(angleInRadians), dst)
+}
+
+export function xRotate(matrix: Float32Array | Array<number>, angleInRadians: number) {
+  return multiply3d(matrix, xRotation(angleInRadians))
+}
+
+export function yRotate(matrix: Float32Array | Array<number>, angleInRadians: number) {
+  return multiply3d(matrix, yRotation(angleInRadians))
+}
+
+export function zRotate(matrix: Float32Array | Array<number>, angleInRadians: number) {
+  return multiply3d(matrix, zRotation(angleInRadians))
 }
 
 /**
@@ -175,11 +324,25 @@ export function scaling(scaleX: number, scaleY: number, dst?: Float32Array) {
   return dst
 }
 
+export function scaling3d(sx: number, sy: number, sz: number) {
+  // prettier-ignore
+  return [
+    sx, 0,  0,  0,
+    0, sy,  0,  0,
+    0,  0, sz,  0,
+    0,  0,  0,  1,
+  ]
+}
+
 /**
  * @return the result of multiplication by a 2D scaling matrix
  */
 export function scale(matrix: Float32Array | Array<number>, scaleX: number, scaleY: number, dst?: Float32Array) {
   return multiply(matrix, scaling(scaleX, scaleY), dst)
+}
+
+export function scale3d(matrix: Float32Array | Array<number>, sx: number, sy: number, sz: number) {
+  return multiply3d(matrix, scaling3d(sx, sy, sz))
 }
 
 export function normalize(x: number, y: number) {

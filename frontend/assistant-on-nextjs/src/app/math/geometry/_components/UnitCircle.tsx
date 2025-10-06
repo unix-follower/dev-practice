@@ -1,5 +1,5 @@
 "use client"
-import React, { useEffect, useRef } from "react"
+import React, { useEffect, useRef, useState } from "react"
 
 interface UnitCirclePoint {
   x: number
@@ -248,6 +248,15 @@ export default function UnitCircle({
   onAngleChange,
 }: UnitCircleProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
+  const [canvasWidth, setCanvasWidth] = useState<number>(width)
+  const [canvasHeight, setCanvasHeight] = useState<number>(height)
+
+  useEffect(() => {
+    if (window.devicePixelRatio) {
+      setCanvasWidth(width * window.devicePixelRatio)
+      setCanvasHeight(height * window.devicePixelRatio)
+    }
+  }, [width, height])
 
   useEffect(() => {
     const { current: canvas } = canvasRef
@@ -260,8 +269,8 @@ export default function UnitCircle({
     <canvas
       id="unit-circle-canvas"
       ref={canvasRef}
-      width={width * window.devicePixelRatio}
-      height={height * window.devicePixelRatio}
+      width={canvasWidth}
+      height={canvasHeight}
       className={className}
       style={{ width: `${width}px`, height: `${height}px` }}
     ></canvas>
