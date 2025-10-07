@@ -8,9 +8,7 @@ from src.app.util import constants
 
 
 def liveness():
-    prices = np.array(
-        [164.36000061035156, 166.50999450683594, 166.47000122070312, 167.64999389648438]
-    )
+    prices = np.array([164.36000061035156, 166.50999450683594, 166.47000122070312, 167.64999389648438])
     prices = np.ndarray(shape=(1, 1), buffer=prices)
 
     model = app_config.get_model(constants.GRU)

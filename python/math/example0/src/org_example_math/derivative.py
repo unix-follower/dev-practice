@@ -95,9 +95,7 @@ def sinusoid(x):
             dx
             f(x) = {y_result}
             f'(x) = {result}
-            """.format(
-                f=expr, y_result=y_result, derivative=derivative, result=result
-            )
+            """.format(f=expr, y_result=y_result, derivative=derivative, result=result)
         )
         logger.info(msg)
 
@@ -128,9 +126,7 @@ def enhanced_sin_bx(a, b, x):
             dx
             f(x) = {y_result}
             f'(x) = {result}
-            """.format(
-                f=expr, y_result=y_result, derivative=derivative, result=result
-            )
+            """.format(f=expr, y_result=y_result, derivative=derivative, result=result)
         )
         logger.info(msg)
 
@@ -161,9 +157,7 @@ def cosinusoid(x):
             dx
             f(x) = {y_result}
             f'(x) = {result}
-            """.format(
-                f=expr, y_result=y_result, derivative=derivative, result=result
-            )
+            """.format(f=expr, y_result=y_result, derivative=derivative, result=result)
         )
         logger.info(msg)
 
@@ -265,9 +259,7 @@ def e_in_power(x):
             dx
             f(x) = {y_result}
             f'(x) = {result}
-            """.format(
-                f=expr, e=math.e, x=x, y_result=y_result, derivative=derivative, result=result
-            )
+            """.format(f=expr, e=math.e, x=x, y_result=y_result, derivative=derivative, result=result)
         )
         logger.info(msg)
 
@@ -298,9 +290,7 @@ def ln(x):
             dx
             f(x) = {y_result}
             f'(x) = {result}
-            """.format(
-                f=expr, y_result=y_result, derivative=derivative, result=result
-            )
+            """.format(f=expr, y_result=y_result, derivative=derivative, result=result)
         )
         logger.info(msg)
 
@@ -449,9 +439,7 @@ def of_constant(a, x):
             dx
             f(x) = {y_result}
             f'(x) = {result}
-            """.format(
-                a=a, powered_x=powered_x, y_result=y_result, derivative=derivative, result=result
-            )
+            """.format(a=a, powered_x=powered_x, y_result=y_result, derivative=derivative, result=result)
         )
         logger.info(msg)
 
@@ -483,9 +471,7 @@ def ax(a, x):
             dx
             f(x) = {y_result}
             f'(x) = {result}
-            """.format(
-                f=expr, y_result=y_result, derivative=derivative, result=result
-            )
+            """.format(f=expr, y_result=y_result, derivative=derivative, result=result)
         )
         logger.info(msg)
 

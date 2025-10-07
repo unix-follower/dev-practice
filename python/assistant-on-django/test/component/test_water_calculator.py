@@ -25,11 +25,11 @@ class WaterCalculatorTest(unittest.TestCase):
         self.assertEqual(200, result.get(constants.GRAMS))
 
         molecules = float(format(result.get(constants.MOLECULES), ".4g"))
-        self.assertEqual(0.0, 6.683e+24 - molecules)
+        self.assertEqual(0.0, 6.683e24 - molecules)
 
         moles = float(format(result.get(constants.MOLES), ".4g"))
         self.assertEqual(11.1, moles)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

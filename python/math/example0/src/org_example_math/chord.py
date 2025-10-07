@@ -9,32 +9,20 @@ def _create_denominator_subtraction_str(**kwargs):
     numerator_squares_str = kwargs["numerator_squares_str"]
     denominator_str = kwargs["denominator_str"]
 
-    denominator_subtraction_position = (len(numerator) + len(numerator_squares_str)) - (
-            len(numerator_squares_str) // 2
-    )
+    denominator_subtraction_position = (len(numerator) + len(numerator_squares_str)) - (len(numerator_squares_str) // 2)
     denominator_str_length = len(denominator_str)
-    denominator_subtraction_leading_whitespaces = " " * (
-            denominator_subtraction_position - denominator_str_length - 1
-    )
+    denominator_subtraction_leading_whitespaces = " " * (denominator_subtraction_position - denominator_str_length - 1)
 
     denominator_subtraction_result_str = kwargs["denominator_subtraction_result_str"]
-    denominator_subtraction_str = (
-            denominator_subtraction_leading_whitespaces + denominator_subtraction_result_str
-    )
+    denominator_subtraction_str = denominator_subtraction_leading_whitespaces + denominator_subtraction_result_str
     line2 = kwargs["line2"]
     if (len(line2) - len(denominator_subtraction_str)) < 0:
         if len(denominator_subtraction_result_str) <= 2:
-            denominator_subtraction_leading_whitespaces = " " * (
-                    len(numerator) - denominator_str_length + 2
-            )
+            denominator_subtraction_leading_whitespaces = " " * (len(numerator) - denominator_str_length + 2)
         elif len(denominator_subtraction_result_str) == 3:
-            denominator_subtraction_leading_whitespaces = " " * (
-                    len(numerator) - denominator_str_length + 3
-            )
+            denominator_subtraction_leading_whitespaces = " " * (len(numerator) - denominator_str_length + 3)
         else:
-            denominator_subtraction_leading_whitespaces = " " * (
-                    len(numerator) - denominator_str_length
-            )
+            denominator_subtraction_leading_whitespaces = " " * (len(numerator) - denominator_str_length)
 
         return denominator_subtraction_leading_whitespaces + denominator_subtraction_result_str
     return None
@@ -53,7 +41,7 @@ def _log_slope_calculations(**kwargs):
 
         line1 = "-" * len(numerator)
 
-        numerator_squares_str = f"{kwargs["x2_square"]} - {kwargs["x1_square"]}"
+        numerator_squares_str = f"{kwargs['x2_square']} - {kwargs['x1_square']}"
         denominator_subtraction_result = kwargs["denominator_subtraction_result"]
         denominator_subtraction_result_str = str(denominator_subtraction_result)
         if len(numerator_squares_str) > len(denominator_subtraction_result_str):
@@ -66,7 +54,7 @@ def _log_slope_calculations(**kwargs):
             numerator_squares_str=numerator_squares_str,
             denominator_str=denominator_str,
             denominator_subtraction_result_str=denominator_subtraction_result_str,
-            line2=line2
+            line2=line2,
         )
 
         msg = textwrap.dedent(

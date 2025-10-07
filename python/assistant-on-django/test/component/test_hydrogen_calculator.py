@@ -23,10 +23,10 @@ class HydrogenCalculatorTest(unittest.TestCase):
         self.assertAlmostEqual(581.24, result.get(constants.GRAMS), places=2)
 
         molecules = float(format(result.get(constants.MOLECULES), ".4g"))
-        self.assertEqual(0.0, 6.02e+24 - molecules)
+        self.assertEqual(0.0, 6.02e24 - molecules)
 
         self.assertEqual(butane_moles, result.get(constants.MOLES))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

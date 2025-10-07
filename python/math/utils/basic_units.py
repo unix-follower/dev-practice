@@ -21,8 +21,7 @@ class TaggedValueMeta(type):
     def __init__(self, name, bases, dict):
         for fn_name in self._proxies:
             if not hasattr(self, fn_name):
-                setattr(self, fn_name,
-                        ProxyDelegate(fn_name, self._proxies[fn_name]))
+                setattr(self, fn_name, ProxyDelegate(fn_name, self._proxies[fn_name]))
 
 
 class PassThroughProxy:
@@ -59,8 +58,7 @@ class ConvertReturnProxy(PassThroughProxy):
 
     def __call__(self, *args):
         ret = super().__call__(*args)
-        return (NotImplemented if ret is NotImplemented
-                else TaggedValue(ret, self.unit))
+        return NotImplemented if ret is NotImplemented else TaggedValue(ret, self.unit)
 
 
 class ConvertAllProxy(PassThroughProxy):
@@ -72,12 +70,12 @@ class ConvertAllProxy(PassThroughProxy):
         converted_args = []
         arg_units = [self.unit]
         for a in args:
-            if hasattr(a, 'get_unit') and not hasattr(a, 'convert_to'):
+            if hasattr(a, "get_unit") and not hasattr(a, "convert_to"):
                 # If this argument has a unit type but no conversion ability,
                 # this operation is prohibited.
                 return NotImplemented
 
-            if hasattr(a, 'convert_to'):
+            if hasattr(a, "convert_to"):
                 try:
                     a = a.convert_to(self.unit)
                 except Exception:
@@ -86,7 +84,7 @@ class ConvertAllProxy(PassThroughProxy):
                 converted_args.append(a.get_value())
             else:
                 converted_args.append(a)
-                if hasattr(a, 'get_unit'):
+                if hasattr(a, "get_unit"):
                     arg_units.append(a.get_unit())
                 else:
                     arg_units.append(None)
@@ -101,22 +99,22 @@ class ConvertAllProxy(PassThroughProxy):
 
 
 class TaggedValue(metaclass=TaggedValueMeta):
-
-    _proxies = {'__add__': ConvertAllProxy,
-                '__sub__': ConvertAllProxy,
-                '__mul__': ConvertAllProxy,
-                '__rmul__': ConvertAllProxy,
-                '__cmp__': ConvertAllProxy,
-                '__lt__': ConvertAllProxy,
-                '__gt__': ConvertAllProxy,
-                '__len__': PassThroughProxy}
+    _proxies = {
+        "__add__": ConvertAllProxy,
+        "__sub__": ConvertAllProxy,
+        "__mul__": ConvertAllProxy,
+        "__rmul__": ConvertAllProxy,
+        "__cmp__": ConvertAllProxy,
+        "__lt__": ConvertAllProxy,
+        "__gt__": ConvertAllProxy,
+        "__len__": PassThroughProxy,
+    }
 
     def __new__(cls, value, unit):
         # generate a new subclass for value
         value_class = type(value)
         try:
-            subcls = type(f'TaggedValue_of_{value_class.__name__}',
-                          (cls, value_class), {})
+            subcls = type(f"TaggedValue_of_{value_class.__name__}", (cls, value_class), {})
             return object.__new__(subcls)
         except TypeError:
             return object.__new__(cls)
@@ -130,9 +128,9 @@ class TaggedValue(metaclass=TaggedValueMeta):
         return TaggedValue(self.value, self.unit)
 
     def __getattribute__(self, name):
-        if name.startswith('__'):
+        if name.startswith("__"):
             return object.__getattribute__(self, name)
-        variable = object.__getattribute__(self, 'value')
+        variable = object.__getattribute__(self, "value")
         if hasattr(variable, name) and name not in self.__class__.__dict__:
             return getattr(variable, name)
         return object.__getattribute__(self, name)
@@ -144,7 +142,7 @@ class TaggedValue(metaclass=TaggedValueMeta):
         return TaggedValue(array, self.unit)
 
     def __repr__(self):
-        return f'TaggedValue({self.value!r}, {self.unit!r})'
+        return f"TaggedValue({self.value!r}, {self.unit!r})"
 
     def __str__(self):
         return f"{self.value} in {self.unit}"
@@ -152,7 +150,8 @@ class TaggedValue(metaclass=TaggedValueMeta):
     def __len__(self):
         return len(self.value)
 
-    if parse_version(np.__version__) >= parse_version('1.20'):
+    if parse_version(np.__version__) >= parse_version("1.20"):
+
         def __getitem__(self, key):
             return TaggedValue(self.value[key], self.unit)
 
@@ -191,7 +190,7 @@ class BasicUnit:
         self.conversions = dict()
 
     def __repr__(self):
-        return f'BasicUnit({self.name})'
+        return f"BasicUnit({self.name})"
 
     def __str__(self):
         return self.fullname
@@ -202,16 +201,16 @@ class BasicUnit:
     def __mul__(self, rhs):
         value = rhs
         unit = self
-        if hasattr(rhs, 'get_unit'):
+        if hasattr(rhs, "get_unit"):
             value = rhs.get_value()
             unit = rhs.get_unit()
-            unit = unit_resolver('__mul__', (self, unit))
+            unit = unit_resolver("__mul__", (self, unit))
         if unit is NotImplemented:
             return NotImplemented
         return TaggedValue(value, unit)
 
     def __rmul__(self, lhs):
-        return self*lhs
+        return self * lhs
 
     def __array_wrap__(self, array, context=None, return_scalar=False):
         return TaggedValue(array, self)
@@ -225,7 +224,8 @@ class BasicUnit:
 
     def add_conversion_factor(self, unit, factor):
         def convert(x):
-            return x*factor
+            return x * factor
+
         self.conversions[unit] = convert
 
     def add_conversion_fn(self, unit, fn):
@@ -257,12 +257,13 @@ class UnitResolver:
         return non_null[0]
 
     op_dict = {
-        '__mul__': multiplication_rule,
-        '__rmul__': multiplication_rule,
-        '__add__': addition_rule,
-        '__radd__': addition_rule,
-        '__sub__': addition_rule,
-        '__rsub__': addition_rule}
+        "__mul__": multiplication_rule,
+        "__rmul__": multiplication_rule,
+        "__add__": addition_rule,
+        "__radd__": addition_rule,
+        "__sub__": addition_rule,
+        "__rsub__": addition_rule,
+    }
 
     def __call__(self, operation, units):
         if operation not in self.op_dict:
@@ -273,22 +274,22 @@ class UnitResolver:
 
 unit_resolver = UnitResolver()
 
-cm = BasicUnit('cm', 'centimeters')
-inch = BasicUnit('inch', 'inches')
+cm = BasicUnit("cm", "centimeters")
+inch = BasicUnit("inch", "inches")
 inch.add_conversion_factor(cm, 2.54)
-cm.add_conversion_factor(inch, 1/2.54)
+cm.add_conversion_factor(inch, 1 / 2.54)
 
-radians = BasicUnit('rad', 'radians')
-degrees = BasicUnit('deg', 'degrees')
-radians.add_conversion_factor(degrees, 180.0/np.pi)
-degrees.add_conversion_factor(radians, np.pi/180.0)
+radians = BasicUnit("rad", "radians")
+degrees = BasicUnit("deg", "degrees")
+radians.add_conversion_factor(degrees, 180.0 / np.pi)
+degrees.add_conversion_factor(radians, np.pi / 180.0)
 
-secs = BasicUnit('s', 'seconds')
-hertz = BasicUnit('Hz', 'Hertz')
-minutes = BasicUnit('min', 'minutes')
+secs = BasicUnit("s", "seconds")
+hertz = BasicUnit("Hz", "Hertz")
+minutes = BasicUnit("min", "minutes")
 
-secs.add_conversion_fn(hertz, lambda x: 1./x)
-secs.add_conversion_factor(minutes, 1/60.0)
+secs.add_conversion_fn(hertz, lambda x: 1.0 / x)
+secs.add_conversion_factor(minutes, 1 / 60.0)
 
 
 # radians formatting
@@ -299,19 +300,19 @@ def rad_fn(x, pos=None):
         n = int((x / np.pi) * 2.0 - 0.25)
 
     if n == 0:
-        return '0'
+        return "0"
     elif n == 1:
-        return r'$\pi/2$'
+        return r"$\pi/2$"
     elif n == 2:
-        return r'$\pi$'
+        return r"$\pi$"
     elif n == -1:
-        return r'$-\pi/2$'
+        return r"$-\pi/2$"
     elif n == -2:
-        return r'$-\pi$'
+        return r"$-\pi$"
     elif n % 2 == 0:
-        return fr'${n//2}\pi$'
+        return rf"${n // 2}\pi$"
     else:
-        return fr'${n}\pi/2$'
+        return rf"${n}\pi/2$"
 
 
 class BasicUnitConverter(units.ConversionInterface):
@@ -321,20 +322,20 @@ class BasicUnitConverter(units.ConversionInterface):
 
         if unit == radians:
             return units.AxisInfo(
-                majloc=ticker.MultipleLocator(base=np.pi/2),
+                majloc=ticker.MultipleLocator(base=np.pi / 2),
                 majfmt=ticker.FuncFormatter(rad_fn),
                 label=unit.fullname,
             )
         elif unit == degrees:
             return units.AxisInfo(
                 majloc=ticker.AutoLocator(),
-                majfmt=ticker.FormatStrFormatter(r'$%i^\circ$'),
+                majfmt=ticker.FormatStrFormatter(r"$%i^\circ$"),
                 label=unit.fullname,
             )
         elif unit is not None:
-            if hasattr(unit, 'fullname'):
+            if hasattr(unit, "fullname"):
                 return units.AxisInfo(label=unit.fullname)
-            elif hasattr(unit, 'unit'):
+            elif hasattr(unit, "unit"):
                 return units.AxisInfo(label=unit.unit.fullname)
         return None
 

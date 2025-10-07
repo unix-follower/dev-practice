@@ -49,9 +49,9 @@ def load_dataset():
     """
     Loads dataset and then apply filter keeping only MA tickers
     """
-    stock_price_dataset = pd.read_csv(
-        app_config.DATASET_PATH, index_col="Date", parse_dates=["Date"]
-    ).drop(["Dividends", "Stock Splits"], axis=1)
+    stock_price_dataset = pd.read_csv(app_config.DATASET_PATH, index_col="Date", parse_dates=["Date"]).drop(
+        ["Dividends", "Stock Splits"], axis=1
+    )
     logging.info(stock_price_dataset.head())
     logging.info(stock_price_dataset.describe())
     logging.info(stock_price_dataset.isna().sum())
@@ -62,8 +62,8 @@ def plot_train_test(train_dataset: pd.DataFrame, year_start: int, year_end: int)
     """
     Plot dataset for given time period.
     """
-    train_dataset.loc[f"{year_start}":f"{year_end}", "High"].plot(figsize=(16, 4), legend=True)
-    train_dataset.loc[f"{year_end + 1}":, "High"].plot(figsize=(16, 4), legend=True)
+    train_dataset.loc[f"{year_start}" : f"{year_end}", "High"].plot(figsize=(16, 4), legend=True)
+    train_dataset.loc[f"{year_end + 1}" :, "High"].plot(figsize=(16, 4), legend=True)
     plt.legend([f"Train (Before {year_end + 1})", f"Test ({year_end + 1} and beyond)"])
     plt.title("Stock price")
     plt.show()
@@ -73,8 +73,8 @@ def train_test_split(stock_price_dataset: pd.DataFrame, year_start: int, year_en
     """
     Split dataset to train and set according to specified time period
     """
-    train = stock_price_dataset.loc[f"{year_start}":f"{year_end}", "High"].values
-    test = stock_price_dataset.loc[f"{year_end + 1}":, "High"].values
+    train = stock_price_dataset.loc[f"{year_start}" : f"{year_end}", "High"].values
+    test = stock_price_dataset.loc[f"{year_end + 1}" :, "High"].values
     return train, test
 
 
@@ -331,9 +331,7 @@ def main():
         model_builder = choose_model_build_strategy(context)
         model_builder(context)
     else:
-        prices = np.array(
-            [164.36000061035156, 166.50999450683594, 166.47000122070312, 167.64999389648438]
-        )
+        prices = np.array([164.36000061035156, 166.50999450683594, 166.47000122070312, 167.64999389648438])
         prices = np.ndarray(shape=(1, 1), buffer=prices)
 
         predicted_stock_price = predict.predict(prices, model_type_arg)

@@ -41,9 +41,7 @@ def download_stock_history(ticker_names: str, period: str, session: Session):
     df_list = []
     ticker_name_list = ticker_names.strip('"').split(" ")
     for ticker in ticker_name_list:
-        data: DataFrame = yf.download(
-            ticker, group_by="Ticker", period=period, actions=True, session=session
-        )
+        data: DataFrame = yf.download(ticker, group_by="Ticker", period=period, actions=True, session=session)
         data.insert(loc=0, column="Date", value=data.index.strftime(_DATE_TIME_FORMAT))
         data.insert(loc=1, column="Ticker", value=ticker)
 
@@ -59,19 +57,22 @@ def download_stock_history(ticker_names: str, period: str, session: Session):
 
     df.to_csv(f"{output_dir}/{file_name}.csv", index=False)
 
-    df = df.rename(columns={
-        "Date": "date",
-        "Ticker": "ticker",
-        "Open": "open",
-        "High": "high",
-        "Low": "low",
-        "Close": "close",
-        "Adj Close": "adjClose",
-        "Volume": "volume",
-        "Dividends": "dividends",
-        "Stock Splits": "stockSplits",
-        "Capital Gains": "capitalGains"
-    }, errors="raise")
+    df = df.rename(
+        columns={
+            "Date": "date",
+            "Ticker": "ticker",
+            "Open": "open",
+            "High": "high",
+            "Low": "low",
+            "Close": "close",
+            "Adj Close": "adjClose",
+            "Volume": "volume",
+            "Dividends": "dividends",
+            "Stock Splits": "stockSplits",
+            "Capital Gains": "capitalGains",
+        },
+        errors="raise",
+    )
     df.to_json(f"{output_dir}/{file_name}.json", orient="records")
 
     _output_to_separate_files(df, output_dir)

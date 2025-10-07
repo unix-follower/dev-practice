@@ -56,13 +56,13 @@ class NitrogenCalculatorTest(unittest.TestCase):
         self.assertEqual(90, result.get(constants.GRAMS))
 
         molecules = float(format(result.get(constants.MOLECULES), ".4g"))
-        self.assertEqual(0.0, 5.639e+23 - molecules)
+        self.assertEqual(0.0, 5.639e23 - molecules)
 
         moles = result.get(constants.MOLES)
         self.assertAlmostEqual(0.936, moles, places=2)
 
         total_fraction_atoms = float(format(result.get(constants.TOTAL_FRACTION_ATOMS), ".4g"))
-        self.assertEqual(0.0, 1.128e+24 - total_fraction_atoms, total_fraction_atoms)
+        self.assertEqual(0.0, 1.128e24 - total_fraction_atoms, total_fraction_atoms)
 
     def test_calculate_urea_compound_atoms(self):
         # given
@@ -94,14 +94,14 @@ class NitrogenCalculatorTest(unittest.TestCase):
         self.assertEqual(18, result.get(constants.GRAMS))
 
         molecules = float(format(result.get(constants.MOLECULES), ".4g"))
-        self.assertEqual(0.0, 1.804e+23 - molecules)
+        self.assertEqual(0.0, 1.804e23 - molecules)
 
         moles = result.get(constants.MOLES)
         self.assertAlmostEqual(0.299, moles, places=2)
 
         total_fraction_atoms = float(format(result.get(constants.TOTAL_FRACTION_ATOMS), ".4g"))
-        self.assertEqual(0.0, 3.609e+23 - total_fraction_atoms, total_fraction_atoms)
+        self.assertEqual(0.0, 3.609e23 - total_fraction_atoms, total_fraction_atoms)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

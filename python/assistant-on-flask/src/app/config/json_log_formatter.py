@@ -1,18 +1,7 @@
 import json
 import logging
 
-_log_fields = {
-    "name",
-    "msg",
-    "levelname",
-    "pathname",
-    "module",
-    "lineno",
-    "threadName",
-    "process",
-    "metric",
-    "mtype"
-}
+_log_fields = {"name", "msg", "levelname", "pathname", "module", "lineno", "threadName", "process", "metric", "mtype"}
 
 
 class JsonLogFormatter(logging.Formatter):

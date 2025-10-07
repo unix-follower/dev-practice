@@ -22,5 +22,5 @@ class CyclopropaneCalculatorTest(unittest.TestCase):
         self.assertAlmostEqual(128.57, result, places=2)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
