@@ -1,5 +1,7 @@
 package org.example.assistantonsbservlet.physics;
 
+import org.example.assistantonsbservlet.math.MathCalculator;
+
 import java.util.Arrays;
 
 public final class PhysicsCalculator {
@@ -209,7 +211,7 @@ public final class PhysicsCalculator {
          * @return ||p|| = m * √(vₓ² + vᵧ² + v_z²) ⇒ ||p|| = m * ||v||
          */
         public static double velocityMagnitude(double[] velocityVector) {
-            return Math.sqrt(Arrays.stream(velocityVector).map(m -> m * m).sum());
+            return MathCalculator.CoordinateGeometry.vectorMagnitude(velocityVector);
         }
 
         /**
