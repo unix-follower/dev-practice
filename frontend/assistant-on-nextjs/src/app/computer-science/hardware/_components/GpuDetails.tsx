@@ -23,8 +23,18 @@ twStyleMap.set(
   "line-clamp-none list-decimal border-stone-500 align-text-bottom leading-3 capitalize font-stretch-condensed underline-offset-1 bg-gray-700/70",
 )
 twStyleMap.set("tw-template4", "line-clamp-1 bg-blue-700 text-red-200 ps-1 pe-3 pl-3 pt-5 pb-2 me-px -mt-1 -mb-2")
-twStyleMap.set("tw-template5", "border-teal-950/30 bg-pink-400/[85.2%] pr-1 px-4 py-16 m-2 mb-auto")
-twStyleMap.set("tw-template6", "-space-y-px -space-x-3")
+twStyleMap.set(
+  "tw-template5",
+  "border-teal-950/30 bg-pink-400/[85.2%] pr-1 px-4 py-16 m-2 mb-auto first:font-bold focus-visible:border-gray-200",
+)
+twStyleMap.set(
+  "tw-template6",
+  "-space-y-px -space-x-3 even:bg-gray-100 focus-within:border-blue-200 hover:first:font-bold hover:underline visited:text-gray-400 after:text-red-500 nth-last-of-type-[3n+1]:m-7 selection:text-lime-900 first-line:uppercase aria-disabled:bg-gray-300 nth-last-2:mx-6",
+)
+twStyleMap.set(
+  "tw-template7",
+  "only:p-4 selection:hover:bg-lime-500 group-odd:text-lg in-focus:bg-blue-400 peer-hover:bg-blue-400 *:border-amber-100 has-focus:border-blue-400 not-focus:bg-indigo-700",
+)
 
 interface GpuDetailsProps {
   id: string
@@ -44,8 +54,8 @@ export default function GpuDetails({ id, className }: GpuDetailsProps) {
 
   if (details.has(id)) {
     return (
-      <div className={style}>
-        <p>{details.get(id)}</p>)
+      <div className={style} aria-disabled="true">
+        <p aria-disabled="true">{details.get(id)}</p>)
       </div>
     )
   }
