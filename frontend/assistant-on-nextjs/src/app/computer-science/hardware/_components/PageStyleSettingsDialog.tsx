@@ -69,7 +69,7 @@ export default function PageStyleSettingsDialog({
   }
 
   const selectMenuItems = []
-  for (let i = 1; i <= 7; i++) {
+  for (let i = 1; i <= 10; i++) {
     selectMenuItems.push(<MenuItem value={`template${i}`}>{t("templateNo", { no: i })}</MenuItem>)
   }
 

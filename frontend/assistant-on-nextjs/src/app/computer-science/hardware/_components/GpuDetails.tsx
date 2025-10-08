@@ -1,13 +1,25 @@
 import React from "react"
+
+import Image from "next/image"
 import { useStyleEngine } from "@/lib/hooks/styleEngineHooks"
 import styles from "./gpuDetails.module.css"
 import { useTranslations } from "next-intl"
 
-const details = new Map()
-details.set(
-  "NVIDIA_GB207-300",
-  "NVIDIA's GB207 GPU uses the Blackwell 2.0 architecture and is made using a 5 nm production process at TSMC. With a die size of 149 mm² and a transistor count of 16,900 million it is a small chip. GB207 supports DirectX 12 Ultimate (Feature Level 12_2). For GPU compute applications, OpenCL version 3.0 and CUDA 12.0 can be used. Additionally, the DirectX 12 Ultimate capability guarantees support for hardware-raytracing, variable-rate shading and more, in upcoming video games. It features 2560 shading units, 80 texture mapping units and 32 ROPs. Also included are 80 tensor cores which help improve the speed of machine learning applications. The GPU also contains 20 raytracing acceleration cores.",
-)
+interface GpuModelDetails {
+  imageSrc?: string
+  imageWidth?: number
+  imageHeight?: number
+  description: string | null
+}
+
+const details = new Map<string, GpuModelDetails>()
+details.set("NVIDIA_GB207-300", {
+  imageSrc: "https://static.userbenchmark.com/resources/static/gpu/Nvidia-RTX-5080.jpg",
+  imageWidth: 128,
+  imageHeight: 128,
+  description:
+    "NVIDIA's GB207 GPU uses the Blackwell 2.0 architecture and is made using a 5 nm production process at TSMC. With a die size of 149 mm² and a transistor count of 16,900 million it is a small chip. GB207 supports DirectX 12 Ultimate (Feature Level 12_2). For GPU compute applications, OpenCL version 3.0 and CUDA 12.0 can be used. Additionally, the DirectX 12 Ultimate capability guarantees support for hardware-raytracing, variable-rate shading and more, in upcoming video games. It features 2560 shading units, 80 texture mapping units and 32 ROPs. Also included are 80 tensor cores which help improve the speed of machine learning applications. The GPU also contains 20 raytracing acceleration cores.",
+})
 
 const twStyleMap = new Map()
 twStyleMap.set(
@@ -35,6 +47,15 @@ twStyleMap.set(
   "tw-template7",
   "only:p-4 selection:hover:bg-lime-500 group-odd:text-lg in-focus:bg-blue-400 peer-hover:bg-blue-400 *:border-amber-100 has-focus:border-blue-400 not-focus:bg-indigo-700",
 )
+twStyleMap.set(
+  "tw-template8",
+  "flex order-first items-center self-center grow justify-evenly gap-y-6 shrink-[3] place-content-center basis-min",
+)
+twStyleMap.set(
+  "tw-template9",
+  "grid justify-self-center justify-between row-end-2 auto-cols-min grid-flow-row self-stretch",
+)
+twStyleMap.set("tw-template10", "inline-grid auto-rows-fr justify-self-end row-[1/span_2]")
 
 interface GpuDetailsProps {
   id: string
@@ -53,9 +74,18 @@ export default function GpuDetails({ id, className }: GpuDetailsProps) {
   }
 
   if (details.has(id)) {
+    const modelDetails = details.get(id)!
     return (
       <div className={style} aria-disabled="true">
-        <p aria-disabled="true">{details.get(id)}</p>)
+        <p aria-disabled="true">{modelDetails.description}</p>
+        {modelDetails.imageSrc && (
+          <Image
+            src={modelDetails.imageSrc}
+            width={modelDetails.imageWidth}
+            height={modelDetails.imageHeight}
+            alt={t("noImage")}
+          />
+        )}
       </div>
     )
   }

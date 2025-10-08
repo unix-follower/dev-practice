@@ -5,6 +5,7 @@
     "save": "Save",
     "cancel": "Cancel",
     "noData": "No data",
+    "noImage": "No image",
     "native": "Native",
     "none": "None",
     "engine": "Engine",
@@ -54,5 +55,8 @@
     "dieSize": "Die size",
     "modelCodename": "Model (Codename)",
     "modelCodeName": "Model (Code name)"
+  },
+  "mathGeometryCssShapesPage": {
+    "loading": "Loading..."
   }
 }
