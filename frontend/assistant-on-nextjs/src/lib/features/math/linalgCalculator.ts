@@ -170,6 +170,19 @@ export function projection3d(width: number, height: number, depth: number) {
   ]
 }
 
+export function perspective(fieldOfViewInRadians: number, aspect: number, near: number, far: number) {
+  const f = Math.tan(Math.PI * 0.5 - 0.5 * fieldOfViewInRadians)
+  const rangeInverse = 1.0 / (near - far)
+
+  // prettier-ignore
+  return [
+    f / aspect, 0, 0, 0,
+    0, f, 0, 0,
+    0, 0, (near + far) * rangeInverse, -1,
+    0, 0, near * far * rangeInverse * 2, 0,
+  ]
+}
+
 /**
  * @param matrix the matrix to be multiplied
  * @param width width in pixels

@@ -28,12 +28,13 @@ import imgProcessingVertexShader from "./shaders/imageProcessingVert"
 import imgProcessingFragmentShader from "./shaders/imageProcessingFrag"
 import { X_AXIS_INDEX, Y_AXIS_INDEX, Z_AXIS_INDEX } from "@/lib/constants"
 import InputSlider from "./InputSlider"
-import { toRadians } from "@/lib/features/math/conversionCalculator"
+import { toRadians, radiansToDegrees } from "@/lib/features/math/conversionCalculator"
 import UnitCircle from "@/app/math/geometry/_components/UnitCircle"
 import * as linalg from "@/lib/features/math/linalgCalculator"
 
 interface SceneSettings {
   gl: WebGL2RenderingContext
+  fieldOfView?: number
   translation?: number[]
   translateX?: number
   translateY?: number
@@ -991,10 +992,10 @@ export default function GeometryWebGLEditor({ translations }: GeometryWebGLEdito
 
   return (
     <WebGLRenderingCtx value={webGLContext}>
-      <div id="geometry-webgl-editor" className="grid grid-cols-[20%_60%_20%] grid-rows-1 gap-4 p-3">
+      <UnitCircle />
+      <div id="geometry-webgl-editor" className="grid grid-cols-[30%_70%] grid-rows-1 gap-4 p-3">
         <ToolPanel />
-        <canvas ref={canvasRef} style={{ width: "100%", height: "100%" }} />
-        <UnitCircle />
+        <canvas ref={canvasRef} className="m-2 bg-black p-2" style={{ width: "100%", height: "100%" }} />
       </div>
     </WebGLRenderingCtx>
   )
@@ -1048,6 +1049,7 @@ function ToolPanel() {
   const { t } = useTranslation()
   const gl = useWebGLRenderingCtx()
   const [threeD, setThreeD] = useState(true)
+  const [fieldOfViewRadians, setFieldOfViewRadians] = useState(toRadians(60))
   const [translation, setTranslation] = useState([0, 0, 0])
   const [rotation, setRotation] = useState([0, 0, 0])
   const [rotationDegrees, setRotationDegrees] = useState(0)
@@ -1064,6 +1066,7 @@ function ToolPanel() {
 
       sceneRenderFn({
         gl,
+        fieldOfView: fieldOfViewRadians,
         translation,
         rotation: [
           toRadians(rotation[X_AXIS_INDEX]),
@@ -1081,7 +1084,7 @@ function ToolPanel() {
         threeD,
       })
     }
-  }, [sceneRenderFn, gl, translation, rotation, rotationDegrees, scale, threeD])
+  }, [sceneRenderFn, gl, fieldOfViewRadians, translation, rotation, rotationDegrees, scale, threeD])
 
   function handleDrawIsoscelesTriangleClick() {
     if (!gl) {
@@ -1105,6 +1108,7 @@ function ToolPanel() {
     setSceneRenderFn(() => (settings: SceneSettings) => {
       if (transformationSeq) {
         const {
+          fieldOfView: fieldOfView,
           translation: translateCoord,
           rotation: rotateCoord,
           scale: scaleCoord,
@@ -1118,8 +1122,11 @@ function ToolPanel() {
 
         let matrix: Float32Array<ArrayBufferLike> | number[]
         if (is3d) {
-          matrix = linalg.projection3d(gl.canvas.width, gl.canvas.height, 400)
+          const aspect = gl.canvas.width / gl.canvas.height
+          const zNear = 1
+          const zFar = 2000
 
+          matrix = linalg.perspective(fieldOfView || 1, aspect, zNear, zFar)
           for (const transform of transformationSeq) {
             if (transform === "translate" && translateCoord) {
               const [x, y, z] = translateCoord
@@ -1177,9 +1184,18 @@ function ToolPanel() {
     )
   }
 
+  function handleFovSliderInput(e: React.ChangeEvent<HTMLInputElement>) {
+    const degrees = Number.parseInt(e.target.value)
+    setFieldOfViewRadians(toRadians(degrees))
+  }
+
   function updateTranslation(axisIndex: number, position: number) {
-    const newTranslation = [...translation]
-    newTranslation[axisIndex] = position
+    const newTranslation = translation.map((coordinate, index) => {
+      if (index === axisIndex) {
+        return position
+      }
+      return coordinate
+    })
     setTranslation(newTranslation)
   }
 
@@ -1233,6 +1249,8 @@ function ToolPanel() {
   }
 
   const kernelOptions = Object.keys(convKernels).map((kernel) => <option key={kernel}>{kernel}</option>)
+
+  const fieldOfViewInDegrees = Math.floor(radiansToDegrees(fieldOfViewRadians))
 
   return (
     <div id="geometry-webgl-editor-tool-panel" className="grid grid-cols-1 grid-rows-3">
@@ -1305,12 +1323,29 @@ function ToolPanel() {
       <div className="slide-container">
         <span>Translate</span>
         <p>
+          <label htmlFor="fov-slider">Field of view (FOV)</label>
+          <input
+            id="fov-slider"
+            className="slider"
+            type="range"
+            min="1"
+            max="179"
+            step="1"
+            value={fieldOfViewInDegrees}
+            onInput={handleFovSliderInput}
+          />
+          <span>{fieldOfViewInDegrees}°</span>
+        </p>
+      </div>
+      <div className="slide-container">
+        <span>Translate</span>
+        <p>
           <label htmlFor="x-position-slider">x</label>
           <input
             id="x-position-slider"
             className="slider"
             type="range"
-            min="0"
+            min="-360"
             max={gl?.canvas.width}
             step="1"
             value={translation[X_AXIS_INDEX]}
@@ -1324,7 +1359,7 @@ function ToolPanel() {
             id="y-position-slider"
             className="slider"
             type="range"
-            min="0"
+            min="-360"
             max={gl?.canvas.height}
             step="1"
             value={translation[Y_AXIS_INDEX]}
@@ -1338,7 +1373,7 @@ function ToolPanel() {
             id="z-position-slider"
             className="slider"
             type="range"
-            min="0"
+            min="-360"
             max={gl?.canvas.height}
             step="1"
             value={translation[Z_AXIS_INDEX]}
