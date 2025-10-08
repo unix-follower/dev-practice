@@ -152,16 +152,58 @@ public final class MathCalculator {
             }
             return (endpointY - startPointY) / (endpointX - startPointX);
         }
+
+        /**
+         * If the shorter leg length 'a' is known:
+         * b = a√3
+         * c = 2a
+         * @return [a, b, c]
+         */
+        public static double[] triangle306090SolveWithA(double sideA) {
+            return new double[] {sideA, sideA * Math.sqrt(3), 2 * sideA};
+        }
+
+        /**
+         * If the longer leg length b is known:
+         * a = b√3/3
+         * c = 2b√3/3
+         * @return [a, b, c]
+         */
+        public static double[] triangle306090SolveWithB(double sideB) {
+            final double sqrtResult = Math.sqrt(3) / 3;
+            return new double[] {sideB * sqrtResult, sideB, 2 * sideB * sqrtResult};
+        }
+
+        /**
+         * If the hypotenuse c is known:
+         * a = c/2
+         * b = c√3/2
+         * @return [a, b, c]
+         */
+        public static double[] triangle306090SolveWithC(double sideC) {
+            final double sideA = sideC / 2;
+            return new double[] {sideA, sideA * Math.sqrt(3), sideC};
+        }
     }
 
     public static final class CoordinateGeometry {
         private CoordinateGeometry() {
         }
 
+        /**
+         * @return |v| = √(x² + y² + z²)
+         */
         public static double vectorMagnitude(double[] vector) {
             return Math.sqrt(Arrays.stream(vector).map(m -> m * m).sum());
         }
 
+        /**
+         * û = u / |u|
+         * where:
+         * û — Unit vector;
+         * u — Arbitrary vector in the form (x, y, z);
+         * |u| — Magnitude of the vector u.
+         */
         public static Triple<Double, double[], Double> unitVector(double[] vector) {
             final double magnitude = vectorMagnitude(vector);
             final double[] result = Arrays.stream(vector).map(m -> m / magnitude).toArray();
@@ -169,6 +211,10 @@ public final class MathCalculator {
             return Triple.of(magnitude, result, resultMagnitude);
         }
 
+        /**
+         * Find one of the missing components.
+         * For example, find z |v| = √(x² + y² + ?)
+         */
         public static Pair<double[], Double> findMissingUnitVectorComponent(double[] unitVector) {
             final double sum = Arrays.stream(unitVector).map(m -> {
                 if (m > 1) {

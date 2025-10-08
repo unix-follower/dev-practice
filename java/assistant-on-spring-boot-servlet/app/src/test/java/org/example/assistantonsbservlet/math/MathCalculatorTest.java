@@ -8,6 +8,51 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class MathCalculatorTest {
     @Nested
+    class Geometry {
+        @Test
+        void calculateTriangle306090SolveWithA() {
+            // given
+            final float sideA = 6.35f; // cm
+            // when
+            final double[] sides = MathCalculator.Geometry.triangle306090SolveWithA(sideA);
+            // then
+            assertNotNull(sides);
+            assertEquals(3, sides.length);
+            assertEquals(sideA, sides[Constants.ARR_1ST_INDEX], 0.01); // cm
+            assertEquals(11, sides[Constants.ARR_2ND_INDEX], 0.01); // cm
+            assertEquals(12.7, sides[Constants.ARR_3RD_INDEX], 0.1); // cm
+        }
+
+        @Test
+        void calculateTriangle306090SolveWithB() {
+            // given
+            final int sideB = 11; // cm
+            // when
+            final double[] sides = MathCalculator.Geometry.triangle306090SolveWithB(sideB);
+            // then
+            assertNotNull(sides);
+            assertEquals(3, sides.length);
+            assertEquals(6.35, sides[Constants.ARR_1ST_INDEX], 0.01); // cm
+            assertEquals(sideB, sides[Constants.ARR_2ND_INDEX], 0.1); // cm
+            assertEquals(12.7, sides[Constants.ARR_3RD_INDEX], 0.1); // cm
+        }
+
+        @Test
+        void calculateTriangle306090SolveWithC() {
+            // given
+            final float sideC = 12.7f; // cm
+            // when
+            final double[] sides = MathCalculator.Geometry.triangle306090SolveWithC(sideC);
+            // then
+            assertNotNull(sides);
+            assertEquals(3, sides.length);
+            assertEquals(6.35, sides[Constants.ARR_1ST_INDEX], 0.01); // cm
+            assertEquals(11, sides[Constants.ARR_2ND_INDEX], 0.1); // cm
+            assertEquals(sideC, sides[Constants.ARR_3RD_INDEX], 0.1); // cm
+        }
+    }
+
+    @Nested
     class CoordinateGeometry {
         @Test
         void calculateVectorMagnitude2d() {
