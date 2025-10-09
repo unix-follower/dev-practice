@@ -34,11 +34,11 @@ import * as linalg from "@/lib/features/math/linalgCalculator"
 
 interface SceneSettings {
   gl: WebGL2RenderingContext
-  fieldOfView?: number
+  fieldOfViewRadians?: number
   translation?: number[]
   translateX?: number
   translateY?: number
-  rotationInRadians?: number
+  rotationRadians?: number
   rotation?: number[]
   rotationX?: number
   rotationY?: number
@@ -47,6 +47,7 @@ interface SceneSettings {
   scaleY?: number
   transformedMatrix?: Float32Array | number[]
   threeD?: boolean
+  cameraAngleRadians?: number
 }
 
 function clearCanvas(gl: WebGL2RenderingContext) {
@@ -142,141 +143,141 @@ function setLetterFGeometry(gl: WebGL2RenderingContext) {
   )
 }
 
-function setLetterFGeometry3d(gl: WebGL2RenderingContext) {
-  gl.bufferData(
-    gl.ARRAY_BUFFER,
-    // prettier-ignore
-    new Float32Array([
-      // left column front
-      0,   0,  0,
-      0, 150,  0,
-      30,   0,  0,
-      0, 150,  0,
-      30, 150,  0,
-      30,   0,  0,
+function setLetterFGeometry3d(gl: WebGL2RenderingContext, arrayPostProcessor?: (positions: Float32Array) => void) {
+  // prettier-ignore
+  const points = new Float32Array([
+    // left column front
+    0,   0,  0,
+    0, 150,  0,
+    30,   0,  0,
+    0, 150,  0,
+    30, 150,  0,
+    30,   0,  0,
 
-      // top rung front
-      30,   0,  0,
-      30,  30,  0,
-      100,   0,  0,
-      30,  30,  0,
-      100,  30,  0,
-      100,   0,  0,
+    // top rung front
+    30,   0,  0,
+    30,  30,  0,
+    100,   0,  0,
+    30,  30,  0,
+    100,  30,  0,
+    100,   0,  0,
 
-      // middle rung front
-      30,  60,  0,
-      30,  90,  0,
-      67,  60,  0,
-      30,  90,  0,
-      67,  90,  0,
-      67,  60,  0,
+    // middle rung front
+    30,  60,  0,
+    30,  90,  0,
+    67,  60,  0,
+    30,  90,  0,
+    67,  90,  0,
+    67,  60,  0,
 
-      // left column back
-      0,   0,  30,
-      30,   0,  30,
-      0, 150,  30,
-      0, 150,  30,
-      30,   0,  30,
-      30, 150,  30,
+    // left column back
+    0,   0,  30,
+    30,   0,  30,
+    0, 150,  30,
+    0, 150,  30,
+    30,   0,  30,
+    30, 150,  30,
 
-      // top rung back
-      30,   0,  30,
-      100,   0,  30,
-      30,  30,  30,
-      30,  30,  30,
-      100,   0,  30,
-      100,  30,  30,
+    // top rung back
+    30,   0,  30,
+    100,   0,  30,
+    30,  30,  30,
+    30,  30,  30,
+    100,   0,  30,
+    100,  30,  30,
 
-      // middle rung back
-      30,  60,  30,
-      67,  60,  30,
-      30,  90,  30,
-      30,  90,  30,
-      67,  60,  30,
-      67,  90,  30,
+    // middle rung back
+    30,  60,  30,
+    67,  60,  30,
+    30,  90,  30,
+    30,  90,  30,
+    67,  60,  30,
+    67,  90,  30,
 
-      // top
-      0,   0,   0,
-      100,   0,   0,
-      100,   0,  30,
-      0,   0,   0,
-      100,   0,  30,
-      0,   0,  30,
+    // top
+    0,   0,   0,
+    100,   0,   0,
+    100,   0,  30,
+    0,   0,   0,
+    100,   0,  30,
+    0,   0,  30,
 
-      // top rung right
-      100,   0,   0,
-      100,  30,   0,
-      100,  30,  30,
-      100,   0,   0,
-      100,  30,  30,
-      100,   0,  30,
+    // top rung right
+    100,   0,   0,
+    100,  30,   0,
+    100,  30,  30,
+    100,   0,   0,
+    100,  30,  30,
+    100,   0,  30,
 
-      // under top rung
-      30,   30,   0,
-      30,   30,  30,
-      100,  30,  30,
-      30,   30,   0,
-      100,  30,  30,
-      100,  30,   0,
+    // under top rung
+    30,   30,   0,
+    30,   30,  30,
+    100,  30,  30,
+    30,   30,   0,
+    100,  30,  30,
+    100,  30,   0,
 
-      // between top rung and middle
-      30,   30,   0,
-      30,   60,  30,
-      30,   30,  30,
-      30,   30,   0,
-      30,   60,   0,
-      30,   60,  30,
+    // between top rung and middle
+    30,   30,   0,
+    30,   60,  30,
+    30,   30,  30,
+    30,   30,   0,
+    30,   60,   0,
+    30,   60,  30,
 
-      // top of middle rung
-      30,   60,   0,
-      67,   60,  30,
-      30,   60,  30,
-      30,   60,   0,
-      67,   60,   0,
-      67,   60,  30,
+    // top of middle rung
+    30,   60,   0,
+    67,   60,  30,
+    30,   60,  30,
+    30,   60,   0,
+    67,   60,   0,
+    67,   60,  30,
 
-      // right of middle rung
-      67,   60,   0,
-      67,   90,  30,
-      67,   60,  30,
-      67,   60,   0,
-      67,   90,   0,
-      67,   90,  30,
+    // right of middle rung
+    67,   60,   0,
+    67,   90,  30,
+    67,   60,  30,
+    67,   60,   0,
+    67,   90,   0,
+    67,   90,  30,
 
-      // bottom of middle rung.
-      30,   90,   0,
-      30,   90,  30,
-      67,   90,  30,
-      30,   90,   0,
-      67,   90,  30,
-      67,   90,   0,
+    // bottom of middle rung.
+    30,   90,   0,
+    30,   90,  30,
+    67,   90,  30,
+    30,   90,   0,
+    67,   90,  30,
+    67,   90,   0,
 
-      // right of bottom
-      30,   90,   0,
-      30,  150,  30,
-      30,   90,  30,
-      30,   90,   0,
-      30,  150,   0,
-      30,  150,  30,
+    // right of bottom
+    30,   90,   0,
+    30,  150,  30,
+    30,   90,  30,
+    30,   90,   0,
+    30,  150,   0,
+    30,  150,  30,
 
-      // bottom
-      0,   150,   0,
-      0,   150,  30,
-      30,  150,  30,
-      0,   150,   0,
-      30,  150,  30,
-      30,  150,   0,
+    // bottom
+    0,   150,   0,
+    0,   150,  30,
+    30,  150,  30,
+    0,   150,   0,
+    30,  150,  30,
+    30,  150,   0,
 
-      // left side
-      0,   0,   0,
-      0,   0,  30,
-      0, 150,  30,
-      0,   0,   0,
-      0, 150,  30,
-      0, 150,   0,
-    ]),
-    gl.STATIC_DRAW,
-  )
+    // left side
+    0,   0,   0,
+    0,   0,  30,
+    0, 150,  30,
+    0,   0,   0,
+    0, 150,  30,
+    0, 150,   0,
+  ])
+  if (arrayPostProcessor) {
+    arrayPostProcessor(points)
+  }
+  gl.bufferData(gl.ARRAY_BUFFER, points, gl.STATIC_DRAW)
 }
 
 function drawIsoscelesTriangle({ gl, translateX = 200, translateY = 150 }: SceneSettings) {
@@ -556,6 +557,234 @@ function drawLetterFWithTransformedMatrix({ gl, transformedMatrix, threeD = fals
     gl.uniform4fv(colorLocation, color)
     drawTriangles({ gl, offset, count: 18 })
   }
+}
+
+function drawCircleFs({ gl, fieldOfViewRadians, cameraAngleRadians }: SceneSettings) {
+  throwIfAnyInvalidNumber([fieldOfViewRadians, cameraAngleRadians])
+
+  const program = webglUtils.createProgramFromSources(
+    gl,
+    [letterFWithTransformedMatrixVertex3dShader, letterFFragment3dShader],
+    [],
+    [],
+    (err) => {
+      throw err
+    },
+  )!
+
+  const positionAttributeLocation = gl.getAttribLocation(program, "a_position")
+  const colorAttributeLocation = gl.getAttribLocation(program, "a_color")
+
+  const matrixLocation = gl.getUniformLocation(program, "u_matrix")
+
+  const positionBuffer = gl.createBuffer()
+
+  const vao = gl.createVertexArray()
+  gl.bindVertexArray(vao)
+
+  gl.enableVertexAttribArray(positionAttributeLocation)
+
+  gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer)
+
+  function arrayPostProcessor(points: Float32Array) {
+    let matrix = linalg.xRotation(Math.PI)
+    matrix = linalg.translate3d(matrix, -50, -75, -15)
+
+    for (let i = 0; i < points.length; i += 3) {
+      const vector = linalg.transformVector(matrix, [points[i], points[i + 1], points[i + 2], 1])
+      points[i] = vector[0]
+      points[i + 1] = vector[1]
+      points[i + 2] = vector[2]
+    }
+  }
+  setLetterFGeometry3d(gl, arrayPostProcessor)
+
+  const size = 3
+  let type: number = gl.FLOAT
+  let normalize = false
+  const stride = 0
+  const offset = 0
+  gl.vertexAttribPointer(positionAttributeLocation, size, type, normalize, stride, offset)
+
+  const colorBuffer = gl.createBuffer()
+  gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer)
+  setLetterFColors(gl)
+
+  gl.enableVertexAttribArray(colorAttributeLocation)
+
+  type = gl.UNSIGNED_BYTE
+  normalize = true
+  gl.vertexAttribPointer(colorAttributeLocation, size, type, normalize, stride, offset)
+
+  function drawScene() {
+    const numFs = 5
+    const radius = 200
+
+    webglUtils.resizeCanvasToDisplaySize(gl.canvas as HTMLCanvasElement)
+
+    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
+
+    clearCanvas(gl)
+
+    gl.enable(gl.DEPTH_TEST)
+    gl.enable(gl.CULL_FACE)
+
+    gl.useProgram(program)
+
+    gl.bindVertexArray(vao)
+
+    const aspect = gl.canvas.width / gl.canvas.height
+    const zNear = 1
+    const zFar = 2000
+    const projectionMatrix = linalg.perspective(fieldOfViewRadians!, aspect, zNear, zFar)
+
+    let cameraMatrix: Float32Array | number[] = linalg.yRotation(cameraAngleRadians!)
+    cameraMatrix = linalg.translate3d(cameraMatrix, 0, 0, radius * 1.5)
+
+    const viewMatrix = linalg.inverse3d(cameraMatrix)
+
+    // create a viewProjection matrix. This will both apply perspective
+    // AND move the world so that the camera is effectively the origin
+    const viewProjectionMatrix = linalg.multiply3d(projectionMatrix, viewMatrix)
+
+    for (let i = 0; i < numFs; i++) {
+      const angle = (i * Math.PI * 2) / numFs
+
+      const x = Math.cos(angle) * radius
+      const z = Math.sin(angle) * radius
+      const matrix = linalg.translate3d(viewProjectionMatrix, x, 0, z)
+
+      gl.uniformMatrix4fv(matrixLocation, false, matrix)
+
+      const offset = 0
+      const count = 16 * 6
+      drawTriangles({ gl, offset, count })
+    }
+  }
+
+  drawScene()
+}
+
+function throwIfAnyInvalidNumber(data: (number | undefined)[]) {
+  for (const n of data) {
+    if (n === undefined || isNaN(n)) {
+      throw new Error("Invalid number")
+    }
+  }
+}
+
+function drawCircleFsWithTrackingCamera({ gl, fieldOfViewRadians, cameraAngleRadians }: SceneSettings) {
+  throwIfAnyInvalidNumber([fieldOfViewRadians, cameraAngleRadians])
+
+  const program = webglUtils.createProgramFromSources(
+    gl,
+    [letterFWithTransformedMatrixVertex3dShader, letterFFragment3dShader],
+    [],
+    [],
+    (err) => {
+      throw err
+    },
+  )!
+
+  const positionAttributeLocation = gl.getAttribLocation(program, "a_position")
+  const colorAttributeLocation = gl.getAttribLocation(program, "a_color")
+  const matrixLocation = gl.getUniformLocation(program, "u_matrix")
+
+  const positionBuffer = gl.createBuffer()
+
+  const vao = gl.createVertexArray()
+  gl.bindVertexArray(vao)
+
+  gl.enableVertexAttribArray(positionAttributeLocation)
+
+  gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer)
+  function arrayPostProcessor(points: Float32Array) {
+    let matrix = linalg.xRotation(Math.PI)
+    matrix = linalg.translate3d(matrix, -50, -75, -15)
+
+    for (let i = 0; i < points.length; i += 3) {
+      const vector = linalg.transformVector(matrix, [points[i], points[i + 1], points[i + 2], 1])
+      points[i] = vector[0]
+      points[i + 1] = vector[1]
+      points[i + 2] = vector[2]
+    }
+  }
+  setLetterFGeometry3d(gl, arrayPostProcessor)
+
+  const size = 3
+  let type: number = gl.FLOAT
+  let normalize = false
+  const stride = 0
+  const offset = 0
+  gl.vertexAttribPointer(positionAttributeLocation, size, type, normalize, stride, offset)
+
+  const colorBuffer = gl.createBuffer()
+  gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer)
+  setLetterFColors(gl)
+
+  gl.enableVertexAttribArray(colorAttributeLocation)
+
+  type = gl.UNSIGNED_BYTE
+  normalize = true
+  gl.vertexAttribPointer(colorAttributeLocation, size, type, normalize, stride, offset)
+
+  function drawScene() {
+    const numFs = 5
+    const radius = 200
+
+    webglUtils.resizeCanvasToDisplaySize(gl.canvas as HTMLCanvasElement)
+
+    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
+
+    clearCanvas(gl)
+
+    gl.enable(gl.DEPTH_TEST)
+    gl.enable(gl.CULL_FACE)
+
+    gl.useProgram(program)
+    gl.bindVertexArray(vao)
+
+    const aspect = gl.canvas.width / gl.canvas.height
+    const zNear = 1
+    const zFar = 2000
+    const projectionMatrix = linalg.perspective(fieldOfViewRadians!, aspect, zNear, zFar)
+
+    // Compute the position of the first F
+    const fPosition = [radius, 0, 0]
+
+    // Use matrix math to compute a position on the circle.
+    let cameraMatrix = linalg.yRotation(cameraAngleRadians!)
+    cameraMatrix = linalg.translate3d(cameraMatrix, 0, 50, radius * 1.5)
+
+    // Get the camera's position from the computed matrix
+    const cameraPosition = [cameraMatrix[12], cameraMatrix[13], cameraMatrix[14]]
+
+    const up = [0, 1, 0]
+
+    cameraMatrix = linalg.lookAt(cameraPosition, fPosition, up)
+
+    const viewMatrix = linalg.inverse3d(cameraMatrix)
+
+    // create a viewProjection matrix. This will both apply perspective
+    // AND move the world so that the camera is effectively the origin
+    const viewProjectionMatrix = linalg.multiply3d(projectionMatrix, viewMatrix)
+
+    // Draw 'F's in a circle
+    for (let i = 0; i < numFs; i++) {
+      const angle = (i * Math.PI * 2) / numFs
+
+      const x = Math.cos(angle) * radius
+      const z = Math.sin(angle) * radius
+      const matrix = linalg.translate3d(viewProjectionMatrix, x, 0, z)
+
+      gl.uniformMatrix4fv(matrixLocation, false, matrix)
+
+      const count = 16 * 6
+      drawTriangles({ gl, offset, count })
+    }
+  }
+
+  drawScene()
 }
 
 function setLetterFColors(gl: WebGLRenderingContext) {
@@ -1048,13 +1277,17 @@ type TransformationSequenceKey = keyof typeof transformationSequences
 function ToolPanel() {
   const { t } = useTranslation()
   const gl = useWebGLRenderingCtx()
+  const [sceneRenderFn, setSceneRenderFn] = useState<((settings: SceneSettings) => void) | null>()
+
   const [threeD, setThreeD] = useState(true)
+
   const [fieldOfViewRadians, setFieldOfViewRadians] = useState(toRadians(60))
+  const [cameraAngleRadians, setCameraAngleRadians] = useState(0)
   const [translation, setTranslation] = useState([0, 0, 0])
   const [rotation, setRotation] = useState([0, 0, 0])
   const [rotationDegrees, setRotationDegrees] = useState(0)
   const [scale, setScale] = useState([1, 1, 1])
-  const [sceneRenderFn, setSceneRenderFn] = useState<((settings: SceneSettings) => void) | null>()
+
   const [selectedConvolutionKernel, setSelectedConvolutionKernel] = useState("normal")
   const [selectedImageEffects, setSelectedImageEffects] = useState<string[]>([])
 
@@ -1066,7 +1299,8 @@ function ToolPanel() {
 
       sceneRenderFn({
         gl,
-        fieldOfView: fieldOfViewRadians,
+        fieldOfViewRadians,
+        cameraAngleRadians,
         translation,
         rotation: [
           toRadians(rotation[X_AXIS_INDEX]),
@@ -1076,7 +1310,7 @@ function ToolPanel() {
         scale,
         translateX: translation[X_AXIS_INDEX],
         translateY: translation[Y_AXIS_INDEX],
-        rotationInRadians,
+        rotationRadians: rotationInRadians,
         rotationX: Math.sin(rotationInRadians),
         rotationY: Math.cos(rotationInRadians),
         scaleX: scale[X_AXIS_INDEX],
@@ -1084,7 +1318,7 @@ function ToolPanel() {
         threeD,
       })
     }
-  }, [sceneRenderFn, gl, fieldOfViewRadians, translation, rotation, rotationDegrees, scale, threeD])
+  }, [sceneRenderFn, gl, cameraAngleRadians, fieldOfViewRadians, translation, rotation, rotationDegrees, scale, threeD])
 
   function handleDrawIsoscelesTriangleClick() {
     if (!gl) {
@@ -1108,13 +1342,13 @@ function ToolPanel() {
     setSceneRenderFn(() => (settings: SceneSettings) => {
       if (transformationSeq) {
         const {
-          fieldOfView: fieldOfView,
+          fieldOfViewRadians: fieldOfView,
           translation: translateCoord,
           rotation: rotateCoord,
           scale: scaleCoord,
           translateX,
           translateY,
-          rotationInRadians,
+          rotationRadians,
           scaleX,
           scaleY,
           threeD: is3d,
@@ -1146,8 +1380,8 @@ function ToolPanel() {
           for (const transform of transformationSeq) {
             if (transform === "translate" && translateX && translateY) {
               matrix = linalg.translate(matrix, translateX, translateY)
-            } else if (transform === "rotate" && rotationInRadians) {
-              matrix = linalg.rotate(matrix, rotationInRadians)
+            } else if (transform === "rotate" && rotationRadians) {
+              matrix = linalg.rotate(matrix, rotationRadians)
             } else if (transform === "scale" && scaleX && scaleY) {
               matrix = linalg.scale(matrix, scaleX, scaleY)
             }
@@ -1159,6 +1393,22 @@ function ToolPanel() {
         drawLetterF(settings)
       }
     })
+  }
+
+  function handleDrawCircleFsClick() {
+    if (!gl) {
+      return
+    }
+
+    setSceneRenderFn(() => (settings: SceneSettings) => drawCircleFs(settings))
+  }
+
+  function handleDrawCircleFsWithTrackingCameraClick() {
+    if (!gl) {
+      return
+    }
+
+    setSceneRenderFn(() => (settings: SceneSettings) => drawCircleFsWithTrackingCamera(settings))
   }
 
   function handleConvKernelOnChange(event: React.ChangeEvent<HTMLSelectElement>) {
@@ -1182,6 +1432,11 @@ function ToolPanel() {
           effects: selectedImageEffects,
         }),
     )
+  }
+
+  function handleCameraAngleSliderInput(e: React.ChangeEvent<HTMLInputElement>) {
+    const degrees = Number.parseInt(e.target.value)
+    setCameraAngleRadians(toRadians(degrees))
   }
 
   function handleFovSliderInput(e: React.ChangeEvent<HTMLInputElement>) {
@@ -1251,6 +1506,7 @@ function ToolPanel() {
   const kernelOptions = Object.keys(convKernels).map((kernel) => <option key={kernel}>{kernel}</option>)
 
   const fieldOfViewInDegrees = Math.floor(radiansToDegrees(fieldOfViewRadians))
+  const cameraAngleInDegrees = Math.floor(radiansToDegrees(cameraAngleRadians))
 
   return (
     <div id="geometry-webgl-editor-tool-panel" className="grid grid-cols-1 grid-rows-3">
@@ -1270,6 +1526,16 @@ function ToolPanel() {
       <Tooltip title="Letter F" placement="bottom-end">
         <button onClick={() => handleDrawLetterFClick()}>
           <i>Letter F</i>
+        </button>
+      </Tooltip>
+      <Tooltip title="Circle of letter F" placement="bottom-end">
+        <button onClick={handleDrawCircleFsClick}>
+          <i>Circle Fs</i>
+        </button>
+      </Tooltip>
+      <Tooltip title="Circle of letter F with tracking camera" placement="bottom-end">
+        <button onClick={handleDrawCircleFsWithTrackingCameraClick}>
+          <i>Circle Fs lookAt</i>
         </button>
       </Tooltip>
       <div>
@@ -1321,7 +1587,22 @@ function ToolPanel() {
         <span>Transformations</span>
       </div>
       <div className="slide-container">
-        <span>Translate</span>
+        <p>
+          <label htmlFor="fov-slider">Camera angle</label>
+          <input
+            id="fov-slider"
+            className="slider"
+            type="range"
+            min="-360"
+            max="360"
+            step="1"
+            value={cameraAngleInDegrees}
+            onInput={handleCameraAngleSliderInput}
+          />
+          <span>{cameraAngleInDegrees}°</span>
+        </p>
+      </div>
+      <div className="slide-container">
         <p>
           <label htmlFor="fov-slider">Field of view (FOV)</label>
           <input

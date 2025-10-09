@@ -49,13 +49,13 @@ twStyleMap.set(
 )
 twStyleMap.set(
   "tw-template8",
-  "flex order-first items-center self-center grow justify-evenly gap-y-6 shrink-[3] place-content-center basis-min",
+  "flex order-first items-center self-center grow justify-evenly gap-y-6 shrink-[3] place-content-center basis-min h-full min-h-min max-h-[85%] w-1/4",
 )
 twStyleMap.set(
   "tw-template9",
-  "grid justify-self-center justify-between row-end-2 auto-cols-min grid-flow-row self-stretch",
+  "grid justify-self-center justify-between row-end-2 auto-cols-min grid-flow-row self-stretch h-auto w-1 max-w-[min(90vw,1200px)]",
 )
-twStyleMap.set("tw-template10", "inline-grid auto-rows-fr justify-self-end row-[1/span_2]")
+twStyleMap.set("tw-template10", "inline-grid auto-rows-fr justify-self-end row-[1/span_2] max-w-4xl min-h-max")
 
 interface GpuDetailsProps {
   id: string
