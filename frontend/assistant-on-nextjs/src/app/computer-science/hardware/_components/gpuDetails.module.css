@@ -194,9 +194,15 @@ div.template8 {
     flex-shrink: 3;
     place-content: center;
     flex-basis: min-content;
+    /* Sizing */
+    height: 100%;
+    min-height: min-content;
+    max-height: 85%;
+    width: 25%;
 }
 
 div.template9 {
+    --spacing: 0.25rem;
     /* Grid */
     display: grid;
     justify-self: center;
@@ -205,12 +211,20 @@ div.template9 {
     grid-auto-columns: min-content;
     grid-auto-flow: row;
     align-self: stretch;
+    /* Sizing */
+    height: auto;
+    width: calc(var(--spacing) * 1);
+    max-width: min(90vw, 1200px);
 }
 
 div.template10 {
+    --container-4xl: 56rem;
     /* Grid */
     display: inline-grid;
     grid-auto-rows: minmax(0, 1fr);
     justify-self: end;
     grid-row: 1 / span 2;
+    /* Sizing */
+    max-width: var(--container-4xl);
+    min-height: max-content;
 }

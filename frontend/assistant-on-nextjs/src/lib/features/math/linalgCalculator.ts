@@ -427,3 +427,133 @@ export function inverse(matrix: Float32Array | Array<number>, dst?: Float32Array
 
   return dst
 }
+
+export function inverse3d(matrix: Float32Array | number[]) {
+  const m00 = matrix[0] // 0 * 4 + 0
+  const m01 = matrix[1] // 0 * 4 + 1
+  const m02 = matrix[2] // 0 * 4 + 2
+  const m03 = matrix[3] // 0 * 4 + 3
+  const m10 = matrix[4] // 1 * 4 + 0
+  const m11 = matrix[5] // 1 * 4 + 1
+  const m12 = matrix[6] // 1 * 4 + 2
+  const m13 = matrix[7] // 1 * 4 + 3
+  const m20 = matrix[8] // 2 * 4 + 0
+  const m21 = matrix[9] // 2 * 4 + 1
+  const m22 = matrix[10] // 2 * 4 + 2
+  const m23 = matrix[11] // 2 * 4 + 3
+  const m30 = matrix[12] // 3 * 4 + 0
+  const m31 = matrix[13] // 3 * 4 + 1
+  const m32 = matrix[14] // 3 * 4 + 2
+  const m33 = matrix[15] // 3 * 4 + 3
+
+  const prod0 = m22 * m33
+  const prod1 = m32 * m23
+  const prod2 = m12 * m33
+  const prod3 = m32 * m13
+  const prod4 = m12 * m23
+  const prod5 = m22 * m13
+  const prod6 = m02 * m33
+  const prod7 = m32 * m03
+  const prod8 = m02 * m23
+  const prod9 = m22 * m03
+  const prod10 = m02 * m13
+  const prod11 = m12 * m03
+  const prod12 = m20 * m31
+  const prod13 = m30 * m21
+  const prod14 = m10 * m31
+  const prod15 = m30 * m11
+  const prod16 = m10 * m21
+  const prod17 = m20 * m11
+  const prod18 = m00 * m31
+  const prod19 = m30 * m01
+  const prod20 = m00 * m21
+  const prod21 = m20 * m01
+  const prod22 = m00 * m11
+  const prod23 = m10 * m01
+
+  const term0 = prod0 * m11 + prod3 * m21 + prod4 * m31 - (prod1 * m11 + prod2 * m21 + prod5 * m31)
+  const term1 = prod1 * m01 + prod6 * m21 + prod9 * m31 - (prod0 * m01 + prod7 * m21 + prod8 * m31)
+  const term2 = prod2 * m01 + prod7 * m11 + prod10 * m31 - (prod3 * m01 + prod6 * m11 + prod11 * m31)
+  const term3 = prod5 * m01 + prod8 * m11 + prod11 * m21 - (prod4 * m01 + prod9 * m11 + prod10 * m21)
+
+  const d = 1.0 / (m00 * term0 + m10 * term1 + m20 * term2 + m30 * term3)
+
+  return [
+    d * term0,
+    d * term1,
+    d * term2,
+    d * term3,
+    d * (prod1 * m10 + prod2 * m20 + prod5 * m30 - (prod0 * m10 + prod3 * m20 + prod4 * m30)),
+    d * (prod0 * m00 + prod7 * m20 + prod8 * m30 - (prod1 * m00 + prod6 * m20 + prod9 * m30)),
+    d * (prod3 * m00 + prod6 * m10 + prod11 * m30 - (prod2 * m00 + prod7 * m10 + prod10 * m30)),
+    d * (prod4 * m00 + prod9 * m10 + prod10 * m20 - (prod5 * m00 + prod8 * m10 + prod11 * m20)),
+    d * (prod12 * m13 + prod15 * m23 + prod16 * m33 - (prod13 * m13 + prod14 * m23 + prod17 * m33)),
+    d * (prod13 * m03 + prod18 * m23 + prod21 * m33 - (prod12 * m03 + prod19 * m23 + prod20 * m33)),
+    d * (prod14 * m03 + prod19 * m13 + prod22 * m33 - (prod15 * m03 + prod18 * m13 + prod23 * m33)),
+    d * (prod17 * m03 + prod20 * m13 + prod23 * m23 - (prod16 * m03 + prod21 * m13 + prod22 * m23)),
+    d * (prod14 * m22 + prod17 * m32 + prod13 * m12 - (prod16 * m32 + prod12 * m12 + prod15 * m22)),
+    d * (prod20 * m32 + prod12 * m02 + prod19 * m22 - (prod18 * m22 + prod21 * m32 + prod13 * m02)),
+    d * (prod18 * m12 + prod23 * m32 + prod15 * m02 - (prod22 * m32 + prod14 * m02 + prod19 * m12)),
+    d * (prod22 * m22 + prod16 * m02 + prod21 * m12 - (prod20 * m12 + prod23 * m22 + prod17 * m02)),
+  ]
+}
+
+export function crossProduct(a: Float32Array | number[], b: Float32Array | number[]) {
+  // prettier-ignore
+  return [
+    a[1] * b[2] - a[2] * b[1],
+    a[2] * b[0] - a[0] * b[2],
+    a[0] * b[1] - a[1] * b[0],
+  ]
+}
+
+export function subtractVectors(a: Float32Array | number[], b: Float32Array | number[]) {
+  return [a[0] - b[0], a[1] - b[1], a[2] - b[2]]
+}
+
+export function vectorMagnitude(vector: Float32Array | number[]) {
+  const squareSum = (vector as number[]).reduce((prev, curr) => prev + curr * curr, 0)
+  return Math.sqrt(squareSum)
+}
+
+export function normalize3d(v: Float32Array | number[]) {
+  const length = vectorMagnitude(v)
+  // make sure we don't divide by 0.
+  if (length > 0.00001) {
+    return [v[0] / length, v[1] / length, v[2] / length]
+  } else {
+    return [0, 0, 0]
+  }
+}
+
+export function lookAt(
+  cameraPosition: Float32Array | number[],
+  target: Float32Array | number[],
+  up: Float32Array | number[],
+) {
+  const zAxis = normalize3d(subtractVectors(cameraPosition, target))
+  const xAxis = normalize3d(crossProduct(up, zAxis))
+  const yAxis = normalize3d(crossProduct(zAxis, xAxis))
+
+  // prettier-ignore
+  return [
+    xAxis[0], xAxis[1], xAxis[2], 0,
+    yAxis[0], yAxis[1], yAxis[2], 0,
+    zAxis[0], zAxis[1], zAxis[2], 0,
+    cameraPosition[0],
+    cameraPosition[1],
+    cameraPosition[2],
+    1,
+  ];
+}
+
+export function transformVector(matrix: Float32Array | number[], v: Float32Array | number[]) {
+  const dst = []
+  for (let i = 0; i < 4; i++) {
+    dst[i] = 0.0
+    for (let j = 0; j < 4; j++) {
+      dst[i] += v[j] * matrix[j * 4 + i]
+    }
+  }
+  return dst
+}
