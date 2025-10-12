@@ -2,9 +2,15 @@ package org.example.assistantonsbservlet.math;
 
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class MathCalculatorTest {
     @Nested
@@ -137,6 +143,261 @@ class MathCalculatorTest {
             assertEquals(x, unitVectorResult[Constants.X_INDEX], 0.00001);
             assertEquals(y, unitVectorResult[Constants.Y_INDEX], 0.000001);
             assertEquals(0.50508, unitVectorResult[Constants.Z_INDEX], 0.00001);
+        }
+
+        @Test
+        void testCrossProduct() {
+            // given
+            final double[] vectorA = {2, 3, 7};
+            final double[] vectorB = {1, 2, 4};
+            // when
+            final double[] resultVector = MathCalculator.CoordinateGeometry.crossProduct(vectorA, vectorB);
+            // then
+            assertNotNull(resultVector);
+            assertEquals(3, resultVector.length);
+            assertEquals(-2, resultVector[Constants.X_INDEX], 0.1);
+            assertEquals(-1, resultVector[Constants.Y_INDEX], 0.1);
+            assertEquals(1, resultVector[Constants.Z_INDEX], 0.1);
+        }
+
+        @Test
+        void testUnsupportedDimsForCrossProduct() {
+            // given
+            final double[] vectorA = {2, 3};
+            final double[] vectorB = {1, 2};
+            // when
+            final var exception = assertThrows(IllegalArgumentException.class,
+                () -> MathCalculator.CoordinateGeometry.crossProduct(vectorA, vectorB));
+            // then
+            assertEquals("The cross product can only be applied to 3D vectors", exception.getMessage());
+        }
+
+        @Test
+        void testDotProduct2d() {
+            // given
+            final double[] vectorA = {5, 4};
+            final double[] vectorB = {2, 3};
+            // when
+            final double result = MathCalculator.CoordinateGeometry.dotProduct(vectorA, vectorB);
+            // then
+            assertEquals(22, result, 0.1);
+        }
+
+        @Test
+        void testDotProduct3d() {
+            // given
+            final double[] vectorA = {4, 5, -3};
+            final double[] vectorB = {1, -2, -2};
+            // when
+            final double result = MathCalculator.CoordinateGeometry.dotProduct(vectorA, vectorB);
+            // then
+            assertEquals(0, result, 0.1);
+        }
+
+        @Test
+        void testDotProductOfMatrix() {
+            // given
+            final double[][] matrixA = {
+                {4, 5, -3},
+                {2, -1, 4}
+            };
+            final double[][] matrixB = {
+                {1, -2, -2},
+                {5, 1, 3}
+            };
+            // when
+            final double result = MathCalculator.CoordinateGeometry.dotProduct(matrixA, matrixB);
+            // then
+            // 4*1 + 5*-2 + -3*-2 = [4, -10, 6] = 0
+            // 2*5 + -1*1 + 4*3   = [10, -1, 12] = 21
+            assertEquals(21, result, 0.1);
+        }
+
+        @Test
+        void testDotProduct2dAndAngleBetween() {
+            // given
+            final double[] vectorA = {5, 4};
+            final double[] vectorB = {2, 3};
+            // when
+            final double[] resultData = MathCalculator.CoordinateGeometry.dotProductAndAngleBetween(vectorA, vectorB);
+            // then
+            assertNotNull(resultData);
+            assertEquals(4, resultData.length);
+            final double dot = resultData[Constants.ARR_1ST_INDEX];
+            final double magnitudeA = resultData[Constants.ARR_2ND_INDEX];
+            final double magnitudeB = resultData[Constants.ARR_3RD_INDEX];
+            final double angleRadians = resultData[Constants.ARR_4TH_INDEX];
+            assertEquals(22, dot, 0.1);
+            assertEquals(6.403, magnitudeA, 0.001);
+            assertEquals(3.6056, magnitudeB, 0.0001);
+            assertEquals(0.30814, angleRadians, 0.00001);
+        }
+
+        @Test
+        void testDotProduct3dAndAngleBetween() {
+            // given
+            final double[] vectorA = {4, 5, 3};
+            final double[] vectorB = {1, -2, -2};
+            // when
+            final double[] resultData = MathCalculator.CoordinateGeometry.dotProductAndAngleBetween(vectorA, vectorB);
+            // then
+            assertNotNull(resultData);
+            assertEquals(4, resultData.length);
+            final double dot = resultData[Constants.ARR_1ST_INDEX];
+            final double magnitudeA = resultData[Constants.ARR_2ND_INDEX];
+            final double magnitudeB = resultData[Constants.ARR_3RD_INDEX];
+            final double angleRadians = resultData[Constants.ARR_4TH_INDEX];
+            assertEquals(-12, dot, 0.1);
+            assertEquals(7.071, magnitudeA, 0.001);
+            assertEquals(3, magnitudeB, 0.0001);
+            assertEquals(2.172, angleRadians, 0.001);
+        }
+
+        static List<Arguments> manhattanDistanceParams() {
+            return List.of(
+                Arguments.of(new double[] {2}, new double[] {3}, 1), // 1d
+                Arguments.of(new double[] {2, 9}, new double[] {3, 5}, 5), // 2d
+                Arguments.of(new double[] {2, 9, 4}, new double[] {3, 5, 6}, 7), // 3d
+                Arguments.of(new double[] {2, 9, 4, 1}, new double[] {3, 5, 6, 7}, 13) // 4d
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("manhattanDistanceParams")
+        void testManhattanDistance(double[] vectorA, double[] vectorB, double expectedResult) {
+            // when
+            final double distance = MathCalculator.CoordinateGeometry.manhattanDistance(vectorA, vectorB);
+            // then
+            assertEquals(expectedResult, distance, 0.1);
+        }
+
+        @Test
+        void testCartesianToCylindricalCoordinates() {
+            // given
+            final double[] cartesianCoords = {2, 5, 3};
+            // when
+            final double[] cylindricalCoords = MathCalculator.CoordinateGeometry
+                .cartesianToCylindricalCoordinates(cartesianCoords);
+            // then
+            assertNotNull(cylindricalCoords);
+            assertEquals(3, cylindricalCoords.length);
+            assertEquals(5.385, cylindricalCoords[Constants.R_INDEX], 0.001);
+            assertEquals(1.1903, cylindricalCoords[Constants.THETA_INDEX], 0.0001);
+            assertEquals(3, cylindricalCoords[Constants.Z_INDEX], 0.1);
+        }
+
+        @Test
+        void testCylindricalToCartesianCoordinates() {
+            // given
+            final double[] cylindricalCoords = {5.385, 1.1903, 3};
+            // when
+            final double[] cartesianCoords = MathCalculator.CoordinateGeometry
+                .cylindricalToCartesianCoordinates(cylindricalCoords);
+            // then
+            assertNotNull(cartesianCoords);
+            assertEquals(3, cartesianCoords.length);
+            assertEquals(2, cartesianCoords[Constants.X_INDEX], 0.1);
+            assertEquals(5, cartesianCoords[Constants.Y_INDEX], 0.1);
+            assertEquals(3, cartesianCoords[Constants.Z_INDEX], 0.1);
+        }
+
+        @Test
+        void testCartesianToPolarCoordinates() {
+            // given
+            final double[] cartesianCoords = {2, 3};
+            // when
+            final double[] polarCoords = MathCalculator.CoordinateGeometry.cartesianToPolarCoordinates(cartesianCoords);
+            // then
+            assertNotNull(polarCoords);
+            assertEquals(2, polarCoords.length);
+            assertEquals(3.6056, polarCoords[Constants.R_INDEX], 0.0001);
+            assertEquals(0.9828, polarCoords[Constants.THETA_INDEX], 0.0001);
+        }
+
+        @Test
+        void testPolarToCartesianCoordinates() {
+            // given
+            final double[] polarCoords = {3.6056, 0.9828};
+            // when
+            final double[] cartesianCoords = MathCalculator.CoordinateGeometry.polarToCartesianCoordinates(polarCoords);
+            // then
+            assertNotNull(cartesianCoords);
+            assertEquals(2, cartesianCoords.length);
+            assertEquals(2, cartesianCoords[Constants.X_INDEX], 0.1);
+            assertEquals(3, cartesianCoords[Constants.Y_INDEX], 0.1);
+        }
+
+        @Test
+        void testCartesianToSphericalCoordinates() {
+            // given
+            final double[] cartesianCoords = {2, 5, 3};
+            // when
+            final double[] sphericalCoords = MathCalculator.CoordinateGeometry
+                .cartesianToSphericalCoordinates(cartesianCoords);
+            // then
+            assertNotNull(sphericalCoords);
+            assertEquals(3, sphericalCoords.length);
+            assertEquals(6.164, sphericalCoords[Constants.R_INDEX], 0.001);
+            assertEquals(1.0625, sphericalCoords[Constants.THETA_INDEX], 0.0001);
+            assertEquals(1.1903, sphericalCoords[Constants.PHI_INDEX], 0.0001);
+        }
+
+        @Test
+        void testSphericalToCartesianCoordinates() {
+            // given
+            final double[] sphericalCoords = {6.164, 1.0625, 1.1903};
+            // when
+            final double[] cartesianCoords = MathCalculator.CoordinateGeometry
+                .sphericalToCartesianCoordinates(sphericalCoords);
+            // then
+            assertNotNull(cartesianCoords);
+            assertEquals(3, cartesianCoords.length);
+            assertEquals(2, cartesianCoords[Constants.X_INDEX], 0.1);
+            assertEquals(5, cartesianCoords[Constants.Y_INDEX], 0.1);
+            assertEquals(3, cartesianCoords[Constants.Z_INDEX], 0.1);
+        }
+
+        @Test
+        void testVectorProjection2d() {
+            // given
+            final double[] vectorA = {3, 4};
+            final double[] vectorB = {2, 6};
+            // when
+            final var projectionResult = MathCalculator.CoordinateGeometry
+                .vectorProjection(vectorA, vectorB);
+            // then
+            assertNotNull(projectionResult);
+
+            final double[] projection = projectionResult.getLeft();
+            assertNotNull(projection);
+            assertEquals(2, projection.length);
+            assertEquals(1.5, projection[Constants.X_INDEX], 0.1);
+            assertEquals(4.5, projection[Constants.Y_INDEX], 0.1);
+
+            final double projectionFactor = projectionResult.getRight();
+            assertEquals(0.75, projectionFactor, 0.01);
+        }
+
+        @Test
+        void testVectorProjection3d() {
+            // given
+            final double[] vectorA = {2, -3, 5};
+            final double[] vectorB = {3, 6, -4};
+            // when
+            final var projectionResult = MathCalculator.CoordinateGeometry
+                .vectorProjection(vectorA, vectorB);
+            // then
+            assertNotNull(projectionResult);
+
+            final double[] projection = projectionResult.getLeft();
+            assertNotNull(projection);
+            assertEquals(3, projection.length);
+            assertEquals(-1.5738, projection[Constants.X_INDEX], 0.0001);
+            assertEquals(-3.1475, projection[Constants.Y_INDEX], 0.0001);
+            assertEquals(2.0984, projection[Constants.Z_INDEX], 0.0001);
+
+            final double projectionFactor = projectionResult.getRight();
+            assertEquals(-0.5246, projectionFactor, 0.0001);
         }
     }
 }

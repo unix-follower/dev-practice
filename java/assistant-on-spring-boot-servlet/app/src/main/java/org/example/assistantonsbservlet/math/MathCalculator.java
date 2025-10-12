@@ -7,13 +7,52 @@ import org.apache.commons.math.linear.LUDecompositionImpl;
 import org.apache.commons.math.linear.MatrixUtils;
 import org.apache.commons.math.linear.SingularValueDecompositionImpl;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.RoundingMode;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
 public final class MathCalculator {
+    private static final String DIVISION_BY_ZERO = "Division by zero";
+    private static final String MISMATCHED_DIMENSIONS = "Mismatched dimensions";
+
     private MathCalculator() {
+    }
+
+    private static void check2dSize(double[] vector) {
+        if (vector == null || vector.length != 2) {
+            throw new IllegalArgumentException("The 2d vector is required");
+        }
+    }
+
+    private static void check3dSize(double[] vector) {
+        if (vector == null || vector.length != 3) {
+            throw new IllegalArgumentException("The 3d vector is required");
+        }
+    }
+
+    private static void check2dOr3dSize(double[] vector) {
+        if (vector == null || vector.length < 2 || vector.length > 3) {
+            throw new IllegalArgumentException("The 2d or 3d vector is required");
+        }
+    }
+
+    private static void checkSameDimensions(double[] vectorA, double[] vectorB) {
+        if (vectorA.length != vectorB.length) {
+            throw new IllegalArgumentException(MISMATCHED_DIMENSIONS);
+        }
+    }
+
+    private static void checkSameDimensions(double[][] matrixA, double[][] matrixB) {
+        if (matrixA.length != matrixB.length) {
+            throw new IllegalArgumentException(MISMATCHED_DIMENSIONS);
+        }
+
+        if (matrixA[Constants.ARR_1ST_INDEX].length != matrixB[Constants.ARR_1ST_INDEX].length) {
+            throw new IllegalArgumentException(MISMATCHED_DIMENSIONS);
+        }
     }
 
     public static final class Arithmetic {
@@ -157,32 +196,35 @@ public final class MathCalculator {
          * If the shorter leg length 'a' is known:
          * b = a√3
          * c = 2a
+         *
          * @return [a, b, c]
          */
         public static double[] triangle306090SolveWithA(double sideA) {
-            return new double[] {sideA, sideA * Math.sqrt(3), 2 * sideA};
+            return new double[]{sideA, sideA * Math.sqrt(3), 2 * sideA};
         }
 
         /**
          * If the longer leg length b is known:
          * a = b√3/3
          * c = 2b√3/3
+         *
          * @return [a, b, c]
          */
         public static double[] triangle306090SolveWithB(double sideB) {
             final double sqrtResult = Math.sqrt(3) / 3;
-            return new double[] {sideB * sqrtResult, sideB, 2 * sideB * sqrtResult};
+            return new double[]{sideB * sqrtResult, sideB, 2 * sideB * sqrtResult};
         }
 
         /**
          * If the hypotenuse c is known:
          * a = c/2
          * b = c√3/2
+         *
          * @return [a, b, c]
          */
         public static double[] triangle306090SolveWithC(double sideC) {
             final double sideA = sideC / 2;
-            return new double[] {sideA, sideA * Math.sqrt(3), sideC};
+            return new double[]{sideA, sideA * Math.sqrt(3), sideC};
         }
     }
 
@@ -227,6 +269,203 @@ public final class MathCalculator {
             final double resultMagnitude = vectorMagnitude(result);
             return Pair.of(result, resultMagnitude);
         }
+
+        /**
+         * @return v × w = (v₂w₃ - v₃w₂, v₃w₁ - v₁w₃, v₁w₂ - v₂w₁)
+         */
+        public static double[] crossProduct(double[] vectorA, double[] vectorB) {
+            if (vectorA.length != 3 || vectorB.length != 3) {
+                throw new IllegalArgumentException("The cross product can only be applied to 3D vectors");
+            }
+
+            final var a = vectorA;
+            final var b = vectorB;
+            final int i1 = Constants.ARR_1ST_INDEX;
+            final int i2 = Constants.ARR_2ND_INDEX;
+            final int i3 = Constants.ARR_3RD_INDEX;
+            return new double[]{
+                a[i2] * b[i3] - a[i3] * b[i2],
+                a[i3] * b[i1] - a[i1] * b[i3],
+                a[i1] * b[i2] - a[i2] * b[i1],
+            };
+        }
+
+        /**
+         * @return a⋅b = a₁b₁ + a₂b₂ + a₃b₃
+         */
+        public static double dotProduct(double[] vectorA, double[] vectorB) {
+            checkSameDimensions(vectorA, vectorB);
+
+            double result = 0;
+            for (int i = 0; i < vectorA.length; i++) {
+                result += vectorA[i] * vectorB[i];
+            }
+            return result;
+        }
+
+        /**
+         * @return c_ij=a_i1 * b_1j + a_i2 * b_2j +...+ a_in * b_nj = ∑_k a_ik * b_kj
+         */
+        public static double dotProduct(double[][] matrixA, double[][] matrixB) {
+            checkSameDimensions(matrixA, matrixB);
+
+            double result = 0;
+            for (int i = 0; i < matrixA.length; i++) {
+                for (int j = 0; j < matrixA[i].length; j++) {
+                    result += matrixA[i][j] * matrixB[i][j];
+                }
+            }
+            return result;
+        }
+
+        public static double[] dotProductAndAngleBetween(double[] vectorA, double[] vectorB) {
+            return dotProductAndAngleBetween(vectorA, vectorB, 4, RoundingMode.HALF_UP);
+        }
+
+        /**
+         * a⋅b = |a| × |b| × cos α
+         * cos α = a⋅b / (|a| × |b|)
+         */
+        public static double[] dotProductAndAngleBetween(
+            double[] vectorA, double[] vectorB, int scale, RoundingMode roundingMode) {
+            final var dot = BigDecimal.valueOf(dotProduct(vectorA, vectorB))
+                .setScale(scale, roundingMode);
+            final var magnitudeA = BigDecimal.valueOf(vectorMagnitude(vectorA))
+                .setScale(scale, roundingMode);
+            final var magnitudeB = BigDecimal.valueOf(vectorMagnitude(vectorB))
+                .setScale(scale, roundingMode);
+
+            final double angleRadians = dot.divide(magnitudeA.multiply(magnitudeB), roundingMode).doubleValue();
+            return new double[]{
+                dot.doubleValue(),
+                magnitudeA.doubleValue(),
+                magnitudeB.doubleValue(),
+                Math.acos(angleRadians)
+            };
+        }
+
+        /**
+         * @return d = ∣a₁ − b₁∣ + ... + ∣a_N − b_N∣
+         */
+        public static double manhattanDistance(double[] vectorA, double[] vectorB) {
+            checkSameDimensions(vectorA, vectorB);
+
+            double result = 0;
+            for (int i = 0; i < vectorA.length; i++) {
+                result += Math.abs(vectorA[i] - vectorB[i]);
+            }
+            return result;
+        }
+
+        /**
+         * The theta is in radians.
+         * r = √(x² + y²)
+         * θ = tan⁻¹(y/x)
+         * z = z
+         */
+        public static double[] cartesianToCylindricalCoordinates(double[] coordinates) {
+            check2dOr3dSize(coordinates);
+
+            final double x = coordinates[Constants.X_INDEX];
+            final double y = coordinates[Constants.Y_INDEX];
+            final double radius = Math.sqrt(x * x + y * y);
+            final double theta = Math.atan(y / x);
+
+            if (coordinates.length == 3) {
+                return new double[]{radius, theta, coordinates[Constants.Z_INDEX]};
+            }
+            return new double[]{radius, theta};
+        }
+
+        /**
+         * The theta is in radians.
+         * x = ρ * cos(θ)
+         * y = ρ * sin(θ)
+         * z = z
+         */
+        public static double[] cylindricalToCartesianCoordinates(double[] coordinates) {
+            check2dOr3dSize(coordinates);
+
+            final double radius = coordinates[Constants.R_INDEX];
+            final double theta = coordinates[Constants.THETA_INDEX];
+            final double x = radius * Math.cos(theta);
+            final double y = radius * Math.sin(theta);
+
+            if (coordinates.length == 3) {
+                return new double[]{x, y, coordinates[Constants.Z_INDEX]};
+            }
+            return new double[]{x, y};
+        }
+
+        /**
+         * Same as {@link #cartesianToCylindricalCoordinates}, but supports 2d only.
+         */
+        public static double[] cartesianToPolarCoordinates(double[] coordinates) {
+            check2dSize(coordinates);
+            return cartesianToCylindricalCoordinates(coordinates);
+        }
+
+        /**
+         * Same as {@link #cylindricalToCartesianCoordinates}, but supports 2d only.
+         */
+        public static double[] polarToCartesianCoordinates(double[] coordinates) {
+            check2dSize(coordinates);
+            return cylindricalToCartesianCoordinates(coordinates);
+        }
+
+        /**
+         * r = √(x² + y² + z²)
+         * θ = cos⁻¹(z/r)
+         * φ = tan⁻¹(y/x)
+         */
+        public static double[] cartesianToSphericalCoordinates(double[] coordinates) {
+            check3dSize(coordinates);
+
+            final double x = coordinates[Constants.X_INDEX];
+            final double y = coordinates[Constants.Y_INDEX];
+            final double z = coordinates[Constants.Z_INDEX];
+
+            final double radius = Math.sqrt(x * x + y * y + z * z);
+            final double theta = Math.acos(z / radius);
+            final double phi = Math.atan(y / x);
+            return new double[]{radius, theta, phi};
+        }
+
+        /**
+         * x = r * sin θ * cos φ
+         * y = r * sin θ * sin φ
+         * z = r * cos θ
+         */
+        public static double[] sphericalToCartesianCoordinates(double[] coordinates) {
+            check3dSize(coordinates);
+
+            final double radius = coordinates[Constants.X_INDEX];
+            final double theta = coordinates[Constants.Y_INDEX];
+            final double phi = coordinates[Constants.Z_INDEX];
+
+            final double x = radius * Math.sin(theta) * Math.cos(phi);
+            final double y = radius * Math.sin(theta) * Math.sin(phi);
+            final double z = radius * Math.cos(theta);
+            return new double[]{x, y, z};
+        }
+
+        public static Pair<double[], Double> vectorProjection(double[] vectorA, double[] vectorB) {
+            checkSameDimensions(vectorA, vectorB);
+
+            final double dotProduct = dotProduct(vectorA, vectorB);
+            final double squaredNormOfB = dotProduct(vectorB, vectorB);
+            if (squaredNormOfB == 0) {
+                throw new ArithmeticException(DIVISION_BY_ZERO);
+            }
+
+            final double projectionFactor = dotProduct / squaredNormOfB;
+
+            final double[] result = new double[vectorA.length];
+            for (int i = 0; i < vectorA.length; i++) {
+                result[i] = projectionFactor * vectorB[i];
+            }
+            return Pair.of(result, projectionFactor);
+        }
     }
 
     public static final class Trigonometry {
@@ -240,7 +479,7 @@ public final class MathCalculator {
         public static double csc(double theta) {
             final double sinResult = Math.sin(theta);
             if (sinResult == 0) {
-                throw new ArithmeticException("Division by zero");
+                throw new ArithmeticException(DIVISION_BY_ZERO);
             }
             return 1 / sinResult;
         }
@@ -252,7 +491,7 @@ public final class MathCalculator {
         public static double sec(double theta) {
             final double cosResult = Math.cos(theta);
             if (cosResult == 0) {
-                throw new ArithmeticException("Division by zero");
+                throw new ArithmeticException(DIVISION_BY_ZERO);
             }
             return 1 / cosResult;
         }
@@ -264,7 +503,7 @@ public final class MathCalculator {
         public static double cot(double theta) {
             final double tanResult = Math.tan(theta);
             if (tanResult == 0) {
-                throw new ArithmeticException("Division by zero");
+                throw new ArithmeticException(DIVISION_BY_ZERO);
             }
             return 1 / tanResult;
         }
@@ -305,7 +544,7 @@ public final class MathCalculator {
             final double numerator = 3 * Math.tan(theta) - Math.pow(Math.tan(theta), 3);
             final double denominator = 1 - 3 * Math.tan(theta) * Math.tan(theta);
             if (denominator == 0) {
-                throw new ArithmeticException("Division by zero");
+                throw new ArithmeticException(DIVISION_BY_ZERO);
             }
             return numerator / denominator;
         }
@@ -333,7 +572,7 @@ public final class MathCalculator {
         public static double tangentAngleSum(double angleAlpha, double angleBeta) {
             final double denominator = 1 - Math.tan(angleAlpha) * Math.tan(angleBeta);
             if (denominator == 0) {
-                throw new ArithmeticException("Division by zero");
+                throw new ArithmeticException(DIVISION_BY_ZERO);
             }
             final double numerator = Math.tan(angleAlpha) + Math.tan(angleBeta);
             return numerator / denominator;
@@ -342,7 +581,7 @@ public final class MathCalculator {
         public static double tanAngleSubtract(double angleAlpha, double angleBeta) {
             final double denominator = 1 + Math.tan(angleAlpha) * Math.tan(angleBeta);
             if (denominator == 0) {
-                throw new ArithmeticException("Division by zero");
+                throw new ArithmeticException(DIVISION_BY_ZERO);
             }
             final double numerator = Math.tan(angleAlpha) - Math.tan(angleBeta);
             return numerator / denominator;
@@ -353,7 +592,7 @@ public final class MathCalculator {
             final double cotBeta = cot(angleBeta);
             final double denominator = cotAlpha + cotBeta;
             if (denominator == 0) {
-                throw new ArithmeticException("Division by zero");
+                throw new ArithmeticException(DIVISION_BY_ZERO);
             }
             return (cotAlpha * cotBeta - 1) / denominator;
         }
@@ -363,7 +602,7 @@ public final class MathCalculator {
             final double cotBeta = cot(angleBeta);
             final double denominator = cotAlpha - cotBeta;
             if (denominator == 0) {
-                throw new ArithmeticException("Division by zero");
+                throw new ArithmeticException(DIVISION_BY_ZERO);
             }
             return (cotAlpha * cotBeta + 1) / denominator;
         }
@@ -371,7 +610,7 @@ public final class MathCalculator {
         public static double secantAngleSum(double angleAlpha, double angleBeta) {
             final double denominator = cot(angleAlpha) * Math.tan(angleBeta);
             if (denominator == 0) {
-                throw new ArithmeticException("Division by zero");
+                throw new ArithmeticException(DIVISION_BY_ZERO);
             }
             return 1 / (Math.cos(angleAlpha) * Math.cos(angleBeta) / denominator);
         }
@@ -379,7 +618,7 @@ public final class MathCalculator {
         public static double secantAngleSubtract(double angleAlpha, double angleBeta) {
             final double denominator = cot(angleAlpha) * Math.tan(angleBeta);
             if (denominator == 0) {
-                throw new ArithmeticException("Division by zero");
+                throw new ArithmeticException(DIVISION_BY_ZERO);
             }
             return 1 / (Math.cos(angleAlpha) * Math.cos(angleBeta) / denominator);
         }
@@ -388,7 +627,7 @@ public final class MathCalculator {
             final double denominator = Math.sin(angleAlpha) * Math.cos(angleBeta)
                 + Math.cos(angleAlpha) * Math.sin(angleBeta);
             if (denominator == 0) {
-                throw new ArithmeticException("Division by zero");
+                throw new ArithmeticException(DIVISION_BY_ZERO);
             }
             final double numerator = Math.sin(angleAlpha) * Math.sin(angleBeta);
             return numerator / denominator;
@@ -398,7 +637,7 @@ public final class MathCalculator {
             final double denominator = Math.sin(angleAlpha) * Math.cos(angleBeta)
                 - Math.cos(angleAlpha) * Math.sin(angleBeta);
             if (denominator == 0) {
-                throw new ArithmeticException("Division by zero in cosecantAngleSubtract");
+                throw new ArithmeticException(DIVISION_BY_ZERO);
             }
             final double numerator = Math.sin(angleAlpha) * Math.sin(angleBeta);
             return numerator / denominator;
@@ -420,7 +659,7 @@ public final class MathCalculator {
         }
 
         public static double l2norm(double[] vector) {
-            final var realVector  = MatrixUtils.createRealVector(vector);
+            final var realVector = MatrixUtils.createRealVector(vector);
             return realVector.getNorm();
         }
 
@@ -478,7 +717,7 @@ public final class MathCalculator {
                     return new double[0];
                 }
 
-                final double[]  interquartileRange = iqr(data);
+                final double[] interquartileRange = iqr(data);
                 final double range = interquartileRange[0];
                 final double q1 = interquartileRange[1];
                 final double q3 = interquartileRange[2];
@@ -624,6 +863,7 @@ public final class MathCalculator {
             /**
              * Sensitivity = TP / (TP + FN)
              * Specificity = TN / (FP + TN)
+             *
              * @return (Sensitivity × Prevalence) + (Specificity × (1 − Prevalence))
              */
             public static double accuracy(double sensitivity, double specificity, double prevalence) {
