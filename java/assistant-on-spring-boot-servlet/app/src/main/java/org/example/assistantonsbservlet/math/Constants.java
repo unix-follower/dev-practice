@@ -8,6 +8,7 @@ public final class Constants {
     public static final int X_INDEX = ARR_1ST_INDEX;
     public static final int Y_INDEX = ARR_2ND_INDEX;
     public static final int Z_INDEX = ARR_3RD_INDEX;
+    public static final int K_INDEX = ARR_4TH_INDEX;
     public static final int R_INDEX = ARR_1ST_INDEX;
     public static final int THETA_INDEX = ARR_2ND_INDEX;
     public static final int PHI_INDEX = ARR_3RD_INDEX;
