@@ -399,5 +399,190 @@ class MathCalculatorTest {
             final double projectionFactor = projectionResult.getRight();
             assertEquals(-0.5246, projectionFactor, 0.0001);
         }
+
+        static List<Arguments> distanceBetween2pointsParams() {
+            return List.of(
+                Arguments.of(new double[] {3}, new double[] {9}, 6, 0.1), // 1d
+                Arguments.of(new double[] {3, 5}, new double[] {9, 15}, 11.6619, 0.0001), // 2d
+                Arguments.of(new double[] {3, 5, 2}, new double[] {9, 15, 5}, 12.0416, 0.0001), // 3d
+                Arguments.of(new double[] {3, 5, 2, 3}, new double[] {9, 15, 5, 1}, 12.20656, 0.00001) // 4d
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("distanceBetween2pointsParams")
+        void testDistanceBetween2points(
+            double[] pointACoords, double[] pointBCoords, double expectedResult, double delta) {
+            // when
+            final double distance = MathCalculator.CoordinateGeometry.distance(pointACoords, pointBCoords);
+            // then
+            assertEquals(expectedResult, distance, delta);
+        }
+
+        @Test
+        void testDistanceBetween3points() {
+            // given
+            final double[] pointACoords = {3, 5, 2};
+            final double[] pointBCoords = {9, 15, 5};
+            final double[] pointCCoords = {2, 7, 1};
+            // when
+            final double abDistance = MathCalculator.CoordinateGeometry.distance(pointACoords, pointBCoords);
+            final double bcDistance = MathCalculator.CoordinateGeometry.distance(pointBCoords, pointCCoords);
+            final double acDistance = MathCalculator.CoordinateGeometry.distance(pointACoords, pointCCoords);
+            // then
+            assertEquals(12.0416, abDistance, 0.0001);
+            assertEquals(11.35782, bcDistance, 0.00001);
+            assertEquals(2.44949, acDistance, 0.00001);
+        }
+
+        @Test
+        void testDistanceBetweenPointsAndStraightLine() {
+            // given
+            final double[] pointCoords = {3, 5};
+            final int lineSlope = 2;
+            final int lineYIntercept = 6;
+            // when
+            final double distance = MathCalculator.CoordinateGeometry
+                .distanceBetweenPointsAndStraightLine(pointCoords, lineSlope, lineYIntercept);
+            // then
+            assertEquals(3.130495, distance, 0.000001);
+        }
+
+        @Test
+        void testDistanceBetweenParallelLines() {
+            // given
+            final int slope = 2;
+            final int line1YIntercept = 6;
+            final int line2YIntercept = 8;
+            // when
+            final double distance = MathCalculator.CoordinateGeometry
+                .distanceBetweenParallelLines(slope, line1YIntercept, line2YIntercept);
+            // then
+            assertEquals(0.894427, distance, 0.000001);
+        }
+
+        @Test
+        void testRotation() {
+            // given
+            final double[] pointCoords = {3, 4};
+            final double angleTheta = Math.toRadians(60);
+            // when
+            final double[] resultCoords = MathCalculator.CoordinateGeometry.rotation(pointCoords, angleTheta);
+            // then
+            assertNotNull(resultCoords);
+            assertEquals(2, resultCoords.length);
+            assertEquals(-1.964, resultCoords[Constants.X_INDEX], 0.001);
+            assertEquals(4.598, resultCoords[Constants.Y_INDEX], 0.001);
+        }
+
+        @Test
+        void testRotationAroundPoint() {
+            // given
+            final double[] pointCoords = {3, 4};
+            final double angleTheta = Math.toRadians(60);
+            final double[] pivotCoords = {1, 2};
+            // when
+            final double[] resultCoords = MathCalculator.CoordinateGeometry
+                .rotationAroundPoint(pointCoords, pivotCoords, angleTheta);
+            // then
+            assertNotNull(resultCoords);
+            assertEquals(2, resultCoords.length);
+            assertEquals(0.26795, resultCoords[Constants.X_INDEX], 0.00001);
+            assertEquals(4.732, resultCoords[Constants.Y_INDEX], 0.001);
+        }
+
+        @Test
+        void testSlope() {
+            // given
+            final double[] pointACoords = {1, 5};
+            final double[] pointBCoords = {7, 6};
+            // when
+            final double slope = MathCalculator.CoordinateGeometry.slope(pointACoords, pointBCoords);
+            final double angleTheta = Math.atan(slope);
+            final double distance = MathCalculator.CoordinateGeometry.distance(pointACoords, pointBCoords);
+            final double deltaX = MathCalculator.CoordinateGeometry.deltaDistance(
+                pointBCoords[Constants.X_INDEX], pointACoords[Constants.X_INDEX]);
+            final double deltaY = MathCalculator.CoordinateGeometry.deltaDistance(
+                pointBCoords[Constants.Y_INDEX], pointACoords[Constants.Y_INDEX]);
+            // then
+            assertEquals(0.166667, slope, 0.000001);
+            assertEquals(0.16515, angleTheta, 0.00001);
+            assertEquals(6.0828, distance, 0.0001);
+            assertEquals(6, deltaX, 0.1);
+            assertEquals(1, deltaY, 0.1);
+        }
+
+        @Test
+        void testSlopeFromKnownIntercepts() {
+            // given
+            final int xIntercept = 2;
+            final int yIntercept = -3;
+            // when
+            final double slope = MathCalculator.CoordinateGeometry.slopeFromKnownIntercepts(xIntercept, yIntercept);
+            // then
+            assertEquals(1.5, slope, 0.1);
+        }
+
+        @Test
+        void testAreaUnderSlope() {
+            // given
+            final int x1 = 1;
+            final int x2 = 7;
+            final double slope = 0.166667;
+            // when
+            final double area = MathCalculator.CoordinateGeometry.areaUnderSlope(x1, x2, slope);
+            // then
+            assertEquals(3.000006, area, 0.000001);
+        }
+
+        @Test
+        void testIntercept() {
+            // given
+            final int a = 2;
+            final int b = 3;
+            final int c = -2;
+            // when
+            final double[] intercepts = MathCalculator.CoordinateGeometry.intercept(a, b, c);
+            final double slope = MathCalculator.CoordinateGeometry.slope(a, b);
+            // then
+            assertNotNull(intercepts);
+            assertEquals(2, intercepts.length);
+            assertEquals(1, intercepts[Constants.X_INDEX], 0.1);
+            assertEquals(0.6667, intercepts[Constants.Y_INDEX], 0.0001);
+
+            assertEquals(-0.6667, slope, 0.0001);
+        }
+
+        @Test
+        void testInterceptWithKnownSlopeAndConstantTerm() {
+            // given
+            final int slopeTerm = 2;
+            final int constantTerm = -2;
+            // when
+            final double[] intercepts = MathCalculator.CoordinateGeometry.intercept(slopeTerm, constantTerm);
+            // then
+            assertNotNull(intercepts);
+            assertEquals(2, intercepts.length);
+            assertEquals(1, intercepts[Constants.X_INDEX], 0.1);
+            assertEquals(-2, intercepts[Constants.Y_INDEX], 0.0001);
+        }
+
+        @Test
+        void testLinearInterpolation() {
+            // given
+            final double[] pointACoords = {200, 15};
+            final double[] pointBCoords = {300, 20};
+            final int midpointX = 250;
+            // when
+            final double midpointY = MathCalculator.CoordinateGeometry
+                .linearInterpolation(pointACoords, pointBCoords, midpointX);
+            final double slope = MathCalculator.CoordinateGeometry.slope(pointACoords, pointBCoords);
+            final double deltaY = MathCalculator.CoordinateGeometry.deltaDistance(
+                pointBCoords[Constants.Y_INDEX], pointACoords[Constants.Y_INDEX]);
+            // then
+            assertEquals(17.5, midpointY, 0.1);
+            assertEquals(0.05, slope, 0.01);
+            assertEquals(5, deltaY, 0.1);
+        }
     }
 }

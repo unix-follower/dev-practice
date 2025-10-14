@@ -21,40 +21,6 @@ public final class MathCalculator {
     private MathCalculator() {
     }
 
-    private static void check2dSize(double[] vector) {
-        if (vector == null || vector.length != 2) {
-            throw new IllegalArgumentException("The 2d vector is required");
-        }
-    }
-
-    private static void check3dSize(double[] vector) {
-        if (vector == null || vector.length != 3) {
-            throw new IllegalArgumentException("The 3d vector is required");
-        }
-    }
-
-    private static void check2dOr3dSize(double[] vector) {
-        if (vector == null || vector.length < 2 || vector.length > 3) {
-            throw new IllegalArgumentException("The 2d or 3d vector is required");
-        }
-    }
-
-    private static void checkSameDimensions(double[] vectorA, double[] vectorB) {
-        if (vectorA.length != vectorB.length) {
-            throw new IllegalArgumentException(MISMATCHED_DIMENSIONS);
-        }
-    }
-
-    private static void checkSameDimensions(double[][] matrixA, double[][] matrixB) {
-        if (matrixA.length != matrixB.length) {
-            throw new IllegalArgumentException(MISMATCHED_DIMENSIONS);
-        }
-
-        if (matrixA[Constants.ARR_1ST_INDEX].length != matrixB[Constants.ARR_1ST_INDEX].length) {
-            throw new IllegalArgumentException(MISMATCHED_DIMENSIONS);
-        }
-    }
-
     public static final class Arithmetic {
         private Arithmetic() {
         }
@@ -230,6 +196,40 @@ public final class MathCalculator {
 
     public static final class CoordinateGeometry {
         private CoordinateGeometry() {
+        }
+
+        private static void check2dSize(double[] vector) {
+            if (vector == null || vector.length != 2) {
+                throw new IllegalArgumentException("The 2d vector is required");
+            }
+        }
+
+        private static void check3dSize(double[] vector) {
+            if (vector == null || vector.length != 3) {
+                throw new IllegalArgumentException("The 3d vector is required");
+            }
+        }
+
+        private static void check2dOr3dSize(double[] vector) {
+            if (vector == null || vector.length < 2 || vector.length > 3) {
+                throw new IllegalArgumentException("The 2d or 3d vector is required");
+            }
+        }
+
+        private static void checkSameDimensions(double[] vectorA, double[] vectorB) {
+            if (vectorA.length != vectorB.length) {
+                throw new IllegalArgumentException(MISMATCHED_DIMENSIONS);
+            }
+        }
+
+        private static void checkSameDimensions(double[][] matrixA, double[][] matrixB) {
+            if (matrixA.length != matrixB.length) {
+                throw new IllegalArgumentException(MISMATCHED_DIMENSIONS);
+            }
+
+            if (matrixA[Constants.ARR_1ST_INDEX].length != matrixB[Constants.ARR_1ST_INDEX].length) {
+                throw new IllegalArgumentException(MISMATCHED_DIMENSIONS);
+            }
         }
 
         /**
@@ -466,6 +466,181 @@ public final class MathCalculator {
             }
             return Pair.of(result, projectionFactor);
         }
+
+        /**
+         * @return Δx = x₂-x₁ or Δy = y₂-y₁
+         */
+        public static double deltaDistance(double point2, double point1) {
+            return point2 - point1;
+        }
+
+        /**
+         * For 1d, d = √(x₂-x₁)²)
+         * For 2d, d = √((x₂-x₁)² + (y₂-y₁)²)
+         * For 3d, d = √((x₂-x₁)² + (y₂-y₁)² + (z₂-z₁)²)
+         * For 4d, d = √((x₂-x₁)² + (y₂-y₁)² + (z₂-z₁)² + (k₂-k₁)²)
+         */
+        public static double distance(double[] pointACoords, double[] pointBCoords) {
+            checkSameDimensions(pointACoords, pointBCoords);
+
+            final double x1 = pointACoords[Constants.X_INDEX];
+            final double x2 = pointBCoords[Constants.X_INDEX];
+            final double deltaX = deltaDistance(x2, x1);
+
+            final int dimension = pointACoords.length;
+            switch (dimension) {
+                case 1 -> {
+                    return Math.sqrt(Math.pow(Math.abs(x2 - x1), 2));
+                }
+                case 2 -> {
+                    final double y1 = pointACoords[Constants.Y_INDEX];
+                    final double y2 = pointBCoords[Constants.Y_INDEX];
+
+                    return Math.sqrt(Math.pow(deltaX, 2) + Math.pow(deltaDistance(y2, y1), 2));
+                }
+                case 3 -> {
+                    final double y1 = pointACoords[Constants.Y_INDEX];
+                    final double y2 = pointBCoords[Constants.Y_INDEX];
+                    final double z1 = pointACoords[Constants.Z_INDEX];
+                    final double z2 = pointBCoords[Constants.Z_INDEX];
+
+                    return Math.sqrt(
+                        Math.pow(deltaX, 2) + Math.pow(deltaDistance(y2, y1), 2) + Math.pow(deltaDistance(z2, z1), 2)
+                    );
+                }
+                case 4 -> {
+                    final double y1 = pointACoords[Constants.Y_INDEX];
+                    final double y2 = pointBCoords[Constants.Y_INDEX];
+                    final double z1 = pointACoords[Constants.Z_INDEX];
+                    final double z2 = pointBCoords[Constants.Z_INDEX];
+                    final double k1 = pointACoords[Constants.K_INDEX];
+                    final double k2 = pointBCoords[Constants.K_INDEX];
+
+                    return Math.sqrt(
+                        Math.pow(deltaX, 2) + Math.pow(deltaDistance(y2, y1), 2) +
+                            Math.pow(deltaDistance(z2, z1), 2) + Math.pow(deltaDistance(k2, k1), 2)
+                    );
+                }
+                default -> throw new UnsupportedOperationException();
+            }
+        }
+
+        /**
+         * @return d = |mx₁ − y₁ + b| / √(m² + 1)
+         */
+        public static double distanceBetweenPointsAndStraightLine(
+            double[] pointCoords, double slope, double yIntercept) {
+            check2dSize(pointCoords);
+
+            final double x1 = pointCoords[Constants.X_INDEX];
+            final double y1 = pointCoords[Constants.Y_INDEX];
+
+            return Math.abs(slope * x1 - y1 + yIntercept) / Math.sqrt(slope * slope + 1);
+        }
+
+        /**
+         * The slope has to be the same for both lines.
+         * @return d = |b₂ − b₁| / √(m² + 1)
+         */
+        public static double distanceBetweenParallelLines(
+            double slope, double line1YIntercept, double line2YIntercept) {
+            return Math.abs(line2YIntercept - line1YIntercept) / Math.sqrt(slope * slope + 1);
+        }
+
+        /**
+         * @return y = (x - x₁) * (y₂ - y₁) / (x₂ - x₁) + y₁
+         */
+        public static double linearInterpolation(double[] pointACoords, double[] pointBCoords, double midpointX) {
+            check2dSize(pointACoords);
+            checkSameDimensions(pointACoords, pointBCoords);
+
+            final double x1 = pointACoords[Constants.X_INDEX];
+            final double y1 = pointACoords[Constants.Y_INDEX];
+            final double x2 = pointBCoords[Constants.X_INDEX];
+            final double y2 = pointBCoords[Constants.Y_INDEX];
+
+            return (midpointX - x1) * (y2 - y1) / (x2 - x1) + y1;
+        }
+
+        /**
+         * x_f = xᵢ*cos(θ) − yᵢ*sin(θ)
+         * y_f = xᵢ*sin(θ) + yᵢ*cos(θ)
+         */
+        public static double[] rotation(double[] pointCoords, double angleThetaRadians) {
+            final double[] originCoords = {0, 0};
+            return rotationAroundPoint(pointCoords, originCoords, angleThetaRadians);
+        }
+
+        /**
+         * x_f = xₒ + (xᵢ-xₒ) cos(θ) − (yᵢ-yₒ) sin(θ)
+         * y_f = yₒ + (xᵢ-xₒ) sin(θ) + (yᵢ-yₒ) cos(θ)
+         */
+        public static double[] rotationAroundPoint(
+            double[] pointCoords, double[] pivotCoords, double angleThetaRadians) {
+            checkSameDimensions(pointCoords, pivotCoords);
+            check2dSize(pointCoords);
+
+            final double xi = pointCoords[Constants.X_INDEX];
+            final double yi = pointCoords[Constants.Y_INDEX];
+            final double xo = pivotCoords[Constants.X_INDEX];
+            final double yo = pivotCoords[Constants.Y_INDEX];
+
+            final double sine = Math.sin(angleThetaRadians);
+            final double cosine = Math.cos(angleThetaRadians);
+            return new double[] {
+                xo + (xi - xo) * cosine - (yi - yo) * sine,
+                yo + (xi - xo) * sine + (yi - yo) * cosine
+            };
+        }
+
+        /**
+         * @return m = (y₂ - y₁) / (x₂ - x₁)
+         */
+        public static double slope(double[] pointACoords, double[] pointBCoords) {
+            checkSameDimensions(pointACoords, pointBCoords);
+            check2dSize(pointACoords);
+
+            final double x1 = pointACoords[Constants.X_INDEX];
+            final double y1 = pointACoords[Constants.Y_INDEX];
+            final double x2 = pointBCoords[Constants.X_INDEX];
+            final double y2 = pointBCoords[Constants.Y_INDEX];
+
+            return (y2 - y1) / (x2 - x1);
+        }
+
+        /**
+         * @return m = −a/b
+         */
+        public static double slope(double coefficientOfX, double coefficientOfY) {
+            return -coefficientOfX / coefficientOfY;
+        }
+
+        public static double slopeFromKnownIntercepts(double xIntercept, double yIntercept) {
+            return -yIntercept / xIntercept;
+        }
+
+        public static double areaUnderSlope(double x1, double x2, double slope) {
+            final double deltaX = deltaDistance(x2, x1);
+            final double deltaY = slope * deltaX;
+            return deltaX * deltaY / 2;
+        }
+
+        /**
+         * x_c = −c/a
+         * y_c = −c/b
+         */
+        public static double[] intercept(double coefficientOfX, double coefficientOfY, double constantTerm) {
+            final double xIntercept = -constantTerm / coefficientOfX;
+            final double yIntercept = -constantTerm / coefficientOfY;
+            return new double[] {xIntercept, yIntercept};
+        }
+
+        /**
+         * y = mx + b
+         */
+        public static double[] intercept(double slopeTerm, double constantTerm) {
+            return intercept(slopeTerm, -1, constantTerm);
+        }
     }
 
     public static final class Trigonometry {
@@ -671,6 +846,30 @@ public final class MathCalculator {
         public static double[] eigenvalues(double[][] matrix) {
             final var realMatrix = MatrixUtils.createRealMatrix(matrix);
             return new EigenDecompositionImpl(realMatrix, 0).getRealEigenvalues();
+        }
+    }
+
+    public static final class Calculus {
+        private Calculus() {
+        }
+
+        /**
+         * y = mx + b
+         * @return ∫(ax + b)dx = (a/2)x^2 + bx + C
+         */
+        public static double indefiniteLinearIntegral(
+            double x, double slope, double constantTerm, double constantOfIntegration) {
+            return (slope / 2) * x * x + constantTerm * x + constantOfIntegration;
+        }
+
+        /**
+         * y = mx + b
+         * @return ∫ₐ^b f(x)dx = F(b) - F(a)
+         */
+        public static double definiteLinearIntegral(double x1, double x2, double slope, double constantTerm) {
+            final double fx2 = (slope / 2) * x2 * x2 + constantTerm * x2;
+            final double fx1 = (slope / 2) * x1 * x1 + constantTerm * x1;
+            return fx2 - fx1;
         }
     }
 
