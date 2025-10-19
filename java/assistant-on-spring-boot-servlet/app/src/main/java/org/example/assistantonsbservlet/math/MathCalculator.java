@@ -15,6 +15,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 public final class MathCalculator {
+    public static final double ONE_FOURTH = 0.25;
+    public static final double ONE_HALF = 0.5;
+
     private static final String DIVISION_BY_ZERO = "Division by zero";
     private static final String MISMATCHED_DIMENSIONS = "Mismatched dimensions";
 
@@ -52,6 +55,9 @@ public final class MathCalculator {
     }
 
     public static final class Geometry {
+        private static final String TRIANGLE_SSS_ERR_MSG = "Side length (%s) must be less than the sum " +
+            "of the other two sides to form a triangle";
+
         private Geometry() {
         }
 
@@ -60,13 +66,6 @@ public final class MathCalculator {
          */
         public static double pi(double circumference, double diameter) {
             return circumference / diameter;
-        }
-
-        /**
-         * @return a = πr²
-         */
-        public static double circleArea(double radius) {
-            return Math.PI * radius * radius;
         }
 
         /**
@@ -158,6 +157,8 @@ public final class MathCalculator {
             return (endpointY - startPointY) / (endpointX - startPointX);
         }
 
+        // Triangle calculators
+
         /**
          * If the shorter leg length 'a' is known:
          * b = a√3
@@ -191,6 +192,307 @@ public final class MathCalculator {
         public static double[] triangle306090SolveWithC(double sideC) {
             final double sideA = sideC / 2;
             return new double[]{sideA, sideA * Math.sqrt(3), sideC};
+        }
+
+        // 2D geometry
+
+        /**
+         * @return area = ½ * a * b. The units are cm²
+         */
+        public static double area(double sideA, double sideB) {
+            return 0.5 * sideA * sideB;
+        }
+
+        /**
+         * @return perimeter = a + b + c. The units are cm
+         */
+        public static double perimeter(double sideA, double sideB, double hypotenuse) {
+            return sideA + sideB + hypotenuse;
+        }
+
+        /**
+         * c = √(a² + b²)
+         *
+         * @return a² + b² = c². The units are cm
+         */
+        public static double[] pythagoreanTheoremWithLegAndHypotenuse(double side, double hypotenuse) {
+            final double squaredSide = side * side;
+            final double squaredHypotenuse = hypotenuse * hypotenuse;
+            final double squaredSide2 = squaredHypotenuse - squaredSide;
+            return new double[]{side, Math.sqrt(squaredSide2), hypotenuse};
+        }
+
+        public static double[] pythagoreanTheoremWithLegs(double sideA, double sideB) {
+            final double squaredSideA = sideA * sideA;
+            final double squaredSideB = sideB * sideB;
+            final double squaredHypotenuse = squaredSideA + squaredSideB;
+            return new double[]{sideA, sideB, Math.sqrt(squaredHypotenuse)};
+        }
+
+        /**
+         * @return area = a². The units are cm²
+         */
+        public static double areaOfSquare(double sideLength) {
+            checkGreater0(sideLength);
+            return sideLength * sideLength;
+        }
+
+        /**
+         * @return area = a * b. The units are cm²
+         */
+        public static double areaOfRectangle(double sideLengthA, double sideLengthB) {
+            checkGreater0(sideLengthA);
+            checkGreater0(sideLengthB);
+            return sideLengthA * sideLengthB;
+        }
+
+        private static void checkGreater0(double value) {
+            if (value <= 0) {
+                throw new IllegalArgumentException("This value must be greater than 0");
+            }
+        }
+
+        /**
+         * @return area = b * h / 2. The units are cm²
+         */
+        public static double areaOfTriangleWithBaseAndHeight(double base, double height) {
+            checkGreater0(base);
+            checkGreater0(height);
+            return base * height / 2;
+        }
+
+        /**
+         * Given three sides (SSS).
+         *
+         * @return area = 0.25 * √((a + b + c) * (-a + b + c) * (a - b + c) * (a + b - c)). The units are cm²
+         */
+        public static double areaOfTriangleWithSSS(double sideLengthA, double sideLengthB, double sideLengthC) {
+            checkGreater0(sideLengthA);
+            checkGreater0(sideLengthB);
+            checkGreater0(sideLengthC);
+
+            if (sideLengthA > sideLengthB + sideLengthC) {
+                throw new IllegalArgumentException(String.format(TRIANGLE_SSS_ERR_MSG, "a"));
+            }
+
+            final double legsSum = sideLengthA + sideLengthC;
+            if (legsSum < sideLengthB) {
+                throw new IllegalArgumentException(String.format(TRIANGLE_SSS_ERR_MSG, "b"));
+            }
+
+            final double aAndBSum = sideLengthA + sideLengthB;
+            if (aAndBSum == sideLengthC) {
+                throw new IllegalArgumentException(String.format(TRIANGLE_SSS_ERR_MSG, "c"));
+            }
+
+            return ONE_FOURTH * Math.sqrt(
+                (aAndBSum + sideLengthC)
+                    * (-sideLengthA + sideLengthB + sideLengthC)
+                    * (legsSum - sideLengthB)
+                    * (aAndBSum - sideLengthC)
+            );
+        }
+
+        /**
+         * Given two sides and the angle between them (SAS).
+         *
+         * @return area = ½ * a * b * sin(γ). The units are cm²
+         */
+        public static double areaOfTriangleWithSAS(double sideLengthA, double sideLengthB, double angleGammaRadians) {
+            checkGreater0(sideLengthA);
+            checkGreater0(sideLengthB);
+            checkGreater0(angleGammaRadians);
+
+            return ONE_HALF * sideLengthA * sideLengthB * Math.sin(angleGammaRadians);
+        }
+
+        /**
+         * Given two angles and the side between them (ASA).
+         *
+         * @return area = a² * sin(β) * sin(γ) / (2 * sin(β + γ)). The units are cm²
+         */
+        public static double areaOfTriangleWithASA(
+            double sideLengthA, double angleBetaRadians, double angleGammaRadians) {
+            return sideLengthA * sideLengthA * Math.sin(angleBetaRadians) * Math.sin(angleGammaRadians)
+                / (2 * Math.sin(angleBetaRadians + angleGammaRadians));
+        }
+
+        /**
+         * @return area = πr². The units are cm²
+         */
+        public static double circleArea(double radius) {
+            checkGreater0(radius);
+            return Math.PI * radius * radius;
+        }
+
+        /**
+         * @return area = ½ * πr². The units are cm²
+         */
+        public static double semicircleArea(double radius) {
+            return ONE_HALF * circleArea(radius);
+        }
+
+        /**
+         * @return area = r² * α / 2. The units are cm²
+         */
+        public static double sectorArea(double radius, double angleAlphaRadians) {
+            checkGreater0(radius);
+            return radius * radius * angleAlphaRadians / 2;
+        }
+
+        /**
+         * @return area = π * a * b. The units are cm²
+         */
+        public static double ellipseArea(double radiusA, double radiusB) {
+            checkGreater0(radiusA);
+            checkGreater0(radiusB);
+            return Math.PI * radiusA * radiusB;
+        }
+
+        /**
+         * @return area = (a + b) * h / 2. The units are cm²
+         */
+        public static double trapezoidArea(double sideA, double sideB, double height) {
+            checkGreater0(sideA);
+            checkGreater0(sideB);
+            checkGreater0(height);
+            return (sideA + sideB) * height / 2;
+        }
+
+        /**
+         * @return area = b * h. The units are cm²
+         */
+        public static double parallelogramAreaWithBaseAndHeight(double base, double height) {
+            checkGreater0(base);
+            checkGreater0(height);
+            return base * height;
+        }
+
+        private static double areaWithSidesAndAngle(double sideA, double sideB, double angleAlphaRadians) {
+            checkGreater0(sideA);
+            checkGreater0(sideB);
+            return sideA * sideB * Math.sin(angleAlphaRadians);
+        }
+
+        /**
+         * @return area = a * b * sin(α). The units are cm²
+         */
+        public static double parallelogramAreaWithSidesAndAngle(double sideA, double sideB, double angleAlphaRadians) {
+            return areaWithSidesAndAngle(sideA, sideB, angleAlphaRadians);
+        }
+
+        /**
+         * @return area = e * f * sin(θ). The units are cm²
+         */
+        public static double parallelogramAreaWithDiagonalsAndAngle(
+            double diagonal1, double diagonal2, double angleThetaRadians) {
+            checkGreater0(diagonal1);
+            checkGreater0(diagonal2);
+            return diagonal1 * diagonal2 * Math.sin(angleThetaRadians);
+        }
+
+        /**
+         * @return area = a * h. The units are cm²
+         */
+        public static double rhombusAreaWithSideAndHeight(double side, double height) {
+            checkGreater0(side);
+            checkGreater0(height);
+            return side * height;
+        }
+
+        private static double areaWithDiagonals(double diagonal1, double diagonal2) {
+            checkGreater0(diagonal1);
+            checkGreater0(diagonal2);
+            return diagonal1 * diagonal2 / 2;
+        }
+
+        /**
+         * @return area = (e * f) / 2. The units are cm²
+         */
+        public static double rhombusAreaWithDiagonals(double diagonal1, double diagonal2) {
+            return areaWithDiagonals(diagonal1, diagonal2);
+        }
+
+        /**
+         * @return area = a² * sin(α). The units are cm²
+         */
+        public static double rhombusAreaWithSideAndAngle(double side, double angleAlphaRadians) {
+            checkGreater0(side);
+            return side * side * Math.sin(angleAlphaRadians);
+        }
+
+        /**
+         * @return area = (e * f) / 2. The units are cm²
+         */
+        public static double kiteAreaWithDiagonals(double diagonal1, double diagonal2) {
+            return areaWithDiagonals(diagonal1, diagonal2);
+        }
+
+        /**
+         * @return area = a * b * sin(α). The units are cm²
+         */
+        public static double kiteAreaWithSidesAndAngle(double sideA, double sideB, double angleAlphaRadians) {
+            return areaWithSidesAndAngle(sideA, sideB, angleAlphaRadians);
+        }
+
+        /**
+         * @return area = a² * √(25 + 10√5) / 4. The units are cm²
+         */
+        public static double pentagonArea(double sideLength) {
+            checkGreater0(sideLength);
+            return sideLength * sideLength * Math.sqrt(25 + 10 * Math.sqrt(5)) / 4;
+        }
+
+        /**
+         * @return area = 3/2 * √3 * a². The units are cm²
+         */
+        public static double hexagonArea(double sideLength) {
+            checkGreater0(sideLength);
+            return 3. / 2 * Math.sqrt(3) * sideLength * sideLength;
+        }
+
+        /**
+         * Alternative: area = perimeter * apothem / 2.
+         *
+         * @return area = 2 * (1 + √2) * a². The units are cm²
+         */
+        public static double octagonArea(double sideLength) {
+            checkGreater0(sideLength);
+            return 2 * (1 + Math.sqrt(2)) * sideLength * sideLength;
+        }
+
+        /**
+         * @return area = πR² - πr² = π(R² - r²). The units are cm²
+         */
+        public static double annulusArea(double radius, double innerRadius) {
+            checkGreater0(radius);
+            checkGreater0(innerRadius);
+
+            if (radius < innerRadius) {
+                throw new IllegalArgumentException("Radius R should be greater than radius r");
+            }
+
+            final double radiusSquared = radius * radius;
+            final double innerRadiusSquared = innerRadius * innerRadius;
+            return Math.PI * (radiusSquared - innerRadiusSquared);
+        }
+
+        /**
+         * @return area = e * f * sin(α). The units are cm²
+         */
+        public static double irregularQuadrilateralArea(double diagonal1, double diagonal2, double angleAlphaRadians) {
+            checkGreater0(diagonal1);
+            checkGreater0(diagonal2);
+            return diagonal1 * diagonal2 * Math.sin(angleAlphaRadians);
+        }
+
+        /**
+         * @return area = n * a² * cot(π/n) / 4. The units are cm²
+         */
+        public static double polygonArea(int numberOfSides, double sideLength) {
+            checkGreater0(numberOfSides);
+            checkGreater0(sideLength);
+            return numberOfSides * sideLength * sideLength * Trigonometry.cot(Math.PI / numberOfSides) / 4;
         }
     }
 
@@ -540,6 +842,7 @@ public final class MathCalculator {
 
         /**
          * The slope has to be the same for both lines.
+         *
          * @return d = |b₂ − b₁| / √(m² + 1)
          */
         public static double distanceBetweenParallelLines(
@@ -559,7 +862,9 @@ public final class MathCalculator {
             final double x2 = pointBCoords[Constants.X_INDEX];
             final double y2 = pointBCoords[Constants.Y_INDEX];
 
-            return (midpointX - x1) * (y2 - y1) / (x2 - x1) + y1;
+            final double deltaY = deltaDistance(y2, y1);
+            final double deltaX = deltaDistance(x2, x1);
+            return (midpointX - x1) * deltaY / deltaX + y1;
         }
 
         /**
@@ -587,7 +892,7 @@ public final class MathCalculator {
 
             final double sine = Math.sin(angleThetaRadians);
             final double cosine = Math.cos(angleThetaRadians);
-            return new double[] {
+            return new double[]{
                 xo + (xi - xo) * cosine - (yi - yo) * sine,
                 yo + (xi - xo) * sine + (yi - yo) * cosine
             };
@@ -632,7 +937,7 @@ public final class MathCalculator {
         public static double[] intercept(double coefficientOfX, double coefficientOfY, double constantTerm) {
             final double xIntercept = -constantTerm / coefficientOfX;
             final double yIntercept = -constantTerm / coefficientOfY;
-            return new double[] {xIntercept, yIntercept};
+            return new double[]{xIntercept, yIntercept};
         }
 
         /**
@@ -641,30 +946,130 @@ public final class MathCalculator {
         public static double[] intercept(double slopeTerm, double constantTerm) {
             return intercept(slopeTerm, -1, constantTerm);
         }
+
+        /**
+         * @return b = y₁ - m * x₁
+         */
+        public static double slopeInterceptConstantTerm(double x1, double y1, double slope) {
+            return y1 - slope * x1;
+        }
+
+        /**
+         * x = (x₁ + x₂)/2
+         */
+        public static double midpoint(double pointA, double pointB) {
+            return (pointA + pointB) / 2;
+        }
+
+        /**
+         * x = (x₁ + x₂)/2
+         * y = (y₁ + y₂)/2
+         */
+        public static double[] midpoint(double[] pointACoords, double[] pointBCoords) {
+            final double x1 = pointACoords[Constants.X_INDEX];
+            final double y1 = pointACoords[Constants.Y_INDEX];
+            final double x2 = pointBCoords[Constants.X_INDEX];
+            final double y2 = pointBCoords[Constants.Y_INDEX];
+            return new double[]{midpoint(x1, x2), midpoint(y1, y2)};
+        }
+
+        public static double endpointWithGivenMidpoint(double point, double midpoint) {
+            return 2 * midpoint - point;
+        }
     }
 
+    /**
+     * <table>
+     *     <tr><th>Degrees</td><th>Radians</th><th>sin(α)</th><th>cos(α)</th><th>tan(α)</th><th>cot(α)</th></tr>
+     *     <tr><td>0°</td><td>0</td><td>0</td><td>1</td><td>0</td><td>Undefined</td></tr>
+     *     <tr><td>15°</td><td>π/12</td><td>(√6−√2)/4</td><td>(√6+√2)/4</td><td></td><td></td></tr>
+     *     <tr><td>30°</td><td>π/6</td><td>0.5</td><td>√3/2</td><td>√3/3</td><td>√3</td></tr>
+     *     <tr><td>45°</td><td>π/4</td><td>√2/2</td><td>√2/2</td><td>1</td><td>1</td></tr>
+     *     <tr><td>60°</td><td>π/3</td><td>√3/2</td><td>0.5</td><td>√3</td><td>√3/3</td></tr>
+     *     <tr><td>75°</td><td>5π/12</td><td>(√6+√2)/4</td><td>(√6-√2)/4</td><td></td><td></td></tr>
+     *     <tr><td>90°</td><td>π/2</td><td>1</td><td>0</td><td>Undefined</td><td>0</td></tr>
+     *     <tr><td>105°</td><td>7π/12</td><td>(√6+√2)/4</td><td>-(√6-√2)/4</td><td></td><td></td></tr>
+     *     <tr><td>120°</td><td>2π/3</td><td>√3/2</td><td>-0.5</td><td>-√3</td><td>-√3/3</td></tr>
+     *     <tr><td>135°</td><td>3π/4</td><td>√2/2</td><td>-√2/2</td><td>-1</td><td>-1</td></tr>
+     *     <tr><td>150°</td><td>5π/6</td><td>0.5</td><td>-√3/2</td><td>-√3/3</td><td>-√3</td></tr>
+     *     <tr><td>165°</td><td>11π/12</td><td>(√6−√2)/4</td><td>-(√6+√2)/4</td><td></td><td></td></tr>
+     *     <tr><td>180°</td><td>π</td><td>0</td><td>-1</td><td>0</td><td>Undefined</td></tr>
+     *     <tr><td>210°</td><td>7π/6</td><td>-0.5</td><td>-√3/2</td><td>√3/3</td><td>√3</td></tr>
+     *     <tr><td>225°</td><td>5π/4</td><td>-√2/2</td><td>-√2/2</td><td>1</td><td>1</td></tr>
+     *     <tr><td>240°</td><td>4π/3</td><td>-√3/2</td><td>-0.5</td><td>√3</td><td>√3/3</td></tr>
+     *     <tr><td>270°</td><td>3π/2</td><td>-1</td><td>0</td><td>Undefined</td><td>0</td></tr>
+     *     <tr><td>300°</td><td>5π/3</td><td>-√3/2</td><td>0.5</td><td>-√3</td><td>-√3/3</td></tr>
+     *     <tr><td>315°</td><td>7π/4</td><td>-√2/2</td><td>√2/2</td><td>-1</td><td>-1</td></tr>
+     *     <tr><td>330°</td><td>11π/6</td><td>-0.5</td><td>√3/2</td><td>-√3/3</td><td>-√3</td></tr>
+     *     <tr><td>360°</td><td>2π</td><td>0</td><td>1</td><td>0</td><td>Undefined</td></tr>
+     * </table>
+     */
     public static final class Trigonometry {
+        public static final double PI_OVER_12 = Math.PI / 12;
+        public static final double PI_OVER_6 = Math.PI / 6;
+        public static final double PI_OVER_4 = Math.PI / 4;
+        public static final double PI_OVER_3 = Math.PI / 3;
+        public static final double PI5_OVER_12 = 5 * Math.PI / 12;
+        public static final double PI_OVER_2 = Math.PI / 2;
+        public static final double PI7_OVER_12 = 7 * Math.PI / 12;
+        public static final double PI2_OVER_3 = 2 * Math.PI / 3;
+        public static final double PI3_OVER_4 = 3 * Math.PI / 4;
+        public static final double PI5_OVER_6 = 5 * Math.PI / 6;
+        public static final double PI11_OVER_12 = 11 * Math.PI / 12;
+        public static final double PI7_OVER_6 = 7 * Math.PI / 6;
+        public static final double PI5_OVER_4 = 5 * Math.PI / 4;
+        public static final double PI4_OVER_3 = 4 * Math.PI / 3;
+        public static final double PI3_OVER_2 = 3 * Math.PI / 2;
+        public static final double PI5_OVER_3 = 5 * Math.PI / 3;
+        public static final double PI7_OVER_4 = 7 * Math.PI / 4;
+        public static final double PI11_OVER_6 = 11 * Math.PI / 6;
+        public static final double PI2 = 2 * Math.PI;
+
         private Trigonometry() {
         }
 
-        public static double csc(double opposite, double hypotenuse) {
+        public static double csc(double hypotenuse, double opposite) {
             return hypotenuse / opposite;
         }
 
-        public static double csc(double theta) {
-            final double sinResult = Math.sin(theta);
+        /**
+         * csc(α) = c / a
+         * csc(x) = (x² + y²) / y
+         * csc(x) = sin⁻¹(x)
+         * D(csc) = {x : x ≠ k*180°, k ∈ ℤ}
+         * <p/>The cosecant function
+         * <br/>- is odd: csc(x) = -csc(x)
+         * <br/>- is periodic: csc(x) = csc(x + 360°)
+         * <br/>- doesn't always exist.
+         *
+         * @return csc(x) = 1 / sin(x)
+         */
+        public static double csc(double angleRadians) {
+            final double sinResult = Math.sin(angleRadians);
             if (sinResult == 0) {
                 throw new ArithmeticException(DIVISION_BY_ZERO);
             }
             return 1 / sinResult;
         }
 
-        public static double sec(double adjacent, double hypotenuse) {
+        public static double sec(double hypotenuse, double adjacent) {
             return hypotenuse / adjacent;
         }
 
-        public static double sec(double theta) {
-            final double cosResult = Math.cos(theta);
+        /**
+         * sec(α) = c / b
+         * sec(α) = (√(x² + y²)) / x
+         * sec(x) = (cos(x))⁻¹
+         * D(sec) = {x : x ≠ 90° + k*180°, k ∈ X}
+         * <p/>The secant function
+         * <br/>- is even: sec(α) = sec(-α)
+         * <br/>- is periodic: sec(x) = sec(x + 360°)
+         * <br/>- doesn't always exist.
+         *
+         * @return sec(x) = 1 / cos(x)
+         */
+        public static double sec(double angleRadians) {
+            final double cosResult = Math.cos(angleRadians);
             if (cosResult == 0) {
                 throw new ArithmeticException(DIVISION_BY_ZERO);
             }
@@ -675,36 +1080,81 @@ public final class MathCalculator {
             return adjacent / opposite;
         }
 
-        public static double cot(double theta) {
-            final double tanResult = Math.tan(theta);
+        /**
+         * cot(α) = b / c
+         * cot(α) = x / y
+         * cot(x) = (tan(x))⁻¹
+         * cot(x) = cos(x) / sin(x)
+         * D(cot) = {x : x ≠ k*180°, k ∈ ℤ}
+         * <p/>The cotangent function
+         * <br/>- is odd: cot(x) = -cot(-x)
+         * <br/>- is periodic: cot(x) = cot(x + 360°)
+         * <br/>- doesn't always exist.
+         *
+         * @return cot(α) = 1 / tan(α)
+         */
+        public static double cot(double angleRadians) {
+            final double tanResult = Math.tan(angleRadians);
             if (tanResult == 0) {
                 throw new ArithmeticException(DIVISION_BY_ZERO);
             }
             return 1 / tanResult;
         }
 
-        public static double sinDoubleAngle(double theta) {
-            return 2 * Math.sin(theta) * Math.cos(theta);
+        /**
+         * sin(2θ) = sin(θ+θ) = sin(θ)cos(θ) + cos(θ)sin(θ)
+         *
+         * @return sin(2θ) = 2sin(θ)cos(θ)
+         */
+        public static double sinDoubleAngle(double angleThetaRadians) {
+            return 2 * Math.sin(angleThetaRadians) * Math.cos(angleThetaRadians);
         }
 
-        public static double cosDoubleAngle(double theta) {
-            return Math.cos(theta) * Math.cos(theta) - Math.sin(theta) * Math.sin(theta);
+        /**
+         * cos(2θ) = cos²(θ) − sin²(θ)
+         * cos(2θ) = 2cos²(θ) − 1
+         *
+         * @return cos(2θ) = 1 − 2sin²(θ)
+         */
+        public static double cosDoubleAngle(double angleThetaRadians) {
+            return 1 - 2 * Math.sin(angleThetaRadians) * Math.sin(angleThetaRadians);
         }
 
-        public static double tanDoubleAngle(double theta) {
-            return (2 * Math.tan(theta)) / (1 - Math.tan(theta) * Math.tan(theta));
+        /**
+         * tan(2θ) = tan(θ+θ) = (tan(θ)+tan(θ)) / (1 − tan(θ)*tan(θ))
+         *
+         * @return tan(2θ) = (2tan(θ)) / (1−tan²(θ))
+         */
+        public static double tanDoubleAngle(double angleThetaRadians) {
+            return (2 * Math.tan(angleThetaRadians)) / (1 - Math.tan(angleThetaRadians) * Math.tan(angleThetaRadians));
         }
 
-        public static double sinHalfAngle(double theta) {
-            return Math.sqrt((1 - Math.cos(theta)) / 2);
+        /**
+         * sin²(x/2) = (1−cos(x)) / 2
+         *
+         * @return sin²(x/2) = ±√((1−cos(x)) / 2)
+         */
+        public static double sinHalfAngle(double angleRadians) {
+            return Math.sqrt((1 - Math.cos(angleRadians)) / 2);
         }
 
-        public static double cosHalfAngle(double theta) {
-            return Math.sqrt((1 + Math.cos(theta)) / 2);
+        /**
+         * cos²(x/2) = (1+cos(x)) / 2
+         *
+         * @return cos(x/2) = ±√((1+cos(x)) / 2)
+         */
+        public static double cosHalfAngle(double angleRadians) {
+            return Math.sqrt((1 + Math.cos(angleRadians)) / 2);
         }
 
-        public static double tanHalfAngle(double theta) {
-            return Math.sqrt((1 - Math.cos(theta)) / (1 + Math.cos(theta)));
+        /**
+         * tan²(x/2) = (1-cos(x)) / (1+cos(x))
+         *
+         * @return tan(x/2) = ±√((1-cos(x)) / (1+cos(x)))
+         */
+        public static double tanHalfAngle(double angleRadians) {
+            final double cosine = Math.cos(angleRadians);
+            return Math.sqrt((1 - cosine) / (1 + cosine));
         }
 
         public static double sinTripleAngleIdentity(double theta) {
@@ -817,6 +1267,74 @@ public final class MathCalculator {
             final double numerator = Math.sin(angleAlpha) * Math.sin(angleBeta);
             return numerator / denominator;
         }
+
+        /**
+         * sin(α) = y/1 = y
+         * sin(α) = opposite/hypotenuse = a/c
+         * Range: −1 ≤ sin(α) ≤ 1
+         * Period: 2π
+         * An odd function i.e. sin(−α) = −sin(α)
+         */
+        public static double sin(double angleRadians) {
+            return Math.sin(angleRadians);
+        }
+
+        /**
+         * y(t) = A * sin(2πft + φ)
+         *
+         * @return y(t) = A * sin(ωt+φ)
+         */
+        public static double sinusoid(double amplitude, double anglePhiRadians,
+                                      double oscillationFrequency, long timeSeconds) {
+            final double angularFrequency = 2 * Math.PI * oscillationFrequency;
+            return amplitude * Math.sin(angularFrequency * timeSeconds + anglePhiRadians);
+        }
+
+        public static int quadrant(double angleAlphaRadians) {
+            if (0 < angleAlphaRadians && angleAlphaRadians <= Math.PI / 2) {
+                // 0<α≤π/2
+                return 1;
+            } else if (Math.PI / 2 < angleAlphaRadians && angleAlphaRadians <= Math.PI) {
+                // π/2<α≤π
+                return 2;
+            } else if (Math.PI < angleAlphaRadians && angleAlphaRadians <= 3 * Math.PI / 2) {
+                // π<α≤3π/2
+                return 3;
+            } else {
+                // 3π/2<α≤2π
+                return 4;
+            }
+        }
+
+        /**
+         * cos(α) = x/1 = x
+         * cos(α) = adjacent / hypotenuse = b / c
+         * Range: −1 ≤ cos(α) ≤ 1
+         * Period: 2π
+         * An even function i.e. cos(−α) = cos(α)
+         */
+        public static double cos(double angleRadians) {
+            return Math.sin(angleRadians);
+        }
+
+        /**
+         * tan(α) = y/x = sin(α)/cos(α)
+         * tan(α) = opposite / adjacent = a / b
+         * Range: −1 ≤ cos(α) ≤ 1
+         * Period: 2π
+         * An even function i.e. cos(−α) = cos(α)
+         */
+        public static double tan(double angleRadians) {
+            return Math.tan(angleRadians);
+        }
+
+        /**
+         * @return (a - b) / (a + b) = tan(0.5(α - β)) / tan(0.5(α + β))
+         */
+        public static double lawOfTangents(double angleAlphaRadians, double angleBetaRadians) {
+            return tan(0.5 * (angleAlphaRadians - angleBetaRadians))
+                / tan(0.5 * (angleAlphaRadians + angleBetaRadians));
+        }
     }
 
     public static final class LinearAlgebra {
@@ -855,6 +1373,7 @@ public final class MathCalculator {
 
         /**
          * y = mx + b
+         *
          * @return ∫(ax + b)dx = (a/2)x^2 + bx + C
          */
         public static double indefiniteLinearIntegral(
@@ -864,6 +1383,7 @@ public final class MathCalculator {
 
         /**
          * y = mx + b
+         *
          * @return ∫ₐ^b f(x)dx = F(b) - F(a)
          */
         public static double definiteLinearIntegral(double x1, double x2, double slope, double constantTerm) {
