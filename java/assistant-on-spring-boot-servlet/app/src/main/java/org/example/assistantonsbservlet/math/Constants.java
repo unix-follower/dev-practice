@@ -12,6 +12,9 @@ public final class Constants {
     public static final int R_INDEX = ARR_1ST_INDEX;
     public static final int THETA_INDEX = ARR_2ND_INDEX;
     public static final int PHI_INDEX = ARR_3RD_INDEX;
+    public static final int ALPHA_INDEX = ARR_1ST_INDEX;
+    public static final int BETA_INDEX = ARR_2ND_INDEX;
+    public static final int GAMMA_INDEX = ARR_3RD_INDEX;
     public static final String SIDE_AND_OPPOSITE_ANGLE = "side_and_opposite_angle";
     public static final String SIDE_AND_ADJACENT_ANGLE = "side_and_adjacent_angle";
     public static final String AREA_AND_SIDE = "area_and_side";
