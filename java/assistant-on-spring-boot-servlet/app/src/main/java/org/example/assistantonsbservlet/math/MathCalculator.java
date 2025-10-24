@@ -262,7 +262,7 @@ public final class MathCalculator {
         }
 
         /**
-         * Given three sides (SSS).
+         * Given three sides (SSS). Heron's formula.
          *
          * @return area = 0.25 * √((a + b + c) * (-a + b + c) * (a - b + c) * (a + b - c)). The units are cm²
          */
@@ -1003,6 +1003,38 @@ public final class MathCalculator {
      *     <tr><td>330°</td><td>11π/6</td><td>-0.5</td><td>√3/2</td><td>-√3/3</td><td>-√3</td></tr>
      *     <tr><td>360°</td><td>2π</td><td>0</td><td>1</td><td>0</td><td>Undefined</td></tr>
      * </table>
+     * <br/><strong>Inverse</strong>
+     * <table>
+     *     <tr><th>x</th><th colspan="2">arccos(x)</th><th colspan="2">arcsine(x)</th></tr>
+     *     <tr><td></td><td>Degrees</td><td>Radians</td><td>Degrees</td><td>Radians</td></tr>
+     *     <tr><td>-1</td><td>180°</td><td>π</td><td>-90°</td><td>-π/2</td></tr>
+     *     <tr><td>-√3/2</td><td>150°</td><td>5π/6</td><td>-60°</td><td>-π/3</td></tr>
+     *     <tr><td>-√2/2</td><td>135°</td><td>3π/4</td><td>-45°</td><td>-π/4</td></tr>
+     *     <tr><td>-1/2</td><td>120°</td><td>2π/3</td><td>-30°</td><td>-π/6</td></tr>
+     *     <tr><td>0</td><td>90°</td><td>π/2</td><td>0°</td><td>0</td></tr>
+     *     <tr><td>1/2</td><td>60°</td><td>π/3</td><td>30°</td><td>π/6</td></tr>
+     *     <tr><td>√2/2</td><td>45°</td><td>π/4</td><td>45°</td><td>π/4</td></tr>
+     *     <tr><td>√3/2</td><td>30°</td><td>π/6</td><td>60°</td><td>π/3</td></tr>
+     *     <tr><td>1</td><td>0°</td><td>0</td><td>90°</td><td>π/2</td></tr>
+     * </table>
+     * <br/><strong>Inverse Tangent</strong>
+     * <table>
+     *     <tr><th>x</th><th colspan="2">arctan(x)</th></tr>
+     *     <tr><td></td><td>Degrees</td><td>Radians</td></tr>
+     *     <tr><td>−∞</td><td>-90°</td><td>-π/2</td></tr>
+     *     <tr><td>-3</td><td>−71.565°</td><td>−1.2490</td></tr>
+     *     <tr><td>-2</td><td>−63.435°</td><td>−1.1071</td></tr>
+     *     <tr><td>-√3</td><td>−60°</td><td>-π/3</td></tr>
+     *     <tr><td>-1</td><td>-45°</td><td>-π/4</td></tr>
+     *     <tr><td>-√3/3</td><td>-30°</td><td>-π/6</td></tr>
+     *     <tr><td>0</td><td>0°</td><td>0</td></tr>
+     *     <tr><td>√3/2</td><td>30°</td><td>π/6</td></tr>
+     *     <tr><td>1</td><td>45°</td><td>π/4</td></tr>
+     *     <tr><td>√3</td><td>60°</td><td>π/3</td></tr>
+     *     <tr><td>2</td><td>63.435°</td><td>1.1071</td></tr>
+     *     <tr><td>3</td><td>71.565°</td><td>1.2490</td></tr>
+     *     <tr><td>∞</td><td>90°</td><td>π/2</td></tr>
+     * </table>
      */
     public static final class Trigonometry {
         public static final double PI_OVER_12 = Math.PI / 12;
@@ -1036,7 +1068,8 @@ public final class MathCalculator {
          * csc(α) = c / a
          * csc(x) = (x² + y²) / y
          * csc(x) = sin⁻¹(x)
-         * D(csc) = {x : x ≠ k*180°, k ∈ ℤ}
+         * D(csc) = {x : x ≠ k*180°, k ∈ ℤ}.
+         * Cofunction: sec(x).
          * <p/>The cosecant function
          * <br/>- is odd: csc(x) = -csc(x)
          * <br/>- is periodic: csc(x) = csc(x + 360°)
@@ -1060,7 +1093,8 @@ public final class MathCalculator {
          * sec(α) = c / b
          * sec(α) = (√(x² + y²)) / x
          * sec(x) = (cos(x))⁻¹
-         * D(sec) = {x : x ≠ 90° + k*180°, k ∈ X}
+         * D(sec) = {x : x ≠ 90° + k*180°, k ∈ X}.
+         * Cofunction: csc(x).
          * <p/>The secant function
          * <br/>- is even: sec(α) = sec(-α)
          * <br/>- is periodic: sec(x) = sec(x + 360°)
@@ -1085,7 +1119,8 @@ public final class MathCalculator {
          * cot(α) = x / y
          * cot(x) = (tan(x))⁻¹
          * cot(x) = cos(x) / sin(x)
-         * D(cot) = {x : x ≠ k*180°, k ∈ ℤ}
+         * D(cot) = {x : x ≠ k*180°, k ∈ ℤ}.
+         * Cofunction: tan(x).
          * <p/>The cotangent function
          * <br/>- is odd: cot(x) = -cot(-x)
          * <br/>- is periodic: cot(x) = cot(x + 360°)
@@ -1174,27 +1209,110 @@ public final class MathCalculator {
             return numerator / denominator;
         }
 
-        public static double lawOfCosine(double sideA, double sideB, double angle) {
-            return Math.sqrt(sideA * sideA + sideB * sideB - 2 * sideA * sideB * Math.cos(angle));
+        /**
+         * a = √(b² + c² - 2bc × cos(α))
+         * b = √(a² + c² - 2ac × cos(β))
+         * c = √(a² + b² - 2ab × cos(γ))
+         *
+         * @return √c² = a² + b² - 2ab * cos(γ)
+         */
+        public static double lawOfCosSAS(double sideA, double sideB, double angleGammaRadians) {
+            final double sideCSquared = sideA * sideA + sideB * sideB - 2 * sideA * sideB * Math.cos(angleGammaRadians);
+            return Math.sqrt(sideCSquared);
         }
 
+        /**
+         * α = arccos((b² + c² - a²)/(2bc))
+         * β = arccos((a² + c² - b²)/(2ac))
+         * γ = arccos((a² + b² - c²)/(2ab))
+         */
+        public static double[] lawOfCosSSS(double sideA, double sideB, double sideC) {
+            final double aSquared = sideA * sideA;
+            final double bSquared = sideB * sideB;
+            final double cSquared = sideC * sideC;
+            final double angleAlphaRad = Math.acos((bSquared + cSquared - (-sideA * -sideA)) / (2 * sideB * sideC));
+            final double angleBetaRad = Math.acos((aSquared + cSquared - (-sideB * -sideB)) / (2 * sideA * sideC));
+            final double angleGammaRad = Math.acos((aSquared + bSquared - (-sideC * -sideC)) / (2 * sideA * sideB));
+            return new double[]{angleAlphaRad, angleBetaRad, angleGammaRad};
+        }
+
+        /**
+         * a / sin(α) = b / sin(β) = c / sin(γ)
+         * @return b = a / sin(α) * sin(β)
+         */
+        public static double lawOfSinGivenSideAAndAnglesAlphaBeta(
+            double side, double angleAlphaRadians, double angleBetaRadians) {
+            return side / Math.sin(angleAlphaRadians) * Math.sin(angleBetaRadians);
+        }
+
+        /**
+         * @return a = b * sin(α) / sin(β)
+         */
+        public static double lawOfSinGivenSideBAndAnglesAlphaBeta(
+            double side, double angleAlphaRadians, double angleBetaRadians) {
+            return side * Math.sin(angleAlphaRadians) / Math.sin(angleBetaRadians);
+        }
+
+        /**
+         * @return β = arcsin(b * sin(α) / a)
+         */
+        public static double lawOfSinGivenSidesABAndAngleAlpha(double sideA, double sideB, double angleAlphaRadians) {
+            return Math.asin(sideB * Math.sin(angleAlphaRadians) / sideA);
+        }
+
+        /**
+         * @return α = arcsin(a * sin(β) / b)
+         */
+        public static double lawOfSinGivenSidesABAndAngleBeta(double sideA, double sideB, double angleBetaRadians) {
+            return Math.asin(sideA * Math.sin(angleBetaRadians) / sideB);
+        }
+
+        /**
+         * @return γ = arcsin(b * sin(β) / c)
+         */
+        public static double lawOfSinGivenSidesBCAndAngleBeta(double sideB, double sideC, double angleBetaRadians) {
+            return Math.asin(sideB * Math.sin(angleBetaRadians) / sideC);
+        }
+
+        /**
+         * @return γ = arcsin(c * sin(β) / a)
+         */
+        public static double lawOfSinGivenSidesACAndAngleAlpha(double sideA, double sideC, double angleAlphaRadians) {
+            return Math.asin(sideC * Math.sin(angleAlphaRadians) / sideA);
+        }
+
+        /**
+         * @return sin(α+β) = sin(α)cos(β) + cos(α)sin(β)
+         */
         public static double sinAngleSum(double angleAlpha, double angleBeta) {
             return Math.sin(angleAlpha) * Math.cos(angleBeta) + Math.cos(angleAlpha) * Math.sin(angleBeta);
         }
 
-        public static double sinAngleSubtract(double angleAlpha, double angleBeta) {
+        /**
+         * @return sin(α-β) = sin(α)cos(β) - cos(α)sin(β)
+         */
+        public static double sinAngleDifference(double angleAlpha, double angleBeta) {
             return Math.sin(angleAlpha) * Math.cos(angleBeta) - Math.cos(angleAlpha) * Math.sin(angleBeta);
         }
 
+        /**
+         * @return cos(α+β) = cos(α)cos(β) − sin(α)sin(β)
+         */
         public static double cosAngleSum(double angleAlpha, double angleBeta) {
             return Math.cos(angleAlpha) * Math.cos(angleBeta) - Math.sin(angleAlpha) * Math.sin(angleBeta);
         }
 
-        public static double cosAngleSubtract(double angleAlpha, double angleBeta) {
+        /**
+         * @return cos(α-β) = cos(α)cos(β) + sin(α)sin(β)
+         */
+        public static double cosAngleDifference(double angleAlpha, double angleBeta) {
             return Math.cos(angleAlpha) * Math.cos(angleBeta) + Math.sin(angleAlpha) * Math.sin(angleBeta);
         }
 
-        public static double tangentAngleSum(double angleAlpha, double angleBeta) {
+        /**
+         * @return tan(α+β) = (tan(α)+tan(β)) / (1−tan(α)tan(β))
+         */
+        public static double tanAngleSum(double angleAlpha, double angleBeta) {
             final double denominator = 1 - Math.tan(angleAlpha) * Math.tan(angleBeta);
             if (denominator == 0) {
                 throw new ArithmeticException(DIVISION_BY_ZERO);
@@ -1203,7 +1321,10 @@ public final class MathCalculator {
             return numerator / denominator;
         }
 
-        public static double tanAngleSubtract(double angleAlpha, double angleBeta) {
+        /**
+         * @return tan(α-β) = (tan(α)-tan(β)) / (1+tan(α)tan(β))
+         */
+        public static double tanAngleDifference(double angleAlpha, double angleBeta) {
             final double denominator = 1 + Math.tan(angleAlpha) * Math.tan(angleBeta);
             if (denominator == 0) {
                 throw new ArithmeticException(DIVISION_BY_ZERO);
@@ -1212,7 +1333,10 @@ public final class MathCalculator {
             return numerator / denominator;
         }
 
-        public static double cotangentAngleSum(double angleAlpha, double angleBeta) {
+        /**
+         * @return cot(α+β) = (cot(α)cot(β)−1) / (cot(β)+cot(α))
+         */
+        public static double cotAngleSum(double angleAlpha, double angleBeta) {
             final double cotAlpha = cot(angleAlpha);
             final double cotBeta = cot(angleBeta);
             final double denominator = cotAlpha + cotBeta;
@@ -1222,50 +1346,77 @@ public final class MathCalculator {
             return (cotAlpha * cotBeta - 1) / denominator;
         }
 
-        public static double cotangentAngleSubtract(double angleAlpha, double angleBeta) {
+        /**
+         * @return cot(α-β) = (cot(α)cot(β)+1) / (cot(β)-cot(α))
+         */
+        public static double cotAngleDifference(double angleAlpha, double angleBeta) {
             final double cotAlpha = cot(angleAlpha);
             final double cotBeta = cot(angleBeta);
-            final double denominator = cotAlpha - cotBeta;
+            final double denominator = cotBeta - cotAlpha;
             if (denominator == 0) {
                 throw new ArithmeticException(DIVISION_BY_ZERO);
             }
             return (cotAlpha * cotBeta + 1) / denominator;
         }
 
-        public static double secantAngleSum(double angleAlpha, double angleBeta) {
-            final double denominator = cot(angleAlpha) * Math.tan(angleBeta);
+        /**
+         * @return sec(α+β) = (sec(α)sec(β)csc(α)csc(β)) / (csc(α)csc(β)−sec(α)sec(β))
+         */
+        public static double secAngleSum(double angleAlpha, double angleBeta) {
+            final double secAlpha = sec(angleAlpha);
+            final double secBeta = sec(angleBeta);
+            final double cscAlpha = csc(angleAlpha);
+            final double cscBeta = csc(angleBeta);
+            final double denominator = cscAlpha * cscBeta - secAlpha * secBeta;
             if (denominator == 0) {
                 throw new ArithmeticException(DIVISION_BY_ZERO);
             }
-            return 1 / (Math.cos(angleAlpha) * Math.cos(angleBeta) / denominator);
+            return (secAlpha * secBeta * cscAlpha * cscBeta) / denominator;
         }
 
-        public static double secantAngleSubtract(double angleAlpha, double angleBeta) {
-            final double denominator = cot(angleAlpha) * Math.tan(angleBeta);
+        /**
+         * @return sec(α-β) = (sec(α)sec(β)csc(α)csc(β)) / (csc(α)csc(β)+sec(α)sec(β))
+         */
+        public static double secAngleDifference(double angleAlpha, double angleBeta) {
+            final double secAlpha = sec(angleAlpha);
+            final double secBeta = sec(angleBeta);
+            final double cscAlpha = csc(angleAlpha);
+            final double cscBeta = csc(angleBeta);
+            final double denominator = cscAlpha * cscBeta + secAlpha * secBeta;
             if (denominator == 0) {
                 throw new ArithmeticException(DIVISION_BY_ZERO);
             }
-            return 1 / (Math.cos(angleAlpha) * Math.cos(angleBeta) / denominator);
+            return (secAlpha * secBeta * cscAlpha * cscBeta) / denominator;
         }
 
-        public static double cosecantAngleSum(double angleAlpha, double angleBeta) {
-            final double denominator = Math.sin(angleAlpha) * Math.cos(angleBeta)
-                + Math.cos(angleAlpha) * Math.sin(angleBeta);
+        /**
+         * @return csc(α+β) = (sec(α)sec(β)csc(α)csc(β)) / (sec(α)csc(β)+csc(α)sec(β))
+         */
+        public static double cscAngleSum(double angleAlpha, double angleBeta) {
+            final double secAlpha = sec(angleAlpha);
+            final double secBeta = sec(angleBeta);
+            final double cscAlpha = csc(angleAlpha);
+            final double cscBeta = csc(angleBeta);
+            final double denominator = secAlpha * cscBeta + cscAlpha * secBeta;
             if (denominator == 0) {
                 throw new ArithmeticException(DIVISION_BY_ZERO);
             }
-            final double numerator = Math.sin(angleAlpha) * Math.sin(angleBeta);
-            return numerator / denominator;
+            return (secAlpha * secBeta * cscAlpha * cscBeta) / denominator;
         }
 
-        public static double cosecantAngleSubtract(double angleAlpha, double angleBeta) {
-            final double denominator = Math.sin(angleAlpha) * Math.cos(angleBeta)
-                - Math.cos(angleAlpha) * Math.sin(angleBeta);
+        /**
+         * @return csc(α-β) = (sec(α)sec(β)csc(α)csc(β)) / (sec(α)csc(β)-csc(α)sec(β))
+         */
+        public static double cscAngleDifference(double angleAlpha, double angleBeta) {
+            final double secAlpha = sec(angleAlpha);
+            final double secBeta = sec(angleBeta);
+            final double cscAlpha = csc(angleAlpha);
+            final double cscBeta = csc(angleBeta);
+            final double denominator = secAlpha * cscBeta - cscAlpha * secBeta;
             if (denominator == 0) {
                 throw new ArithmeticException(DIVISION_BY_ZERO);
             }
-            final double numerator = Math.sin(angleAlpha) * Math.sin(angleBeta);
-            return numerator / denominator;
+            return (secAlpha * secBeta * cscAlpha * cscBeta) / denominator;
         }
 
         /**
@@ -1273,7 +1424,8 @@ public final class MathCalculator {
          * sin(α) = opposite/hypotenuse = a/c
          * Range: −1 ≤ sin(α) ≤ 1
          * Period: 2π
-         * An odd function i.e. sin(−α) = −sin(α)
+         * An odd function i.e. sin(−α) = −sin(α).
+         * Cofunction: cos(x).
          */
         public static double sin(double angleRadians) {
             return Math.sin(angleRadians);
@@ -1311,7 +1463,8 @@ public final class MathCalculator {
          * cos(α) = adjacent / hypotenuse = b / c
          * Range: −1 ≤ cos(α) ≤ 1
          * Period: 2π
-         * An even function i.e. cos(−α) = cos(α)
+         * An even function i.e. cos(−α) = cos(α).
+         * Cofunction: sin(x).
          */
         public static double cos(double angleRadians) {
             return Math.sin(angleRadians);
@@ -1322,7 +1475,8 @@ public final class MathCalculator {
          * tan(α) = opposite / adjacent = a / b
          * Range: −1 ≤ cos(α) ≤ 1
          * Period: 2π
-         * An even function i.e. cos(−α) = cos(α)
+         * An even function i.e. cos(−α) = cos(α).
+         * Cofunction: cos(x).
          */
         public static double tan(double angleRadians) {
             return Math.tan(angleRadians);
@@ -1334,6 +1488,57 @@ public final class MathCalculator {
         public static double lawOfTangents(double angleAlphaRadians, double angleBetaRadians) {
             return tan(0.5 * (angleAlphaRadians - angleBetaRadians))
                 / tan(0.5 * (angleAlphaRadians + angleBetaRadians));
+        }
+
+        /**
+         * A * sin(B(x−C/B)) + D
+         *
+         * @return f(x) = A * sin(Bx−C) + D
+         */
+        public static double[] sinPhaseShift(double x, double amplitude, double period,
+                                             double phase, double verticalShift) {
+            final double phaseShift = phase / period;
+            final double periodShift = 2 * Math.PI / period;
+            return new double[]{phaseShift, periodShift, amplitude * Math.sin(period * x - phase) + verticalShift};
+        }
+
+        /**
+         * @return f(x) = A * cos(Bx−C) + D
+         */
+        public static double[] cosPhaseShift(double x, double amplitude, double period,
+                                             double phase, double verticalShift) {
+            final double phaseShift = phase / period;
+            final double periodShift = 2 * Math.PI / period;
+            return new double[]{phaseShift, periodShift, amplitude * Math.cos(period * x - phase) + verticalShift};
+        }
+
+        /**
+         * @return sin²(x) = (1−cos(2x)) / 2
+         */
+        public static double sinPowerReducing(double angleRadians) {
+            return (1 - Math.cos(2 * angleRadians)) / 2;
+        }
+
+        /**
+         * @return cos²(x) = (1+cos(2x)) / 2
+         */
+        public static double cosPowerReducing(double angleRadians) {
+            return (1 + Math.cos(2 * angleRadians)) / 2;
+        }
+
+        /**
+         * @return tan²(x) = (1-cos(2x)) / (1+cos(2x))
+         */
+        public static double tanPowerReducing(double angleRadians) {
+            final double cosine = Math.cos(2 * angleRadians);
+            return (1 - cosine) / (1 + cosine);
+        }
+
+        /**
+         * @return sin(α) = tan(α) * cos(α)
+         */
+        public static double findSinWithCosAndTan(double angleAlphaRadians) {
+            return Math.tan(angleAlphaRadians) * Math.cos(angleAlphaRadians);
         }
     }
 
