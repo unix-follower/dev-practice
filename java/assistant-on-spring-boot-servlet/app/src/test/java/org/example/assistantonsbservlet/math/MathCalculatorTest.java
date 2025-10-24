@@ -1254,7 +1254,8 @@ class MathCalculatorTest {
             final byte phaseShift = 3; // C
             final byte verticalShift = 4; // D
             // when
-            final double[] results = MathCalculator.Trigonometry.sinPhaseShift(x, amplitude, periodRadians, phaseShift, verticalShift);
+            final double[] results = MathCalculator.Trigonometry
+                .sinPhaseShift(x, amplitude, periodRadians, phaseShift, verticalShift);
             // then
             assertNotNull(results);
             assertEquals(3, results.length);
@@ -1272,7 +1273,8 @@ class MathCalculatorTest {
             final byte phaseShift = 3; // C
             final byte verticalShift = 4; // D
             // when
-            final double[] results = MathCalculator.Trigonometry.cosPhaseShift(x, amplitude, periodRadians, phaseShift, verticalShift);
+            final double[] results = MathCalculator.Trigonometry
+                .cosPhaseShift(x, amplitude, periodRadians, phaseShift, verticalShift);
             // then
             assertNotNull(results);
             assertEquals(3, results.length);
