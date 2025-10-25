@@ -59,7 +59,7 @@ class MathCalculatorTest {
             assertEquals(sideC, sides[Constants.ARR_3RD_INDEX], 0.1); // cm
         }
 
-        static List<Arguments> pythagoreanTheoremWithLegAndHypotenuseParams() {
+        static List<Arguments> pythagoreanTheoremForRightTriangleWithLegAndHypotenuseParams() {
             return List.of(
                 Arguments.of(4, 8.94427, 8, 16, 20.94427),
                 Arguments.of(7.07, 10, 7.07, 25, 24.14214)
@@ -67,11 +67,12 @@ class MathCalculatorTest {
         }
 
         @ParameterizedTest
-        @MethodSource("pythagoreanTheoremWithLegAndHypotenuseParams")
-        void testPythagoreanTheoremWithLegAndHypotenuse(
+        @MethodSource("pythagoreanTheoremForRightTriangleWithLegAndHypotenuseParams")
+        void testPythagoreanTheoremForRightTriangleWithLegAndHypotenuse(
             double sideA, double hypotenuse, double expectedResult, double expectedArea, double expectedPerimeter) {
             // when
-            final double[] sides = MathCalculator.Geometry.pythagoreanTheoremWithLegAndHypotenuse(sideA, hypotenuse);
+            final double[] sides = MathCalculator.Geometry
+                .pythagoreanTheoremForRightTriangleWithLegAndHypotenuse(sideA, hypotenuse);
             // then
             assertNotNull(sides);
             assertEquals(3, sides.length);
@@ -90,12 +91,12 @@ class MathCalculatorTest {
         }
 
         @Test
-        void testPythagoreanTheoremWithLegs() {
+        void testPythagoreanTheoremForRightTriangleWithLegs() {
             // given
             final byte sideA = 7; // cm
             final byte sideB = 9; // cm
             // when
-            final double[] sides = MathCalculator.Geometry.pythagoreanTheoremWithLegs(sideA, sideB);
+            final double[] sides = MathCalculator.Geometry.pythagoreanTheoremForRightTriangleWithLegs(sideA, sideB);
             // then
             assertNotNull(sides);
             assertEquals(3, sides.length);
@@ -436,6 +437,336 @@ class MathCalculatorTest {
             // then
             assertEquals(44.785, area, 0.001);
         }
+
+        @Test
+        void testScaleneTriangleHeight() {
+            // given
+            final byte sideA = 6;
+            final byte sideB = 14;
+            final byte sideC = 17;
+            // when
+            final double[] heights = MathCalculator.Geometry.scaleneTriangleHeight(sideA, sideB, sideC);
+            // then
+            assertNotNull(heights);
+            assertEquals(3, heights.length);
+            assertEquals(13.17, heights[Constants.ARR_1ST_INDEX], 0.01);
+            final double heightB = heights[Constants.ARR_2ND_INDEX];
+            assertEquals(5.644, heightB, 0.001);
+            assertEquals(4.648, heights[Constants.ARR_3RD_INDEX], 0.001);
+
+            final double areaCmSquared = MathCalculator.Geometry.areaOfTriangleWithSSS(sideA, sideB, sideC);
+            assertEquals(39.51, areaCmSquared, 0.01);
+
+            final double perimeter = MathCalculator.Geometry.perimeter(sideA, sideB, sideC);
+            assertEquals(37, perimeter, 0.1);
+
+            final double[] angles = MathCalculator.Trigonometry.lawOfCosSSS(sideA, sideB, sideC);
+            assertEquals(0.3384, angles[Constants.ALPHA_INDEX], 0.0001);
+            assertEquals(0.8862, angles[Constants.BETA_INDEX], 0.0001);
+            assertEquals(1.917, angles[Constants.GAMMA_INDEX], 0.001);
+        }
+
+        @Test
+        void testEquilateralTriangleHeight() {
+            // given
+            final byte sides = 5;
+            // when
+            final double height = MathCalculator.Geometry.equilateralTriangleHeight(sides);
+            // then
+            assertEquals(4.33, height, 0.01);
+
+            final double areaCmSquared = MathCalculator.Geometry.equilateralTriangleArea(sides);
+            assertEquals(10.825, areaCmSquared, 0.001);
+
+            final double perimeter = MathCalculator.Geometry.perimeter(sides, sides, sides);
+            assertEquals(15, perimeter, 0.1);
+        }
+
+        @Test
+        void testIsoscelesTriangleHeight() {
+            // given
+            final byte sideA = 3;
+            final byte sideB = 5;
+            // when
+            final double[] heights = MathCalculator.Geometry.isoscelesTriangleHeight(sideA, sideB);
+            // then
+            assertNotNull(heights);
+            assertEquals(2, heights.length);
+            assertEquals(2.764, heights[Constants.ARR_1ST_INDEX], 0.001);
+            final double heightB = heights[Constants.ARR_2ND_INDEX];
+            assertEquals(1.6583, heightB, 0.0001);
+
+            final double areaCmSquared = MathCalculator.Geometry.isoscelesTriangleArea(sideB, heightB);
+            assertEquals(4.146, areaCmSquared, 0.001);
+
+            final double perimeter = MathCalculator.Geometry.perimeter(sideA, sideB, sideA);
+            assertEquals(11, perimeter, 0.1);
+
+            final double[] angles = MathCalculator.Trigonometry.lawOfCosSSS(sideB, sideA, sideA);
+            assertEquals(1.9702, angles[Constants.ALPHA_INDEX], 0.0001);
+            assertEquals(0.5857, angles[Constants.BETA_INDEX], 0.0001);
+        }
+
+        @Test
+        void testRightTriangleHeight() {
+            // given
+            final byte sideA = 3;
+            final byte sideB = 4;
+            final byte sideC = 5;
+            // when
+            final double[] heights = MathCalculator.Geometry.rightTriangleHeight(sideA, sideB, sideC);
+            // then
+            assertNotNull(heights);
+            assertEquals(3, heights.length);
+            assertEquals(4, heights[Constants.ARR_1ST_INDEX], 0.1);
+            assertEquals(3, heights[Constants.ARR_2ND_INDEX], 0.1);
+            assertEquals(2.4, heights[Constants.ARR_3RD_INDEX], 0.1);
+
+            final double areaCmSquared = MathCalculator.Geometry.areaOfTriangleWithSSS(sideA, sideB, sideC);
+            assertEquals(6, areaCmSquared, 0.1);
+
+            final double perimeter = MathCalculator.Geometry.perimeter(sideA, sideB, sideC);
+            assertEquals(12, perimeter, 0.1);
+
+            final double[] angles = MathCalculator.Trigonometry.lawOfCosSSS(sideA, sideB, sideC);
+            assertEquals(0.6435, angles[Constants.ALPHA_INDEX], 0.0001);
+            assertEquals(0.9273, angles[Constants.BETA_INDEX], 0.0001);
+        }
+
+        @Test
+        void testHeronFormulaUsingSemiperimeter() {
+            // given
+            final byte sideA = 12;
+            final byte sideB = 5;
+            final byte sideC = 13;
+            // when
+            final double areaCmSquared = MathCalculator.Geometry.heronFormulaUsingSemiperimeter(sideA, sideB, sideC);
+            // then
+            assertEquals(30, areaCmSquared, 0.1);
+        }
+
+        @Test
+        void testHeronFormulaUsingQuadProduct() {
+            // given
+            final byte sideA = 12;
+            final byte sideB = 5;
+            final byte sideC = 13;
+            // when
+            final double areaCmSquared = MathCalculator.Geometry.heronFormulaUsingQuadProduct(sideA, sideB, sideC);
+            // then
+            assertEquals(30, areaCmSquared, 0.1);
+        }
+
+        @Test
+        void testAreaWithBaseAndHeight() {
+            // given
+            final byte sideA = 12;
+            final byte sideB = 5;
+            final byte sideC = 13;
+            final double[] heights = MathCalculator.Geometry.scaleneTriangleHeight(sideA, sideB, sideC);
+            final double height = heights[Constants.ARR_3RD_INDEX];
+            // when
+            final double areaCmSquared = MathCalculator.Geometry.areaWithBaseAndHeight(sideC, height);
+            // then
+            assertEquals(30, areaCmSquared, 0.1);
+        }
+
+        static List<Arguments> isEquilateralTriangleArgs() {
+            return List.of(
+                Arguments.of(new double[]{12, 5, 13}, false),
+                Arguments.of(new double[]{5, 5, 5}, true)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("isEquilateralTriangleArgs")
+        void testIsEquilateralTriangle(double[] sides, boolean expectedResult) {
+            // given
+            final double sideA = sides[Constants.ARR_1ST_INDEX];
+            final double sideB = sides[Constants.ARR_2ND_INDEX];
+            final double sideC = sides[Constants.ARR_3RD_INDEX];
+            // when
+            final boolean equilateral = MathCalculator.Geometry.isEquilateralTriangle(sideA, sideB, sideC);
+            // then
+            assertEquals(expectedResult, equilateral);
+        }
+
+        static List<Arguments> isScaleneTriangleArgs() {
+            return List.of(
+                Arguments.of(new double[]{12, 5, 13}, true),
+                Arguments.of(new double[]{5, 5, 5}, false)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("isScaleneTriangleArgs")
+        void testIsScaleneTriangle(double[] sides, boolean expectedResult) {
+            // given
+            final double sideA = sides[Constants.ARR_1ST_INDEX];
+            final double sideB = sides[Constants.ARR_2ND_INDEX];
+            final double sideC = sides[Constants.ARR_3RD_INDEX];
+            // when
+            final boolean equilateral = MathCalculator.Geometry.isScaleneTriangle(sideA, sideB, sideC);
+            // then
+            assertEquals(expectedResult, equilateral);
+        }
+
+        private static double[] acuteIsoscelesTriangleAngles() {
+            return new double[]{60, 60, 60};
+        }
+
+        private static double[] rightScaleneTriangleAngles() {
+            return new double[]{30, 60, 90};
+        }
+
+        private static double[] rightIsoscelesTriangleAngles() {
+            return new double[]{45, 45, 90};
+        }
+
+        private static double[] obtuseScaleneTriangleAngles() {
+            return new double[]{30, 45, 105};
+        }
+
+        static List<Arguments> isAcuteTriangleArgs() {
+            return List.of(
+                Arguments.of(acuteIsoscelesTriangleAngles(), true),
+                Arguments.of(obtuseScaleneTriangleAngles(), false),
+                Arguments.of(rightScaleneTriangleAngles(), false),
+                Arguments.of(rightIsoscelesTriangleAngles(), false)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("isAcuteTriangleArgs")
+        void testIsAcuteTriangle(double[] angles, boolean expectedResult) {
+            // given
+            final double angleAlphaRad = Math.toRadians(angles[Constants.ALPHA_INDEX]);
+            final double angleBetaRad = Math.toRadians(angles[Constants.BETA_INDEX]);
+            final double angleGammaRad = Math.toRadians(angles[Constants.GAMMA_INDEX]);
+            // when
+            final boolean acute = MathCalculator.Geometry.isAcuteTriangle(angleAlphaRad, angleBetaRad, angleGammaRad);
+            // then
+            assertEquals(expectedResult, acute);
+        }
+
+        private static double[] acuteScaleneTriangleWithSSA() {
+            return new double[]{45, 4, 5};
+        }
+
+        private static double[] rightScaleneTriangleWithSSA() {
+            return new double[]{90, 3, 4};
+        }
+
+        private static double[] obtuseScaleneTriangleWithSSA() {
+            return new double[]{30, 3, 4};
+        }
+
+        static List<Arguments> isAcuteTriangleWithSSAArgs() {
+            return List.of(
+                Arguments.of(acuteScaleneTriangleWithSSA(), true),
+                Arguments.of(obtuseScaleneTriangleWithSSA(), false),
+                Arguments.of(rightScaleneTriangleWithSSA(), false)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("isAcuteTriangleWithSSAArgs")
+        void testIsAcuteTriangleWithSSAArgs(double[] data, boolean expectedResult) {
+            // given
+            final double angleAlphaRad = Math.toRadians(data[Constants.ALPHA_INDEX]);
+            final double sideA = data[Constants.ARR_2ND_INDEX];
+            final double sideB = data[Constants.ARR_3RD_INDEX];
+            // when
+            final boolean acute = MathCalculator.Geometry.isAcuteTriangleWithSSA(angleAlphaRad, sideA, sideB);
+            // then
+            assertEquals(expectedResult, acute);
+        }
+
+        static List<Arguments> isRightTriangleArgs() {
+            return List.of(
+                Arguments.of(acuteIsoscelesTriangleAngles(), false),
+                Arguments.of(obtuseScaleneTriangleAngles(), false),
+                Arguments.of(rightScaleneTriangleAngles(), true),
+                Arguments.of(rightIsoscelesTriangleAngles(), true)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("isRightTriangleArgs")
+        void testIsRightTriangle(double[] angles, boolean expectedResult) {
+            // given
+            final double angleAlphaRad = Math.toRadians(angles[Constants.ALPHA_INDEX]);
+            final double angleBetaRad = Math.toRadians(angles[Constants.BETA_INDEX]);
+            final double angleGammaRad = Math.toRadians(angles[Constants.GAMMA_INDEX]);
+            // when
+            final boolean right = MathCalculator.Geometry.isRightTriangle(angleAlphaRad, angleBetaRad, angleGammaRad);
+            // then
+            assertEquals(expectedResult, right);
+        }
+
+        static List<Arguments> isRightTriangleWithSSAArgs() {
+            return List.of(
+                Arguments.of(acuteScaleneTriangleWithSSA(), false),
+                Arguments.of(obtuseScaleneTriangleWithSSA(), false),
+                Arguments.of(rightScaleneTriangleWithSSA(), true)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("isRightTriangleWithSSAArgs")
+        void testIsRightTriangleWithSSA(double[] data, boolean expectedResult) {
+            // given
+            final double angleAlphaRad = Math.toRadians(data[Constants.ALPHA_INDEX]);
+            final double sideA = data[Constants.ARR_2ND_INDEX];
+            final double sideB = data[Constants.ARR_3RD_INDEX];
+            // when
+            final boolean right = MathCalculator.Geometry.isRightTriangleWithSSA(angleAlphaRad, sideA, sideB);
+            // then
+            assertEquals(expectedResult, right);
+        }
+
+        static List<Arguments> isObtuseTriangleArgs() {
+            return List.of(
+                Arguments.of(acuteIsoscelesTriangleAngles(), false),
+                Arguments.of(obtuseScaleneTriangleAngles(), true),
+                Arguments.of(rightScaleneTriangleAngles(), false),
+                Arguments.of(rightIsoscelesTriangleAngles(), false)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("isObtuseTriangleArgs")
+        void testIsObtuseTriangle(double[] angles, boolean expectedResult) {
+            // given
+            final double angleAlphaRad = Math.toRadians(angles[Constants.ALPHA_INDEX]);
+            final double angleBetaRad = Math.toRadians(angles[Constants.BETA_INDEX]);
+            final double angleGammaRad = Math.toRadians(angles[Constants.GAMMA_INDEX]);
+            // when
+            final boolean obtuse = MathCalculator.Geometry.isObtuseTriangle(angleAlphaRad, angleBetaRad, angleGammaRad);
+            // then
+            assertEquals(expectedResult, obtuse);
+        }
+
+        static List<Arguments> isObtuseTriangleWithSSAArgs() {
+            return List.of(
+                Arguments.of(acuteScaleneTriangleWithSSA(), false),
+                Arguments.of(obtuseScaleneTriangleWithSSA(), true),
+                Arguments.of(rightScaleneTriangleWithSSA(), false)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("isObtuseTriangleWithSSAArgs")
+        void testIsObtuseTriangleWithSSA(double[] data, boolean expectedResult) {
+            // given
+            final double angleAlphaRad = Math.toRadians(data[Constants.ALPHA_INDEX]);
+            final double sideA = data[Constants.ARR_2ND_INDEX];
+            final double sideB = data[Constants.ARR_3RD_INDEX];
+            // when
+            final boolean obtuse = MathCalculator.Geometry.isObtuseTriangleWithSSA(angleAlphaRad, sideA, sideB);
+            // then
+            assertEquals(expectedResult, obtuse);
+        }
     }
 
     @Nested
@@ -635,10 +966,10 @@ class MathCalculatorTest {
 
         static List<Arguments> manhattanDistanceParams() {
             return List.of(
-                Arguments.of(new double[] {2}, new double[] {3}, 1), // 1d
-                Arguments.of(new double[] {2, 9}, new double[] {3, 5}, 5), // 2d
-                Arguments.of(new double[] {2, 9, 4}, new double[] {3, 5, 6}, 7), // 3d
-                Arguments.of(new double[] {2, 9, 4, 1}, new double[] {3, 5, 6, 7}, 13) // 4d
+                Arguments.of(new double[]{2}, new double[]{3}, 1), // 1d
+                Arguments.of(new double[]{2, 9}, new double[]{3, 5}, 5), // 2d
+                Arguments.of(new double[]{2, 9, 4}, new double[]{3, 5, 6}, 7), // 3d
+                Arguments.of(new double[]{2, 9, 4, 1}, new double[]{3, 5, 6, 7}, 13) // 4d
             );
         }
 
@@ -782,10 +1113,10 @@ class MathCalculatorTest {
 
         static List<Arguments> distanceBetween2pointsParams() {
             return List.of(
-                Arguments.of(new double[] {3}, new double[] {9}, 6, 0.1), // 1d
-                Arguments.of(new double[] {3, 5}, new double[] {9, 15}, 11.6619, 0.0001), // 2d
-                Arguments.of(new double[] {3, 5, 2}, new double[] {9, 15, 5}, 12.0416, 0.0001), // 3d
-                Arguments.of(new double[] {3, 5, 2, 3}, new double[] {9, 15, 5, 1}, 12.20656, 0.00001) // 4d
+                Arguments.of(new double[]{3}, new double[]{9}, 6, 0.1), // 1d
+                Arguments.of(new double[]{3, 5}, new double[]{9, 15}, 11.6619, 0.0001), // 2d
+                Arguments.of(new double[]{3, 5, 2}, new double[]{9, 15, 5}, 12.0416, 0.0001), // 3d
+                Arguments.of(new double[]{3, 5, 2, 3}, new double[]{9, 15, 5, 1}, 12.20656, 0.00001) // 4d
             );
         }
 

@@ -194,6 +194,102 @@ public final class MathCalculator {
             return new double[]{sideA, sideA * Math.sqrt(3), sideC};
         }
 
+        /**
+         * Given three sides (SSS). Heron's formula.
+         *
+         * @return h = 0.5/b * √((a + b + c) * (-a + b + c) * (a - b + c) * (a + b - c)). The units are cm²
+         */
+        public static double heightOfTriangleWithSSS(
+            double targetSide, double sideLengthA, double sideLengthB, double sideLengthC) {
+            final double abSum = sideLengthA + sideLengthB;
+
+            return ONE_HALF / targetSide * Math.sqrt(
+                (abSum + sideLengthC)
+                    * (-sideLengthA + sideLengthB + sideLengthC)
+                    * (sideLengthA - sideLengthB + sideLengthC)
+                    * (abSum - sideLengthC)
+            );
+        }
+
+        /**
+         * The basic formulation of the Heron's formula.
+         *
+         * @return A = √(s(s-a)(s-b)(s-c)). The units are cm²
+         */
+        public static double heronFormulaUsingSemiperimeter(double sideA, double sideB, double sideC) {
+            final double semiperimeter = semiperimeter(sideA, sideB, sideC);
+            return Math.sqrt(
+                semiperimeter * (semiperimeter - sideA) * (semiperimeter - sideB) * (semiperimeter - sideC)
+            );
+        }
+
+        /**
+         * The Heron's formula w/o semiperimeter
+         *
+         * @return A = ¼ * √(4a²b² - (a² + b² − c²)²). The units are cm²
+         */
+        public static double heronFormulaUsingQuadProduct(double sideA, double sideB, double sideC) {
+            final double aSquared = sideA * sideA;
+            final double bSquared = sideB * sideB;
+            final double cSquared = sideC * sideC;
+            return ONE_FOURTH * Math.sqrt(4 * aSquared * bSquared - Math.pow(aSquared + bSquared - cSquared, 2));
+        }
+
+        /**
+         * @return A = (ch)/2. The units are cm²
+         */
+        public static double areaWithBaseAndHeight(double base, double height) {
+            return base * height / 2;
+        }
+
+        public static double[] scaleneTriangleHeight(double sideA, double sideB, double sideC) {
+            final double sideAHeight = heightOfTriangleWithSSS(sideA, sideA, sideB, sideC);
+            final double sideBHeight = heightOfTriangleWithSSS(sideB, sideA, sideB, sideC);
+            final double sideCHeight = heightOfTriangleWithSSS(sideC, sideA, sideB, sideC);
+            return new double[]{sideAHeight, sideBHeight, sideCHeight};
+        }
+
+        /**
+         * @return hΔ = a * √3/2. The units are cm²
+         */
+        public static double equilateralTriangleHeight(double sides) {
+            return sides * Math.sqrt(3) / 2;
+        }
+
+        /**
+         * @return area = √3/4 * a². The units are cm²
+         */
+        public static double equilateralTriangleArea(double sides) {
+            return Math.sqrt(3) / 4 * sides * sides;
+        }
+
+        /**
+         * hₐ = 2 * area/a = √(a²−(0.5*b)²) * b/a
+         * hₐ = b * sin(β)
+         * h_b = √(a²−(0.5*b)²)
+         * The units are cm²
+         */
+        public static double[] isoscelesTriangleHeight(double sideA, double sideB) {
+            final double heightB = Math.sqrt(sideA * sideA - Math.pow(0.5 * sideB, 2));
+            return new double[]{heightB * sideB / sideA, heightB};
+        }
+
+        /**
+         * @return area = (bh_b)/2. The units are cm²
+         */
+        public static double isoscelesTriangleArea(double base, double heightB) {
+            return (base * heightB) / 2;
+        }
+
+        /**
+         * The units are cm²
+         */
+        public static double[] rightTriangleHeight(double sideA, double sideB, double hypotenuse) {
+            final double sideAHeight = heightOfTriangleWithSSS(sideA, sideA, sideB, hypotenuse);
+            final double sideBHeight = heightOfTriangleWithSSS(sideB, sideA, sideB, hypotenuse);
+            return new double[]{sideAHeight, sideBHeight, sideA * sideB / hypotenuse};
+        }
+
         // 2D geometry
 
         /**
@@ -204,25 +300,52 @@ public final class MathCalculator {
         }
 
         /**
+         * For isosceles triangle: 2a + b.
+         *
          * @return perimeter = a + b + c. The units are cm
          */
         public static double perimeter(double sideA, double sideB, double hypotenuse) {
             return sideA + sideB + hypotenuse;
         }
 
+        public static double semiperimeter(double sideA, double sideB, double hypotenuse) {
+            return perimeter(sideA, sideB, hypotenuse) / 2;
+        }
+
         /**
-         * c = √(a² + b²)
+         * a² + b² = c²
+         * <br/> Find a leg (a or b).
          *
-         * @return a² + b² = c². The units are cm
+         * @return a = √(c² - b²). The units are cm
          */
-        public static double[] pythagoreanTheoremWithLegAndHypotenuse(double side, double hypotenuse) {
+        public static double[] pythagoreanTheoremForRightTriangleWithLegAndHypotenuse(double side, double hypotenuse) {
             final double squaredSide = side * side;
             final double squaredHypotenuse = hypotenuse * hypotenuse;
             final double squaredSide2 = squaredHypotenuse - squaredSide;
             return new double[]{side, Math.sqrt(squaredSide2), hypotenuse};
         }
 
-        public static double[] pythagoreanTheoremWithLegs(double sideA, double sideB) {
+        /**
+         * a² + b² = c²
+         * For a non right-angled triangle:
+         * <br/> Find a leg (a or b).
+         *
+         * @return √c² = a² + b² - 2ab * cos(γ). The units are cm
+         */
+        public static double[] pythagoreanTheoremWithLegsAndAngle(double sideA, double sideB, double angleGammaRad) {
+            final double squaredSideA = sideA * sideA;
+            final double squaredSideB = sideB * sideB;
+            final double squaredUnkownSide = squaredSideA + squaredSideB - 2 * sideA * sideB * Math.cos(angleGammaRad);
+            return new double[]{sideA, sideB, Math.sqrt(squaredUnkownSide)};
+        }
+
+        /**
+         * a² + b² = c²
+         * <br/> Find the hypotenuse (c).
+         *
+         * @return c = √(a² + b²). The units are cm
+         */
+        public static double[] pythagoreanTheoremForRightTriangleWithLegs(double sideA, double sideB) {
             final double squaredSideA = sideA * sideA;
             final double squaredSideB = sideB * sideB;
             final double squaredHypotenuse = squaredSideA + squaredSideB;
@@ -264,7 +387,7 @@ public final class MathCalculator {
         /**
          * Given three sides (SSS). Heron's formula.
          *
-         * @return area = 0.25 * √((a + b + c) * (-a + b + c) * (a - b + c) * (a + b - c)). The units are cm²
+         * @return area = ¼ * √((a + b + c) * (-a + b + c) * (a - b + c) * (a + b - c)). The units are cm²
          */
         public static double areaOfTriangleWithSSS(double sideLengthA, double sideLengthB, double sideLengthC) {
             checkGreater0(sideLengthA);
@@ -493,6 +616,72 @@ public final class MathCalculator {
             checkGreater0(numberOfSides);
             checkGreater0(sideLength);
             return numberOfSides * sideLength * sideLength * Trigonometry.cot(Math.PI / numberOfSides) / 4;
+        }
+
+        /**
+         * The properties of equilateral triangle:
+         * <br/> - all sides are equal
+         * <br/> - all angles are equal to 60°
+         */
+        public static boolean isEquilateralTriangle(double sideA, double sideB, double sideC) {
+            return sideA == sideB && sideA == sideC;
+        }
+
+        /**
+         * The properties of scalene triangle:
+         * <br/> - all sides are different
+         * <br/> - depending on the angles might be acute, obtuse or right
+         */
+        public static boolean isScaleneTriangle(double sideA, double sideB, double sideC) {
+            return sideA != sideB && sideA != sideC && sideB != sideC;
+        }
+
+        /**
+         * All angles are less than 90°
+         */
+        public static boolean isAcuteTriangle(double angleAlphaRad, double angleBetaRad, double angleGammaRad) {
+            return angleAlphaRad < Trigonometry.PI_OVER_2 && angleBetaRad < Trigonometry.PI_OVER_2
+                && angleGammaRad < Trigonometry.PI_OVER_2;
+        }
+
+        public static boolean isAcuteTriangleWithSSA(double angleRad, double sideA, double sideB) {
+            final double[] sides = pythagoreanTheoremWithLegsAndAngle(sideA, sideB, angleRad);
+            final double sideC = sides[Constants.ARR_3RD_INDEX];
+            final double[] angles = Trigonometry.lawOfCosSSS(sideA, sideB, sideC);
+            return isAcuteTriangle(
+                angles[Constants.ALPHA_INDEX], angles[Constants.BETA_INDEX], angles[Constants.GAMMA_INDEX]);
+        }
+
+        /**
+         * One of the angles is exactly 90°
+         */
+        public static boolean isRightTriangle(double angleAlphaRad, double angleBetaRad, double angleGammaRad) {
+            return angleAlphaRad == Trigonometry.PI_OVER_2 || angleBetaRad == Trigonometry.PI_OVER_2
+                || angleGammaRad == Trigonometry.PI_OVER_2;
+        }
+
+        public static boolean isRightTriangleWithSSA(double angleRad, double sideA, double sideB) {
+            final double[] sides = pythagoreanTheoremWithLegsAndAngle(sideA, sideB, angleRad);
+            final double sideC = sides[Constants.ARR_3RD_INDEX];
+            final double[] angles = Trigonometry.lawOfCosSSS(sideA, sideB, sideC);
+            return isRightTriangle(
+                angles[Constants.ALPHA_INDEX], angles[Constants.BETA_INDEX], angles[Constants.GAMMA_INDEX]);
+        }
+
+        /**
+         * One of the angles measures more than 90°
+         */
+        public static boolean isObtuseTriangle(double angleAlphaRad, double angleBetaRad, double angleGammaRad) {
+            return angleAlphaRad > Trigonometry.PI_OVER_2 || angleBetaRad > Trigonometry.PI_OVER_2
+                || angleGammaRad > Trigonometry.PI_OVER_2;
+        }
+
+        public static boolean isObtuseTriangleWithSSA(double angleRad, double sideA, double sideB) {
+            final double[] sides = pythagoreanTheoremWithLegsAndAngle(sideA, sideB, angleRad);
+            final double sideC = sides[Constants.ARR_3RD_INDEX];
+            final double[] angles = Trigonometry.lawOfCosSSS(sideA, sideB, sideC);
+            return isObtuseTriangle(
+                angles[Constants.ALPHA_INDEX], angles[Constants.BETA_INDEX], angles[Constants.GAMMA_INDEX]);
         }
     }
 
@@ -1074,6 +1263,7 @@ public final class MathCalculator {
          * <br/>- is odd: csc(x) = -csc(x)
          * <br/>- is periodic: csc(x) = csc(x + 360°)
          * <br/>- doesn't always exist.
+         * <br/>- Range: -∞<y≤-1 ∪ 1≤y<∞
          *
          * @return csc(x) = 1 / sin(x)
          */
@@ -1099,6 +1289,7 @@ public final class MathCalculator {
          * <br/>- is even: sec(α) = sec(-α)
          * <br/>- is periodic: sec(x) = sec(x + 360°)
          * <br/>- doesn't always exist.
+         * <br/>- Range: -∞<y≤-1 ∪ 1≤y<∞
          *
          * @return sec(x) = 1 / cos(x)
          */
@@ -1125,6 +1316,7 @@ public final class MathCalculator {
          * <br/>- is odd: cot(x) = -cot(-x)
          * <br/>- is periodic: cot(x) = cot(x + 360°)
          * <br/>- doesn't always exist.
+         * <br/>- Range: -∞<y<∞
          *
          * @return cot(α) = 1 / tan(α)
          */
@@ -1222,6 +1414,10 @@ public final class MathCalculator {
         }
 
         /**
+         * Alternative for isosceles triangle:
+         * α = arccos((a² + a² - b²) / (2a²))
+         * β = arccos((a² + b² - a²) / (2ab)) = arccos(b / (2a))
+         * <br/>
          * α = arccos((b² + c² - a²)/(2bc))
          * β = arccos((a² + c² - b²)/(2ac))
          * γ = arccos((a² + b² - c²)/(2ab))
@@ -1238,6 +1434,7 @@ public final class MathCalculator {
 
         /**
          * a / sin(α) = b / sin(β) = c / sin(γ)
+         *
          * @return b = a / sin(α) * sin(β)
          */
         public static double lawOfSinGivenSideAAndAnglesAlphaBeta(
@@ -1422,13 +1619,21 @@ public final class MathCalculator {
         /**
          * sin(α) = y/1 = y
          * sin(α) = opposite/hypotenuse = a/c
-         * Range: −1 ≤ sin(α) ≤ 1
-         * Period: 2π
-         * An odd function i.e. sin(−α) = −sin(α).
          * Cofunction: cos(x).
+         * <p/>The sine function:
+         * <br/>- an odd: sin(−α) = −sin(α).
+         * <br/>- period: 2π
+         * <br/>- Range: −1 ≤ sin(α) ≤ 1
          */
         public static double sin(double angleRadians) {
             return Math.sin(angleRadians);
+        }
+
+        /**
+         * @return sin(α) = opposite / hypotenuse = a/c
+         */
+        public static double sin(double opposite, double hypotenuse) {
+            return opposite / hypotenuse;
         }
 
         /**
@@ -1461,22 +1666,31 @@ public final class MathCalculator {
         /**
          * cos(α) = x/1 = x
          * cos(α) = adjacent / hypotenuse = b / c
-         * Range: −1 ≤ cos(α) ≤ 1
-         * Period: 2π
-         * An even function i.e. cos(−α) = cos(α).
          * Cofunction: sin(x).
+         * <p/>The cosine function:
+         * <br/>- an even: cos(−α) = cos(α).
+         * <br/>- period: 2π
+         * <br/>- Range: −1 ≤ cos(α) ≤ 1
          */
         public static double cos(double angleRadians) {
             return Math.sin(angleRadians);
         }
 
         /**
+         * @return cos(α) = adjacent / hypotenuse = b / c
+         */
+        public static double cos(double adjacent, double hypotenuse) {
+            return adjacent / hypotenuse;
+        }
+
+        /**
          * tan(α) = y/x = sin(α)/cos(α)
          * tan(α) = opposite / adjacent = a / b
-         * Range: −1 ≤ cos(α) ≤ 1
-         * Period: 2π
-         * An even function i.e. cos(−α) = cos(α).
-         * Cofunction: cos(x).
+         * Cofunction: cot(x).
+         * <p/>The tangent function:
+         * <br/>- an even: tan(−x) = -tan(x).
+         * <br/>- Period: 2π.
+         * <br/>- Range: -∞<y<∞
          */
         public static double tan(double angleRadians) {
             return Math.tan(angleRadians);
