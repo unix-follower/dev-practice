@@ -2,8 +2,6 @@ import pandas as pd
 from rdkit import Chem
 from rdkit.Chem import AllChem, Draw, ValenceType
 
-from src.utils import fs, env
-
 
 def write_image(sdf_file_path: str, out_dir: str):
     with Chem.SDMolSupplier(sdf_file_path) as supplier:
