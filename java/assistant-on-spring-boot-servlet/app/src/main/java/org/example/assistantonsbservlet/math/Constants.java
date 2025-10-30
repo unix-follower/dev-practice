@@ -5,6 +5,10 @@ public final class Constants {
     public static final int ARR_2ND_INDEX = 1;
     public static final int ARR_3RD_INDEX = 2;
     public static final int ARR_4TH_INDEX = 3;
+    public static final int ARR_5TH_INDEX = 4;
+    public static final int ARR_6TH_INDEX = 5;
+    public static final int ARR_7TH_INDEX = 6;
+    public static final int ARR_8TH_INDEX = 7;
     public static final int X_INDEX = ARR_1ST_INDEX;
     public static final int Y_INDEX = ARR_2ND_INDEX;
     public static final int Z_INDEX = ARR_3RD_INDEX;

@@ -10,6 +10,7 @@ import org.apache.commons.math.linear.SingularValueDecompositionImpl;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -682,6 +683,110 @@ public final class MathCalculator {
             final double[] angles = Trigonometry.lawOfCosSSS(sideA, sideB, sideC);
             return isObtuseTriangle(
                 angles[Constants.ALPHA_INDEX], angles[Constants.BETA_INDEX], angles[Constants.GAMMA_INDEX]);
+        }
+
+        /**
+         * complementary angle = 90° - angle
+         * complementary angle = π/2 - angle
+         */
+        public static double complementaryAngle(double angleRadians) {
+            return Trigonometry.PI_OVER_2 - angleRadians;
+        }
+
+        public static boolean isComplementaryAngle(double angleAlphaRad, double angleBetaRad) {
+            final double angleSum = angleAlphaRad + angleBetaRad;
+            final double epsilon = 1e-9; // tolerance of the difference
+            return Math.abs(Trigonometry.PI_OVER_2 - angleSum) <= epsilon;
+        }
+
+        /**
+         * supplementary angle = 180° - angle
+         *
+         * @return supplementary angle = π - angle
+         */
+        public static double supplementaryAngle(double angleRadians) {
+            return Math.PI - angleRadians;
+        }
+
+        /**
+         * α + β = 180° (π) -> true
+         * α + β ≠ 180° (π) -> false
+         * If true:
+         * sin(α) = sin(β)
+         * cos(α) = -cos(β)
+         * tan(α) = -tan(β)
+         */
+        public static boolean isSupplementaryAngles(double angleAlphaRad, double angleBetaRad) {
+            final double angleSum = angleAlphaRad + angleBetaRad;
+            final double epsilon = 1e-9; // tolerance of the difference
+            return Math.abs(Math.PI - angleSum) <= epsilon;
+        }
+
+        public static double coterminalAngle(double angleRadians) {
+            final double quotient = Math.floor(angleRadians / Trigonometry.PI2);
+            final double mulResult = Trigonometry.PI2 * quotient;
+            return angleRadians - mulResult;
+        }
+
+        /**
+         * β = α ± (360° * k)
+         * β = α ± (2π * k)
+         * sin(α) = sin(α ± (360° * k))
+         */
+        public static double[] coterminalAngles(double angleRadians, int min, int max) {
+            final var angles = new ArrayList<Double>();
+            for (int k = min; k <= max; k++) {
+                final double rotations = Trigonometry.PI2 * k;
+                if (rotations != 0) { // skip adding itself
+                    angles.add(angleRadians + rotations);
+                }
+            }
+            return angles.stream().mapToDouble(Double::doubleValue).toArray();
+        }
+
+        /**
+         * β - α = 2π * k
+         */
+        public static boolean areCoterminalAngles(double angleAlphaRad, double angleBetaRad, int rotations) {
+            final double angleDiff = angleBetaRad - angleAlphaRad;
+            return angleDiff == Trigonometry.PI2 * rotations;
+        }
+
+        public static double subtractFullAngleIfNeeded(double angleRadians) {
+            if (angleRadians > Trigonometry.PI2) {
+                return subtractFullAngleIfNeeded(angleRadians - Trigonometry.PI2);
+            }
+            return angleRadians;
+        }
+
+        /**
+         * 0° to 90°: reference angle = angle
+         * 90° to 180°: reference angle = 180° − angle
+         * 180° to 270°: reference angle = angle − 180°
+         * 270° to 360°: reference angle = 360° − angle
+         * 0 to π/2: reference angle = angle
+         * π/2 to π: reference angle = π − angle
+         * π to 3π/2: reference angle = angle − π
+         * 3π/2 to 2π: reference angle = 2π − angle
+         */
+        public static double referenceAngle(double angleRadians) {
+            final double normalizedAngleRad = subtractFullAngleIfNeeded(angleRadians);
+            final int quadrant = Trigonometry.quadrant(normalizedAngleRad);
+            switch (quadrant) {
+                case 1 -> {
+                    return normalizedAngleRad;
+                }
+                case 2 -> {
+                    return Math.PI - normalizedAngleRad;
+                }
+                case 3 -> {
+                    return normalizedAngleRad - Math.PI;
+                }
+                case 4 -> {
+                    return Trigonometry.PI2 - normalizedAngleRad;
+                }
+                default -> throw new IllegalStateException();
+            }
         }
     }
 
@@ -1647,14 +1752,14 @@ public final class MathCalculator {
             return amplitude * Math.sin(angularFrequency * timeSeconds + anglePhiRadians);
         }
 
-        public static int quadrant(double angleAlphaRadians) {
-            if (0 < angleAlphaRadians && angleAlphaRadians <= Math.PI / 2) {
+        public static int quadrant(double angleRadians) {
+            if (0 <= angleRadians && angleRadians <= Math.PI / 2) {
                 // 0<α≤π/2
                 return 1;
-            } else if (Math.PI / 2 < angleAlphaRadians && angleAlphaRadians <= Math.PI) {
+            } else if (Math.PI / 2 < angleRadians && angleRadians <= Math.PI) {
                 // π/2<α≤π
                 return 2;
-            } else if (Math.PI < angleAlphaRadians && angleAlphaRadians <= 3 * Math.PI / 2) {
+            } else if (Math.PI < angleRadians && angleRadians <= 3 * Math.PI / 2) {
                 // π<α≤3π/2
                 return 3;
             } else {

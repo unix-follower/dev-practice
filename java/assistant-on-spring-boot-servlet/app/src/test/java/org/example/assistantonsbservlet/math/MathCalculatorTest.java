@@ -767,6 +767,161 @@ class MathCalculatorTest {
             // then
             assertEquals(expectedResult, obtuse);
         }
+
+        static List<Arguments> complementaryAngleArgs() {
+            return List.of(
+                Arguments.of(Math.toRadians(15), Math.toRadians(75)),
+                Arguments.of(Math.toRadians(30), Math.toRadians(60)),
+                Arguments.of(Math.toRadians(45), Math.toRadians(45)),
+                Arguments.of(Math.toRadians(60), Math.toRadians(30)),
+                Arguments.of(Math.toRadians(75), Math.toRadians(15)),
+                Arguments.of(Math.toRadians(90), Math.toRadians(0))
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("complementaryAngleArgs")
+        void testComplementaryAngle(double angleRadians, double expectedResult) {
+            // when
+            final double complementaryAngle = MathCalculator.Geometry.complementaryAngle(angleRadians);
+            // then
+            assertEquals(expectedResult, complementaryAngle, 0.000001);
+        }
+
+        static List<Arguments> isComplementaryAngleArgs() {
+            return List.of(
+                Arguments.of(Math.toRadians(15), Math.toRadians(75), true),
+                Arguments.of(Math.toRadians(30), Math.toRadians(60), true),
+                Arguments.of(Math.toRadians(45), Math.toRadians(45), true),
+                Arguments.of(Math.toRadians(60), Math.toRadians(30), true),
+                Arguments.of(Math.toRadians(75), Math.toRadians(15), true),
+                Arguments.of(Math.toRadians(60), Math.toRadians(15), false),
+                Arguments.of(Math.toRadians(60), Math.toRadians(35), false),
+                Arguments.of(Math.toRadians(60), Math.toRadians(45), false),
+                Arguments.of(Math.toRadians(90), Math.toRadians(10), false)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("isComplementaryAngleArgs")
+        void testIsComplementaryAngle(double angleAlphaRadians, double angleBetaRadians, boolean expectedResult) {
+            // when
+            final boolean complementary = MathCalculator.Geometry
+                .isComplementaryAngle(angleAlphaRadians, angleBetaRadians);
+            // then
+            assertEquals(expectedResult, complementary);
+        }
+
+        @Test
+        void testSupplementaryAngle() {
+            // given
+            final double angleRadians = Math.toRadians(30);
+            // when
+            final double supplementaryAngle = MathCalculator.Geometry.supplementaryAngle(angleRadians);
+            // then
+            assertEquals(2.618, supplementaryAngle, 0.001); // 150°
+        }
+
+        static List<Arguments> isSupplementaryAngleArgs() {
+            return List.of(
+                Arguments.of(Math.toRadians(60), Math.toRadians(40), false),
+                Arguments.of(Math.toRadians(60), Math.toRadians(60), false),
+                Arguments.of(Math.toRadians(120), Math.toRadians(60), true),
+                Arguments.of(Math.toRadians(45), Math.toRadians(135), true),
+                Arguments.of(Math.toRadians(90), Math.toRadians(90), true)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("isSupplementaryAngleArgs")
+        void testIsSupplementaryAngle(double angleAlphaRadians, double angleBetaRadians, boolean expectedResult) {
+            // when
+            final boolean supplementary = MathCalculator.Geometry
+                .isSupplementaryAngles(angleAlphaRadians, angleBetaRadians);
+            // then
+            assertEquals(expectedResult, supplementary);
+        }
+
+        static List<Arguments> coterminalAngleArgs() {
+            return List.of(
+                Arguments.of(Math.toRadians(420), Math.toRadians(60)),
+                Arguments.of(Math.toRadians(-858), Math.toRadians(222))
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("coterminalAngleArgs")
+        void testCoterminalAngle(double angleRadians, double expectedResult) {
+            // when
+            final double coterminalAngle = MathCalculator.Geometry.coterminalAngle(angleRadians);
+            // then
+            assertEquals(expectedResult, coterminalAngle, 0.000001);
+        }
+
+        @Test
+        void testCoterminalAngles() {
+            // given
+            final double angleRadians = Math.toRadians(45);
+            final byte min = -4;
+            final byte max = 4;
+            // when
+            final double[] coterminalAngles = MathCalculator.Geometry.coterminalAngles(angleRadians, min, max);
+            // then
+            assertNotNull(coterminalAngles);
+            assertEquals(8, coterminalAngles.length);
+            final double delta = 0.000001;
+            assertEquals(Math.toRadians(-1395), coterminalAngles[Constants.ARR_1ST_INDEX], delta);
+            assertEquals(Math.toRadians(-1035), coterminalAngles[Constants.ARR_2ND_INDEX], delta);
+            assertEquals(Math.toRadians(-675), coterminalAngles[Constants.ARR_3RD_INDEX], delta);
+            assertEquals(Math.toRadians(-315), coterminalAngles[Constants.ARR_4TH_INDEX], delta);
+            assertEquals(Math.toRadians(405), coterminalAngles[Constants.ARR_5TH_INDEX], delta);
+            assertEquals(Math.toRadians(765), coterminalAngles[Constants.ARR_6TH_INDEX], delta);
+            assertEquals(Math.toRadians(1125), coterminalAngles[Constants.ARR_7TH_INDEX], delta);
+            assertEquals(Math.toRadians(1485), coterminalAngles[Constants.ARR_8TH_INDEX], delta);
+        }
+
+        static List<Arguments> areCoterminalAngleArgs() {
+            return List.of(
+                Arguments.of(Math.toRadians(-170), Math.toRadians(550), true),
+                Arguments.of(Math.toRadians(-170), Math.toRadians(540), false)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("areCoterminalAngleArgs")
+        void testAreCoterminalAngle(double angleAlphaRad, double angleBetaRad, boolean expectedResult) {
+            // given
+            final byte rotations = 2;
+            // when
+            final boolean coterminalAngle = MathCalculator.Geometry
+                .areCoterminalAngles(angleAlphaRad, angleBetaRad, rotations);
+            // then
+            assertEquals(expectedResult, coterminalAngle);
+        }
+
+        static List<Arguments> referenceAngleArgs() {
+            return List.of(
+                Arguments.of(Math.toRadians(0), Math.toRadians(0)),
+                Arguments.of(Math.toRadians(30), Math.toRadians(30)),
+                Arguments.of(Math.toRadians(90), Math.toRadians(90)),
+                Arguments.of(Math.toRadians(120), Math.toRadians(60)),
+                Arguments.of(Math.toRadians(180), Math.toRadians(0)),
+                Arguments.of(Math.toRadians(210), Math.toRadians(30)),
+                Arguments.of(Math.toRadians(270), Math.toRadians(90)),
+                Arguments.of(Math.toRadians(300), Math.toRadians(60)),
+                Arguments.of(MathCalculator.Trigonometry.PI2, Math.toRadians(0)),
+                Arguments.of(Math.toRadians(610), Math.toRadians(70))
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("referenceAngleArgs")
+        void testReferenceAngle(double angleRadians, double expectedResult) {
+            // when
+            final double referenceAngle = MathCalculator.Geometry.referenceAngle(angleRadians);
+            // then
+            assertEquals(expectedResult, referenceAngle, 0.000001);
+        }
     }
 
     @Nested
