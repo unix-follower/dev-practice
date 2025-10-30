@@ -15,7 +15,9 @@
     "paths": {
       "@/*": ["./src/*"],
       "/public/*": ["./public/*"]
-    }
+    },
+    "lib": ["dom", "dom.iterable"],
+    "types": ["node", "@webgpu/types"]
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,
