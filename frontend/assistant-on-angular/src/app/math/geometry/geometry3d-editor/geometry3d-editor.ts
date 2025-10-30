@@ -16,7 +16,7 @@ export default class Geometry3dEditor implements OnInit {
   private exampleIndex: number = 0
 
   constructor(
-    @Inject(PLATFORM_ID) private platformId: Object,
+    @Inject(PLATFORM_ID) private platformId: object,
     private route: ActivatedRoute,
   ) {}
 
