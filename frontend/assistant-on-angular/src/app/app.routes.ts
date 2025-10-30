@@ -3,6 +3,7 @@ import { App } from "./app"
 import MathHome from "@/app/math/math-home"
 import Algebra from "@/app/math/algebra/algebra"
 import Geometry from "@/app/math/geometry/geometry"
+import Geometry3dEditor from "@/app/math/geometry/geometry3d-editor/geometry3d-editor"
 import Trigonometry from "@/app/math/trigonometry/trigonometry"
 import Precalculus from "@/app/math/precalculus/precalculus"
 import Calculus from "@/app/math/calculus/calculus"
@@ -58,6 +59,12 @@ const mathRoute = {
     {
       path: "geometry",
       component: Geometry,
+      children: [
+        {
+          path: "3d-editor",
+          component: Geometry3dEditor,
+        },
+      ],
     },
     {
       path: "trigonometry",
