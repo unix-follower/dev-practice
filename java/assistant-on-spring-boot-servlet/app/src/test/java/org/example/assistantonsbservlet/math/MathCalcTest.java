@@ -14,7 +14,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-class MathCalculatorTest {
+class MathCalcTest {
+    private static final double DELTA6 = 0.000001;
+
     @Nested
     class Geometry {
         @Test
@@ -22,7 +24,7 @@ class MathCalculatorTest {
             // given
             final float sideA = 6.35f; // cm
             // when
-            final double[] sides = MathCalculator.Geometry.triangle306090SolveWithA(sideA);
+            final double[] sides = MathCalc.Geometry.triangle306090SolveWithA(sideA);
             // then
             assertNotNull(sides);
             assertEquals(3, sides.length);
@@ -36,7 +38,7 @@ class MathCalculatorTest {
             // given
             final int sideB = 11; // cm
             // when
-            final double[] sides = MathCalculator.Geometry.triangle306090SolveWithB(sideB);
+            final double[] sides = MathCalc.Geometry.triangle306090SolveWithB(sideB);
             // then
             assertNotNull(sides);
             assertEquals(3, sides.length);
@@ -50,7 +52,7 @@ class MathCalculatorTest {
             // given
             final float sideC = 12.7f; // cm
             // when
-            final double[] sides = MathCalculator.Geometry.triangle306090SolveWithC(sideC);
+            final double[] sides = MathCalc.Geometry.triangle306090SolveWithC(sideC);
             // then
             assertNotNull(sides);
             assertEquals(3, sides.length);
@@ -71,7 +73,7 @@ class MathCalculatorTest {
         void testPythagoreanTheoremForRightTriangleWithLegAndHypotenuse(
             double sideA, double hypotenuse, double expectedResult, double expectedArea, double expectedPerimeter) {
             // when
-            final double[] sides = MathCalculator.Geometry
+            final double[] sides = MathCalc.Geometry
                 .pythagoreanTheoremForRightTriangleWithLegAndHypotenuse(sideA, hypotenuse);
             // then
             assertNotNull(sides);
@@ -83,10 +85,10 @@ class MathCalculatorTest {
             assertEquals(expectedResult, sideB, 0.1);
             assertEquals(hypotenuse, sides[Constants.ARR_3RD_INDEX], 0.000001);
 
-            final double area = MathCalculator.Geometry.area(sideA, sideB);
+            final double area = MathCalc.Geometry.area(sideA, sideB);
             assertEquals(expectedArea, area, 0.1);
 
-            final double perimeter = MathCalculator.Geometry.perimeter(sideA, sideB, hypotenuse);
+            final double perimeter = MathCalc.Geometry.perimeter(sideA, sideB, hypotenuse);
             assertEquals(expectedPerimeter, perimeter, 0.00001);
         }
 
@@ -96,7 +98,7 @@ class MathCalculatorTest {
             final byte sideA = 7; // cm
             final byte sideB = 9; // cm
             // when
-            final double[] sides = MathCalculator.Geometry.pythagoreanTheoremForRightTriangleWithLegs(sideA, sideB);
+            final double[] sides = MathCalc.Geometry.pythagoreanTheoremForRightTriangleWithLegs(sideA, sideB);
             // then
             assertNotNull(sides);
             assertEquals(3, sides.length);
@@ -106,10 +108,10 @@ class MathCalculatorTest {
             final double hypotenuse = 11.40175; // cm
             assertEquals(hypotenuse, sides[Constants.ARR_3RD_INDEX], 0.00001);
 
-            final double area = MathCalculator.Geometry.area(sideA, sideB);
+            final double area = MathCalc.Geometry.area(sideA, sideB);
             assertEquals(31.5, area, 0.1);
 
-            final double perimeter = MathCalculator.Geometry.perimeter(sideA, sideB, hypotenuse);
+            final double perimeter = MathCalc.Geometry.perimeter(sideA, sideB, hypotenuse);
             assertEquals(27.40175, perimeter, 0.00001);
         }
 
@@ -118,7 +120,7 @@ class MathCalculatorTest {
             // given
             final byte sideLength = 4; // cm
             // when
-            final double area = MathCalculator.Geometry.areaOfSquare(sideLength);
+            final double area = MathCalc.Geometry.areaOfSquare(sideLength);
             // then
             assertEquals(16, area, 0.1);
         }
@@ -129,7 +131,7 @@ class MathCalculatorTest {
             final byte sideLengthA = 2; // cm
             final byte sideLengthB = 4; // cm
             // when
-            final double area = MathCalculator.Geometry.areaOfRectangle(sideLengthA, sideLengthB);
+            final double area = MathCalc.Geometry.areaOfRectangle(sideLengthA, sideLengthB);
             // then
             assertEquals(8, area, 0.1);
         }
@@ -140,7 +142,7 @@ class MathCalculatorTest {
             final byte base = 8; // cm
             final byte height = 4; // cm
             // when
-            final double area = MathCalculator.Geometry.areaOfTriangleWithBaseAndHeight(base, height);
+            final double area = MathCalc.Geometry.areaOfTriangleWithBaseAndHeight(base, height);
             // then
             assertEquals(16, area, 0.1);
         }
@@ -152,7 +154,7 @@ class MathCalculatorTest {
             final byte sideLengthB = 5; // cm
             final byte sideLengthC = 4; // cm
             // when
-            final double area = MathCalculator.Geometry.areaOfTriangleWithSSS(sideLengthA, sideLengthB, sideLengthC);
+            final double area = MathCalc.Geometry.areaOfTriangleWithSSS(sideLengthA, sideLengthB, sideLengthC);
             // then
             assertEquals(3.8, area, 0.1);
         }
@@ -165,7 +167,7 @@ class MathCalculatorTest {
             final byte sideLengthC = 1; // cm
             // when
             final var exception = assertThrows(IllegalArgumentException.class,
-                () -> MathCalculator.Geometry.areaOfTriangleWithSSS(sideLengthA, sideLengthB, sideLengthC));
+                () -> MathCalc.Geometry.areaOfTriangleWithSSS(sideLengthA, sideLengthB, sideLengthC));
             // then
             assertEquals("Side length (a) must be less than the sum of the other two sides to form a triangle",
                 exception.getMessage());
@@ -179,7 +181,7 @@ class MathCalculatorTest {
             final byte sideLengthC = 2; // cm
             // when
             final var exception = assertThrows(IllegalArgumentException.class,
-                () -> MathCalculator.Geometry.areaOfTriangleWithSSS(sideLengthA, sideLengthB, sideLengthC));
+                () -> MathCalc.Geometry.areaOfTriangleWithSSS(sideLengthA, sideLengthB, sideLengthC));
             // then
             assertEquals("Side length (b) must be less than the sum of the other two sides to form a triangle",
                 exception.getMessage());
@@ -193,7 +195,7 @@ class MathCalculatorTest {
             final byte sideLengthC = 4; // cm
             // when
             final var exception = assertThrows(IllegalArgumentException.class,
-                () -> MathCalculator.Geometry.areaOfTriangleWithSSS(sideLengthA, sideLengthB, sideLengthC));
+                () -> MathCalc.Geometry.areaOfTriangleWithSSS(sideLengthA, sideLengthB, sideLengthC));
             // then
             assertEquals("Side length (c) must be less than the sum of the other two sides to form a triangle",
                 exception.getMessage());
@@ -206,7 +208,7 @@ class MathCalculatorTest {
             final byte sideLengthB = 5; // cm
             final double angleGammaRadians = Math.toRadians(30);
             // when
-            final double area = MathCalculator.Geometry.areaOfTriangleWithSAS(
+            final double area = MathCalc.Geometry.areaOfTriangleWithSAS(
                 sideLengthA, sideLengthB, angleGammaRadians);
             // then
             assertEquals(2.5, area, 0.1);
@@ -219,7 +221,7 @@ class MathCalculatorTest {
             final double angleBetaRadians = Math.toRadians(30);
             final double angleGammaRadians = Math.toRadians(60);
             // when
-            final double area = MathCalculator.Geometry.areaOfTriangleWithASA(
+            final double area = MathCalc.Geometry.areaOfTriangleWithASA(
                 sideLengthA, angleBetaRadians, angleGammaRadians);
             // then
             assertEquals(0.866, area, 0.001);
@@ -230,7 +232,7 @@ class MathCalculatorTest {
             // given
             final byte radius = 5; // cm
             // when
-            final double area = MathCalculator.Geometry.circleArea(radius);
+            final double area = MathCalc.Geometry.circleArea(radius);
             // then
             assertEquals(78.54, area, 0.01);
         }
@@ -240,7 +242,7 @@ class MathCalculatorTest {
             // given
             final byte radius = 5; // cm
             // when
-            final double area = MathCalculator.Geometry.semicircleArea(radius);
+            final double area = MathCalc.Geometry.semicircleArea(radius);
             // then
             assertEquals(39.27, area, 0.01);
         }
@@ -251,7 +253,7 @@ class MathCalculatorTest {
             final byte radius = 5; // cm
             final double angleAlphaRadians = Math.toRadians(30);
             // when
-            final double area = MathCalculator.Geometry.sectorArea(radius, angleAlphaRadians);
+            final double area = MathCalc.Geometry.sectorArea(radius, angleAlphaRadians);
             // then
             assertEquals(6.545, area, 0.001);
         }
@@ -262,7 +264,7 @@ class MathCalculatorTest {
             final byte radiusA = 5; // cm
             final byte radiusB = 3; // cm
             // when
-            final double area = MathCalculator.Geometry.ellipseArea(radiusA, radiusB);
+            final double area = MathCalc.Geometry.ellipseArea(radiusA, radiusB);
             // then
             assertEquals(47.12, area, 0.01);
         }
@@ -274,7 +276,7 @@ class MathCalculatorTest {
             final byte sideB = 8; // cm
             final byte height = 4; // cm
             // when
-            final double area = MathCalculator.Geometry.trapezoidArea(sideA, sideB, height);
+            final double area = MathCalc.Geometry.trapezoidArea(sideA, sideB, height);
             // then
             assertEquals(20, area, 0.1);
         }
@@ -285,7 +287,7 @@ class MathCalculatorTest {
             final byte base = 8; // cm
             final byte height = 4; // cm
             // when
-            final double area = MathCalculator.Geometry.parallelogramAreaWithBaseAndHeight(base, height);
+            final double area = MathCalc.Geometry.parallelogramAreaWithBaseAndHeight(base, height);
             // then
             assertEquals(32, area, 0.1);
         }
@@ -297,7 +299,7 @@ class MathCalculatorTest {
             final byte sideB = 8; // cm
             final double angleAlphaRadians = Math.toRadians(60);
             // when
-            final double area = MathCalculator.Geometry
+            final double area = MathCalc.Geometry
                 .parallelogramAreaWithSidesAndAngle(sideA, sideB, angleAlphaRadians);
             // then
             assertEquals(13.856, area, 0.001);
@@ -310,7 +312,7 @@ class MathCalculatorTest {
             final byte diagonal2 = 4; // cm
             final double angleThetaRadians = Math.toRadians(45);
             // when
-            final double area = MathCalculator.Geometry
+            final double area = MathCalc.Geometry
                 .parallelogramAreaWithDiagonalsAndAngle(diagonal1, diagonal2, angleThetaRadians);
             // then
             assertEquals(16.97, area, 0.01);
@@ -322,7 +324,7 @@ class MathCalculatorTest {
             final byte side = 4; // cm
             final byte height = 6; // cm
             // when
-            final double area = MathCalculator.Geometry.rhombusAreaWithSideAndHeight(side, height);
+            final double area = MathCalc.Geometry.rhombusAreaWithSideAndHeight(side, height);
             // then
             assertEquals(24, area, 0.1);
         }
@@ -333,7 +335,7 @@ class MathCalculatorTest {
             final byte diagonal1 = 6; // cm
             final byte diagonal2 = 4; // cm
             // when
-            final double area = MathCalculator.Geometry.rhombusAreaWithDiagonals(diagonal1, diagonal2);
+            final double area = MathCalc.Geometry.rhombusAreaWithDiagonals(diagonal1, diagonal2);
             // then
             assertEquals(12, area, 0.1);
         }
@@ -344,7 +346,7 @@ class MathCalculatorTest {
             final byte side = 4; // cm
             final double angleAlphaRadians = Math.toRadians(60);
             // when
-            final double area = MathCalculator.Geometry.rhombusAreaWithSideAndAngle(side, angleAlphaRadians);
+            final double area = MathCalc.Geometry.rhombusAreaWithSideAndAngle(side, angleAlphaRadians);
             // then
             assertEquals(13.856, area, 0.001);
         }
@@ -355,7 +357,7 @@ class MathCalculatorTest {
             final byte diagonal1 = 4; // cm
             final byte diagonal2 = 10; // cm
             // when
-            final double area = MathCalculator.Geometry.kiteAreaWithDiagonals(diagonal1, diagonal2);
+            final double area = MathCalc.Geometry.kiteAreaWithDiagonals(diagonal1, diagonal2);
             // then
             assertEquals(20, area, 0.1);
         }
@@ -367,7 +369,7 @@ class MathCalculatorTest {
             final byte sideB = 7; // cm
             final double angleAlphaRadians = Math.toRadians(45);
             // when
-            final double area = MathCalculator.Geometry
+            final double area = MathCalc.Geometry
                 .kiteAreaWithSidesAndAngle(sideA, sideB, angleAlphaRadians);
             // then
             assertEquals(9.9, area, 0.1);
@@ -378,7 +380,7 @@ class MathCalculatorTest {
             // given
             final byte sideLength = 4; // cm
             // when
-            final double area = MathCalculator.Geometry.pentagonArea(sideLength);
+            final double area = MathCalc.Geometry.pentagonArea(sideLength);
             // then
             assertEquals(27.53, area, 0.01);
         }
@@ -388,7 +390,7 @@ class MathCalculatorTest {
             // given
             final byte sideLength = 4; // cm
             // when
-            final double area = MathCalculator.Geometry.hexagonArea(sideLength);
+            final double area = MathCalc.Geometry.hexagonArea(sideLength);
             // then
             assertEquals(41.57, area, 0.01);
         }
@@ -398,7 +400,7 @@ class MathCalculatorTest {
             // given
             final byte sideLength = 3; // cm
             // when
-            final double area = MathCalculator.Geometry.octagonArea(sideLength);
+            final double area = MathCalc.Geometry.octagonArea(sideLength);
             // then
             assertEquals(43.46, area, 0.01);
         }
@@ -409,7 +411,7 @@ class MathCalculatorTest {
             final double innerRadius = 1.5; // cm
             final double radius = 4; // cm
             // when
-            final double area = MathCalculator.Geometry.annulusArea(radius, innerRadius);
+            final double area = MathCalc.Geometry.annulusArea(radius, innerRadius);
             // then
             assertEquals(43.2, area, 0.1);
         }
@@ -421,7 +423,7 @@ class MathCalculatorTest {
             final byte diagonal2 = 5; // cm
             final double angleAlphaRadians = Math.toRadians(35);
             // when
-            final double area = MathCalculator.Geometry
+            final double area = MathCalc.Geometry
                 .irregularQuadrilateralArea(diagonal1, diagonal2, angleAlphaRadians);
             // then
             assertEquals(11.472, area, 0.001);
@@ -433,7 +435,7 @@ class MathCalculatorTest {
             final byte numberOfSides = 12;
             final byte sideLength = 2; // cm
             // when
-            final double area = MathCalculator.Geometry.polygonArea(numberOfSides, sideLength);
+            final double area = MathCalc.Geometry.polygonArea(numberOfSides, sideLength);
             // then
             assertEquals(44.785, area, 0.001);
         }
@@ -445,7 +447,7 @@ class MathCalculatorTest {
             final byte sideB = 14;
             final byte sideC = 17;
             // when
-            final double[] heights = MathCalculator.Geometry.scaleneTriangleHeight(sideA, sideB, sideC);
+            final double[] heights = MathCalc.Geometry.scaleneTriangleHeight(sideA, sideB, sideC);
             // then
             assertNotNull(heights);
             assertEquals(3, heights.length);
@@ -454,13 +456,13 @@ class MathCalculatorTest {
             assertEquals(5.644, heightB, 0.001);
             assertEquals(4.648, heights[Constants.ARR_3RD_INDEX], 0.001);
 
-            final double areaCmSquared = MathCalculator.Geometry.areaOfTriangleWithSSS(sideA, sideB, sideC);
+            final double areaCmSquared = MathCalc.Geometry.areaOfTriangleWithSSS(sideA, sideB, sideC);
             assertEquals(39.51, areaCmSquared, 0.01);
 
-            final double perimeter = MathCalculator.Geometry.perimeter(sideA, sideB, sideC);
+            final double perimeter = MathCalc.Geometry.perimeter(sideA, sideB, sideC);
             assertEquals(37, perimeter, 0.1);
 
-            final double[] angles = MathCalculator.Trigonometry.lawOfCosSSS(sideA, sideB, sideC);
+            final double[] angles = MathCalc.Trigonometry.lawOfCosSSS(sideA, sideB, sideC);
             assertEquals(0.3384, angles[Constants.ALPHA_INDEX], 0.0001);
             assertEquals(0.8862, angles[Constants.BETA_INDEX], 0.0001);
             assertEquals(1.917, angles[Constants.GAMMA_INDEX], 0.001);
@@ -471,14 +473,14 @@ class MathCalculatorTest {
             // given
             final byte sides = 5;
             // when
-            final double height = MathCalculator.Geometry.equilateralTriangleHeight(sides);
+            final double height = MathCalc.Geometry.equilateralTriangleHeight(sides);
             // then
             assertEquals(4.33, height, 0.01);
 
-            final double areaCmSquared = MathCalculator.Geometry.equilateralTriangleArea(sides);
+            final double areaCmSquared = MathCalc.Geometry.equilateralTriangleArea(sides);
             assertEquals(10.825, areaCmSquared, 0.001);
 
-            final double perimeter = MathCalculator.Geometry.perimeter(sides, sides, sides);
+            final double perimeter = MathCalc.Geometry.perimeter(sides, sides, sides);
             assertEquals(15, perimeter, 0.1);
         }
 
@@ -488,7 +490,7 @@ class MathCalculatorTest {
             final byte sideA = 3;
             final byte sideB = 5;
             // when
-            final double[] heights = MathCalculator.Geometry.isoscelesTriangleHeight(sideA, sideB);
+            final double[] heights = MathCalc.Geometry.isoscelesTriangleHeight(sideA, sideB);
             // then
             assertNotNull(heights);
             assertEquals(2, heights.length);
@@ -496,13 +498,13 @@ class MathCalculatorTest {
             final double heightB = heights[Constants.ARR_2ND_INDEX];
             assertEquals(1.6583, heightB, 0.0001);
 
-            final double areaCmSquared = MathCalculator.Geometry.isoscelesTriangleArea(sideB, heightB);
+            final double areaCmSquared = MathCalc.Geometry.isoscelesTriangleArea(sideB, heightB);
             assertEquals(4.146, areaCmSquared, 0.001);
 
-            final double perimeter = MathCalculator.Geometry.perimeter(sideA, sideB, sideA);
+            final double perimeter = MathCalc.Geometry.perimeter(sideA, sideB, sideA);
             assertEquals(11, perimeter, 0.1);
 
-            final double[] angles = MathCalculator.Trigonometry.lawOfCosSSS(sideB, sideA, sideA);
+            final double[] angles = MathCalc.Trigonometry.lawOfCosSSS(sideB, sideA, sideA);
             assertEquals(1.9702, angles[Constants.ALPHA_INDEX], 0.0001);
             assertEquals(0.5857, angles[Constants.BETA_INDEX], 0.0001);
         }
@@ -514,7 +516,7 @@ class MathCalculatorTest {
             final byte sideB = 4;
             final byte sideC = 5;
             // when
-            final double[] heights = MathCalculator.Geometry.rightTriangleHeight(sideA, sideB, sideC);
+            final double[] heights = MathCalc.Geometry.rightTriangleHeight(sideA, sideB, sideC);
             // then
             assertNotNull(heights);
             assertEquals(3, heights.length);
@@ -522,13 +524,13 @@ class MathCalculatorTest {
             assertEquals(3, heights[Constants.ARR_2ND_INDEX], 0.1);
             assertEquals(2.4, heights[Constants.ARR_3RD_INDEX], 0.1);
 
-            final double areaCmSquared = MathCalculator.Geometry.areaOfTriangleWithSSS(sideA, sideB, sideC);
+            final double areaCmSquared = MathCalc.Geometry.areaOfTriangleWithSSS(sideA, sideB, sideC);
             assertEquals(6, areaCmSquared, 0.1);
 
-            final double perimeter = MathCalculator.Geometry.perimeter(sideA, sideB, sideC);
+            final double perimeter = MathCalc.Geometry.perimeter(sideA, sideB, sideC);
             assertEquals(12, perimeter, 0.1);
 
-            final double[] angles = MathCalculator.Trigonometry.lawOfCosSSS(sideA, sideB, sideC);
+            final double[] angles = MathCalc.Trigonometry.lawOfCosSSS(sideA, sideB, sideC);
             assertEquals(0.6435, angles[Constants.ALPHA_INDEX], 0.0001);
             assertEquals(0.9273, angles[Constants.BETA_INDEX], 0.0001);
         }
@@ -540,7 +542,7 @@ class MathCalculatorTest {
             final byte sideB = 5;
             final byte sideC = 13;
             // when
-            final double areaCmSquared = MathCalculator.Geometry.heronFormulaUsingSemiperimeter(sideA, sideB, sideC);
+            final double areaCmSquared = MathCalc.Geometry.heronFormulaUsingSemiperimeter(sideA, sideB, sideC);
             // then
             assertEquals(30, areaCmSquared, 0.1);
         }
@@ -552,7 +554,7 @@ class MathCalculatorTest {
             final byte sideB = 5;
             final byte sideC = 13;
             // when
-            final double areaCmSquared = MathCalculator.Geometry.heronFormulaUsingQuadProduct(sideA, sideB, sideC);
+            final double areaCmSquared = MathCalc.Geometry.heronFormulaUsingQuadProduct(sideA, sideB, sideC);
             // then
             assertEquals(30, areaCmSquared, 0.1);
         }
@@ -563,10 +565,10 @@ class MathCalculatorTest {
             final byte sideA = 12;
             final byte sideB = 5;
             final byte sideC = 13;
-            final double[] heights = MathCalculator.Geometry.scaleneTriangleHeight(sideA, sideB, sideC);
+            final double[] heights = MathCalc.Geometry.scaleneTriangleHeight(sideA, sideB, sideC);
             final double height = heights[Constants.ARR_3RD_INDEX];
             // when
-            final double areaCmSquared = MathCalculator.Geometry.areaWithBaseAndHeight(sideC, height);
+            final double areaCmSquared = MathCalc.Geometry.areaWithBaseAndHeight(sideC, height);
             // then
             assertEquals(30, areaCmSquared, 0.1);
         }
@@ -586,7 +588,7 @@ class MathCalculatorTest {
             final double sideB = sides[Constants.ARR_2ND_INDEX];
             final double sideC = sides[Constants.ARR_3RD_INDEX];
             // when
-            final boolean equilateral = MathCalculator.Geometry.isEquilateralTriangle(sideA, sideB, sideC);
+            final boolean equilateral = MathCalc.Geometry.isEquilateralTriangle(sideA, sideB, sideC);
             // then
             assertEquals(expectedResult, equilateral);
         }
@@ -606,7 +608,7 @@ class MathCalculatorTest {
             final double sideB = sides[Constants.ARR_2ND_INDEX];
             final double sideC = sides[Constants.ARR_3RD_INDEX];
             // when
-            final boolean equilateral = MathCalculator.Geometry.isScaleneTriangle(sideA, sideB, sideC);
+            final boolean equilateral = MathCalc.Geometry.isScaleneTriangle(sideA, sideB, sideC);
             // then
             assertEquals(expectedResult, equilateral);
         }
@@ -644,7 +646,7 @@ class MathCalculatorTest {
             final double angleBetaRad = Math.toRadians(angles[Constants.BETA_INDEX]);
             final double angleGammaRad = Math.toRadians(angles[Constants.GAMMA_INDEX]);
             // when
-            final boolean acute = MathCalculator.Geometry.isAcuteTriangle(angleAlphaRad, angleBetaRad, angleGammaRad);
+            final boolean acute = MathCalc.Geometry.isAcuteTriangle(angleAlphaRad, angleBetaRad, angleGammaRad);
             // then
             assertEquals(expectedResult, acute);
         }
@@ -677,7 +679,7 @@ class MathCalculatorTest {
             final double sideA = data[Constants.ARR_2ND_INDEX];
             final double sideB = data[Constants.ARR_3RD_INDEX];
             // when
-            final boolean acute = MathCalculator.Geometry.isAcuteTriangleWithSSA(angleAlphaRad, sideA, sideB);
+            final boolean acute = MathCalc.Geometry.isAcuteTriangleWithSSA(angleAlphaRad, sideA, sideB);
             // then
             assertEquals(expectedResult, acute);
         }
@@ -699,7 +701,7 @@ class MathCalculatorTest {
             final double angleBetaRad = Math.toRadians(angles[Constants.BETA_INDEX]);
             final double angleGammaRad = Math.toRadians(angles[Constants.GAMMA_INDEX]);
             // when
-            final boolean right = MathCalculator.Geometry.isRightTriangle(angleAlphaRad, angleBetaRad, angleGammaRad);
+            final boolean right = MathCalc.Geometry.isRightTriangle(angleAlphaRad, angleBetaRad, angleGammaRad);
             // then
             assertEquals(expectedResult, right);
         }
@@ -720,7 +722,7 @@ class MathCalculatorTest {
             final double sideA = data[Constants.ARR_2ND_INDEX];
             final double sideB = data[Constants.ARR_3RD_INDEX];
             // when
-            final boolean right = MathCalculator.Geometry.isRightTriangleWithSSA(angleAlphaRad, sideA, sideB);
+            final boolean right = MathCalc.Geometry.isRightTriangleWithSSA(angleAlphaRad, sideA, sideB);
             // then
             assertEquals(expectedResult, right);
         }
@@ -742,7 +744,7 @@ class MathCalculatorTest {
             final double angleBetaRad = Math.toRadians(angles[Constants.BETA_INDEX]);
             final double angleGammaRad = Math.toRadians(angles[Constants.GAMMA_INDEX]);
             // when
-            final boolean obtuse = MathCalculator.Geometry.isObtuseTriangle(angleAlphaRad, angleBetaRad, angleGammaRad);
+            final boolean obtuse = MathCalc.Geometry.isObtuseTriangle(angleAlphaRad, angleBetaRad, angleGammaRad);
             // then
             assertEquals(expectedResult, obtuse);
         }
@@ -763,7 +765,7 @@ class MathCalculatorTest {
             final double sideA = data[Constants.ARR_2ND_INDEX];
             final double sideB = data[Constants.ARR_3RD_INDEX];
             // when
-            final boolean obtuse = MathCalculator.Geometry.isObtuseTriangleWithSSA(angleAlphaRad, sideA, sideB);
+            final boolean obtuse = MathCalc.Geometry.isObtuseTriangleWithSSA(angleAlphaRad, sideA, sideB);
             // then
             assertEquals(expectedResult, obtuse);
         }
@@ -783,7 +785,7 @@ class MathCalculatorTest {
         @MethodSource("complementaryAngleArgs")
         void testComplementaryAngle(double angleRadians, double expectedResult) {
             // when
-            final double complementaryAngle = MathCalculator.Geometry.complementaryAngle(angleRadians);
+            final double complementaryAngle = MathCalc.Geometry.complementaryAngle(angleRadians);
             // then
             assertEquals(expectedResult, complementaryAngle, 0.000001);
         }
@@ -806,7 +808,7 @@ class MathCalculatorTest {
         @MethodSource("isComplementaryAngleArgs")
         void testIsComplementaryAngle(double angleAlphaRadians, double angleBetaRadians, boolean expectedResult) {
             // when
-            final boolean complementary = MathCalculator.Geometry
+            final boolean complementary = MathCalc.Geometry
                 .isComplementaryAngle(angleAlphaRadians, angleBetaRadians);
             // then
             assertEquals(expectedResult, complementary);
@@ -817,7 +819,7 @@ class MathCalculatorTest {
             // given
             final double angleRadians = Math.toRadians(30);
             // when
-            final double supplementaryAngle = MathCalculator.Geometry.supplementaryAngle(angleRadians);
+            final double supplementaryAngle = MathCalc.Geometry.supplementaryAngle(angleRadians);
             // then
             assertEquals(2.618, supplementaryAngle, 0.001); // 150°
         }
@@ -836,7 +838,7 @@ class MathCalculatorTest {
         @MethodSource("isSupplementaryAngleArgs")
         void testIsSupplementaryAngle(double angleAlphaRadians, double angleBetaRadians, boolean expectedResult) {
             // when
-            final boolean supplementary = MathCalculator.Geometry
+            final boolean supplementary = MathCalc.Geometry
                 .isSupplementaryAngles(angleAlphaRadians, angleBetaRadians);
             // then
             assertEquals(expectedResult, supplementary);
@@ -853,7 +855,7 @@ class MathCalculatorTest {
         @MethodSource("coterminalAngleArgs")
         void testCoterminalAngle(double angleRadians, double expectedResult) {
             // when
-            final double coterminalAngle = MathCalculator.Geometry.coterminalAngle(angleRadians);
+            final double coterminalAngle = MathCalc.Geometry.coterminalAngle(angleRadians);
             // then
             assertEquals(expectedResult, coterminalAngle, 0.000001);
         }
@@ -865,7 +867,7 @@ class MathCalculatorTest {
             final byte min = -4;
             final byte max = 4;
             // when
-            final double[] coterminalAngles = MathCalculator.Geometry.coterminalAngles(angleRadians, min, max);
+            final double[] coterminalAngles = MathCalc.Geometry.coterminalAngles(angleRadians, min, max);
             // then
             assertNotNull(coterminalAngles);
             assertEquals(8, coterminalAngles.length);
@@ -893,7 +895,7 @@ class MathCalculatorTest {
             // given
             final byte rotations = 2;
             // when
-            final boolean coterminalAngle = MathCalculator.Geometry
+            final boolean coterminalAngle = MathCalc.Geometry
                 .areCoterminalAngles(angleAlphaRad, angleBetaRad, rotations);
             // then
             assertEquals(expectedResult, coterminalAngle);
@@ -909,7 +911,7 @@ class MathCalculatorTest {
                 Arguments.of(Math.toRadians(210), Math.toRadians(30)),
                 Arguments.of(Math.toRadians(270), Math.toRadians(90)),
                 Arguments.of(Math.toRadians(300), Math.toRadians(60)),
-                Arguments.of(MathCalculator.Trigonometry.PI2, Math.toRadians(0)),
+                Arguments.of(MathCalc.Trigonometry.PI2, Math.toRadians(0)),
                 Arguments.of(Math.toRadians(610), Math.toRadians(70))
             );
         }
@@ -918,9 +920,43 @@ class MathCalculatorTest {
         @MethodSource("referenceAngleArgs")
         void testReferenceAngle(double angleRadians, double expectedResult) {
             // when
-            final double referenceAngle = MathCalculator.Geometry.referenceAngle(angleRadians);
+            final double referenceAngle = MathCalc.Geometry.referenceAngle(angleRadians);
             // then
             assertEquals(expectedResult, referenceAngle, 0.000001);
+        }
+
+        @Test
+        void testCentralAngleGivenArcLengthRadius() {
+            final short arcLengthInMeters = 235;
+            final double radiusInMeters = 149.6;
+            // when
+            final double centralAngle = MathCalc.Geometry
+                .centralAngleGivenArcLengthRadius(arcLengthInMeters, radiusInMeters);
+            // then
+            assertEquals(MathCalc.Trigonometry.PI_OVER_2, centralAngle, 0.0001);
+        }
+
+        @Test
+        void testArcLength() {
+            final double centralAngleRad = MathCalc.Trigonometry.PI_OVER_2;
+            final double radiusInMeters = 149.6;
+            // when
+            final double arcLengthInMeters = MathCalc.Geometry.arcLength(centralAngleRad, radiusInMeters);
+            // then
+            assertEquals(235, arcLengthInMeters, 0.1);
+        }
+
+        @Test
+        void testClockAngle() {
+            final byte hours = 7;
+            final byte minutes = 0;
+            // when
+            final double[] angles = MathCalc.Geometry.clockAngle(hours, minutes);
+            // then
+            assertNotNull(angles);
+            assertEquals(2, angles.length);
+            assertEquals(Math.toRadians(150), angles[Constants.ARR_1ST_INDEX], DELTA6);
+            assertEquals(Math.toRadians(210), angles[Constants.ARR_2ND_INDEX], DELTA6);
         }
     }
 
@@ -933,7 +969,7 @@ class MathCalculatorTest {
             final int y = 8;
             final double[] vector = {x, y};
             // when
-            final double magnitude = MathCalculator.CoordinateGeometry.vectorMagnitude(vector);
+            final double magnitude = MathCalc.CoordinateGeometry.vectorMagnitude(vector);
             // then
             assertEquals(8.544, magnitude, 0.001);
         }
@@ -946,7 +982,7 @@ class MathCalculatorTest {
             final int z = 2;
             final double[] vector = {x, y, z};
             // when
-            final double magnitude = MathCalculator.CoordinateGeometry.vectorMagnitude(vector);
+            final double magnitude = MathCalc.CoordinateGeometry.vectorMagnitude(vector);
             // then
             assertEquals(8.775, magnitude, 0.001);
         }
@@ -961,7 +997,7 @@ class MathCalculatorTest {
             final int w = 4;
             final double[] vector = {x, y, z, t, w};
             // when
-            final double magnitude = MathCalculator.CoordinateGeometry.vectorMagnitude(vector);
+            final double magnitude = MathCalc.CoordinateGeometry.vectorMagnitude(vector);
             // then
             assertEquals(6.245, magnitude, 0.001);
         }
@@ -974,7 +1010,7 @@ class MathCalculatorTest {
             final int z = 5;
             final double[] vector = {x, y, z};
             // when
-            final var unitVectorResultData = MathCalculator.CoordinateGeometry.unitVector(vector);
+            final var unitVectorResultData = MathCalc.CoordinateGeometry.unitVector(vector);
             // then
             final double vectorMagnitude = unitVectorResultData.getLeft();
             final double[] unitVectorResult = unitVectorResultData.getMiddle();
@@ -997,7 +1033,7 @@ class MathCalculatorTest {
             final double y = -0.303046;
             final double[] unitVector = {x, y};
             // when
-            final var unitVectorResultData = MathCalculator.CoordinateGeometry
+            final var unitVectorResultData = MathCalc.CoordinateGeometry
                 .findMissingUnitVectorComponent(unitVector);
             // then
             final double[] unitVectorResult = unitVectorResultData.getLeft();
@@ -1017,7 +1053,7 @@ class MathCalculatorTest {
             final double[] vectorA = {2, 3, 7};
             final double[] vectorB = {1, 2, 4};
             // when
-            final double[] resultVector = MathCalculator.CoordinateGeometry.crossProduct(vectorA, vectorB);
+            final double[] resultVector = MathCalc.CoordinateGeometry.crossProduct(vectorA, vectorB);
             // then
             assertNotNull(resultVector);
             assertEquals(3, resultVector.length);
@@ -1033,7 +1069,7 @@ class MathCalculatorTest {
             final double[] vectorB = {1, 2};
             // when
             final var exception = assertThrows(IllegalArgumentException.class,
-                () -> MathCalculator.CoordinateGeometry.crossProduct(vectorA, vectorB));
+                () -> MathCalc.CoordinateGeometry.crossProduct(vectorA, vectorB));
             // then
             assertEquals("The cross product can only be applied to 3D vectors", exception.getMessage());
         }
@@ -1044,7 +1080,7 @@ class MathCalculatorTest {
             final double[] vectorA = {5, 4};
             final double[] vectorB = {2, 3};
             // when
-            final double result = MathCalculator.CoordinateGeometry.dotProduct(vectorA, vectorB);
+            final double result = MathCalc.CoordinateGeometry.dotProduct(vectorA, vectorB);
             // then
             assertEquals(22, result, 0.1);
         }
@@ -1055,7 +1091,7 @@ class MathCalculatorTest {
             final double[] vectorA = {4, 5, -3};
             final double[] vectorB = {1, -2, -2};
             // when
-            final double result = MathCalculator.CoordinateGeometry.dotProduct(vectorA, vectorB);
+            final double result = MathCalc.CoordinateGeometry.dotProduct(vectorA, vectorB);
             // then
             assertEquals(0, result, 0.1);
         }
@@ -1072,7 +1108,7 @@ class MathCalculatorTest {
                 {5, 1, 3}
             };
             // when
-            final double result = MathCalculator.CoordinateGeometry.dotProduct(matrixA, matrixB);
+            final double result = MathCalc.CoordinateGeometry.dotProduct(matrixA, matrixB);
             // then
             // 4*1 + 5*-2 + -3*-2 = [4, -10, 6] = 0
             // 2*5 + -1*1 + 4*3   = [10, -1, 12] = 21
@@ -1085,7 +1121,7 @@ class MathCalculatorTest {
             final double[] vectorA = {5, 4};
             final double[] vectorB = {2, 3};
             // when
-            final double[] resultData = MathCalculator.CoordinateGeometry.dotProductAndAngleBetween(vectorA, vectorB);
+            final double[] resultData = MathCalc.CoordinateGeometry.dotProductAndAngleBetween(vectorA, vectorB);
             // then
             assertNotNull(resultData);
             assertEquals(4, resultData.length);
@@ -1105,7 +1141,7 @@ class MathCalculatorTest {
             final double[] vectorA = {4, 5, 3};
             final double[] vectorB = {1, -2, -2};
             // when
-            final double[] resultData = MathCalculator.CoordinateGeometry.dotProductAndAngleBetween(vectorA, vectorB);
+            final double[] resultData = MathCalc.CoordinateGeometry.dotProductAndAngleBetween(vectorA, vectorB);
             // then
             assertNotNull(resultData);
             assertEquals(4, resultData.length);
@@ -1132,7 +1168,7 @@ class MathCalculatorTest {
         @MethodSource("manhattanDistanceParams")
         void testManhattanDistance(double[] vectorA, double[] vectorB, double expectedResult) {
             // when
-            final double distance = MathCalculator.CoordinateGeometry.manhattanDistance(vectorA, vectorB);
+            final double distance = MathCalc.CoordinateGeometry.manhattanDistance(vectorA, vectorB);
             // then
             assertEquals(expectedResult, distance, 0.1);
         }
@@ -1142,7 +1178,7 @@ class MathCalculatorTest {
             // given
             final double[] cartesianCoords = {2, 5, 3};
             // when
-            final double[] cylindricalCoords = MathCalculator.CoordinateGeometry
+            final double[] cylindricalCoords = MathCalc.CoordinateGeometry
                 .cartesianToCylindricalCoordinates(cartesianCoords);
             // then
             assertNotNull(cylindricalCoords);
@@ -1157,7 +1193,7 @@ class MathCalculatorTest {
             // given
             final double[] cylindricalCoords = {5.385, 1.1903, 3};
             // when
-            final double[] cartesianCoords = MathCalculator.CoordinateGeometry
+            final double[] cartesianCoords = MathCalc.CoordinateGeometry
                 .cylindricalToCartesianCoordinates(cylindricalCoords);
             // then
             assertNotNull(cartesianCoords);
@@ -1172,7 +1208,7 @@ class MathCalculatorTest {
             // given
             final double[] cartesianCoords = {2, 3};
             // when
-            final double[] polarCoords = MathCalculator.CoordinateGeometry.cartesianToPolarCoordinates(cartesianCoords);
+            final double[] polarCoords = MathCalc.CoordinateGeometry.cartesianToPolarCoordinates(cartesianCoords);
             // then
             assertNotNull(polarCoords);
             assertEquals(2, polarCoords.length);
@@ -1185,7 +1221,7 @@ class MathCalculatorTest {
             // given
             final double[] polarCoords = {3.6056, 0.9828};
             // when
-            final double[] cartesianCoords = MathCalculator.CoordinateGeometry.polarToCartesianCoordinates(polarCoords);
+            final double[] cartesianCoords = MathCalc.CoordinateGeometry.polarToCartesianCoordinates(polarCoords);
             // then
             assertNotNull(cartesianCoords);
             assertEquals(2, cartesianCoords.length);
@@ -1198,7 +1234,7 @@ class MathCalculatorTest {
             // given
             final double[] cartesianCoords = {2, 5, 3};
             // when
-            final double[] sphericalCoords = MathCalculator.CoordinateGeometry
+            final double[] sphericalCoords = MathCalc.CoordinateGeometry
                 .cartesianToSphericalCoordinates(cartesianCoords);
             // then
             assertNotNull(sphericalCoords);
@@ -1213,7 +1249,7 @@ class MathCalculatorTest {
             // given
             final double[] sphericalCoords = {6.164, 1.0625, 1.1903};
             // when
-            final double[] cartesianCoords = MathCalculator.CoordinateGeometry
+            final double[] cartesianCoords = MathCalc.CoordinateGeometry
                 .sphericalToCartesianCoordinates(sphericalCoords);
             // then
             assertNotNull(cartesianCoords);
@@ -1229,7 +1265,7 @@ class MathCalculatorTest {
             final double[] vectorA = {3, 4};
             final double[] vectorB = {2, 6};
             // when
-            final var projectionResult = MathCalculator.CoordinateGeometry
+            final var projectionResult = MathCalc.CoordinateGeometry
                 .vectorProjection(vectorA, vectorB);
             // then
             assertNotNull(projectionResult);
@@ -1250,7 +1286,7 @@ class MathCalculatorTest {
             final double[] vectorA = {2, -3, 5};
             final double[] vectorB = {3, 6, -4};
             // when
-            final var projectionResult = MathCalculator.CoordinateGeometry
+            final var projectionResult = MathCalc.CoordinateGeometry
                 .vectorProjection(vectorA, vectorB);
             // then
             assertNotNull(projectionResult);
@@ -1280,7 +1316,7 @@ class MathCalculatorTest {
         void testDistanceBetween2points(
             double[] pointACoords, double[] pointBCoords, double expectedResult, double delta) {
             // when
-            final double distance = MathCalculator.CoordinateGeometry.distance(pointACoords, pointBCoords);
+            final double distance = MathCalc.CoordinateGeometry.distance(pointACoords, pointBCoords);
             // then
             assertEquals(expectedResult, distance, delta);
         }
@@ -1292,9 +1328,9 @@ class MathCalculatorTest {
             final double[] pointBCoords = {9, 15, 5};
             final double[] pointCCoords = {2, 7, 1};
             // when
-            final double abDistance = MathCalculator.CoordinateGeometry.distance(pointACoords, pointBCoords);
-            final double bcDistance = MathCalculator.CoordinateGeometry.distance(pointBCoords, pointCCoords);
-            final double acDistance = MathCalculator.CoordinateGeometry.distance(pointACoords, pointCCoords);
+            final double abDistance = MathCalc.CoordinateGeometry.distance(pointACoords, pointBCoords);
+            final double bcDistance = MathCalc.CoordinateGeometry.distance(pointBCoords, pointCCoords);
+            final double acDistance = MathCalc.CoordinateGeometry.distance(pointACoords, pointCCoords);
             // then
             assertEquals(12.0416, abDistance, 0.0001);
             assertEquals(11.35782, bcDistance, 0.00001);
@@ -1308,7 +1344,7 @@ class MathCalculatorTest {
             final int lineSlope = 2;
             final int lineYIntercept = 6;
             // when
-            final double distance = MathCalculator.CoordinateGeometry
+            final double distance = MathCalc.CoordinateGeometry
                 .distanceBetweenPointsAndStraightLine(pointCoords, lineSlope, lineYIntercept);
             // then
             assertEquals(3.130495, distance, 0.000001);
@@ -1321,7 +1357,7 @@ class MathCalculatorTest {
             final int line1YIntercept = 6;
             final int line2YIntercept = 8;
             // when
-            final double distance = MathCalculator.CoordinateGeometry
+            final double distance = MathCalc.CoordinateGeometry
                 .distanceBetweenParallelLines(slope, line1YIntercept, line2YIntercept);
             // then
             assertEquals(0.894427, distance, 0.000001);
@@ -1333,7 +1369,7 @@ class MathCalculatorTest {
             final double[] pointCoords = {3, 4};
             final double angleTheta = Math.toRadians(60);
             // when
-            final double[] resultCoords = MathCalculator.CoordinateGeometry.rotation(pointCoords, angleTheta);
+            final double[] resultCoords = MathCalc.CoordinateGeometry.rotation(pointCoords, angleTheta);
             // then
             assertNotNull(resultCoords);
             assertEquals(2, resultCoords.length);
@@ -1348,7 +1384,7 @@ class MathCalculatorTest {
             final double angleTheta = Math.toRadians(60);
             final double[] pivotCoords = {1, 2};
             // when
-            final double[] resultCoords = MathCalculator.CoordinateGeometry
+            final double[] resultCoords = MathCalc.CoordinateGeometry
                 .rotationAroundPoint(pointCoords, pivotCoords, angleTheta);
             // then
             assertNotNull(resultCoords);
@@ -1363,14 +1399,14 @@ class MathCalculatorTest {
             final double[] pointACoords = {1, 5};
             final double[] pointBCoords = {7, 6};
             // when
-            final double slope = MathCalculator.CoordinateGeometry.slope(pointACoords, pointBCoords);
+            final double slope = MathCalc.CoordinateGeometry.slope(pointACoords, pointBCoords);
             final double angleTheta = Math.atan(slope);
-            final double distance = MathCalculator.CoordinateGeometry.distance(pointACoords, pointBCoords);
-            final double deltaX = MathCalculator.CoordinateGeometry.deltaDistance(
+            final double distance = MathCalc.CoordinateGeometry.distance(pointACoords, pointBCoords);
+            final double deltaX = MathCalc.CoordinateGeometry.deltaDistance(
                 pointBCoords[Constants.X_INDEX], pointACoords[Constants.X_INDEX]);
-            final double deltaY = MathCalculator.CoordinateGeometry.deltaDistance(
+            final double deltaY = MathCalc.CoordinateGeometry.deltaDistance(
                 pointBCoords[Constants.Y_INDEX], pointACoords[Constants.Y_INDEX]);
-            final double constantTerm = MathCalculator.CoordinateGeometry.slopeInterceptConstantTerm(
+            final double constantTerm = MathCalc.CoordinateGeometry.slopeInterceptConstantTerm(
                 pointACoords[Constants.X_INDEX], pointACoords[Constants.Y_INDEX], slope);
             // then
             assertEquals(0.166667, slope, 0.000001);
@@ -1387,7 +1423,7 @@ class MathCalculatorTest {
             final int xIntercept = 2;
             final int yIntercept = -3;
             // when
-            final double slope = MathCalculator.CoordinateGeometry.slopeFromKnownIntercepts(xIntercept, yIntercept);
+            final double slope = MathCalc.CoordinateGeometry.slopeFromKnownIntercepts(xIntercept, yIntercept);
             // then
             assertEquals(1.5, slope, 0.1);
         }
@@ -1399,7 +1435,7 @@ class MathCalculatorTest {
             final int x2 = 7;
             final double slope = 0.166667;
             // when
-            final double area = MathCalculator.CoordinateGeometry.areaUnderSlope(x1, x2, slope);
+            final double area = MathCalc.CoordinateGeometry.areaUnderSlope(x1, x2, slope);
             // then
             assertEquals(3.000006, area, 0.000001);
         }
@@ -1411,8 +1447,8 @@ class MathCalculatorTest {
             final int b = 3;
             final int c = -2;
             // when
-            final double[] intercepts = MathCalculator.CoordinateGeometry.intercept(a, b, c);
-            final double slope = MathCalculator.CoordinateGeometry.slope(a, b);
+            final double[] intercepts = MathCalc.CoordinateGeometry.intercept(a, b, c);
+            final double slope = MathCalc.CoordinateGeometry.slope(a, b);
             // then
             assertNotNull(intercepts);
             assertEquals(2, intercepts.length);
@@ -1428,7 +1464,7 @@ class MathCalculatorTest {
             final int slopeTerm = 2;
             final int constantTerm = -2;
             // when
-            final double[] intercepts = MathCalculator.CoordinateGeometry.intercept(slopeTerm, constantTerm);
+            final double[] intercepts = MathCalc.CoordinateGeometry.intercept(slopeTerm, constantTerm);
             // then
             assertNotNull(intercepts);
             assertEquals(2, intercepts.length);
@@ -1443,10 +1479,10 @@ class MathCalculatorTest {
             final double[] pointBCoords = {300, 20};
             final int midpointX = 250;
             // when
-            final double midpointY = MathCalculator.CoordinateGeometry
+            final double midpointY = MathCalc.CoordinateGeometry
                 .linearInterpolation(pointACoords, pointBCoords, midpointX);
-            final double slope = MathCalculator.CoordinateGeometry.slope(pointACoords, pointBCoords);
-            final double deltaY = MathCalculator.CoordinateGeometry.deltaDistance(
+            final double slope = MathCalc.CoordinateGeometry.slope(pointACoords, pointBCoords);
+            final double deltaY = MathCalc.CoordinateGeometry.deltaDistance(
                 pointBCoords[Constants.Y_INDEX], pointACoords[Constants.Y_INDEX]);
             // then
             assertEquals(17.5, midpointY, 0.1);
@@ -1460,7 +1496,7 @@ class MathCalculatorTest {
             final double[] pointACoords = {0, 2};
             final double[] pointBCoords = {2, 8};
             // when
-            final double[] midpointCoords = MathCalculator.CoordinateGeometry.midpoint(pointACoords, pointBCoords);
+            final double[] midpointCoords = MathCalc.CoordinateGeometry.midpoint(pointACoords, pointBCoords);
             // then
             assertNotNull(midpointCoords);
             assertEquals(2, midpointCoords.length);
@@ -1474,7 +1510,7 @@ class MathCalculatorTest {
             final byte point = 2;
             final byte midpoint = 5;
             // when
-            final double coordinate = MathCalculator.CoordinateGeometry.endpointWithGivenMidpoint(point, midpoint);
+            final double coordinate = MathCalc.CoordinateGeometry.endpointWithGivenMidpoint(point, midpoint);
             // then
             assertEquals(8, coordinate, 0.1);
         }
@@ -1484,17 +1520,17 @@ class MathCalculatorTest {
     class Trigonometry {
         static List<Arguments> sinParams() {
             return List.of(
-                Arguments.of(MathCalculator.Trigonometry.PI_OVER_12, 0.2588190451),
-                Arguments.of(MathCalculator.Trigonometry.PI_OVER_6, 0.5),
-                Arguments.of(MathCalculator.Trigonometry.PI_OVER_4, 0.7071067812),
-                Arguments.of(MathCalculator.Trigonometry.PI_OVER_3, 0.8660254038),
-                Arguments.of(MathCalculator.Trigonometry.PI5_OVER_12, 0.9659258263),
-                Arguments.of(MathCalculator.Trigonometry.PI_OVER_2, 1),
-                Arguments.of(MathCalculator.Trigonometry.PI7_OVER_12, 0.9659258263),
-                Arguments.of(MathCalculator.Trigonometry.PI2_OVER_3, 0.8660254038),
-                Arguments.of(MathCalculator.Trigonometry.PI3_OVER_4, 0.7071067812),
-                Arguments.of(MathCalculator.Trigonometry.PI5_OVER_6, 0.5),
-                Arguments.of(MathCalculator.Trigonometry.PI11_OVER_12, 0.2588190451)
+                Arguments.of(MathCalc.Trigonometry.PI_OVER_12, 0.2588190451),
+                Arguments.of(MathCalc.Trigonometry.PI_OVER_6, 0.5),
+                Arguments.of(MathCalc.Trigonometry.PI_OVER_4, 0.7071067812),
+                Arguments.of(MathCalc.Trigonometry.PI_OVER_3, 0.8660254038),
+                Arguments.of(MathCalc.Trigonometry.PI5_OVER_12, 0.9659258263),
+                Arguments.of(MathCalc.Trigonometry.PI_OVER_2, 1),
+                Arguments.of(MathCalc.Trigonometry.PI7_OVER_12, 0.9659258263),
+                Arguments.of(MathCalc.Trigonometry.PI2_OVER_3, 0.8660254038),
+                Arguments.of(MathCalc.Trigonometry.PI3_OVER_4, 0.7071067812),
+                Arguments.of(MathCalc.Trigonometry.PI5_OVER_6, 0.5),
+                Arguments.of(MathCalc.Trigonometry.PI11_OVER_12, 0.2588190451)
             );
         }
 
@@ -1502,7 +1538,7 @@ class MathCalculatorTest {
         @MethodSource("sinParams")
         void testSin(double angleAlphaRadians, double expectedResult) {
             // when
-            final double sine = MathCalculator.Trigonometry.sin(angleAlphaRadians);
+            final double sine = MathCalc.Trigonometry.sin(angleAlphaRadians);
             // then
             assertEquals(expectedResult, sine, 0.0000000001);
         }
@@ -1515,7 +1551,7 @@ class MathCalculatorTest {
             final double amplitude = 0.8;
             final byte timeSeconds = 10;
             // when
-            final double sinusoid = MathCalculator.Trigonometry.sinusoid(
+            final double sinusoid = MathCalc.Trigonometry.sinusoid(
                 amplitude, anglePhiRadians, oscillationFrequency, timeSeconds);
             // then
             assertEquals(0.51423008, sinusoid, 0.00000001);
@@ -1523,26 +1559,26 @@ class MathCalculatorTest {
 
         static List<Arguments> quadrantParams() {
             return List.of(
-                Arguments.of(MathCalculator.Trigonometry.PI_OVER_12, 1),
-                Arguments.of(MathCalculator.Trigonometry.PI_OVER_6, 1),
-                Arguments.of(MathCalculator.Trigonometry.PI_OVER_4, 1),
-                Arguments.of(MathCalculator.Trigonometry.PI_OVER_3, 1),
-                Arguments.of(MathCalculator.Trigonometry.PI5_OVER_12, 1),
-                Arguments.of(MathCalculator.Trigonometry.PI_OVER_2, 1),
-                Arguments.of(MathCalculator.Trigonometry.PI7_OVER_12, 2),
-                Arguments.of(MathCalculator.Trigonometry.PI2_OVER_3, 2),
-                Arguments.of(MathCalculator.Trigonometry.PI3_OVER_4, 2),
-                Arguments.of(MathCalculator.Trigonometry.PI5_OVER_6, 2),
-                Arguments.of(MathCalculator.Trigonometry.PI11_OVER_12, 2),
+                Arguments.of(MathCalc.Trigonometry.PI_OVER_12, 1),
+                Arguments.of(MathCalc.Trigonometry.PI_OVER_6, 1),
+                Arguments.of(MathCalc.Trigonometry.PI_OVER_4, 1),
+                Arguments.of(MathCalc.Trigonometry.PI_OVER_3, 1),
+                Arguments.of(MathCalc.Trigonometry.PI5_OVER_12, 1),
+                Arguments.of(MathCalc.Trigonometry.PI_OVER_2, 1),
+                Arguments.of(MathCalc.Trigonometry.PI7_OVER_12, 2),
+                Arguments.of(MathCalc.Trigonometry.PI2_OVER_3, 2),
+                Arguments.of(MathCalc.Trigonometry.PI3_OVER_4, 2),
+                Arguments.of(MathCalc.Trigonometry.PI5_OVER_6, 2),
+                Arguments.of(MathCalc.Trigonometry.PI11_OVER_12, 2),
                 Arguments.of(Math.PI, 2),
-                Arguments.of(MathCalculator.Trigonometry.PI7_OVER_6, 3),
-                Arguments.of(MathCalculator.Trigonometry.PI5_OVER_4, 3),
-                Arguments.of(MathCalculator.Trigonometry.PI4_OVER_3, 3),
-                Arguments.of(MathCalculator.Trigonometry.PI3_OVER_2, 3),
-                Arguments.of(MathCalculator.Trigonometry.PI5_OVER_3, 4),
-                Arguments.of(MathCalculator.Trigonometry.PI7_OVER_4, 4),
-                Arguments.of(MathCalculator.Trigonometry.PI11_OVER_6, 4),
-                Arguments.of(MathCalculator.Trigonometry.PI2, 4)
+                Arguments.of(MathCalc.Trigonometry.PI7_OVER_6, 3),
+                Arguments.of(MathCalc.Trigonometry.PI5_OVER_4, 3),
+                Arguments.of(MathCalc.Trigonometry.PI4_OVER_3, 3),
+                Arguments.of(MathCalc.Trigonometry.PI3_OVER_2, 3),
+                Arguments.of(MathCalc.Trigonometry.PI5_OVER_3, 4),
+                Arguments.of(MathCalc.Trigonometry.PI7_OVER_4, 4),
+                Arguments.of(MathCalc.Trigonometry.PI11_OVER_6, 4),
+                Arguments.of(MathCalc.Trigonometry.PI2, 4)
             );
         }
 
@@ -1550,7 +1586,7 @@ class MathCalculatorTest {
         @MethodSource("quadrantParams")
         void testQuadrant(double angleAlphaRadians, int expectedResult) {
             // when
-            final int quadrant = MathCalculator.Trigonometry.quadrant(angleAlphaRadians);
+            final int quadrant = MathCalc.Trigonometry.quadrant(angleAlphaRadians);
             // then
             assertEquals(expectedResult, quadrant);
         }
@@ -1561,7 +1597,7 @@ class MathCalculatorTest {
             final double angleAlphaRadians = Math.toRadians(30);
             final double angleBetaRadians = Math.toRadians(45);
             // when
-            final double result = MathCalculator.Trigonometry.lawOfTangents(angleAlphaRadians, angleBetaRadians);
+            final double result = MathCalc.Trigonometry.lawOfTangents(angleAlphaRadians, angleBetaRadians);
             // then
             assertEquals(-0.171572, result, 0.000001);
         }
@@ -1579,7 +1615,7 @@ class MathCalculatorTest {
         @MethodSource("cotangentOfAngleParams")
         void testCotangentOfAngle(double angleAlphaRadians, double expectedResult, double delta) {
             // when
-            final double result = MathCalculator.Trigonometry.cot(angleAlphaRadians);
+            final double result = MathCalc.Trigonometry.cot(angleAlphaRadians);
             // then
             assertEquals(expectedResult, result, delta);
         }
@@ -1596,7 +1632,7 @@ class MathCalculatorTest {
         @MethodSource("cotangentParams")
         void testCotangent(double adjacent, double opposite, double expectedResult, double delta) {
             // when
-            final double result = MathCalculator.Trigonometry.cot(adjacent, opposite);
+            final double result = MathCalc.Trigonometry.cot(adjacent, opposite);
             // then
             assertEquals(expectedResult, result, delta);
         }
@@ -1614,7 +1650,7 @@ class MathCalculatorTest {
         @MethodSource("secantOfAngleParams")
         void testSecantOfAngle(double angleAlphaRadians, double expectedResult, double delta) {
             // when
-            final double result = MathCalculator.Trigonometry.sec(angleAlphaRadians);
+            final double result = MathCalc.Trigonometry.sec(angleAlphaRadians);
             // then
             assertEquals(expectedResult, result, delta);
         }
@@ -1631,7 +1667,7 @@ class MathCalculatorTest {
         @MethodSource("secantParams")
         void testSecant(double hypotenuse, double adjacent, double expectedResult, double delta) {
             // when
-            final double result = MathCalculator.Trigonometry.sec(hypotenuse, adjacent);
+            final double result = MathCalc.Trigonometry.sec(hypotenuse, adjacent);
             // then
             assertEquals(expectedResult, result, delta);
         }
@@ -1649,7 +1685,7 @@ class MathCalculatorTest {
         @MethodSource("cosecantOfAngleParams")
         void testCosecantOfAngle(double angleAlphaRadians, double expectedResult, double delta) {
             // when
-            final double result = MathCalculator.Trigonometry.csc(angleAlphaRadians);
+            final double result = MathCalc.Trigonometry.csc(angleAlphaRadians);
             // then
             assertEquals(expectedResult, result, delta);
         }
@@ -1666,7 +1702,7 @@ class MathCalculatorTest {
         @MethodSource("cosecantParams")
         void testCosecant(double hypotenuse, double opposite, double expectedResult, double delta) {
             // when
-            final double result = MathCalculator.Trigonometry.csc(hypotenuse, opposite);
+            final double result = MathCalc.Trigonometry.csc(hypotenuse, opposite);
             // then
             assertEquals(expectedResult, result, delta);
         }
@@ -1676,7 +1712,7 @@ class MathCalculatorTest {
             // given
             final double angleRadians = Math.toRadians(30);
             // when
-            final double result = MathCalculator.Trigonometry.cosHalfAngle(angleRadians);
+            final double result = MathCalc.Trigonometry.cosHalfAngle(angleRadians);
             // then
             assertEquals(0.96592583, result, 0.00000001);
         }
@@ -1686,7 +1722,7 @@ class MathCalculatorTest {
             // given
             final double angleRadians = Math.toRadians(30);
             // when
-            final double result = MathCalculator.Trigonometry.sinHalfAngle(angleRadians);
+            final double result = MathCalc.Trigonometry.sinHalfAngle(angleRadians);
             // then
             assertEquals(0.25881905, result, 0.00000001);
         }
@@ -1696,7 +1732,7 @@ class MathCalculatorTest {
             // given
             final double angleRadians = Math.toRadians(30);
             // when
-            final double result = MathCalculator.Trigonometry.tanHalfAngle(angleRadians);
+            final double result = MathCalc.Trigonometry.tanHalfAngle(angleRadians);
             // then
             assertEquals(0.26794919, result, 0.00000001);
         }
@@ -1706,7 +1742,7 @@ class MathCalculatorTest {
             // given
             final double angleThetaRadians = Math.toRadians(15);
             // when
-            final double result = MathCalculator.Trigonometry.sinDoubleAngle(angleThetaRadians);
+            final double result = MathCalc.Trigonometry.sinDoubleAngle(angleThetaRadians);
             // then
             assertEquals(0.5, result, 0.1);
         }
@@ -1716,7 +1752,7 @@ class MathCalculatorTest {
             // given
             final double angleThetaRadians = Math.toRadians(15);
             // when
-            final double result = MathCalculator.Trigonometry.cosDoubleAngle(angleThetaRadians);
+            final double result = MathCalc.Trigonometry.cosDoubleAngle(angleThetaRadians);
             // then
             assertEquals(0.86603, result, 0.00001);
         }
@@ -1726,7 +1762,7 @@ class MathCalculatorTest {
             // given
             final double angleThetaRadians = Math.toRadians(15);
             // when
-            final double result = MathCalculator.Trigonometry.tanDoubleAngle(angleThetaRadians);
+            final double result = MathCalc.Trigonometry.tanDoubleAngle(angleThetaRadians);
             // then
             assertEquals(0.57735, result, 0.00001);
         }
@@ -1740,7 +1776,7 @@ class MathCalculatorTest {
             final byte phaseShift = 3; // C
             final byte verticalShift = 4; // D
             // when
-            final double[] results = MathCalculator.Trigonometry
+            final double[] results = MathCalc.Trigonometry
                 .sinPhaseShift(x, amplitude, periodRadians, phaseShift, verticalShift);
             // then
             assertNotNull(results);
@@ -1759,7 +1795,7 @@ class MathCalculatorTest {
             final byte phaseShift = 3; // C
             final byte verticalShift = 4; // D
             // when
-            final double[] results = MathCalculator.Trigonometry
+            final double[] results = MathCalc.Trigonometry
                 .cosPhaseShift(x, amplitude, periodRadians, phaseShift, verticalShift);
             // then
             assertNotNull(results);
@@ -1774,7 +1810,7 @@ class MathCalculatorTest {
             // given
             final double angleRadians = Math.toRadians(15);
             // when
-            final double squaredResult = MathCalculator.Trigonometry.sinPowerReducing(angleRadians);
+            final double squaredResult = MathCalc.Trigonometry.sinPowerReducing(angleRadians);
             // then
             assertEquals(0.0669873, squaredResult, 0.0000001);
             final double inverseDegrees = Math.toDegrees(BigDecimal.valueOf(Math.sqrt(squaredResult))
@@ -1787,7 +1823,7 @@ class MathCalculatorTest {
             // given
             final double angleRadians = Math.toRadians(15);
             // when
-            final double squaredResult = MathCalculator.Trigonometry.cosPowerReducing(angleRadians);
+            final double squaredResult = MathCalc.Trigonometry.cosPowerReducing(angleRadians);
             // then
             assertEquals(0.9330127, squaredResult, 0.0000001);
         }
@@ -1797,7 +1833,7 @@ class MathCalculatorTest {
             // given
             final double angleRadians = Math.toRadians(15);
             // when
-            final double squaredResult = MathCalculator.Trigonometry.tanPowerReducing(angleRadians);
+            final double squaredResult = MathCalc.Trigonometry.tanPowerReducing(angleRadians);
             // then
             assertEquals(0.0718, squaredResult, 0.0001);
         }
@@ -1809,7 +1845,7 @@ class MathCalculatorTest {
             final byte sideB = 6;
             final double angleRadians = Math.toRadians(30);
             // when
-            final double sideC = MathCalculator.Trigonometry.lawOfCosSAS(sideA, sideB, angleRadians);
+            final double sideC = MathCalc.Trigonometry.lawOfCosSAS(sideA, sideB, angleRadians);
             // then
             assertEquals(3.006406, sideC, 0.000001);
         }
@@ -1821,7 +1857,7 @@ class MathCalculatorTest {
             final byte sideB = 5;
             final byte sideC = 6;
             // when
-            final double[] results = MathCalculator.Trigonometry.lawOfCosSSS(sideA, sideB, sideC);
+            final double[] results = MathCalc.Trigonometry.lawOfCosSSS(sideA, sideB, sideC);
             // then
             assertNotNull(results);
             assertEquals(3, results.length);
@@ -1837,7 +1873,7 @@ class MathCalculatorTest {
             final double angleAlphaRadians = Math.toRadians(30);
             final double angleBetaRadians = Math.toRadians(60);
             // when
-            final double sideB = MathCalculator.Trigonometry
+            final double sideB = MathCalc.Trigonometry
                 .lawOfSinGivenSideAAndAnglesAlphaBeta(sideA, angleAlphaRadians, angleBetaRadians);
             // then
             assertEquals(4, sideB, 0.0001);
@@ -1850,7 +1886,7 @@ class MathCalculatorTest {
             final double angleAlphaRadians = Math.toRadians(30);
             final double angleBetaRadians = Math.toRadians(60);
             // when
-            final double sideA = MathCalculator.Trigonometry
+            final double sideA = MathCalc.Trigonometry
                 .lawOfSinGivenSideBAndAnglesAlphaBeta(sideB, angleAlphaRadians, angleBetaRadians);
             // then
             assertEquals(2.3094, sideA, 0.0001);
@@ -1863,7 +1899,7 @@ class MathCalculatorTest {
             final byte sideB = 4;
             final double angleAlphaRadians = Math.toRadians(30);
             // when
-            final double angleBetaRad = MathCalculator.Trigonometry
+            final double angleBetaRad = MathCalc.Trigonometry
                 .lawOfSinGivenSidesABAndAngleAlpha(sideA, sideB, angleAlphaRadians);
             // then
             assertEquals(Math.toRadians(60), angleBetaRad, 0.0001);
@@ -1876,7 +1912,7 @@ class MathCalculatorTest {
             final byte sideB = 4;
             final double angleBetaRadians = Math.toRadians(60);
             // when
-            final double angleAlphaRad = MathCalculator.Trigonometry
+            final double angleAlphaRad = MathCalc.Trigonometry
                 .lawOfSinGivenSidesABAndAngleBeta(sideA, sideB, angleBetaRadians);
             // then
             assertEquals(Math.toRadians(30), angleAlphaRad, 0.0001);
@@ -1889,7 +1925,7 @@ class MathCalculatorTest {
             final byte sideC = 8;
             final double angleBetaRadians = Math.toRadians(30);
             // when
-            final double angleGammaRad = MathCalculator.Trigonometry
+            final double angleGammaRad = MathCalc.Trigonometry
                 .lawOfSinGivenSidesBCAndAngleBeta(sideC, sideB, angleBetaRadians);
             // then
             assertEquals(Math.toRadians(90), angleGammaRad, 0.1);
@@ -1902,7 +1938,7 @@ class MathCalculatorTest {
             final byte sideC = 4;
             final double angleAlphaRadians = Math.toRadians(30);
             // when
-            final double angleGammaRad = MathCalculator.Trigonometry
+            final double angleGammaRad = MathCalc.Trigonometry
                 .lawOfSinGivenSidesACAndAngleAlpha(sideA, sideC, angleAlphaRadians);
             // then
             assertEquals(Math.toRadians(90), angleGammaRad, 0.1);
@@ -1914,7 +1950,7 @@ class MathCalculatorTest {
             final double angleAlphaRadians = Math.toRadians(30);
             final double angleBetaRadians = Math.toRadians(90);
             // when
-            final double angleSumRad = MathCalculator.Trigonometry.sinAngleSum(angleAlphaRadians, angleBetaRadians);
+            final double angleSumRad = MathCalc.Trigonometry.sinAngleSum(angleAlphaRadians, angleBetaRadians);
             // then
             assertEquals(0.866, angleSumRad, 0.001);
         }
@@ -1925,7 +1961,7 @@ class MathCalculatorTest {
             final double angleAlphaRadians = Math.toRadians(30);
             final double angleBetaRadians = Math.toRadians(90);
             // when
-            final double angleDiffRad = MathCalculator.Trigonometry
+            final double angleDiffRad = MathCalc.Trigonometry
                 .sinAngleDifference(angleAlphaRadians, angleBetaRadians);
             // then
             assertEquals(-0.866, angleDiffRad, 0.001);
@@ -1937,7 +1973,7 @@ class MathCalculatorTest {
             final double angleAlphaRadians = Math.toRadians(30);
             final double angleBetaRadians = Math.toRadians(45);
             // when
-            final double angleSumRad = MathCalculator.Trigonometry.cosAngleSum(angleAlphaRadians, angleBetaRadians);
+            final double angleSumRad = MathCalc.Trigonometry.cosAngleSum(angleAlphaRadians, angleBetaRadians);
             // then
             assertEquals(0.259, angleSumRad, 0.001);
         }
@@ -1948,7 +1984,7 @@ class MathCalculatorTest {
             final double angleAlphaRadians = Math.toRadians(30);
             final double angleBetaRadians = Math.toRadians(45);
             // when
-            final double angleDiffRad = MathCalculator.Trigonometry
+            final double angleDiffRad = MathCalc.Trigonometry
                 .cosAngleDifference(angleAlphaRadians, angleBetaRadians);
             // then
             assertEquals(0.966, angleDiffRad, 0.001);
@@ -1960,7 +1996,7 @@ class MathCalculatorTest {
             final double angleAlphaRadians = Math.toRadians(30);
             final double angleBetaRadians = Math.toRadians(45);
             // when
-            final double angleSumRad = MathCalculator.Trigonometry.tanAngleSum(angleAlphaRadians, angleBetaRadians);
+            final double angleSumRad = MathCalc.Trigonometry.tanAngleSum(angleAlphaRadians, angleBetaRadians);
             // then
             assertEquals(3.732, angleSumRad, 0.001);
         }
@@ -1971,7 +2007,7 @@ class MathCalculatorTest {
             final double angleAlphaRadians = Math.toRadians(30);
             final double angleBetaRadians = Math.toRadians(45);
             // when
-            final double angleDiffRad = MathCalculator.Trigonometry
+            final double angleDiffRad = MathCalc.Trigonometry
                 .tanAngleDifference(angleAlphaRadians, angleBetaRadians);
             // then
             assertEquals(-0.268, angleDiffRad, 0.001);
@@ -1983,7 +2019,7 @@ class MathCalculatorTest {
             final double angleAlphaRadians = Math.toRadians(30);
             final double angleBetaRadians = Math.toRadians(45);
             // when
-            final double angleSumRad = MathCalculator.Trigonometry.cotAngleSum(angleAlphaRadians, angleBetaRadians);
+            final double angleSumRad = MathCalc.Trigonometry.cotAngleSum(angleAlphaRadians, angleBetaRadians);
             // then
             assertEquals(0.268, angleSumRad, 0.001);
         }
@@ -1994,7 +2030,7 @@ class MathCalculatorTest {
             final double angleAlphaRadians = Math.toRadians(30);
             final double angleBetaRadians = Math.toRadians(45);
             // when
-            final double angleDiffRad = MathCalculator.Trigonometry
+            final double angleDiffRad = MathCalc.Trigonometry
                 .cotAngleDifference(angleAlphaRadians, angleBetaRadians);
             // then
             assertEquals(-3.732, angleDiffRad, 0.001);
@@ -2006,7 +2042,7 @@ class MathCalculatorTest {
             final double angleAlphaRadians = Math.toRadians(30);
             final double angleBetaRadians = Math.toRadians(45);
             // when
-            final double angleSumRad = MathCalculator.Trigonometry.secAngleSum(angleAlphaRadians, angleBetaRadians);
+            final double angleSumRad = MathCalc.Trigonometry.secAngleSum(angleAlphaRadians, angleBetaRadians);
             // then
             assertEquals(3.864, angleSumRad, 0.001);
         }
@@ -2017,7 +2053,7 @@ class MathCalculatorTest {
             final double angleAlphaRadians = Math.toRadians(30);
             final double angleBetaRadians = Math.toRadians(45);
             // when
-            final double angleDiffRad = MathCalculator.Trigonometry
+            final double angleDiffRad = MathCalc.Trigonometry
                 .secAngleDifference(angleAlphaRadians, angleBetaRadians);
             // then
             assertEquals(1.035, angleDiffRad, 0.001);
@@ -2029,7 +2065,7 @@ class MathCalculatorTest {
             final double angleAlphaRadians = Math.toRadians(30);
             final double angleBetaRadians = Math.toRadians(45);
             // when
-            final double angleSumRad = MathCalculator.Trigonometry.cscAngleSum(angleAlphaRadians, angleBetaRadians);
+            final double angleSumRad = MathCalc.Trigonometry.cscAngleSum(angleAlphaRadians, angleBetaRadians);
             // then
             assertEquals(1.035, angleSumRad, 0.001);
         }
@@ -2040,7 +2076,7 @@ class MathCalculatorTest {
             final double angleAlphaRadians = Math.toRadians(30);
             final double angleBetaRadians = Math.toRadians(45);
             // when
-            final double angleDiffRad = MathCalculator.Trigonometry
+            final double angleDiffRad = MathCalc.Trigonometry
                 .cscAngleDifference(angleAlphaRadians, angleBetaRadians);
             // then
             assertEquals(-3.864, angleDiffRad, 0.001);
@@ -2051,7 +2087,7 @@ class MathCalculatorTest {
             // given
             final double angleAlphaRadians = Math.toRadians(60);
             // when
-            final double sine = MathCalculator.Trigonometry.findSinWithCosAndTan(angleAlphaRadians);
+            final double sine = MathCalc.Trigonometry.findSinWithCosAndTan(angleAlphaRadians);
             // then
             assertEquals(0.8660254, sine, 0.0000001);
         }

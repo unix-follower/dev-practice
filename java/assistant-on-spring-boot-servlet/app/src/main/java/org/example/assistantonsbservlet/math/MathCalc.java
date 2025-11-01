@@ -15,14 +15,14 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-public final class MathCalculator {
+public final class MathCalc {
     public static final double ONE_FOURTH = 0.25;
     public static final double ONE_HALF = 0.5;
 
     private static final String DIVISION_BY_ZERO = "Division by zero";
     private static final String MISMATCHED_DIMENSIONS = "Mismatched dimensions";
 
-    private MathCalculator() {
+    private MathCalc() {
     }
 
     public static final class Arithmetic {
@@ -685,6 +685,8 @@ public final class MathCalculator {
                 angles[Constants.ALPHA_INDEX], angles[Constants.BETA_INDEX], angles[Constants.GAMMA_INDEX]);
         }
 
+        // Angle calculators
+
         /**
          * complementary angle = 90° - angle
          * complementary angle = π/2 - angle
@@ -787,6 +789,34 @@ public final class MathCalculator {
                 }
                 default -> throw new IllegalStateException();
             }
+        }
+
+        /**
+         * @return θ = L / r. The units are radians
+         */
+        public static double centralAngleGivenArcLengthRadius(double arcLength, double radius) {
+            return arcLength / radius;
+        }
+
+        /**
+         * @return L = θ * r. The units are meters
+         */
+        public static double arcLength(double centralAngleRad, double radius) {
+            return centralAngleRad * radius;
+        }
+
+        /**
+         * Minute angle = 6° * number of minutes
+         * Hour angle = 30° * number of hours + 0.5° * number of minutes
+         * Minute to hour hand angle = |Hour angle − Minute angle|
+         * Hour to minute hand angle = 360° − Minute to hour hand angle
+         */
+        public static double[] clockAngle(short hours, short minutes) {
+            final double minuteAngle = Math.toRadians(6) * minutes;
+            final double hourAngle = Trigonometry.PI_OVER_6 * hours + Math.toRadians(0.5) * minutes;
+            final double minuteToHourAngle = Math.abs(hourAngle - minuteAngle);
+            final double hourToMinuteAngle = Math.abs(Trigonometry.PI2 - minuteToHourAngle);
+            return new double[]{hourToMinuteAngle, minuteToHourAngle};
         }
     }
 
