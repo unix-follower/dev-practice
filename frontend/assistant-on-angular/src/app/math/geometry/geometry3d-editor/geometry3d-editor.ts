@@ -2,7 +2,20 @@
 import { Component, ElementRef, Inject, OnInit, PLATFORM_ID, ViewChild } from "@angular/core"
 import { isPlatformBrowser } from "@angular/common"
 import { ActivatedRoute } from "@angular/router"
-import { runExample1, runExample2, runExample3, runExample4, runExample5 } from "./webgpu-samples"
+import {
+  runExample1,
+  runExample2,
+  runExample3,
+  runExample4,
+  runExample5,
+  runExample6,
+  runExample7,
+  runExample8,
+  runExample9,
+  runExample10,
+  runExample11,
+  runExample12,
+} from "./webgpu-samples"
 
 @Component({
   selector: "app-geometry3d-editor",
@@ -46,6 +59,13 @@ export default class Geometry3dEditor implements OnInit {
           (webGpuCtx: GPUCanvasContext, device: GPUDevice) => runExample3(webGpuCtx, device),
           (webGpuCtx: GPUCanvasContext, device: GPUDevice) => runExample4(webGpuCtx, device),
           (webGpuCtx: GPUCanvasContext, device: GPUDevice) => runExample5(webGpuCtx, device),
+          (webGpuCtx: GPUCanvasContext, device: GPUDevice) => runExample6(webGpuCtx, device),
+          (webGpuCtx: GPUCanvasContext, device: GPUDevice) => runExample7(webGpuCtx, device),
+          (webGpuCtx: GPUCanvasContext, device: GPUDevice) => runExample8(webGpuCtx, device),
+          (webGpuCtx: GPUCanvasContext, device: GPUDevice) => runExample9(webGpuCtx, device),
+          (webGpuCtx: GPUCanvasContext, device: GPUDevice) => runExample10(webGpuCtx, device),
+          (webGpuCtx: GPUCanvasContext, device: GPUDevice) => runExample11(webGpuCtx, device),
+          (webGpuCtx: GPUCanvasContext, device: GPUDevice) => runExample12(webGpuCtx, device),
         ][this.exampleIndex]
         await runExample(this.webGpuCtx, device)
       }
