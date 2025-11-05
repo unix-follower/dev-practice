@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 public final class MathCalc {
     public static final double ONE_FOURTH = 0.25;
@@ -23,6 +24,28 @@ public final class MathCalc {
     private static final String MISMATCHED_DIMENSIONS = "Mismatched dimensions";
 
     private MathCalc() {
+    }
+
+    private static void checkSameDimensions(double[] vectorA, double[] vectorB) {
+        if (vectorA.length != vectorB.length) {
+            throw new IllegalArgumentException(MISMATCHED_DIMENSIONS);
+        }
+    }
+
+    private static void checkSameDimensions(double[][] matrixA, double[][] matrixB) {
+        if (matrixA.length != matrixB.length) {
+            throw new IllegalArgumentException(MISMATCHED_DIMENSIONS);
+        }
+
+        if (matrixA[Constants.ARR_1ST_INDEX].length != matrixB[Constants.ARR_1ST_INDEX].length) {
+            throw new IllegalArgumentException(MISMATCHED_DIMENSIONS);
+        }
+    }
+
+    private static void checkGreater0(double value) {
+        if (value <= 0) {
+            throw new IllegalArgumentException("This value must be greater than 0");
+        }
     }
 
     public static final class Arithmetic {
@@ -368,12 +391,6 @@ public final class MathCalc {
             checkGreater0(sideLengthA);
             checkGreater0(sideLengthB);
             return sideLengthA * sideLengthB;
-        }
-
-        private static void checkGreater0(double value) {
-            if (value <= 0) {
-                throw new IllegalArgumentException("This value must be greater than 0");
-            }
         }
 
         /**
@@ -839,22 +856,6 @@ public final class MathCalc {
         private static void check2dOr3dSize(double[] vector) {
             if (vector == null || vector.length < 2 || vector.length > 3) {
                 throw new IllegalArgumentException("The 2d or 3d vector is required");
-            }
-        }
-
-        private static void checkSameDimensions(double[] vectorA, double[] vectorB) {
-            if (vectorA.length != vectorB.length) {
-                throw new IllegalArgumentException(MISMATCHED_DIMENSIONS);
-            }
-        }
-
-        private static void checkSameDimensions(double[][] matrixA, double[][] matrixB) {
-            if (matrixA.length != matrixB.length) {
-                throw new IllegalArgumentException(MISMATCHED_DIMENSIONS);
-            }
-
-            if (matrixA[Constants.ARR_1ST_INDEX].length != matrixB[Constants.ARR_1ST_INDEX].length) {
-                throw new IllegalArgumentException(MISMATCHED_DIMENSIONS);
             }
         }
 
@@ -1891,6 +1892,155 @@ public final class MathCalc {
         }
     }
 
+    public static final class Seq {
+        private Seq() {
+        }
+
+        /**
+         * @return aₙ = a₁rⁿ⁻¹, n∈N
+         */
+        public static double[] geometricSequence(double firstTerm, double commonRatio, int limit) {
+            final double[] sequence = new double[limit];
+            for (int i = 1; i <= limit; i++) {
+                final int index = i - 1;
+                sequence[index] = firstTerm * Math.pow(commonRatio, index);
+            }
+            return sequence;
+        }
+
+        /**
+         * @return aⱼ + … + aₖ
+         */
+        public static double geometricSequenceFiniteSum(double[] sequence, int startIndex, int endIndex) {
+            double sum = 0;
+            for (int i = startIndex; i <= endIndex; i++) {
+                sum += sequence[i];
+            }
+            return sum;
+        }
+
+        /**
+         * aₙ = aₘ * rⁿ⁻ᵐ
+         * Alternative: r = ⁽ⁿ⁻ᵐ⁾√(aₙ / aₘ)
+         *
+         * @return r = (aₙ / aₘ)¹/⁽ⁿ⁻ᵐ⁾
+         */
+        public static double geometricSequenceCommonRatioForNonConsecutiveTerms(
+            double mTermPosition, double mTerm, double nTermPosition, double nTerm) {
+            return Math.pow(nTerm / mTerm, 1. / (nTermPosition - mTermPosition));
+        }
+
+        /**
+         * If |r| > 1, then the series diverges.
+         * If |r| < 1, then the series converges.
+         * If |r| = 1, then the series is periodic, but its sum diverges.
+         *
+         * @return r = aₙ / aₙ₋₁
+         */
+        public static double geometricSequenceCommonRatio(double previousTerm, double nTerm) {
+            return nTerm / previousTerm;
+        }
+
+        public static double[] arithmeticSequence(double firstTerm, double commonDifference, int limit) {
+            final double[] sequence = new double[limit];
+            for (int i = 1; i <= limit; i++) {
+                sequence[i - 1] = arithmeticSequenceNthTerm(firstTerm, commonDifference, i);
+            }
+            return sequence;
+        }
+
+        /**
+         * @return aₙ = a₁ + (n-1)d
+         */
+        public static double arithmeticSequenceNthTerm(double firstTerm, double commonDifference, int nthTermPosition) {
+            return firstTerm + (nthTermPosition - 1) * commonDifference;
+        }
+
+        /**
+         * @return S = n/2 * (2a₁ + (n−1)d)
+         */
+        public static double arithmeticSequenceSum(double firstTerm, double commonDiff, int nthTermPosition) {
+            return nthTermPosition / 2. * (2 * firstTerm + (nthTermPosition - 1) * commonDiff);
+        }
+
+        /**
+         * @return aⱼ + ... + aₖ
+         */
+        public static double arithmeticSequenceSum(
+            double firstTerm, double commonDiff, int firstTermPosition, int nthTermPosition) {
+            final double firstTermSum = arithmeticSequenceSum(firstTerm, commonDiff, firstTermPosition - 1);
+            final double nthTermSum = arithmeticSequenceSum(firstTerm, commonDiff, nthTermPosition);
+            return nthTermSum - firstTermSum;
+        }
+
+        /**
+         * a = {aₙ}ₙ₌₀^∞
+         * b = {bₙ}ₙ₌₀^∞
+         * c = {cₙ}ₙ₌₀^∞
+         *
+         * @return cₙ = ∑ₖ₌₀ⁿ aₖ * bₙ₋ₖ
+         */
+        public static double[] convolution(double[] sequence1, double[] sequence2) {
+            Objects.requireNonNull(sequence1);
+            Objects.requireNonNull(sequence2);
+
+            final int n = sequence1.length;
+            final int m = sequence2.length;
+            final int size = n + m - 1;
+            final double[] convolvedSequence = new double[size];
+            for (int i = 0; i < size; i++) {
+                convolvedSequence[i] = 0;
+                for (int k = 0; k < n; k++) {
+                    final int j = i - k;
+                    if (j >= 0 && j < m) {
+                        convolvedSequence[i] += sequence1[k] * sequence2[j];
+                    }
+                }
+            }
+            return convolvedSequence;
+        }
+
+        /**
+         * @param rows the first row index 0 is not included. For the size of rows = 10 -> rows = 10 + 1 = 11.
+         * @return C(n, k) = C(n-1, k-1) + C(n-1, k)
+         */
+        public static int[][] pascalTriangle(int rows) {
+            checkGreater0(rows);
+
+            final int totalRows = rows + 1;
+            final int[][] matrix = new int[totalRows][];
+            for (int i = 0; i < totalRows; i++) {
+                matrix[i] = new int[i + 1];
+                matrix[i][0] = 1;
+                matrix[i][i] = 1;
+                for (int j = 1; j < i; j++) {
+                    matrix[i][j] = matrix[i - 1][j - 1] + matrix[i - 1][j];
+                }
+            }
+            return matrix;
+        }
+
+        /**
+         * @return 2ⁿ
+         */
+        public static long pascalTriangleRowSum(int rowNumber) {
+            return (long) Math.pow(2, rowNumber);
+        }
+
+        /**
+         * @return Hₙ = 1/1 + 1/2 + 1/3 + ⋯ + 1/n = ∑ₖ₌₁ⁿ 1/k
+         */
+        public static double harmonicNumber(double end) {
+            checkGreater0(end);
+
+            double sum = 0;
+            for (int k = 1; k <= end; k++) {
+                sum += 1. / k;
+            }
+            return sum;
+        }
+    }
+
     public static final class LinearAlgebra {
         private LinearAlgebra() {
         }
@@ -1928,7 +2078,7 @@ public final class MathCalc {
         /**
          * y = mx + b
          *
-         * @return ∫(ax + b)dx = (a/2)x^2 + bx + C
+         * @return ∫(ax + b)dx = (a/2)x² + bx + C
          */
         public static double indefiniteLinearIntegral(
             double x, double slope, double constantTerm, double constantOfIntegration) {
