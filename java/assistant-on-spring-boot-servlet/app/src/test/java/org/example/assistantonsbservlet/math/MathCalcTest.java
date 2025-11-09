@@ -4,18 +4,204 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class MathCalcTest {
+    private static final double DELTA1 = 0.1;
+    private static final double DELTA3 = 0.001;
+    private static final double DELTA4 = 0.0001;
     private static final double DELTA6 = 0.000001;
+    private static final double DELTA8 = 0.00000001;
+    private static final double DELTA9 = 0.000000001;
+
+    @Nested
+    class Arithmetic {
+        @ParameterizedTest
+        @CsvSource({
+            "2,true",
+            "3,true",
+            "5,true",
+            "7,true",
+            "11,true",
+            "13,true",
+            "17,true",
+            "19,true",
+            "23,true",
+            "29,true",
+            "31,true",
+            "37,true",
+            "41,true",
+            "43,true",
+            "47,true",
+            "53,true",
+            "59,true",
+            "61,true",
+            "67,true",
+            "71,true",
+            "73,true",
+            "79,true",
+            "83,true",
+            "89,true",
+            "97,true",
+        })
+        void testIsPrime(double number, boolean expectedResult) {
+            // when
+            final boolean prime = MathCalc.Arithmetic.isPrime(number);
+            // then
+            assertEquals(expectedResult, prime);
+        }
+
+        static List<Arguments> primeFactorizationArgs() {
+            return List.of(
+                Arguments.of(24, new long[]{2, 2, 2, 3}),
+                Arguments.of(80, new long[]{2, 2, 2, 2, 5}),
+                Arguments.of(121, new long[]{11, 11})
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("primeFactorizationArgs")
+        void testPrimeFactorization(double number, long[] expectedResult) {
+            // when
+            final long[] primes = MathCalc.Arithmetic.primeFactorization(number);
+            // then
+            assertArrayEquals(expectedResult, primes);
+        }
+
+        static List<Arguments> lcmWithPrimeFactorizationArgs() {
+            return List.of(
+                Arguments.of(new long[]{18, 24}, 72),
+                Arguments.of(new long[]{2, 4, 6, 8, 10, 12}, 120)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("lcmWithPrimeFactorizationArgs")
+        void testLcmWithPrimeFactorization(long[] numbers, long expectedResult) {
+            // when
+            final long lcm = MathCalc.Arithmetic.lcmWithPrimeFactorization(numbers);
+            // then
+            assertEquals(expectedResult, lcm);
+        }
+    }
+
+    @Nested
+    class Algebra {
+        static List<Arguments> gammaFunctionArgs() {
+            return List.of(
+                Arguments.of(10, 362880.0000000015),
+                Arguments.of(10.1, 454760.751441586)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("gammaFunctionArgs")
+        void testGammaFunction(double x, double expectedResult) {
+            // when
+            final double result = MathCalc.Algebra.gammaFunction(x);
+            // then
+            assertEquals(expectedResult, result, DELTA9);
+        }
+
+        @Test
+        void testAddExponentsLaw() {
+            // given
+            final byte base = 5;
+            final double[] exponents = new double[]{3, 2};
+            // when
+            final double result = MathCalc.Algebra.addExponentsLaw(base, exponents);
+            // then
+            assertEquals(3_125, result, DELTA1);
+        }
+
+        @Test
+        void testSubtractExponentsLaw() {
+            // given
+            final byte base = 5;
+            final double[] exponents = new double[]{3, 2};
+            // when
+            final double result = MathCalc.Algebra.subtractExponentsLaw(base, exponents);
+            // then
+            assertEquals(5, result, DELTA1);
+        }
+
+        @Test
+        void testNegativeExponent() {
+            // given
+            final byte base = 5;
+            final double exponent = -4;
+            // when
+            final double result = MathCalc.Algebra.negativeExponent(base, exponent);
+            // then
+            assertEquals(0.0016, result, DELTA4);
+        }
+
+        @Test
+        void testSquareRootMultiply() {
+            // given
+            final byte x = 3;
+            final byte y = 4;
+            // when
+            final double result = MathCalc.Algebra.squareRootMultiply(x, y);
+            // then
+            assertEquals(3.4641, result, DELTA4);
+        }
+
+        @Test
+        void testSquareRootDivide() {
+            // given
+            final byte x = 8;
+            final byte y = 4;
+            // when
+            final double result = MathCalc.Algebra.squareRootDivide(x, y);
+            // then
+            assertEquals(1.414214, result, DELTA6);
+        }
+
+        static List<Arguments> squareRootWithExponentArgs() {
+            return List.of(
+                Arguments.of(2, 4, 4),
+                Arguments.of(5, 3, 11.18033989),
+                Arguments.of(4, 5, 32)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("squareRootWithExponentArgs")
+        void testSquareRootWithExponent(double x, double exponent, double expectedResult) {
+            // when
+            final double result = MathCalc.Algebra.squareRootWithExponent(x, exponent);
+            // then
+            assertEquals(expectedResult, result, DELTA8);
+        }
+
+        static List<Arguments> squareRootWithComplexNumberArgs() {
+            return List.of(
+                Arguments.of(-9, 3),
+                Arguments.of(-13, Math.sqrt(13)),
+                Arguments.of(-49, 7)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("squareRootWithComplexNumberArgs")
+        void testSquareRootWithComplexNumber(double x, double expectedResult) {
+            // when
+            final double result = MathCalc.Algebra.squareRootWithComplexNumber(x);
+            // then
+            assertEquals(expectedResult, result, DELTA8);
+        }
+    }
 
     @Nested
     class Geometry {
@@ -2090,6 +2276,201 @@ class MathCalcTest {
             final double sine = MathCalc.Trigonometry.findSinWithCosAndTan(angleAlphaRadians);
             // then
             assertEquals(0.8660254, sine, 0.0000001);
+        }
+    }
+
+    @Nested
+    class Seq {
+        static List<Arguments> geometricSequenceArgs() {
+            return List.of(
+                Arguments.of(2, 4, new double[]{2, 8, 32, 128, 512})
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("geometricSequenceArgs")
+        void testGeometricSequence(double firstTerm, double commonRatio, double[] expectedResult) {
+            // given
+            final byte limit = 5;
+            // when
+            final double[] geometricSequence = MathCalc.Seq.geometricSequence(firstTerm, commonRatio, limit);
+            // then
+            assertArrayEquals(expectedResult, geometricSequence);
+        }
+
+        static List<Arguments> geometricSequenceFiniteSumArgs() {
+            return List.of(
+                Arguments.of(new double[]{2, 8, 32, 128, 512}, 1, 3, 168),
+                Arguments.of(new double[]{2, 8, 32, 128, 512}, 2, 3, 160),
+                Arguments.of(new double[]{2, 8, 32, 128, 512}, 0, 4, 682)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("geometricSequenceFiniteSumArgs")
+        void testGeometricSequenceFiniteSum(double[] sequence, int startIndex, int endIndex, double expectedResult) {
+            // when
+            final double finiteSum = MathCalc.Seq.geometricSequenceFiniteSum(sequence, startIndex, endIndex);
+            // then
+            assertEquals(expectedResult, finiteSum, DELTA1);
+        }
+
+        @Test
+        void testGeometricSequenceCommonRatioForNonConsecutiveTerms() {
+            // given
+            final double mTermPosition = 3;
+            final double mTerm = 32;
+            final double nTermPosition = 5;
+            final double nTerm = 512;
+            // when
+            final double commonRatio = MathCalc.Seq
+                .geometricSequenceCommonRatioForNonConsecutiveTerms(mTermPosition, mTerm, nTermPosition, nTerm);
+            // then
+            assertEquals(4, commonRatio, DELTA1);
+        }
+
+        @Test
+        void testGeometricSequenceCommonRatio() {
+            // given
+            final double previousTerm = 8;
+            final double nTerm = 32;
+            // when
+            final double commonRatio = MathCalc.Seq.geometricSequenceCommonRatio(previousTerm, nTerm);
+            // then
+            assertEquals(4, commonRatio, DELTA1);
+        }
+
+        static List<Arguments> arithmeticSequenceArgs() {
+            return List.of(
+                Arguments.of(0, 8, new double[]{0, 8, 16, 24, 32})
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("arithmeticSequenceArgs")
+        void testArithmeticSequence(double firstTerm, double commonDiff, double[] expectedResult) {
+            // given
+            final byte limit = 5;
+            // when
+            final double[] arithmeticSequence = MathCalc.Seq.arithmeticSequence(firstTerm, commonDiff, limit);
+            // then
+            assertArrayEquals(expectedResult, arithmeticSequence);
+        }
+
+        @Test
+        void testArithmeticSequenceNthTerm() {
+            // given
+            final double firstTerm = 0;
+            final double commonDiff = 8;
+            final byte nthTermPosition = 64;
+            // when
+            final double nthTerm = MathCalc.Seq.arithmeticSequenceNthTerm(firstTerm, commonDiff, nthTermPosition);
+            // then
+            assertEquals(504, nthTerm, DELTA1);
+        }
+
+        @Test
+        void testArithmeticSequenceSumUpToNthTerm() {
+            // given
+            final double firstTerm = 0;
+            final double commonDiff = 8;
+            final byte nthTermPosition = 64;
+            // when
+            final double nthTerm = MathCalc.Seq
+                .arithmeticSequenceSum(firstTerm, commonDiff, nthTermPosition);
+            // then
+            assertEquals(16128, nthTerm, DELTA1);
+        }
+
+        @Test
+        void testArithmeticSequenceSum() {
+            // given
+            final double firstTerm = 0;
+            final double commonDiff = 8;
+            final byte firstTermPosition = 3;
+            final byte nthTermPosition = 64;
+            // when
+            final double nthTerm = MathCalc.Seq
+                .arithmeticSequenceSum(firstTerm, commonDiff, firstTermPosition, nthTermPosition);
+            // then
+            assertEquals(16120, nthTerm, DELTA1);
+        }
+
+        static List<Arguments> convolutionArgs() {
+            return List.of(
+                Arguments.of(new double[]{1, 2, 3}, new double[]{4, 5, 6}, new double[]{4, 13, 28, 27, 18}),
+                Arguments.of(new double[]{1, 2, 3, 4, 5}, new double[]{4, 5, 6},
+                    new double[]{4, 13, 28, 43, 58, 49, 30})
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("convolutionArgs")
+        void testConvolution(double[] sequence1, double[] sequence2, double[] expectedResult) {
+            // when
+            final double[] convolvedSequence = MathCalc.Seq.convolution(sequence1, sequence2);
+            // then
+            assertArrayEquals(expectedResult, convolvedSequence);
+        }
+
+        @Test
+        void testPascalTriangle() {
+            // given
+            final byte rows = 10;
+            final int[][] expectedMatrix = new int[][]{
+                {1},
+                {1, 1},
+                {1, 2, 1},
+                {1, 3, 3, 1},
+                {1, 4, 6, 4, 1},
+                {1, 5, 10, 10, 5, 1},
+                {1, 6, 15, 20, 15, 6, 1},
+                {1, 7, 21, 35, 35, 21, 7, 1},
+                {1, 8, 28, 56, 70, 56, 28, 8, 1},
+                {1, 9, 36, 84, 126, 126, 84, 36, 9, 1},
+                {1, 10, 45, 120, 210, 252, 210, 120, 45, 10, 1},
+            };
+            // when
+            final int[][] matrix = MathCalc.Seq.pascalTriangle(rows);
+            // then
+            assertArrayEquals(expectedMatrix, matrix);
+        }
+
+        @ParameterizedTest
+        @CsvSource({
+            "0,1",
+            "1,2",
+            "2,4",
+            "3,8",
+            "4,16",
+            "5,32",
+            "6,64",
+            "7,128",
+            "8,256",
+            "9,512",
+            "10,1024",
+        })
+        void testPascalTriangleRowSum(int rowNumber, long expectedResult) {
+            // when
+            final long rowSum = MathCalc.Seq.pascalTriangleRowSum(rowNumber);
+            // then
+            assertEquals(expectedResult, rowSum);
+        }
+
+        static List<Arguments> harmonicNumberArgs() {
+            return List.of(
+                Arguments.of(10, 2.929),
+                Arguments.of(2.1, 1.5)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("harmonicNumberArgs")
+        void testHarmonicNumber(double end, double expectedResult) {
+            // when
+            final double number = MathCalc.Seq.harmonicNumber(end);
+            // then
+            assertEquals(expectedResult, number, DELTA3);
         }
     }
 }
