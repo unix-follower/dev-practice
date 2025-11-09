@@ -7,6 +7,13 @@ public final class ConversionCalculator {
     public static final byte KCAL_IN_ONE_GRAM_OF_ALCOHOL = 7;
     public static final double DENSITY_OF_ALCOHOL = 0.78924;
 
+//    1 ampere = 1 coulomb/second
+//    1 coulomb = 1 ampere * second
+//    1 watt = 1 joule/second
+//    1 volt = 1 watt/ampere
+//    1 volt = 1 joule/coulomb
+//    1 ohm = 1 volt/ampere
+
     private ConversionCalculator() {
     }
 

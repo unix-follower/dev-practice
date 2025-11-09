@@ -19,7 +19,189 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 class MathCalcTest {
     private static final double DELTA1 = 0.1;
     private static final double DELTA3 = 0.001;
+    private static final double DELTA4 = 0.0001;
     private static final double DELTA6 = 0.000001;
+    private static final double DELTA8 = 0.00000001;
+    private static final double DELTA9 = 0.000000001;
+
+    @Nested
+    class Arithmetic {
+        @ParameterizedTest
+        @CsvSource({
+            "2,true",
+            "3,true",
+            "5,true",
+            "7,true",
+            "11,true",
+            "13,true",
+            "17,true",
+            "19,true",
+            "23,true",
+            "29,true",
+            "31,true",
+            "37,true",
+            "41,true",
+            "43,true",
+            "47,true",
+            "53,true",
+            "59,true",
+            "61,true",
+            "67,true",
+            "71,true",
+            "73,true",
+            "79,true",
+            "83,true",
+            "89,true",
+            "97,true",
+        })
+        void testIsPrime(double number, boolean expectedResult) {
+            // when
+            final boolean prime = MathCalc.Arithmetic.isPrime(number);
+            // then
+            assertEquals(expectedResult, prime);
+        }
+
+        static List<Arguments> primeFactorizationArgs() {
+            return List.of(
+                Arguments.of(24, new long[]{2, 2, 2, 3}),
+                Arguments.of(80, new long[]{2, 2, 2, 2, 5}),
+                Arguments.of(121, new long[]{11, 11})
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("primeFactorizationArgs")
+        void testPrimeFactorization(double number, long[] expectedResult) {
+            // when
+            final long[] primes = MathCalc.Arithmetic.primeFactorization(number);
+            // then
+            assertArrayEquals(expectedResult, primes);
+        }
+
+        static List<Arguments> lcmWithPrimeFactorizationArgs() {
+            return List.of(
+                Arguments.of(new long[]{18, 24}, 72),
+                Arguments.of(new long[]{2, 4, 6, 8, 10, 12}, 120)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("lcmWithPrimeFactorizationArgs")
+        void testLcmWithPrimeFactorization(long[] numbers, long expectedResult) {
+            // when
+            final long lcm = MathCalc.Arithmetic.lcmWithPrimeFactorization(numbers);
+            // then
+            assertEquals(expectedResult, lcm);
+        }
+    }
+
+    @Nested
+    class Algebra {
+        static List<Arguments> gammaFunctionArgs() {
+            return List.of(
+                Arguments.of(10, 362880.0000000015),
+                Arguments.of(10.1, 454760.751441586)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("gammaFunctionArgs")
+        void testGammaFunction(double x, double expectedResult) {
+            // when
+            final double result = MathCalc.Algebra.gammaFunction(x);
+            // then
+            assertEquals(expectedResult, result, DELTA9);
+        }
+
+        @Test
+        void testAddExponentsLaw() {
+            // given
+            final byte base = 5;
+            final double[] exponents = new double[]{3, 2};
+            // when
+            final double result = MathCalc.Algebra.addExponentsLaw(base, exponents);
+            // then
+            assertEquals(3_125, result, DELTA1);
+        }
+
+        @Test
+        void testSubtractExponentsLaw() {
+            // given
+            final byte base = 5;
+            final double[] exponents = new double[]{3, 2};
+            // when
+            final double result = MathCalc.Algebra.subtractExponentsLaw(base, exponents);
+            // then
+            assertEquals(5, result, DELTA1);
+        }
+
+        @Test
+        void testNegativeExponent() {
+            // given
+            final byte base = 5;
+            final double exponent = -4;
+            // when
+            final double result = MathCalc.Algebra.negativeExponent(base, exponent);
+            // then
+            assertEquals(0.0016, result, DELTA4);
+        }
+
+        @Test
+        void testSquareRootMultiply() {
+            // given
+            final byte x = 3;
+            final byte y = 4;
+            // when
+            final double result = MathCalc.Algebra.squareRootMultiply(x, y);
+            // then
+            assertEquals(3.4641, result, DELTA4);
+        }
+
+        @Test
+        void testSquareRootDivide() {
+            // given
+            final byte x = 8;
+            final byte y = 4;
+            // when
+            final double result = MathCalc.Algebra.squareRootDivide(x, y);
+            // then
+            assertEquals(1.414214, result, DELTA6);
+        }
+
+        static List<Arguments> squareRootWithExponentArgs() {
+            return List.of(
+                Arguments.of(2, 4, 4),
+                Arguments.of(5, 3, 11.18033989),
+                Arguments.of(4, 5, 32)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("squareRootWithExponentArgs")
+        void testSquareRootWithExponent(double x, double exponent, double expectedResult) {
+            // when
+            final double result = MathCalc.Algebra.squareRootWithExponent(x, exponent);
+            // then
+            assertEquals(expectedResult, result, DELTA8);
+        }
+
+        static List<Arguments> squareRootWithComplexNumberArgs() {
+            return List.of(
+                Arguments.of(-9, 3),
+                Arguments.of(-13, Math.sqrt(13)),
+                Arguments.of(-49, 7)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("squareRootWithComplexNumberArgs")
+        void testSquareRootWithComplexNumber(double x, double expectedResult) {
+            // when
+            final double result = MathCalc.Algebra.squareRootWithComplexNumber(x);
+            // then
+            assertEquals(expectedResult, result, DELTA8);
+        }
+    }
 
     @Nested
     class Geometry {

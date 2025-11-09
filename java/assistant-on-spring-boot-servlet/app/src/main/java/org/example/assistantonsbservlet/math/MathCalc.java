@@ -15,6 +15,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.DoubleUnaryOperator;
 
 public final class MathCalc {
     public static final double ONE_FOURTH = 0.25;
@@ -75,6 +76,292 @@ public final class MathCalc {
                 result = result.multiply(i);
             }
             return result;
+        }
+
+        public static long sumOfDigits(double number) {
+            failIfNotWholeNumber(number);
+
+            long num = Math.abs((long) number);
+            long sum = 0;
+            while (num > 0) {
+                sum += num % 10;
+                num /= 10;
+            }
+            return sum;
+        }
+
+        private static void failIfNotWholeNumber(double number) {
+            if (!isWholeNumber(number)) {
+                throw new IllegalArgumentException("Only whole numbers are supported");
+            }
+        }
+
+        public static long sumOfLastDigits(double number, long numOfDigits) {
+            failIfNotWholeNumber(number);
+
+            long num = Math.abs((long) number);
+            long sum = 0;
+            for (long i = 0; i < numOfDigits && num > 0; i++) {
+                sum += num % 10;
+                num /= 10;
+            }
+            return sum;
+        }
+
+        public static boolean isDivisibleBy2(double number) {
+            return isWholeNumber(number) && ((long) number) % 2 == 0;
+        }
+
+        public static boolean isDivisibleBy3(double number) {
+            return isWholeNumber(number) && sumOfDigits(number) % 3 == 0;
+        }
+
+        public static boolean isDivisibleBy4(double number) {
+            return isWholeNumber(number) && sumOfLastDigits(number, 2) % 4 == 0;
+        }
+
+        public static boolean isDivisibleBy5(double number) {
+            if (!isWholeNumber(number)) {
+                return false;
+            }
+            final long lastDigit = Math.abs((long) number) % 10;
+            return lastDigit == 0 || lastDigit == 5;
+        }
+
+        public static boolean isDivisibleBy6(double number) {
+            return isDivisibleBy2(number) && isDivisibleBy3(number);
+        }
+
+        public static boolean isDivisibleBy8(double number) {
+            return isWholeNumber(number) && sumOfLastDigits(number, 3) % 8 == 0;
+        }
+
+        public static boolean isDivisibleBy9(double number) {
+            return isWholeNumber(number) && sumOfDigits(number) % 9 == 0;
+        }
+
+        public static boolean isDivisibleBy10(double number) {
+            if (!isWholeNumber(number)) {
+                return false;
+            }
+            final long lastDigit = Math.abs((long) number) % 10;
+            return lastDigit == 0;
+        }
+
+        public static boolean isWholeNumber(double number) {
+            return (number % 1) == 0;
+        }
+
+        public static boolean isPrime(double number) {
+            if (!isWholeNumber(number) || number < 2) {
+                return false;
+            }
+            final long n = (long) number;
+            if (n == 2) {
+                return true;
+            }
+            if (n % 2 == 0) {
+                return false;
+            }
+            for (long i = 3; i <= Math.sqrt(n); i += 2) {
+                if (n % i == 0) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        public static long[] primeFactorization(double number) {
+            if (!isWholeNumber(number) || number < 2) {
+                return new long[0];
+            }
+            long num = (long) number;
+            final var factors = new ArrayList<Long>();
+            for (long i = 2; i <= num / i; i++) {
+                while (num % i == 0) {
+                    factors.add(i);
+                    num /= i;
+                }
+            }
+            if (num > 1) {
+                factors.add(num);
+            }
+            return factors.stream().mapToLong(Long::longValue).toArray();
+        }
+
+        /**
+         * @return prime number -> exponent
+         */
+        private static Map<Long, Integer> primeFactorMap(long n) {
+            final var map = new HashMap<Long, Integer>();
+            for (long i = 2; i * i <= n; i++) {
+                while (n % i == 0) {
+                    map.put(i, map.getOrDefault(i, 0) + 1);
+                    n /= i;
+                }
+            }
+            if (n > 1) {
+                map.put(n, map.getOrDefault(n, 0) + 1);
+            }
+            return map;
+        }
+
+        /**
+         * 1. Find all numbers as a product of their prime factors.
+         * 2. Find the highest power of each prime number.
+         * 3. Multiply these values together.
+         */
+        public static long lcmWithPrimeFactorization(long[] numbers) {
+            final var primePowers = new HashMap<Long, Integer>();
+            for (long number : numbers) {
+                final var factors = primeFactorMap(number);
+                for (final var entry : factors.entrySet()) {
+                    final long prime = entry.getKey();
+                    final int power = entry.getValue();
+                    primePowers.put(prime, Math.max(primePowers.getOrDefault(prime, 0), power));
+                }
+            }
+            long lcm = 1;
+            for (final var entry : primePowers.entrySet()) {
+                lcm *= (long) Math.pow(entry.getKey(), entry.getValue());
+            }
+            return lcm;
+        }
+    }
+
+    /**
+     * <table>
+     *     <tr>
+     *         <th>Square root</th><th>Is perfect square?</th>
+     *     </tr>
+     *     <tr><td>√1 = 1</td><td>✅</td></tr>
+     *     <tr><td>√2 ≈ 1.41</td><td>❌</td></tr>
+     *     <tr><td>√3 ≈ 1.73</td><td>❌</td></tr>
+     *     <tr><td>√4 = 2</td><td>✅</td></tr>
+     *     <tr><td>√5 ≈ 2.24</td><td>❌</td></tr>
+     *     <tr><td>√7 ≈ 2.65</td><td>❌</td></tr>
+     *     <tr><td>√9 = 3</td><td>✅</td></tr>
+     *     <tr><td>√11 ≈ 3.32</td><td>❌</td></tr>
+     *     <tr><td>√13 ≈ 3.61</td><td>❌</td></tr>
+     *     <tr><td>√16 = 4</td><td>✅</td></tr>
+     *     <tr><td>√17 ≈ 4.12</td><td>❌</td></tr>
+     *     <tr><td>√19 ≈ 4.34</td><td>❌</td></tr>
+     *     <tr><td>√25 = 5</td><td>✅</td></tr>
+     *     <tr><td>√27 = √(9 × 3) = √9 × √3 = 3√3</td><td>❌</td></tr>
+     *     <tr><td>√36 = 6</td><td>✅</td></tr>
+     *     <tr><td>√45 = √(9 × 5) = √9 × √5 = 3√5</td><td>❌</td></tr>
+     *     <tr><td>√49 = 7</td><td>✅</td></tr>
+     *     <tr><td>√52 ≈ 2√13 = 7.22</td><td>❌</td></tr>
+     *     <tr><td>√64 = 8</td><td>✅</td></tr>
+     *     <tr><td>√81 = 9</td><td>✅</td></tr>
+     *     <tr><td>√100 = 10</td><td>✅</td></tr>
+     *     <tr><td>√121 = 11</td><td>✅</td></tr>
+     *     <tr><td>√144 = 12</td><td>✅</td></tr>
+     * </table>
+     */
+    public static final class Algebra {
+        private Algebra() {
+        }
+
+        /**
+         * @return 𝚪(n) = (n - 1)!
+         */
+        public static double gammaFunction(double x) {
+            if (x == 0) {
+                throw new IllegalArgumentException("Gamma function is undefined for 0");
+            }
+
+            // Lanczos approximation coefficients
+            final double[] p = {
+                676.5203681218851,
+                -1259.1392167224028,
+                771.32342877765313,
+                -176.61502916214059,
+                12.507343278686905,
+                -0.13857109526572012,
+                9.9843695780195716e-6,
+                1.5056327351493116e-7
+            };
+            final int g = 7;
+            if (x < 0.5) {
+                // Reflection formula
+                return Math.PI / (Math.sin(Math.PI * x) * gammaFunction(1 - x));
+            }
+            x -= 1;
+            double a = 0.99999999999980993;
+            for (int i = 0; i < p.length; i++) {
+                a += p[i] / (x + i + 1);
+            }
+            final double t = x + g + 0.5;
+            return Math.sqrt(2 * Math.PI) * Math.pow(t, x + 0.5) * Math.exp(-t) * a;
+        }
+
+        // Exponents and logarithms
+
+        /**
+         * @return xⁿ * xᵐ = xⁿ⁺ᵐ
+         */
+        public static double addExponentsLaw(double base, double[] exponents) {
+            final double exponent = Arrays.stream(exponents).sum();
+            return Math.pow(base, exponent);
+        }
+
+        /**
+         * @return xⁿ / xᵐ = xⁿ⁻ᵐ
+         */
+        public static double subtractExponentsLaw(double base, double[] exponents) {
+            final double exponent = Arrays.stream(exponents)
+                .reduce((left, right) -> left - right).orElse(0);
+            return Math.pow(base, exponent);
+        }
+
+        /**
+         * @return x⁻ⁿ = (1/x)ⁿ
+         */
+        public static double negativeExponent(double base, double exponent) {
+            return Math.pow(1 / base, Math.abs(exponent));
+        }
+
+        /**
+         * @return xⁿ * yⁿ = (x * y)ⁿ
+         */
+        public static double multiplyWithSamePower(double x, double y, double exponent) {
+            return Math.pow(x * y, exponent);
+        }
+
+        /**
+         * x = ⁿ√a as xⁿ = a
+         * y = ±√x ⟺ y² = x
+         * √x = x¹/² = x^0.5
+         * x¹/² * y¹/² = (x * y)¹/²
+         * (x^0.5)² = x^(0.5*2) = x
+         *
+         * @return √(x * y) = √x * √y
+         */
+        public static double squareRootMultiply(double x, double y) {
+            return Math.sqrt(x * y);
+        }
+
+        /*
+         * @return √(x / y) = √x / √y
+         */
+        public static double squareRootDivide(double x, double y) {
+            return Math.sqrt(x / y);
+        }
+
+        /**
+         * @return √(xⁿ) = (xⁿ)¹/² = xⁿ/²
+         */
+        public static double squareRootWithExponent(double x, double exponent) {
+            return Math.sqrt(Math.pow(x, exponent));
+        }
+
+        /**
+         * i = √(-1)
+         * x = a + bi
+         */
+        public static double squareRootWithComplexNumber(double x) {
+            return Math.sqrt(Math.abs(x));
         }
     }
 
@@ -2076,6 +2363,80 @@ public final class MathCalc {
         }
 
         /**
+         * f(x) = xⁿ
+         *
+         * @return f'(x) = n * xⁿ⁻¹
+         */
+        public static double derivativePowerRule(double x, double exponent) {
+            return exponent * Math.pow(x, exponent - 1);
+        }
+
+        /**
+         * f(x) = eˣ
+         *
+         * @return f'(x) = eˣ
+         */
+        public static double derivativeExponentialRule(double x) {
+            return Math.exp(x);
+        }
+
+        /**
+         * f(x) = ln(x)
+         *
+         * @return f'(x) = 1/x
+         */
+        public static double derivativeLogarithmicRule(double x) {
+            return 1.0 / x;
+        }
+
+        /**
+         * f(x) = u(x) * v(x)
+         *
+         * @return f'(x) = u'(x) * v(x) + u(x) * v'(x)
+         */
+        public static double derivativeProductRule(
+            double x,
+            DoubleUnaryOperator u,
+            DoubleUnaryOperator uPrime,
+            DoubleUnaryOperator v,
+            DoubleUnaryOperator vPrime
+        ) {
+            return uPrime.applyAsDouble(x) * v.applyAsDouble(x) + u.applyAsDouble(x) * vPrime.applyAsDouble(x);
+        }
+
+        /**
+         * f(x) = g(h(x))
+         *
+         * @return f'(x) = g'(h(x)) * h'(x)
+         */
+        public static double derivativeChainRule(
+            double x,
+            DoubleUnaryOperator h,
+            DoubleUnaryOperator hPrime,
+            DoubleUnaryOperator gPrime
+        ) {
+            return gPrime.applyAsDouble(h.applyAsDouble(x)) * hPrime.applyAsDouble(x);
+        }
+
+        /**
+         * f(x) = u(x) / v(x)
+         *
+         * @return f'(x) = (u'(x) * v(x) - u(x) * v'(x)) / (v(x)²)
+         */
+        public static double derivativeQuotientRule(
+            double x,
+            DoubleUnaryOperator u,
+            DoubleUnaryOperator uPrime,
+            DoubleUnaryOperator v,
+            DoubleUnaryOperator vPrime
+        ) {
+            final double numerator = uPrime.applyAsDouble(x) * v.applyAsDouble(x)
+                - u.applyAsDouble(x) * vPrime.applyAsDouble(x);
+            final double denominator = Math.pow(v.applyAsDouble(x), 2);
+            return numerator / denominator;
+        }
+
+        /**
          * y = mx + b
          *
          * @return ∫(ax + b)dx = (a/2)x² + bx + C
@@ -2094,6 +2455,41 @@ public final class MathCalc {
             final double fx2 = (slope / 2) * x2 * x2 + constantTerm * x2;
             final double fx1 = (slope / 2) * x1 * x1 + constantTerm * x1;
             return fx2 - fx1;
+        }
+
+        /**
+         * Numerically integrates f(x) from a to b using the Trapezoidal Rule.
+         * @param numberOfIntervals (higher = more accurate).
+         * @return Approximate value of the definite integral.
+         */
+        public static double integrateTrapezoidal(
+            DoubleUnaryOperator f, double lowerBound, double upperBound, int numberOfIntervals) {
+            final double h = (upperBound - lowerBound) / numberOfIntervals;
+            double sum = ONE_HALF * (f.applyAsDouble(lowerBound) + f.applyAsDouble(upperBound));
+            for (int i = 1; i < numberOfIntervals; i++) {
+                sum += f.applyAsDouble(lowerBound + i * h);
+            }
+            return sum * h;
+        }
+
+        /**
+         * Numerically integrates f(x) from a to b using Simpson's Rule.
+         * @return Approximate value of the definite integral.
+         */
+        public static double integrateSimpson(
+            DoubleUnaryOperator f, double lowerBound, double upperBound, int numberOfIntervals) {
+            if (numberOfIntervals % 2 != 0) {
+                throw new IllegalArgumentException("numberOfIntervals must be even");
+            }
+            final double h = (upperBound - lowerBound) / numberOfIntervals;
+            double sum = f.applyAsDouble(lowerBound) + f.applyAsDouble(upperBound);
+            for (int i = 1; i < numberOfIntervals; i += 2) {
+                sum += 4 * f.applyAsDouble(lowerBound + i * h);
+            }
+            for (int i = 2; i < numberOfIntervals; i += 2) {
+                sum += 2 * f.applyAsDouble(lowerBound + i * h);
+            }
+            return sum * h / 3.0;
         }
     }
 
