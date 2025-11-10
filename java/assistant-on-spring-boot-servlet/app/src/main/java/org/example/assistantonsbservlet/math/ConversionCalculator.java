@@ -13,6 +13,7 @@ public final class ConversionCalculator {
 //    1 volt = 1 watt/ampere
 //    1 volt = 1 joule/coulomb
 //    1 ohm = 1 volt/ampere
+//    1 farad = 1 coulomb/volt
 
     private ConversionCalculator() {
     }

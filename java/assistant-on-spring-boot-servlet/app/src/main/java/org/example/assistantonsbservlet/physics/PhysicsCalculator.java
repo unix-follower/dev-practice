@@ -3,9 +3,131 @@ package org.example.assistantonsbservlet.physics;
 import org.example.assistantonsbservlet.math.MathCalc;
 
 import java.util.Arrays;
+import java.util.function.DoubleUnaryOperator;
 
 public final class PhysicsCalculator {
     private PhysicsCalculator() {
+    }
+
+    /**
+     * v = Ri
+     * R is a constant of proportionality, representing the resistance.
+     * i = I is current
+     */
+    public static double ohmLawVoltage(double resistance, double current) {
+        return resistance * current;
+    }
+
+    /**
+     * i = dq/dt
+     * i = C * (dv/dt)
+     *
+     * @return i = v/R
+     */
+    public static double ohmLawCurrent(double voltage, double resistance) {
+        return voltage / resistance;
+    }
+
+    /**
+     * @return R = v/i
+     */
+    public static double ohmLawResistance(double voltage, double current) {
+        return voltage / current;
+    }
+
+    /**
+     * Equivalents:
+     * <br/>p = dU/dt = dU/dq * dq/dt
+     * <br/>p = vi
+     * <br/>p = (iR)i = i²R
+     * <br/>p = v(v/R) = v²/R
+     *
+     * @return p = dU/dt. The units are joules/second (aka watts)
+     */
+    public static double power(double changeInEnergy, double changeInTime) {
+        return changeInEnergy / changeInTime;
+    }
+
+    /**
+     * Equivalent: p = vi
+     *
+     * @return p = iL * di/dt
+     */
+    public static double powerInInductor(
+        double current, double inductance, double changeInCurrent, double changeInTime) {
+        return current * inductance * (changeInCurrent / changeInTime);
+    }
+
+    /**
+     * The constant of proportionality C is the capacitance.
+     *
+     * @return Q = CV
+     */
+    public static double capacitorCharge(double capacitance, double voltage) {
+        return capacitance * voltage;
+    }
+
+    /**
+     * @return v = 1/C ∫ᵀ_(-∞) i * dt
+     */
+    public static double integrateCapacitorVoltage(
+        DoubleUnaryOperator voltageFn, double current, double capacitance, int numberOfIntervals) {
+        double sum = 0;
+        for (int i = 0; i < numberOfIntervals; i++) {
+            sum += current * voltageFn.applyAsDouble(current + i);
+        }
+        return 1 / capacitance * sum;
+    }
+
+    /**
+     * @return v = 1/C ∫ᵀ_(-∞) i * dt + v₀
+     */
+    public static double integrateCapacitorVoltage(DoubleUnaryOperator voltageFn, double current, double capacitance,
+                                                   int numberOfIntervals, double knownVoltageAtPoint) {
+        double sum = 0;
+        for (int i = 0; i < numberOfIntervals; i++) {
+            sum += current * voltageFn.applyAsDouble(current + i) + knownVoltageAtPoint;
+        }
+        return 1 / capacitance * sum;
+    }
+
+    /**
+     * U = ∫ p*dt = ∫ vC(dv/dt)dt = C ∫ v * dv
+     *
+     * @return U = 1/2 * Cv² assuming 0V at the beginning
+     */
+    public static double capacitorEnergy(double capacitance, double voltage) {
+        return MathCalc.ONE_HALF * capacitance * (voltage * voltage);
+    }
+
+    /**
+     * U = ∫ p*dt = ∫ iL(di/dt)dt = L ∫ i * di
+     *
+     * @return U = 1/2 * Li²
+     */
+    public static double inductorEnergy(double inductance, double current) {
+        return MathCalc.ONE_HALF * inductance * (current * current);
+    }
+
+    /**
+     * The constant of proportionality L is the called the inductance.
+     *
+     * @return v = L * di/dt. The units are henry
+     */
+    public static double inductorVoltage(double inductance, double changeInCurrent, double changeInTime) {
+        return inductance * (changeInCurrent / changeInTime);
+    }
+
+    /**
+     * @return i = 1/L ∫ᵀ_(-∞) v * dt
+     */
+    public static double integrateInductorCurrent(
+        DoubleUnaryOperator currentFn, double voltage, double inductance, int numberOfIntervals) {
+        double sum = 0;
+        for (int i = 0; i < numberOfIntervals; i++) {
+            sum += voltage * currentFn.applyAsDouble(voltage + i);
+        }
+        return 1 / inductance * sum;
     }
 
     public static final class DragCoefficient {
@@ -223,6 +345,7 @@ public final class PhysicsCalculator {
 
         /**
          * Calculate the object2 final velocity in m/s when the collision type is unknown or partially elastic.
+         *
          * @return m₁u₁ + m₂u₂ = m₁v₁ + m₂v₂
          */
         public static double conservationOfMomentum(
@@ -242,6 +365,7 @@ public final class PhysicsCalculator {
          * For perfectly inelastic collision:
          * m₁u₁ + m₂u₂ = (m₁ + m₂)V
          * V = (m₁u₁ + m₂u₂) / (m₁ + m₂)
+         *
          * @return final velocity vector in m/s.
          */
         public static double[] conservationOfMomentum(
@@ -254,7 +378,7 @@ public final class PhysicsCalculator {
                         + ((2 * obj2Mass) / massSum) * obj2InitialVelocity;
                     final double obj2FinalVelocity = ((2 * obj1Mass) / massSum) * obj1InitialVelocity
                         + ((obj2Mass - obj1Mass) / massSum) * obj2InitialVelocity;
-                    return new double[] {obj1FinalVelocity, obj2FinalVelocity};
+                    return new double[]{obj1FinalVelocity, obj2FinalVelocity};
                 }
                 case PERFECTLY_INELASTIC -> {
                     final double finalVelocity = (obj1Mass * obj1InitialVelocity + obj2Mass * obj2InitialVelocity)
@@ -267,6 +391,7 @@ public final class PhysicsCalculator {
 
         /**
          * Calculate displacement using constant velocity
+         *
          * @return d = v * t. The units are meters
          */
         public static double displacement(double averageVelocity, long timeInSeconds) {
