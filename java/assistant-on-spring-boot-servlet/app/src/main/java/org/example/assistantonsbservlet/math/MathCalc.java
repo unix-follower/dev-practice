@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.DoubleUnaryOperator;
+import java.util.function.LongPredicate;
 
 public final class MathCalc {
     public static final double ONE_FOURTH = 0.25;
@@ -132,8 +133,51 @@ public final class MathCalc {
             return isDivisibleBy2(number) && isDivisibleBy3(number);
         }
 
+        public static boolean isDivisibleBy7(double number) {
+            if (!isWholeNumber(number)) {
+                return false;
+            }
+            final long num = Math.abs((long) number);
+            return num % 7 == 0;
+        }
+
+        public static boolean isDivisibleBy7ViaSubtractTwiceLastDigit(double number) {
+            if (!isWholeNumber(number)) {
+                return false;
+            }
+            long num = Math.abs((long) number);
+            while (num > 99) { // Reduce the number for large values
+                final long lastDigit = num % 10;
+                num = (num / 10) - 2 * lastDigit;
+                num = Math.abs(num);
+            }
+            return num % 7 == 0;
+        }
+
+        public static boolean isDivisibleBy7ViaReverseOrder(double number) {
+            if (!isWholeNumber(number)) {
+                return false;
+            }
+            long num = Math.abs((long) number);
+            final int[] weights = {1, 3, 2, 6, 4, 5};
+            long productSum = 0;
+            int i = 0;
+            while (num > 0) {
+                final long lastDigit = num % 10;
+                productSum += lastDigit * weights[i % weights.length];
+                num /= 10;
+                i++;
+            }
+            return productSum % 7 == 0;
+        }
+
         public static boolean isDivisibleBy8(double number) {
-            return isWholeNumber(number) && sumOfLastDigits(number, 3) % 8 == 0;
+            if (!isWholeNumber(number)) {
+                return false;
+            }
+            final long num = Math.abs((long) number);
+            final long lastThreeDigits = num % 1000;
+            return lastThreeDigits % 8 == 0;
         }
 
         public static boolean isDivisibleBy9(double number) {
@@ -148,16 +192,32 @@ public final class MathCalc {
             return lastDigit == 0;
         }
 
+        public static boolean isEven(double number) {
+            return isDivisibleBy2(number);
+        }
+
+        public static boolean isOdd(double number) {
+            return !isDivisibleBy2(number);
+        }
+
         public static boolean isWholeNumber(double number) {
             return (number % 1) == 0;
         }
 
+        /**
+         * <ul>
+         *     <li>A natural number greater than 1 is called prime if it has exactly two factors,
+         * i.e., if the number is divisible only by 1 and itself.</li>
+         *     <li>1 is neither prime nor composite as it has only one factor, itself.</li>
+         *     <li>Every prime number, apart from 2 and 3, can be written in the form of 6n + 1 or 6n - 1</li>
+         * </ul>
+         */
         public static boolean isPrime(double number) {
             if (!isWholeNumber(number) || number < 2) {
                 return false;
             }
             final long n = (long) number;
-            if (n == 2) {
+            if (n == 2) { // 2 is the only even prime. All other primes are odd
                 return true;
             }
             if (n % 2 == 0) {
@@ -169,6 +229,75 @@ public final class MathCalc {
                 }
             }
             return true;
+        }
+
+        /**
+         * <ul>
+         *     <li>Two natural numbers are called relatively prime (or coprime) if there is no integer
+         * other than 1 that divides both these numbers. In other words, their greatest common factor
+         * (GCF) is equal to 1.</li>
+         *     <li>Two primes are always relatively prime.</li>
+         *     <li>But numbers don't need to be prime in order to be relatively prime.</li>
+         * </ul>
+         */
+        public static boolean isCoprime(double number, double number1) {
+            final long[] numberPrimes = primeFactorization(number);
+            final long[] number1Primes = primeFactorization(number1);
+            // All numbers are divisible by 1
+            final LongPredicate divisibleBy1Predicate = value -> value != 1;
+
+            final long[] number1PrimesOmitDiv1 = Arrays.stream(number1Primes)
+                .filter(divisibleBy1Predicate)
+                .toArray();
+
+            return Arrays.stream(numberPrimes)
+                .filter(divisibleBy1Predicate)
+                .noneMatch(value -> Arrays.binarySearch(number1PrimesOmitDiv1, value) >= 0);
+        }
+
+        /**
+         * <ul>
+         *     <li>Two natural numbers are called relatively prime (or coprime) if there is no integer
+         * other than 1 that divides both these numbers. In other words, their greatest common factor
+         * (GCF) is equal to 1.</li>
+         *     <li>4 is the smallest composite number.</li>
+         *     <li>Two primes are always relatively prime.</li>
+         *     <li>But numbers don't need to be prime in order to be relatively prime.</li>
+         * </ul>
+         */
+        public static boolean isCompositeNumber(double number) {
+            final long[] numberPrimes = primeFactorization(number);
+            return numberPrimes.length > 1;
+        }
+
+        public static long[] factor(double number) {
+            if (!isWholeNumber(number) || number < 1) {
+                return new long[]{1};
+            }
+
+            final var factors = new ArrayList<Long>();
+
+            long num = (long) number;
+            for (long i = 1; i <= num; i++) {
+                if (num % i == 0) {
+                    factors.add(i);
+                }
+            }
+            return factors.stream().mapToLong(Long::longValue).toArray();
+        }
+
+        public static long[] commonFactors(double number1, double number2) {
+            final long[] num1Factors = factor(number1);
+            final long[] num2Factors = factor(number2);
+
+            final var commonFactors = new ArrayList<Long>();
+            for (final long factor : num1Factors) {
+                final int index = Arrays.binarySearch(num2Factors, factor);
+                if (index >= 0) {
+                    commonFactors.add(factor);
+                }
+            }
+            return commonFactors.stream().mapToLong(Long::longValue).toArray();
         }
 
         public static long[] primeFactorization(double number) {
@@ -226,6 +355,97 @@ public final class MathCalc {
                 lcm *= (long) Math.pow(entry.getKey(), entry.getValue());
             }
             return lcm;
+        }
+
+        public static long gcfWithEuclideanAlg(double[] numbers) {
+            atLeast2NumRequired(numbers);
+
+            long result = (long) numbers[Constants.ARR_1ST_INDEX];
+            for (int i = 1; i < numbers.length; i++) {
+                result = gcd(result, (long) numbers[i]);
+            }
+            return result;
+        }
+
+        private static void atLeast2NumRequired(double[] numbers) {
+            if (numbers == null || numbers.length < 2) {
+                throw new IllegalArgumentException("At least two numbers are required");
+            }
+        }
+
+        /**
+         * The greatest common factor is the largest integer factor that is present between a set of numbers.
+         * aka Greatest Common Divisor, Greatest Common Denominator (GCD),
+         * Highest Common Factor (HCF), or Highest Common Divisor (HCD).
+         * <ul>
+         *     <li>If the ratio of two numbers a and b (a > b) is an integer then gcf(a, b) = b.</li>
+         *     <li>gcf(a, 0) = a, used in Euclidean algorithm.</li>
+         *     <li>gcf(a, 1) = 1.</li>
+         *     <li>If a and b don't have common factors (they are coprime), then gcf(a, b) = 1.</li>
+         *     <li>All common factors of a and b are also divisors of gcf(a,b).</li>
+         *     <li>If b * c / a is an integer and gcf(a, b) = d, then a * c / d is also an integer.</li>
+         *     <li>For any integer k: gcf(k×a, k×b) = k × gcf(a, b), used in binary algorithm.</li>
+         *     <li>For any positive integer k: gcf(a/k, b/k) = gcf(a, b) / k.</li>
+         *     <li>gcf(a, b) × lcm(a, b) = |a×b|.</li>
+         *     <li>gcf(a, b) = |a × b| / lcm(a, b).</li>
+         *     <li>gcf(a, lcm(b, c)) = lcm(gcf(a, b), gcf(a, c)).</li>
+         *     <li>lcm(a, gcf(b, c)) = gcf(lcm(a, b), lcm(a, c)).</li>
+         *     <li>gcf(a, b, c) = gcf(gcf(a, b), c) = gcf(gcf(a, c), b) = gcf(gcf(b, c), a).</li>
+         * </ul>
+         */
+        public static long gcd(long a, long b) {
+            a = Math.abs(a);
+            b = Math.abs(b);
+            while (b != 0) {
+                long temp = b;
+                b = a % b;
+                a = temp;
+            }
+            return a;
+        }
+
+        public static long gcfWithBinaryAlg(double[] numbers) {
+            atLeast2NumRequired(numbers);
+
+            long result = (long) numbers[Constants.ARR_1ST_INDEX];
+            for (int i = 1; i < numbers.length; i++) {
+                result = binaryGcd(result, (long) numbers[i]);
+            }
+            return result;
+        }
+
+        public static long binaryGcd(long a, long b) {
+            a = Math.abs(a);
+            b = Math.abs(b);
+            if (a == 0) {
+                return b;
+            }
+            if (b == 0) {
+                return a;
+            }
+
+            // Find common factors of 2
+            int shift = 0;
+            while (((a | b) & 1) == 0) {
+                a >>= 1;
+                b >>= 1;
+                shift++;
+            }
+            while ((a & 1) == 0) {
+                a >>= 1;
+            }
+            do {
+                while ((b & 1) == 0) {
+                    b >>= 1;
+                }
+                if (a > b) {
+                    long temp = a;
+                    a = b;
+                    b = temp;
+                }
+                b = b - a;
+            } while (b != 0);
+            return a << shift;
         }
     }
 
@@ -2459,6 +2679,7 @@ public final class MathCalc {
 
         /**
          * Numerically integrates f(x) from a to b using the Trapezoidal Rule.
+         *
          * @param numberOfIntervals (higher = more accurate).
          * @return Approximate value of the definite integral.
          */
@@ -2474,6 +2695,7 @@ public final class MathCalc {
 
         /**
          * Numerically integrates f(x) from a to b using Simpson's Rule.
+         *
          * @return Approximate value of the definite integral.
          */
         public static double integrateSimpson(
