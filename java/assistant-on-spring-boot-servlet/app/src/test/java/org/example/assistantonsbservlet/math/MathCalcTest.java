@@ -18,8 +18,10 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class MathCalcTest {
     private static final double DELTA1 = 0.1;
+    private static final double DELTA2 = 0.01;
     private static final double DELTA3 = 0.001;
     private static final double DELTA4 = 0.0001;
+    private static final double DELTA5 = 0.00001;
     private static final double DELTA6 = 0.000001;
     private static final double DELTA8 = 0.00000001;
     private static final double DELTA9 = 0.000000001;
@@ -111,18 +113,39 @@ class MathCalcTest {
             assertArrayEquals(expectedResult, primes);
         }
 
-        static List<Arguments> lcmWithPrimeFactorizationArgs() {
+        static List<Arguments> lcmArgs() {
             return List.of(
-                Arguments.of(new long[]{18, 24}, 72),
-                Arguments.of(new long[]{2, 4, 6, 8, 10, 12}, 120)
+                Arguments.of(new double[]{18, 24}, 72),
+                Arguments.of(new double[]{2, 4, 6, 8, 10, 12}, 120)
             );
         }
 
         @ParameterizedTest
-        @MethodSource("lcmWithPrimeFactorizationArgs")
-        void testLcmWithPrimeFactorization(long[] numbers, long expectedResult) {
+        @MethodSource("lcmArgs")
+        void testLcmWithPrimeFactorization(double[] numbers, long expectedResult) {
             // when
             final long lcm = MathCalc.Arithmetic.lcmWithPrimeFactorization(numbers);
+            // then
+            assertEquals(expectedResult, lcm);
+        }
+
+        @ParameterizedTest
+        @MethodSource("lcmArgs")
+        void testLcmWithGcf(double[] numbers, long expectedResult) {
+            // when
+            final long lcm = MathCalc.Arithmetic.lcmWithGcf(numbers);
+            // then
+            assertEquals(expectedResult, lcm);
+        }
+
+        @ParameterizedTest
+        @CsvSource({
+            "2,3,4,5,4"
+        })
+        void testLcmOfFraction(long numerator1, long denominator1,
+                               long numerator2, long denominator2, long expectedResult) {
+            // when
+            final long lcm = MathCalc.Arithmetic.lcmOfFraction(numerator1, denominator1, numerator2, denominator2);
             // then
             assertEquals(expectedResult, lcm);
         }
@@ -149,6 +172,24 @@ class MathCalcTest {
         void testGcfWithBinaryAlg(double[] numbers, long expectedResult) {
             // when
             final long gcf = MathCalc.Arithmetic.gcfWithBinaryAlg(numbers);
+            // then
+            assertEquals(expectedResult, gcf);
+        }
+
+        @ParameterizedTest
+        @MethodSource("gcfArgs")
+        void testGcfWithCommonFactors(double[] numbers, long expectedResult) {
+            // when
+            final long gcf = MathCalc.Arithmetic.gcfWithCommonFactors(numbers);
+            // then
+            assertEquals(expectedResult, gcf);
+        }
+
+        @ParameterizedTest
+        @MethodSource("gcfArgs")
+        void testGcfWithLcm(double[] numbers, long expectedResult) {
+            // when
+            final long gcf = MathCalc.Arithmetic.gcfWithLcm(numbers);
             // then
             assertEquals(expectedResult, gcf);
         }
@@ -538,6 +579,231 @@ class MathCalcTest {
             // then
             assertEquals(expectedResult, divisible);
         }
+
+        @Test
+        void testSquareRootMultiply() {
+            // given
+            final byte x = 3;
+            final byte y = 4;
+            // when
+            final double result = MathCalc.Arithmetic.squareRootMultiply(x, y);
+            // then
+            assertEquals(3.4641, result, DELTA4);
+        }
+
+        @Test
+        void testSquareRootDivide() {
+            // given
+            final byte x = 8;
+            final byte y = 4;
+            // when
+            final double result = MathCalc.Arithmetic.squareRootDivide(x, y);
+            // then
+            assertEquals(1.414214, result, DELTA6);
+        }
+
+        static List<Arguments> squareRootWithExponentArgs() {
+            return List.of(
+                Arguments.of(2, 4, 4),
+                Arguments.of(5, 3, 11.18033989),
+                Arguments.of(4, 5, 32)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("squareRootWithExponentArgs")
+        void testSquareRootWithExponent(double x, double exponent, double expectedResult) {
+            // when
+            final double result = MathCalc.Arithmetic.squareRootWithExponent(x, exponent);
+            // then
+            assertEquals(expectedResult, result, DELTA8);
+        }
+
+        static List<Arguments> squareRootWithComplexNumberArgs() {
+            return List.of(
+                Arguments.of(-9, 3),
+                Arguments.of(-13, Math.sqrt(13)),
+                Arguments.of(-49, 7)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("squareRootWithComplexNumberArgs")
+        void testSquareRootWithComplexNumber(double x, double expectedResult) {
+            // when
+            final double result = MathCalc.Arithmetic.squareRootWithComplexNumber(x);
+            // then
+            assertEquals(expectedResult, result, DELTA8);
+        }
+
+        @ParameterizedTest
+        @CsvSource({
+            "1,1",
+            "2,1.26",
+            "3,1.44",
+            "4,1.59",
+            "5,1.71",
+            "8,2",
+            "10,2.15",
+            "27,3",
+            "64,4",
+            "125,5",
+            "216,6",
+            "343,7",
+            "512,8",
+            "729,9",
+            "1000,10",
+        })
+        void testCubeRoot(double number, double expectedResult) {
+            // when
+            final double result = MathCalc.Arithmetic.cubeRoot(number);
+            // then
+            assertEquals(expectedResult, result, DELTA2);
+        }
+
+        @ParameterizedTest
+        @CsvSource({
+            "1296,4,6",
+            "450,3.14,6.99797",
+        })
+        void testNthRoot(double number, double degree, double expectedResult) {
+            // when
+            final double result = MathCalc.Arithmetic.nthRoot(number, degree);
+            // then
+            assertEquals(expectedResult, result, DELTA5);
+        }
+
+        static List<Arguments> addRadicalsArgs() {
+            return List.of(
+                Arguments.of(new double[]{4, 7}, new double[]{2, 4, 7}, new double[]{3, 4, 7}), // ∜7 + 2∜7 = 3∜7
+                Arguments.of(new double[]{5, 3, 5}, new double[]{3, 3, 5}, new double[]{8, 3, 5}) // 5∛5 + 3∛5 = 8∛5
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("addRadicalsArgs")
+        void testAddRadicals(double[] radical1, double[] radical2, double[] expectedResult) {
+            // when
+            final double[] result = MathCalc.Arithmetic.addRadicals(radical1, radical2);
+            // then
+            assertArrayEquals(expectedResult, result, DELTA5);
+        }
+
+        static List<Arguments> subtractRadicalsArgs() {
+            return List.of(
+                // 5*⁶√9 - 2*⁶√9 = 3*⁶√9
+                Arguments.of(new double[]{5, 6, 9}, new double[]{2, 6, 9}, new double[]{3, 6, 9})
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("subtractRadicalsArgs")
+        void testSubtractRadicals(double[] radical1, double[] radical2, double[] expectedResult) {
+            // when
+            final double[] result = MathCalc.Arithmetic.subtractRadicals(radical1, radical2);
+            // then
+            assertArrayEquals(expectedResult, result, DELTA5);
+        }
+
+        static List<Arguments> multiplyRadicalsArgs() {
+            return List.of(
+                Arguments.of(new double[]{4, 7}, new double[]{4, 4}, new double[]{1, 4, 28}), // ∜7 * ∜4 = ∜28
+                Arguments.of(new double[]{4, 3, 3}, new double[]{2, 3, 5}, new double[]{8, 3, 15}), // 4∛3 * 2∛5 = 8∛15
+                Arguments.of(new double[]{5, 3, 2}, new double[]{3, 12}, new double[]{5, 3, 24}) // 5∛2 * ∛12 = 5∛24
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("multiplyRadicalsArgs")
+        void testMultiplyRadicals(double[] radical1, double[] radical2, double[] expectedResult) {
+            // when
+            final double[] result = MathCalc.Arithmetic.multiplyRadicals(radical1, radical2);
+            // then
+            assertArrayEquals(expectedResult, result, DELTA5);
+        }
+
+        static List<Arguments> divideRadicalsArgs() {
+            return List.of(
+                Arguments.of(new double[]{5, 8}, new double[]{5, 4}, new double[]{1, 5, 2}), // ⁵√8 / ⁵√4 = ⁵√2
+                // 5∛15 / 2∛5 = 2.5∛3
+                Arguments.of(new double[]{5, 3, 15}, new double[]{2, 3, 5}, new double[]{2.5, 3, 3})
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("divideRadicalsArgs")
+        void testDivideRadicals(double[] radical1, double[] radical2, double[] expectedResult) {
+            // when
+            final double[] result = MathCalc.Arithmetic.divideRadicals(radical1, radical2);
+            // then
+            assertArrayEquals(expectedResult, result, DELTA1);
+        }
+
+        static List<Arguments> simplifyRadicalArgs() {
+            return List.of(
+                Arguments.of(new double[]{3, 192}, new double[]{4, 3, 3}), // ∛192 = 4∛3
+                Arguments.of(new double[]{2, 288}, new double[]{12, 2, 2}) // √288 = 12√2
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("simplifyRadicalArgs")
+        void testSimplifyRadical(double[] radical, double[] expectedResult) {
+            // when
+            final double[] result = MathCalc.Arithmetic.simplifyRadical(radical);
+            // then
+            assertArrayEquals(expectedResult, result, DELTA1);
+        }
+
+        static List<Arguments> simplifyRadicalsSumArgs() {
+            return List.of(
+                // 2√6 + ∜64 = 2√6 + 2∜4
+                Arguments.of(new double[]{2, 6}, new double[]{4, 64}, new double[][]{{1, 2, 6}, {2, 4, 4}})
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("simplifyRadicalsSumArgs")
+        void testSimplifyRadicalsSum(double[] radical1, double[] radical2, double[][] expectedResult) {
+            // when
+            final double[][] result = MathCalc.Arithmetic.simplifyRadicalsSum(radical1, radical2);
+            // then
+            assertNotNull(result);
+            assertEquals(2, result.length);
+            assertArrayEquals(expectedResult[Constants.ARR_1ST_INDEX], result[Constants.ARR_1ST_INDEX], DELTA1);
+            assertArrayEquals(expectedResult[Constants.ARR_2ND_INDEX], result[Constants.ARR_2ND_INDEX], DELTA1);
+        }
+
+        static List<Arguments> simplifyRadicalsProductArgs() {
+            return List.of(
+                Arguments.of(new double[]{2, 2, 6}, new double[]{4, 64}, new double[]{8, 4, 9}) // 2√6 * ∜64 = 8∜9
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("simplifyRadicalsProductArgs")
+        void testSimplifyRadicalsProduct(double[] radical1, double[] radical2, double[] expectedResult) {
+            // when
+            final double[] result = MathCalc.Arithmetic.simplifyRadicalsProduct(radical1, radical2);
+            // then
+            assertArrayEquals(expectedResult, result, DELTA1);
+        }
+
+        static List<Arguments> simplifyRadicalsQuotientArgs() {
+            return List.of(
+                // 2√6 / ∜64 = 0.03125∜9,437,184
+                Arguments.of(new double[]{2, 2, 6}, new double[]{4, 64}, new double[]{0.03125, 4, 9_437_184})
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("simplifyRadicalsQuotientArgs")
+        void testSimplifyRadicalsQuotient(double[] radical1, double[] radical2, double[] expectedResult) {
+            // when
+            final double[] result = MathCalc.Arithmetic.simplifyRadicalsQuotient(radical1, radical2);
+            // then
+            assertArrayEquals(expectedResult, result, DELTA1);
+        }
     }
 
     @Nested
@@ -589,62 +855,6 @@ class MathCalcTest {
             final double result = MathCalc.Algebra.negativeExponent(base, exponent);
             // then
             assertEquals(0.0016, result, DELTA4);
-        }
-
-        @Test
-        void testSquareRootMultiply() {
-            // given
-            final byte x = 3;
-            final byte y = 4;
-            // when
-            final double result = MathCalc.Algebra.squareRootMultiply(x, y);
-            // then
-            assertEquals(3.4641, result, DELTA4);
-        }
-
-        @Test
-        void testSquareRootDivide() {
-            // given
-            final byte x = 8;
-            final byte y = 4;
-            // when
-            final double result = MathCalc.Algebra.squareRootDivide(x, y);
-            // then
-            assertEquals(1.414214, result, DELTA6);
-        }
-
-        static List<Arguments> squareRootWithExponentArgs() {
-            return List.of(
-                Arguments.of(2, 4, 4),
-                Arguments.of(5, 3, 11.18033989),
-                Arguments.of(4, 5, 32)
-            );
-        }
-
-        @ParameterizedTest
-        @MethodSource("squareRootWithExponentArgs")
-        void testSquareRootWithExponent(double x, double exponent, double expectedResult) {
-            // when
-            final double result = MathCalc.Algebra.squareRootWithExponent(x, exponent);
-            // then
-            assertEquals(expectedResult, result, DELTA8);
-        }
-
-        static List<Arguments> squareRootWithComplexNumberArgs() {
-            return List.of(
-                Arguments.of(-9, 3),
-                Arguments.of(-13, Math.sqrt(13)),
-                Arguments.of(-49, 7)
-            );
-        }
-
-        @ParameterizedTest
-        @MethodSource("squareRootWithComplexNumberArgs")
-        void testSquareRootWithComplexNumber(double x, double expectedResult) {
-            // when
-            final double result = MathCalc.Algebra.squareRootWithComplexNumber(x);
-            // then
-            assertEquals(expectedResult, result, DELTA8);
         }
     }
 

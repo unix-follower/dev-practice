@@ -340,9 +340,11 @@ public final class MathCalc {
          * 2. Find the highest power of each prime number.
          * 3. Multiply these values together.
          */
-        public static long lcmWithPrimeFactorization(long[] numbers) {
+        public static long lcmWithPrimeFactorization(double[] numbers) {
+            final long[] nums = Arrays.stream(numbers).mapToLong(value -> (long) value).toArray();
+
             final var primePowers = new HashMap<Long, Integer>();
-            for (long number : numbers) {
+            for (long number : nums) {
                 final var factors = primeFactorMap(number);
                 for (final var entry : factors.entrySet()) {
                     final long prime = entry.getKey();
@@ -355,6 +357,29 @@ public final class MathCalc {
                 lcm *= (long) Math.pow(entry.getKey(), entry.getValue());
             }
             return lcm;
+        }
+
+        /**
+         * @return LCM(a,b) = |a·b| / GCF(a,b)
+         */
+        public static long lcmWithGcf(double[] numbers) {
+            atLeast2NumRequired(numbers);
+
+            long result = (long) numbers[Constants.ARR_1ST_INDEX];
+            for (int i = 1; i < numbers.length; i++) {
+                final long a = Math.abs(result);
+                final long b = Math.abs((long) numbers[i]);
+                result = a * b / gcd(a, b);
+            }
+            return result;
+        }
+
+        /**
+         * @return LCM = LCM of numerator / GCF of denominator
+         */
+        public static long lcmOfFraction(long numerator1, long denominator1, long numerator2, long denominator2) {
+            return lcmWithPrimeFactorization(new double[]{numerator1, numerator2})
+                / gcfWithCommonFactors(new double[]{denominator1, denominator2});
         }
 
         public static long gcfWithEuclideanAlg(double[] numbers) {
@@ -374,7 +399,7 @@ public final class MathCalc {
         }
 
         /**
-         * The greatest common factor is the largest integer factor that is present between a set of numbers.
+         * The greatest common factor (GCF) is the largest integer factor that is present between a set of numbers.
          * aka Greatest Common Divisor, Greatest Common Denominator (GCD),
          * Highest Common Factor (HCF), or Highest Common Divisor (HCD).
          * <ul>
@@ -414,6 +439,32 @@ public final class MathCalc {
             return result;
         }
 
+        public static long gcfWithCommonFactors(double[] numbers) {
+            atLeast2NumRequired(numbers);
+
+            long result = (long) numbers[Constants.ARR_1ST_INDEX];
+            for (int i = 1; i < numbers.length; i++) {
+                final long[] commonFactors = commonFactors(result, (long) numbers[i]);
+                result = Arrays.stream(commonFactors).max().orElse(0);
+            }
+            return result;
+        }
+
+        /**
+         * @return gcf(a, b) = |a × b| / lcm(a, b)
+         */
+        public static long gcfWithLcm(double[] numbers) {
+            atLeast2NumRequired(numbers);
+
+            long result = (long) numbers[Constants.ARR_1ST_INDEX];
+            for (int i = 1; i < numbers.length; i++) {
+                final long a = Math.abs(result);
+                final long b = Math.abs((long) numbers[i]);
+                result = a * b / lcmWithPrimeFactorization(new double[]{a, b});
+            }
+            return result;
+        }
+
         public static long binaryGcd(long a, long b) {
             a = Math.abs(a);
             b = Math.abs(b);
@@ -447,38 +498,368 @@ public final class MathCalc {
             } while (b != 0);
             return a << shift;
         }
+
+        /**
+         * <table>
+         *     <tr>
+         *         <th>Square root</th><th>Is perfect square?</th>
+         *     </tr>
+         *     <tr><td>√1 = 1</td><td>✅</td></tr>
+         *     <tr><td>√2 ≈ 1.41</td><td>❌</td></tr>
+         *     <tr><td>√3 ≈ 1.73</td><td>❌</td></tr>
+         *     <tr><td>√4 = 2</td><td>✅</td></tr>
+         *     <tr><td>√5 ≈ 2.24</td><td>❌</td></tr>
+         *     <tr><td>√7 ≈ 2.65</td><td>❌</td></tr>
+         *     <tr><td>√9 = 3</td><td>✅</td></tr>
+         *     <tr><td>√11 ≈ 3.32</td><td>❌</td></tr>
+         *     <tr><td>√13 ≈ 3.61</td><td>❌</td></tr>
+         *     <tr><td>√16 = 4</td><td>✅</td></tr>
+         *     <tr><td>√17 ≈ 4.12</td><td>❌</td></tr>
+         *     <tr><td>√19 ≈ 4.34</td><td>❌</td></tr>
+         *     <tr><td>√25 = 5</td><td>✅</td></tr>
+         *     <tr><td>√27 = √(9 × 3) = √9 × √3 = 3√3</td><td>❌</td></tr>
+         *     <tr><td>√36 = 6</td><td>✅</td></tr>
+         *     <tr><td>√45 = √(9 × 5) = √9 × √5 = 3√5</td><td>❌</td></tr>
+         *     <tr><td>√49 = 7</td><td>✅</td></tr>
+         *     <tr><td>√52 ≈ 2√13 = 7.22</td><td>❌</td></tr>
+         *     <tr><td>√64 = 8</td><td>✅</td></tr>
+         *     <tr><td>√81 = 9</td><td>✅</td></tr>
+         *     <tr><td>√100 = 10</td><td>✅</td></tr>
+         *     <tr><td>√121 = 11</td><td>✅</td></tr>
+         *     <tr><td>√144 = 12</td><td>✅</td></tr>
+         * </table>
+         *
+         * @return √x = x¹/² = x^0.5
+         */
+        public static double squareRoot(double x) {
+            return nthRoot(x, 2);
+            // or Math.sqrt(x)
+        }
+
+        /**
+         * x = ⁿ√a as xⁿ = a
+         * y = ±√x ⟺ y² = x
+         * x¹/² * y¹/² = (x * y)¹/²
+         * (x^0.5)² = x^(0.5*2) = x
+         *
+         * @return √(x * y) = √x * √y
+         */
+        public static double squareRootMultiply(double x, double y) {
+            return squareRoot(x * y);
+        }
+
+        /*
+         * @return √(x / y) = √x / √y
+         */
+        public static double squareRootDivide(double x, double y) {
+            return squareRoot(x / y);
+        }
+
+        /**
+         * @return √(xⁿ) = (xⁿ)¹/² = xⁿ/²
+         */
+        public static double squareRootWithExponent(double x, double exponent) {
+            return squareRoot(Math.pow(x, exponent));
+        }
+
+        /**
+         * i = √(-1)
+         * x = a + bi
+         */
+        public static double squareRootWithComplexNumber(double x) {
+            return squareRoot(Math.abs(x));
+        }
+
+        /**
+         * <ul>
+         *     <li>∛x = y ⟺ y³ = x</li>
+         *     <li>∛(x) = x¹/³</li>
+         *     <li>∛(a × b) = ∛a × ∛b</li>
+         *     <li>∛(a / b) = ∛a / ∛b</li>
+         * </ul>
+         */
+        public static double cubeRoot(double number) {
+            return nthRoot(number, 3);
+            // or Math.cbrt(number)
+        }
+
+        public static double nthRoot(double number, double degree) {
+            return Math.pow(number, 1. / degree);
+        }
+
+        /**
+         * @return f(x) = ⁿ√x
+         */
+        public static double radicalFn(double x, double degree) {
+            return nthRoot(x, degree);
+        }
+
+        /**
+         * f(x) = a × ⁿ√(b×x−h) + k
+         * where:
+         * <ul>
+         *     <li>a scales the radical graph on the y-axis</li>
+         *     <li>b scales the radical graph on the x-axis</li>
+         *     <li>h offsets the radical function on the x-axis</li>
+         *     <li>k offsets the radical function on the y-axis</li>
+         * </ul>
+         */
+        public static double generalizedRadicalFn(double x, double a, double b, double h, double k, double degree) {
+            return a * nthRoot(b * x - h, degree) + k;
+        }
+
+        public static double[] addRadicals(double[] radical1, double[] radical2) {
+            final double[][] normalizedRadicals = ensureRadicalsWithCoef(radical1, radical2);
+            radical1 = normalizedRadicals[Constants.ARR_1ST_INDEX];
+            radical2 = normalizedRadicals[Constants.ARR_2ND_INDEX];
+
+            final double radical1coef = radical1[Constants.ARR_1ST_INDEX];
+            final double radical1degree = radical1[Constants.ARR_2ND_INDEX];
+            final double radicand1 = radical1[Constants.ARR_3RD_INDEX];
+
+            final double radical2coef = radical2[Constants.ARR_1ST_INDEX];
+            final double radical2degree = radical2[Constants.ARR_2ND_INDEX];
+            final double radicand2 = radical2[Constants.ARR_3RD_INDEX];
+
+            if (radicand1 != radicand2 || radical1degree != radical2degree) {
+                throw new IllegalArgumentException();
+            }
+
+            return new double[]{radical1coef + radical2coef, radical1degree, radicand1};
+        }
+
+        private static double[] ensureRadicalWithCoef(double[] radical) {
+            final double coef;
+            final double degree;
+            final double radicand;
+            if (radical.length > 2) {
+                coef = radical[Constants.ARR_1ST_INDEX];
+                degree = radical[Constants.ARR_2ND_INDEX];
+                radicand = radical[Constants.ARR_3RD_INDEX];
+            } else {
+                coef = 1;
+                degree = radical[Constants.ARR_1ST_INDEX];
+                radicand = radical[Constants.ARR_2ND_INDEX];
+            }
+
+            return new double[]{coef, degree, radicand};
+        }
+
+        private static double[][] ensureRadicalsWithCoef(double[] radical1, double[] radical2) {
+            final double[] normalizeRadical1 = ensureRadicalWithCoef(radical1);
+            final double radical1coef = normalizeRadical1[Constants.ARR_1ST_INDEX];
+            final double radical1degree = normalizeRadical1[Constants.ARR_2ND_INDEX];
+            final double radicand1 = normalizeRadical1[Constants.ARR_3RD_INDEX];
+
+            final double[] normalizeRadical2 = ensureRadicalWithCoef(radical2);
+            final double radical2coef = normalizeRadical2[Constants.ARR_1ST_INDEX];
+            final double radical2degree = normalizeRadical2[Constants.ARR_2ND_INDEX];
+            final double radicand2 = normalizeRadical2[Constants.ARR_3RD_INDEX];
+
+            return new double[][]{
+                {radical1coef, radical1degree, radicand1},
+                {radical2coef, radical2degree, radicand2}
+            };
+        }
+
+        public static double[] subtractRadicals(double[] radical1, double[] radical2) {
+            final double[][] normalizedRadicals = ensureRadicalsWithCoef(radical1, radical2);
+            radical1 = normalizedRadicals[Constants.ARR_1ST_INDEX];
+            radical2 = normalizedRadicals[Constants.ARR_2ND_INDEX];
+
+            final double radical1coef = radical1[Constants.ARR_1ST_INDEX];
+            final double radical1degree = radical1[Constants.ARR_2ND_INDEX];
+            final double radicand1 = radical1[Constants.ARR_3RD_INDEX];
+
+            final double radical2coef = radical2[Constants.ARR_1ST_INDEX];
+            final double radical2degree = radical2[Constants.ARR_2ND_INDEX];
+            final double radicand2 = radical2[Constants.ARR_3RD_INDEX];
+
+            if (radicand1 != radicand2 || radical1degree != radical2degree) {
+                throw new IllegalArgumentException();
+            }
+
+            return new double[]{radical1coef - radical2coef, radical1degree, radicand1};
+        }
+
+        public static double[] multiplyRadicals(double[] radical1, double[] radical2) {
+            final double[][] normalizedRadicals = ensureRadicalsWithCoef(radical1, radical2);
+            radical1 = normalizedRadicals[Constants.ARR_1ST_INDEX];
+            radical2 = normalizedRadicals[Constants.ARR_2ND_INDEX];
+
+            final double radical1coef = radical1[Constants.ARR_1ST_INDEX];
+            final double radical1degree = radical1[Constants.ARR_2ND_INDEX];
+            final double radicand1 = radical1[Constants.ARR_3RD_INDEX];
+
+            final double radical2coef = radical2[Constants.ARR_1ST_INDEX];
+            final double radical2degree = radical2[Constants.ARR_2ND_INDEX];
+            final double radicand2 = radical2[Constants.ARR_3RD_INDEX];
+
+            if (radical1degree != radical2degree) {
+                throw new IllegalArgumentException();
+            }
+
+            return new double[]{radical1coef * radical2coef, radical1degree, radicand1 * radicand2};
+        }
+
+        public static double[] divideRadicals(double[] radical1, double[] radical2) {
+            final double[][] normalizedRadicals = ensureRadicalsWithCoef(radical1, radical2);
+            radical1 = normalizedRadicals[Constants.ARR_1ST_INDEX];
+            radical2 = normalizedRadicals[Constants.ARR_2ND_INDEX];
+
+            final double radical1coef = radical1[Constants.ARR_1ST_INDEX];
+            final double radical1degree = radical1[Constants.ARR_2ND_INDEX];
+            final double radicand1 = radical1[Constants.ARR_3RD_INDEX];
+
+            final double radical2coef = radical2[Constants.ARR_1ST_INDEX];
+            final double radical2degree = radical2[Constants.ARR_2ND_INDEX];
+            final double radicand2 = radical2[Constants.ARR_3RD_INDEX];
+
+            if (radical1degree != radical2degree) {
+                throw new IllegalArgumentException();
+            }
+
+            return new double[]{radical1coef / radical2coef, radical1degree, radicand1 / radicand2};
+        }
+
+        /**
+         * @return simplified a × ⁿ√b
+         */
+        public static double[] simplifyRadical(double[] radical) {
+            final double[] normalizedRadical = ensureRadicalWithCoef(radical);
+            final double coef = normalizedRadical[Constants.ARR_1ST_INDEX];
+            final double degree = normalizedRadical[Constants.ARR_2ND_INDEX];
+            final double radicand = normalizedRadical[Constants.ARR_3RD_INDEX];
+
+            final var factorCounts = primeFactorMap((long) radicand);
+
+            // Extract groups according to degree
+            long outsideCoef = 1;
+            long insideRadicand = 1;
+            for (Map.Entry<Long, Integer> entry : factorCounts.entrySet()) {
+                final long base = entry.getKey();
+                final int count = entry.getValue();
+                final int outsideCount = count / (int) degree;
+                final int insideCount = count % (int) degree;
+                outsideCoef *= (long) Math.pow(base, outsideCount);
+                insideRadicand *= (long) Math.pow(base, insideCount);
+            }
+
+            // Multiply by original coefficient
+            outsideCoef *= (long) coef;
+
+            return new double[]{outsideCoef, degree, insideRadicand};
+        }
+
+        public static long[] extractRadicalGroupsByDegree(double[] radical) {
+            final double degree = radical[Constants.ARR_1ST_INDEX];
+            final double radicand = radical[Constants.ARR_2ND_INDEX];
+
+            final var factorCounts = primeFactorMap((long) radicand);
+
+            long outsideCoef = 1;
+            long insideRadicand = 1;
+            for (Map.Entry<Long, Integer> entry : factorCounts.entrySet()) {
+                final long base = entry.getKey();
+                final int count = entry.getValue();
+                final int outsideCount = count / (int) degree;
+                final int insideCount = count % (int) degree;
+                outsideCoef *= (long) Math.pow(base, outsideCount);
+                insideRadicand *= (long) Math.pow(base, insideCount);
+            }
+            return new long[]{outsideCoef, insideRadicand};
+        }
+
+        /**
+         * @return simplified a × ⁿ√b + c × ᵐ√d
+         */
+        public static double[][] simplifyRadicalsSum(double[] radical1, double[] radical2) {
+            final double[][] normalizedRadicals = ensureRadicalsWithCoef(radical1, radical2);
+            radical1 = normalizedRadicals[Constants.ARR_1ST_INDEX];
+            radical2 = normalizedRadicals[Constants.ARR_2ND_INDEX];
+
+            final double radical1coef = radical1[Constants.ARR_1ST_INDEX];
+            final double radical1degree = radical1[Constants.ARR_2ND_INDEX];
+            final double radicand1 = radical1[Constants.ARR_3RD_INDEX];
+
+            final double radical2coef = radical2[Constants.ARR_1ST_INDEX];
+            final double radical2degree = radical2[Constants.ARR_2ND_INDEX];
+            final double radicand2 = radical2[Constants.ARR_3RD_INDEX];
+
+            final long[] radicalGroup1 = extractRadicalGroupsByDegree(new double[]{radical1degree, radicand1});
+            final long outsideCoef1 = radicalGroup1[Constants.ARR_1ST_INDEX] * (long) radical1coef;
+            final long insideRadicand1 = radicalGroup1[Constants.ARR_2ND_INDEX];
+
+            final long[] radicalGroup2 = extractRadicalGroupsByDegree(new double[]{radical2degree, radicand2});
+            final long outsideCoef2 = radicalGroup2[Constants.ARR_1ST_INDEX] * (long) radical2coef;
+            final long insideRadicand2 = radicalGroup2[Constants.ARR_2ND_INDEX];
+
+            return new double[][]{
+                {outsideCoef1, radical1degree, insideRadicand1},
+                {outsideCoef2, radical2degree, insideRadicand2}
+            };
+        }
+
+        /**
+         * a × ⁿ√b × c × ᵐ√d = (a × c) × ᵏ√(bˢ × dᵗ)
+         * where
+         * <ul>
+         *     <li>k = lcm(n, m)</li>
+         *     <li>s = k / n</li>
+         *     <li>t = k / m</li>
+         * </ul>
+         */
+        public static double[] simplifyRadicalsProduct(double[] radical1, double[] radical2) {
+            final double[][] normalizedRadicals = ensureRadicalsWithCoef(radical1, radical2);
+            radical1 = normalizedRadicals[Constants.ARR_1ST_INDEX];
+            radical2 = normalizedRadicals[Constants.ARR_2ND_INDEX];
+
+            final double radical1coef = radical1[Constants.ARR_1ST_INDEX];
+            final double radical1degree = radical1[Constants.ARR_2ND_INDEX];
+            final double radicand1 = radical1[Constants.ARR_3RD_INDEX];
+
+            final double radical2coef = radical2[Constants.ARR_1ST_INDEX];
+            final double radical2degree = radical2[Constants.ARR_2ND_INDEX];
+            final double radicand2 = radical2[Constants.ARR_3RD_INDEX];
+
+            final long k = lcmWithPrimeFactorization(new double[]{radical1degree, radical2degree});
+            final double s = k / radical1degree;
+            final double t = k / radical2degree;
+            final double radicandProduct = Math.pow(radicand1, s) * Math.pow(radicand2, t);
+            final double[] unsimplified = {radical1coef * radical2coef, k, radicandProduct};
+            return simplifyRadical(unsimplified);
+        }
+
+        /**
+         * (a × ⁿ√b) / (c × ᵐ√d) = (a / (c × d)) × ᵏ√(bˢ × dᵗ)
+         * where
+         * <ul>
+         *     <li>k = lcm(n, m)</li>
+         *     <li>s = k / n</li>
+         *     <li>t = (k × (m - 1)) / m</li>
+         * </ul>
+         */
+        public static double[] simplifyRadicalsQuotient(double[] radical1, double[] radical2) {
+            final double[][] normalizedRadicals = ensureRadicalsWithCoef(radical1, radical2);
+            radical1 = normalizedRadicals[Constants.ARR_1ST_INDEX];
+            radical2 = normalizedRadicals[Constants.ARR_2ND_INDEX];
+
+            final double radical1coef = radical1[Constants.ARR_1ST_INDEX];
+            final double radical1degree = radical1[Constants.ARR_2ND_INDEX];
+            final double radicand1 = radical1[Constants.ARR_3RD_INDEX];
+
+            final double radical2coef = radical2[Constants.ARR_1ST_INDEX];
+            final double radical2degree = radical2[Constants.ARR_2ND_INDEX];
+            final double radicand2 = radical2[Constants.ARR_3RD_INDEX];
+
+            final long k = lcmWithPrimeFactorization(new double[]{radical1degree, radical2degree});
+            final double s = k / radical1degree;
+            final double t = (k * (radical2degree - 1)) / radical2degree;
+            final double radicandProduct = Math.pow(radicand1, s) * Math.pow(radicand2, t);
+            return new double[]{radical1coef / (radical2coef * radicand2), k, radicandProduct};
+        }
     }
 
-    /**
-     * <table>
-     *     <tr>
-     *         <th>Square root</th><th>Is perfect square?</th>
-     *     </tr>
-     *     <tr><td>√1 = 1</td><td>✅</td></tr>
-     *     <tr><td>√2 ≈ 1.41</td><td>❌</td></tr>
-     *     <tr><td>√3 ≈ 1.73</td><td>❌</td></tr>
-     *     <tr><td>√4 = 2</td><td>✅</td></tr>
-     *     <tr><td>√5 ≈ 2.24</td><td>❌</td></tr>
-     *     <tr><td>√7 ≈ 2.65</td><td>❌</td></tr>
-     *     <tr><td>√9 = 3</td><td>✅</td></tr>
-     *     <tr><td>√11 ≈ 3.32</td><td>❌</td></tr>
-     *     <tr><td>√13 ≈ 3.61</td><td>❌</td></tr>
-     *     <tr><td>√16 = 4</td><td>✅</td></tr>
-     *     <tr><td>√17 ≈ 4.12</td><td>❌</td></tr>
-     *     <tr><td>√19 ≈ 4.34</td><td>❌</td></tr>
-     *     <tr><td>√25 = 5</td><td>✅</td></tr>
-     *     <tr><td>√27 = √(9 × 3) = √9 × √3 = 3√3</td><td>❌</td></tr>
-     *     <tr><td>√36 = 6</td><td>✅</td></tr>
-     *     <tr><td>√45 = √(9 × 5) = √9 × √5 = 3√5</td><td>❌</td></tr>
-     *     <tr><td>√49 = 7</td><td>✅</td></tr>
-     *     <tr><td>√52 ≈ 2√13 = 7.22</td><td>❌</td></tr>
-     *     <tr><td>√64 = 8</td><td>✅</td></tr>
-     *     <tr><td>√81 = 9</td><td>✅</td></tr>
-     *     <tr><td>√100 = 10</td><td>✅</td></tr>
-     *     <tr><td>√121 = 11</td><td>✅</td></tr>
-     *     <tr><td>√144 = 12</td><td>✅</td></tr>
-     * </table>
-     */
     public static final class Algebra {
         private Algebra() {
         }
@@ -547,41 +928,6 @@ public final class MathCalc {
          */
         public static double multiplyWithSamePower(double x, double y, double exponent) {
             return Math.pow(x * y, exponent);
-        }
-
-        /**
-         * x = ⁿ√a as xⁿ = a
-         * y = ±√x ⟺ y² = x
-         * √x = x¹/² = x^0.5
-         * x¹/² * y¹/² = (x * y)¹/²
-         * (x^0.5)² = x^(0.5*2) = x
-         *
-         * @return √(x * y) = √x * √y
-         */
-        public static double squareRootMultiply(double x, double y) {
-            return Math.sqrt(x * y);
-        }
-
-        /*
-         * @return √(x / y) = √x / √y
-         */
-        public static double squareRootDivide(double x, double y) {
-            return Math.sqrt(x / y);
-        }
-
-        /**
-         * @return √(xⁿ) = (xⁿ)¹/² = xⁿ/²
-         */
-        public static double squareRootWithExponent(double x, double exponent) {
-            return Math.sqrt(Math.pow(x, exponent));
-        }
-
-        /**
-         * i = √(-1)
-         * x = a + bi
-         */
-        public static double squareRootWithComplexNumber(double x) {
-            return Math.sqrt(Math.abs(x));
         }
     }
 
