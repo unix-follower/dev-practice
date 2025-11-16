@@ -2,6 +2,16 @@ package org.example.assistantonsbservlet.chemistry;
 
 import java.util.Arrays;
 
+/**
+ * Phase change
+ * <table>
+ *     <tr><th>Phase name</th><th>Description</th></tr>
+ *     <tr><td>Melting</td><td>From a solid to a liquid</td></tr>
+ *     <tr><td>Freezing</td><td>From a liquid to a solid</td></tr>
+ *     <tr><td>Condensation</td><td>From a gas to a liquid</td></tr>
+ *     <tr><td>Boiling</td><td>From a liquid to a gas</td></tr>
+ * </table>
+ */
 public final class ChemCalculator {
     private ChemCalculator() {
     }
