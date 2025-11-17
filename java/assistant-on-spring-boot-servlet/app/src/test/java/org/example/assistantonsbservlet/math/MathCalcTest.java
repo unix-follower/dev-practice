@@ -142,10 +142,13 @@ class MathCalcTest {
         @CsvSource({
             "2,3,4,5,4"
         })
-        void testLcmOfFraction(long numerator1, long denominator1,
-                               long numerator2, long denominator2, long expectedResult) {
+        void testLcmOverGcfOfFractions(long numerator1, long denominator1,
+                                       long numerator2, long denominator2, long expectedResult) {
+            // given
+            final long[] fraction1 = new long[]{numerator1, denominator1};
+            final long[] fraction2 = new long[]{numerator2, denominator2};
             // when
-            final long lcm = MathCalc.Arithmetic.lcmOfFraction(numerator1, denominator1, numerator2, denominator2);
+            final long lcm = MathCalc.Arithmetic.lcmOverGcfOfFractions(fraction1, fraction2);
             // then
             assertEquals(expectedResult, lcm);
         }
@@ -803,6 +806,238 @@ class MathCalcTest {
             final double[] result = MathCalc.Arithmetic.simplifyRadicalsQuotient(radical1, radical2);
             // then
             assertArrayEquals(expectedResult, result, DELTA1);
+        }
+
+        static List<Arguments> solveProportionArgs() {
+            return List.of(
+                Arguments.of(new double[]{7, 12}, new double[]{Double.POSITIVE_INFINITY, 96},
+                    new double[]{56, 96}), // 7/12 = x/96
+                Arguments.of(new double[]{7, 12}, new double[]{56, Double.POSITIVE_INFINITY},
+                    new double[]{56, 96}), // 7/12 = 56/x
+                Arguments.of(new double[]{56, 96}, new double[]{7, Double.POSITIVE_INFINITY},
+                    new double[]{7, 12}), // 56/96 = 7/x
+                Arguments.of(new double[]{56, 96}, new double[]{Double.POSITIVE_INFINITY, 12},
+                    new double[]{7, 12}) // 56/96 = x/12
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("solveProportionArgs")
+        void testSolveProportion(double[] proportion, double[] proportionWithUnknown, double[] expectedResult) {
+            // when
+            final double[] result = MathCalc.Arithmetic.solveProportion(proportion, proportionWithUnknown);
+            // then
+            assertArrayEquals(expectedResult, result, DELTA1);
+        }
+
+        @Test
+        void testFindEquivalentRatio() {
+            // given
+            // 3/8 = x/27
+            final double[] ratio = new double[]{3, 8};
+            final double[] ratioWithUnknown = new double[]{Double.POSITIVE_INFINITY, 72};
+            // when
+            final double[] result = MathCalc.Arithmetic.findEquivalentRatio(ratio, ratioWithUnknown);
+            // then
+            assertArrayEquals(new double[]{27, 72}, result, DELTA1);
+        }
+
+        @Test
+        void testScaleUpRatio() {
+            // given
+            final double[] ratio = new double[]{3, 8};
+            final byte coefficient = 2;
+            // when
+            final double[] result = MathCalc.Arithmetic.scaleUpRatio(ratio, coefficient);
+            // then
+            assertArrayEquals(new double[]{6, 16}, result, DELTA1);
+        }
+
+        @Test
+        void testScaleDownRatio() {
+            // given
+            final double[] ratio = new double[]{27, 72};
+            final byte coefficient = 4;
+            // when
+            final double[] result = MathCalc.Arithmetic.scaleDownRatio(ratio, coefficient);
+            // then
+            assertArrayEquals(new double[]{6.75, 18}, result, DELTA2);
+        }
+
+        @Test
+        void testSimplifyRatio() {
+            // given
+            final double[] ratio = new double[]{27, 72};
+            // when
+            final double[] result = MathCalc.Arithmetic.simplifyRatio(ratio);
+            // then
+            assertArrayEquals(new double[]{3, 8}, result, DELTA2);
+        }
+
+        @Test
+        void testSimplifyRatio1toN() {
+            // given
+            final double[] ratio = new double[]{27, 72};
+            // when
+            final double[] result = MathCalc.Arithmetic.simplifyRatio1toN(ratio);
+            // then
+            assertArrayEquals(new double[]{1, 2.6667}, result, DELTA4);
+        }
+
+        @Test
+        void testSimplifyRatioNto1() {
+            // given
+            final double[] ratio = new double[]{27, 72};
+            // when
+            final double[] result = MathCalc.Arithmetic.simplifyRatioNto1(ratio);
+            // then
+            assertArrayEquals(new double[]{0.375, 1}, result, DELTA3);
+        }
+
+        @Test
+        void testGoldenRatioGivenLongerSection() {
+            // given
+            final double longerSection = 0.850651;
+            // when
+            final double[] result = MathCalc.Arithmetic.goldenRatioGivenLongerSection(longerSection);
+            // then
+            assertArrayEquals(new double[]{longerSection, 0.526, 1.376}, result, DELTA3);
+        }
+
+        @Test
+        void testGoldenRatioGivenShorterSection() {
+            // given
+            final double shorterSection = 0.526;
+            // when
+            final double[] result = MathCalc.Arithmetic.goldenRatioGivenShorterSection(shorterSection);
+            // then
+            assertArrayEquals(new double[]{0.851, shorterSection, 1.377}, result, DELTA3);
+        }
+
+        @Test
+        void testGoldenRatioGivenWhole() {
+            // given
+            final double whole = 1.377;
+            // when
+            final double[] result = MathCalc.Arithmetic.goldenRatioGivenWhole(whole);
+            // then
+            assertArrayEquals(new double[]{0.851, 0.526, whole}, result, DELTA3);
+        }
+
+        static List<Arguments> addFractionsArgs() {
+            return List.of(
+                Arguments.of(new long[]{3, 5}, new long[]{1, 5}, new long[]{4, 5}), // 3/5 + 1/5 = 4/5
+                Arguments.of(new long[]{2, 5}, new long[]{3, 10}, new long[]{7, 10}), // 2/5 + 3/10 = 7/10
+                // 1/2 + 3/5 = 11/10 = 1 1/10
+                Arguments.of(new long[]{1, 2}, new long[]{3, 5}, new long[]{1, 1, 10}),
+                // 2 3/5 + 1 1/2 = 13/5 + 3/2 = 41/10 = 4 1/10
+                Arguments.of(new long[]{2, 3, 5}, new long[]{1, 1, 2}, new long[]{4, 1, 10})
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("addFractionsArgs")
+        void testAddFractions(long[] fraction1, long[] fraction2, long[] expectedResult) {
+            // when
+            final long[] result = MathCalc.Arithmetic.addFractions(fraction1, fraction2);
+            // then
+            assertArrayEquals(expectedResult, result);
+        }
+
+        static List<Arguments> subtractFractionsArgs() {
+            return List.of(
+                Arguments.of(new long[]{3, 5}, new long[]{1, 5}, new long[]{2, 5}), // 3/5 - 1/5 = 2/5
+                // 2/5 - 3/10 = 4/10 - 3/10 = 1/10
+                Arguments.of(new long[]{2, 5}, new long[]{3, 10}, new long[]{1, 10}),
+                // 2 3/5 − 1 1/2 = 13/5 − 3/2 = 11/10 = 1 1/10
+                Arguments.of(new long[]{2, 3, 5}, new long[]{1, 1, 2}, new long[]{1, 1, 10})
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("subtractFractionsArgs")
+        void testSubtractFractions(long[] fraction1, long[] fraction2, long[] expectedResult) {
+            // when
+            final long[] result = MathCalc.Arithmetic.subtractFractions(fraction1, fraction2);
+            // then
+            assertArrayEquals(expectedResult, result);
+        }
+
+        static List<Arguments> multiplyFractionsArgs() {
+            return List.of(
+                Arguments.of(new long[]{2, 3}, new long[]{5, 6}, new long[]{5, 9}), // 2/3 ⋅ 5/6 = 10/18 = 5/9
+                Arguments.of(new long[]{3, 1}, new long[]{5, 7}, new long[]{2, 1, 7}), // 3/1 ⋅ 5/7 = 15/7 = 2 1/7
+                // 2 1/2 ⋅ 3 1/4 = 5/2 ⋅ 13/4 = 65/8 = 8 1/8
+                Arguments.of(new long[]{2, 1, 2}, new long[]{3, 1, 4}, new long[]{8, 1, 8})
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("multiplyFractionsArgs")
+        void testMultiplyFractions(long[] fraction1, long[] fraction2, long[] expectedResult) {
+            // when
+            final long[] result = MathCalc.Arithmetic.multiplyFractions(fraction1, fraction2);
+            // then
+            assertArrayEquals(expectedResult, result);
+        }
+
+        static List<Arguments> divideFractionsArgs() {
+            return List.of(
+                Arguments.of(new long[]{1, 2}, new long[]{3, 5}, new long[]{5, 6}), // 1/2 ÷ 3/5 = 1/2 ⋅ 5/3 = 5/6
+                // 2 1/2 ÷ 3 1/4 = 5/2 ÷ 13/4 = 5/2 ⋅ 4/13 = 10/13
+                Arguments.of(new long[]{2, 1, 2}, new long[]{3, 1, 4}, new long[]{10, 13})
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("divideFractionsArgs")
+        void testDivideFractions(long[] fraction1, long[] fraction2, long[] expectedResult) {
+            // when
+            final long[] result = MathCalc.Arithmetic.divideFractions(fraction1, fraction2);
+            // then
+            assertArrayEquals(expectedResult, result);
+        }
+
+        @Test
+        void testSimplifyFraction() {
+            // given
+            final long[] fraction = new long[]{42, 126}; // 42/126 = 1/3
+            // when
+            final long[] result = MathCalc.Arithmetic.simplifyFraction(fraction);
+            // then
+            assertArrayEquals(new long[]{1, 3}, result);
+        }
+
+        static List<Arguments> decimalToFractionArgs() {
+            return List.of(
+                Arguments.of(0.32, new long[]{8, 25}),
+                Arguments.of(0.3333, new long[]{3333, 10000})
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("decimalToFractionArgs")
+        void testDecimalToFraction(double decimal, long[] expectedResult) {
+            // when
+            final long[] fraction = MathCalc.Arithmetic.decimalToFraction(decimal);
+            // then
+            assertArrayEquals(expectedResult, fraction);
+        }
+
+        static List<Arguments> fractionToDecimalArgs() {
+            return List.of(
+                Arguments.of(new long[]{2, 1, 2}, 2.5),
+                Arguments.of(new long[]{3, 1, 4}, 3.25)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("fractionToDecimalArgs")
+        void testFractionToDecimal(long[] fraction, double expectedResult) {
+            // when
+            final double decimal = MathCalc.Arithmetic.fractionToDecimal(fraction);
+            // then
+            assertEquals(expectedResult, decimal, DELTA3);
         }
     }
 

@@ -22,6 +22,11 @@ public final class MathCalc {
     public static final double ONE_FOURTH = 0.25;
     public static final double ONE_HALF = 0.5;
 
+    /**
+     * ϕ=½(1+√5)
+     */
+    public static final double GOLDEN_RATIO = 1.618033988749895;
+
     private static final String DIVISION_BY_ZERO = "Division by zero";
     private static final String MISMATCHED_DIMENSIONS = "Mismatched dimensions";
 
@@ -377,9 +382,21 @@ public final class MathCalc {
         /**
          * @return LCM = LCM of numerator / GCF of denominator
          */
-        public static long lcmOfFraction(long numerator1, long denominator1, long numerator2, long denominator2) {
+        public static long lcmOverGcfOfFractions(long[] fraction1, long[] fraction2) {
+            final long numerator1 = fraction1[Constants.ARR_1ST_INDEX];
+            final long denominator1 = fraction1[Constants.ARR_2ND_INDEX];
+            final long numerator2 = fraction2[Constants.ARR_1ST_INDEX];
+            final long denominator2 = fraction2[Constants.ARR_2ND_INDEX];
             return lcmWithPrimeFactorization(new double[]{numerator1, numerator2})
                 / gcfWithCommonFactors(new double[]{denominator1, denominator2});
+        }
+
+        public static long lcmOfFractions(long denominator1, long denominator2) {
+            return lcmWithPrimeFactorization(new double[]{denominator1, denominator2});
+        }
+
+        public static long lcmOverGcfOfFractions(double[] fraction1, double[] fraction2) {
+            return lcmWithPrimeFactorization(fraction1) / gcfWithCommonFactors(fraction2);
         }
 
         public static long gcfWithEuclideanAlg(double[] numbers) {
@@ -394,7 +411,25 @@ public final class MathCalc {
 
         private static void atLeast2NumRequired(double[] numbers) {
             if (numbers == null || numbers.length < 2) {
-                throw new IllegalArgumentException("At least two numbers are required");
+                throw new IllegalArgumentException("At least 2 numbers are required");
+            }
+        }
+
+        private static void atLeast2NumRequired(long[] numbers) {
+            if (numbers == null || numbers.length < 2) {
+                throw new IllegalArgumentException("At least 2 numbers are required");
+            }
+        }
+
+        private static void atMost3NumRequired(long[] numbers) {
+            if (numbers == null || numbers.length > 3) {
+                throw new IllegalArgumentException("At most 3 numbers are required");
+            }
+        }
+
+        private static void exact2NumRequired(double[] numbers) {
+            if (numbers == null || numbers.length != 2) {
+                throw new IllegalArgumentException("Exactly 2 numbers are required");
             }
         }
 
@@ -857,6 +892,289 @@ public final class MathCalc {
             final double t = (k * (radical2degree - 1)) / radical2degree;
             final double radicandProduct = Math.pow(radicand1, s) * Math.pow(radicand2, t);
             return new double[]{radical1coef / (radical2coef * radicand2), k, radicandProduct};
+        }
+
+        /**
+         * a/b = c/x => x = (b * c) / a
+         * a/b = x/d => x = (a * n) / b
+         */
+        public static double[] solveProportion(double[] proportion, double[] proportionWithUnknown) {
+            exact2NumRequired(proportion);
+            exact2NumRequired(proportionWithUnknown);
+            final double a = proportion[Constants.ARR_1ST_INDEX];
+            final double b = proportion[Constants.ARR_2ND_INDEX];
+            checkGreater0(b);
+
+            final double c = proportionWithUnknown[Constants.ARR_1ST_INDEX];
+            final double d = proportionWithUnknown[Constants.ARR_2ND_INDEX];
+
+            if (Double.isInfinite(c)) {
+                final double numeratorX = (a * d) / b;
+                return new double[]{numeratorX, d};
+            } else {
+                final double denominatorX = (b * c) / a;
+                return new double[]{c, denominatorX};
+            }
+        }
+
+        /**
+         * @return A : B = C : D
+         */
+        public static double[] findEquivalentRatio(double[] ratio, double[] ratioWithUnknown) {
+            return solveProportion(ratio, ratioWithUnknown);
+        }
+
+        /**
+         * @return A : B = x × A : x × B
+         */
+        public static double[] scaleUpRatio(double[] ratio, long coefficient) {
+            exact2NumRequired(ratio);
+            final double numerator = ratio[Constants.ARR_1ST_INDEX];
+            final double denominator = ratio[Constants.ARR_2ND_INDEX];
+            checkGreater0(denominator);
+            return new double[]{numerator * coefficient, denominator * coefficient};
+        }
+
+        /**
+         * @return A : B = A/x : B/x
+         */
+        public static double[] scaleDownRatio(double[] ratio, double coefficient) {
+            exact2NumRequired(ratio);
+            final double numerator = ratio[Constants.ARR_1ST_INDEX];
+            final double denominator = ratio[Constants.ARR_2ND_INDEX];
+            checkGreater0(denominator);
+            return new double[]{numerator / coefficient, denominator / coefficient};
+        }
+
+        /**
+         * <ul>
+         *     <li>(a+b)/a = a/b</li>
+         *     <li>1 + 1/(a/b) = a/b</li>
+         *     <li>b = √(1 - a²)</li>
+         *     <li>a/b = φ</li>
+         *     <li>a/√(1 - a²) = φ</li>
+         *     <li>a = √(φ²/(1 + φ²))</li>
+         * </ul>
+         */
+        public static double[] simplifyRatio(double[] ratio) {
+            final long commonFactor = gcfWithCommonFactors(ratio);
+            return scaleDownRatio(ratio, commonFactor);
+        }
+
+        public static double[] simplifyRatio1toN(double[] ratio) {
+            final double numerator = ratio[Constants.ARR_1ST_INDEX];
+            return scaleDownRatio(ratio, numerator);
+        }
+
+        public static double[] simplifyRatioNto1(double[] ratio) {
+            final double denominator = ratio[Constants.ARR_2ND_INDEX];
+            return scaleDownRatio(ratio, denominator);
+        }
+
+        public static double[] goldenRatioGivenLongerSection(double longerSection) {
+            final double shorterSection = longerSection / GOLDEN_RATIO;
+            final double whole = longerSection + shorterSection;
+            return new double[]{longerSection, shorterSection, whole};
+        }
+
+        public static double[] goldenRatioGivenShorterSection(double shorterSection) {
+            final double longerSection = shorterSection * GOLDEN_RATIO;
+            final double whole = longerSection + shorterSection;
+            return new double[]{longerSection, shorterSection, whole};
+        }
+
+        public static double[] goldenRatioGivenWhole(double whole) {
+            final double phiSquared = GOLDEN_RATIO * GOLDEN_RATIO;
+            final double longerSection = squareRoot(phiSquared / (1 + phiSquared));
+            final double shorterSection = whole - longerSection;
+            return new double[]{longerSection, shorterSection, whole};
+        }
+
+        /**
+         * @return w₁(n₁/d₁) + w₂(n₂/d₂)
+         */
+        public static long[] addFractions(long[] fraction1, long[] fraction2) {
+            atMost3NumRequired(fraction1);
+            atMost3NumRequired(fraction2);
+
+            if (fraction1.length == 3) {
+                fraction1 = mixedNumberToImproperFraction(fraction1);
+            }
+            final long numerator1 = fraction1[Constants.ARR_1ST_INDEX];
+            final long denominator1 = fraction1[Constants.ARR_2ND_INDEX];
+            checkGreater0(denominator1);
+
+            if (fraction2.length == 3) {
+                fraction2 = mixedNumberToImproperFraction(fraction2);
+            }
+            final long numerator2 = fraction2[Constants.ARR_1ST_INDEX];
+            final long denominator2 = fraction2[Constants.ARR_2ND_INDEX];
+            checkGreater0(denominator2);
+
+            final long[] result;
+            if (denominator1 == denominator2) {
+                result = new long[]{numerator1 + numerator2, denominator1};
+            } else {
+                final long lcm = lcmOfFractions(denominator1, denominator2);
+                final long normalizedNumerator1 = lcm / denominator1 * numerator1;
+                final long normalizedNumerator2 = lcm / denominator2 * numerator2;
+                result = new long[]{normalizedNumerator1 + normalizedNumerator2, lcm};
+            }
+            return simplifyFraction(result);
+        }
+
+        /**
+         * @return w₁(n₁/d₁) - w₂(n₂/d₂)
+         */
+        public static long[] subtractFractions(long[] fraction1, long[] fraction2) {
+            atMost3NumRequired(fraction1);
+            atMost3NumRequired(fraction2);
+
+            if (fraction1.length == 3) {
+                fraction1 = mixedNumberToImproperFraction(fraction1);
+            }
+            final long numerator1 = fraction1[Constants.ARR_1ST_INDEX];
+            final long denominator1 = fraction1[Constants.ARR_2ND_INDEX];
+            checkGreater0(denominator1);
+
+            if (fraction2.length == 3) {
+                fraction2 = mixedNumberToImproperFraction(fraction2);
+            }
+            final long numerator2 = fraction2[Constants.ARR_1ST_INDEX];
+            final long denominator2 = fraction2[Constants.ARR_2ND_INDEX];
+            checkGreater0(denominator2);
+
+            final long[] result;
+            if (denominator1 == denominator2) {
+                result = new long[]{numerator1 - numerator2, denominator1};
+            } else {
+                final long lcm = lcmOfFractions(denominator1, denominator2);
+                final long normalizedNumerator1 = lcm / denominator1 * numerator1;
+                final long normalizedNumerator2 = lcm / denominator2 * numerator2;
+                result = new long[]{normalizedNumerator1 - normalizedNumerator2, lcm};
+            }
+            return simplifyFraction(result);
+        }
+
+        /**
+         * @return w₁(n₁/d₁) * w₂(n₂/d₂)
+         */
+        public static long[] multiplyFractions(long[] fraction1, long[] fraction2) {
+            atMost3NumRequired(fraction1);
+            atMost3NumRequired(fraction2);
+
+            if (fraction1.length == 3) {
+                fraction1 = mixedNumberToImproperFraction(fraction1);
+            }
+
+            if (fraction2.length == 3) {
+                fraction2 = mixedNumberToImproperFraction(fraction2);
+            }
+
+            final long numerator1 = fraction1[Constants.ARR_1ST_INDEX];
+            final long denominator1 = fraction1[Constants.ARR_2ND_INDEX];
+            checkGreater0(denominator1);
+
+            final long numerator2 = fraction2[Constants.ARR_1ST_INDEX];
+            final long denominator2 = fraction2[Constants.ARR_2ND_INDEX];
+            checkGreater0(denominator2);
+
+            final long[] result = {numerator1 * numerator2, denominator1 * denominator2};
+            return simplifyFraction(result);
+        }
+
+        /**
+         * @return w₁(n₁/d₁) / w₂(n₂/d₂)
+         */
+        public static long[] divideFractions(long[] fraction1, long[] fraction2) {
+            atMost3NumRequired(fraction1);
+            atMost3NumRequired(fraction2);
+
+            if (fraction1.length == 3) {
+                fraction1 = mixedNumberToImproperFraction(fraction1);
+            }
+
+            if (fraction2.length == 3) {
+                fraction2 = mixedNumberToImproperFraction(fraction2);
+            }
+
+            final long numerator1 = fraction1[Constants.ARR_1ST_INDEX];
+            final long denominator1 = fraction1[Constants.ARR_2ND_INDEX];
+            checkGreater0(denominator1);
+
+            final long numerator2 = fraction2[Constants.ARR_1ST_INDEX];
+            final long denominator2 = fraction2[Constants.ARR_2ND_INDEX];
+            checkGreater0(denominator2);
+
+            final long[] result = {numerator1 * denominator2, denominator1 * numerator2};
+            return simplifyFraction(result);
+        }
+
+        public static long[] mixedNumberToImproperFraction(long[] fraction) {
+            if (fraction.length < 3) {
+                return fraction;
+            }
+
+            final long whole = fraction[Constants.ARR_1ST_INDEX];
+            final long numerator = fraction[Constants.ARR_2ND_INDEX];
+            final long denominator = fraction[Constants.ARR_3RD_INDEX];
+            return new long[]{whole * denominator + numerator, denominator};
+        }
+
+        public static long[] improperFractionToMixedNumber(long[] fraction) {
+            atLeast2NumRequired(fraction);
+
+            final long numerator = fraction[Constants.ARR_1ST_INDEX];
+            final long denominator = fraction[Constants.ARR_2ND_INDEX];
+            final long whole = numerator / denominator;
+            final long remainder = numerator - whole * denominator;
+
+            if (remainder == 0) {
+                return new long[]{whole, 0, denominator}; // Represent as whole number
+            } else if (whole == 0) {
+                return new long[]{remainder, denominator}; // Proper fraction
+            } else {
+                return new long[]{whole, remainder, denominator}; // Mixed number
+            }
+        }
+
+        public static long[] simplifyFraction(long[] fraction) {
+            atMost3NumRequired(fraction);
+
+            fraction = mixedNumberToImproperFraction(fraction);
+            final long numerator = fraction[Constants.ARR_1ST_INDEX];
+            final long denominator = fraction[Constants.ARR_2ND_INDEX];
+            checkGreater0(denominator);
+
+            final long commonFactor = gcfWithCommonFactors(new double[]{numerator, denominator});
+            final long[] simplified = {numerator / commonFactor, denominator / commonFactor};
+            return improperFractionToMixedNumber(simplified);
+        }
+
+        public static long[] decimalToFraction(double decimal) {
+            final String decimalStr = Double.toString(decimal);
+            final int index = decimalStr.indexOf('.');
+            if (index < 0) {
+                // No decimal point, it's an integer
+                return new long[]{(long) decimal, 1};
+            }
+            final int decimalPlaces = decimalStr.length() - index - 1;
+            final long denominator = (long) Math.pow(10, decimalPlaces);
+            final long numerator = Math.round(decimal * denominator);
+            return simplifyFraction(new long[]{numerator, denominator});
+        }
+
+        public static double fractionToDecimal(long[] fraction) {
+            atMost3NumRequired(fraction);
+
+            if (fraction.length == 3) {
+                fraction = mixedNumberToImproperFraction(fraction);
+            }
+
+            final long numerator = fraction[Constants.ARR_1ST_INDEX];
+            final long denominator = fraction[Constants.ARR_2ND_INDEX];
+            checkGreater0(denominator);
+            return (double) numerator / denominator;
         }
     }
 
