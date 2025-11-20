@@ -21,6 +21,8 @@ import java.util.function.LongPredicate;
 public final class MathCalc {
     public static final double ONE_FOURTH = 0.25;
     public static final double ONE_HALF = 0.5;
+    public static final double ONE_EIGHTH = 0.125;
+    public static final byte ONE = 1;
 
     /**
      * ϕ=½(1+√5)
@@ -50,8 +52,15 @@ public final class MathCalc {
     }
 
     private static void checkGreater0(double value) {
-        if (value <= 0) {
-            throw new IllegalArgumentException("This value must be greater than 0");
+        final int inclusiveBound = 0;
+        if (value <= inclusiveBound) {
+            checkGreater(value, inclusiveBound);
+        }
+    }
+
+    private static void checkGreater(double value, double inclusiveBound) {
+        if (value <= inclusiveBound) {
+            throw new IllegalArgumentException("This value must be greater than " + inclusiveBound);
         }
     }
 
@@ -1246,6 +1255,186 @@ public final class MathCalc {
          */
         public static double multiplyWithSamePower(double x, double y, double exponent) {
             return Math.pow(x * y, exponent);
+        }
+
+        /**
+         * aka
+         * <ol>
+         *     <li>lg</li>
+         *     <li>the common logarithm</li>
+         *     <li>the decimal logarithm</li>
+         *     <li>the decadic logarithm</li>
+         *     <li>the standard logarithm</li>
+         *     <li>the Briggsian logarithm</li>
+         * </ol>
+         * <p>The difference between the root and logarithm is:
+         * <br/>ᵏ√(nᵏ) = n
+         * <br/>logₙ(nᵏ) = k
+         * </p>
+         * <ul>
+         *     <li>aʸ = x</li>
+         *     <li>logₐ(x) = y</li>
+         *     <li>aˡᵒᵍₐ⁽ˣ⁾ = x</li>
+         *     <li>y = logₑx = ln(x)</li>
+         *     <li>x = eʸ = exp(y)</li>
+         * </ul>
+         *
+         * @return log₁₀x
+         */
+        public static double log(double number) {
+            checkGreater0(number);
+            return Math.log10(number);
+        }
+
+        /**
+         * y = log_b(x)
+         * x = bʸ = b^(log_bˣ)
+         * y = log_b(x) = log_b(bʸ)
+         *
+         * @return x = log_b^⁻¹(y) = bʸ
+         */
+        public static double antilog(double logarithm, double base) {
+            return Math.pow(base, logarithm);
+        }
+
+        /**
+         * @return log₁₀(a * b) = log₁₀(a) + log₁₀(b)
+         */
+        public static double logProductRule(double a, double b) {
+            checkGreater0(a);
+            checkGreater0(b);
+            return log(a) + log(b);
+        }
+
+        /**
+         * @return logₙ(a * b) = logₙ(a) + logₙ(b)
+         */
+        public static double logProductRule(double a, double b, double base) {
+            checkGreater0(a);
+            checkGreater0(b);
+            checkGreater(base, ONE);
+            return logChangeOfBase(a, base) + logChangeOfBase(b, base);
+        }
+
+        /**
+         * @return logₙ(a / b) = logₙ(a) - logₙ(b)
+         */
+        public static double logQuotientRule(double a, double b, double base) {
+            checkGreater0(a);
+            checkGreater0(b);
+            checkGreater(base, ONE);
+            return logChangeOfBase(a, base) - logChangeOfBase(b, base);
+        }
+
+        /**
+         * @return logₙ(aᵏ) = k * logₙ(a)
+         */
+        public static double logPowerRule(double number, double exponent, double base) {
+            checkGreater0(number);
+            checkGreater0(exponent);
+            checkGreater(base, ONE);
+            return exponent * logChangeOfBase(number, base);
+        }
+
+        /**
+         * x * logₙ a + y * logₙ b = logₙ(aˣ) + logₙ(bʸ)
+         *
+         * @return logₙ(aˣ * bʸ)
+         */
+        public static double logAdd(double a, double exponentX, double b, double exponentY, double base) {
+            checkGreater0(a);
+            checkGreater0(b);
+            checkGreater(base, ONE);
+            return logChangeOfBase(Math.pow(a, exponentX) * Math.pow(b, exponentY), base);
+        }
+
+        /**
+         * x * logₙ a - y * logₙ b = logₙ(aˣ) - logₙ(bʸ)
+         *
+         * @return logₙ(aˣ / bʸ)
+         */
+        public static double logSubtract(double a, double exponentX, double b, double exponentY, double base) {
+            checkGreater0(a);
+            checkGreater0(b);
+            checkGreater(base, ONE);
+            return logChangeOfBase(Math.pow(a, exponentX) / Math.pow(b, exponentY), base);
+        }
+
+        /**
+         * @return x * logₙ a = logₙ(aˣ)
+         */
+        public static double logMultiplyNumber(double number, double exponent, double base) {
+            checkGreater0(number);
+            checkGreater(base, ONE);
+            return logChangeOfBase(Math.pow(number, exponent), base);
+        }
+
+        /**
+         * @return logₐ(x) = log(x) / log(a)
+         */
+        public static double logChangeOfBase(double x, double base) {
+            checkGreater0(x);
+            checkGreater(base, ONE);
+            return log(x) / log(base);
+        }
+
+        /**
+         * @return logₐ(x) = log_b(x) / log_b(a)
+         */
+        public static double logChangeOfBase(double x, double base, double newBase) {
+            checkGreater0(x);
+            checkGreater(base, ONE);
+            checkGreater(newBase, ONE);
+            final double numerator = log(x) / log(newBase);
+            final double denominator = log(base) / log(newBase);
+            return numerator / denominator;
+        }
+
+        /**
+         * −logₐ(b) = n
+         * 1/aⁿ = b
+         *
+         * @return logₐ(1/x) = n
+         */
+        public static double negativeLog(double x, double base) {
+            checkGreater0(x);
+            checkGreater(base, ONE);
+            return logChangeOfBase(1 / x, base);
+        }
+
+        /**
+         * Natural logarithm
+         * <ul>
+         *     <li>Product ln(x × y) = ln(x) + ln(y)</li>
+         *     <li>Log of power ln(xy) = y × ln(x)</li>
+         *     <li>ln(e) = 1</li>
+         *     <li>ln(1) = 0</li>
+         *     <li>Log reciprocal ln(1/x) = −ln(x)</li>
+         * </ul>
+         *
+         * @return logₑx
+         */
+        public static double ln(double x) {
+            return Math.log(x);
+        }
+
+        /**
+         * @return logₐ(x) = ln(x) / ln(a)
+         */
+        public static double lnChangeOfBase(double x, double base) {
+            checkGreater0(x);
+            checkGreater(base, ONE);
+            return ln(x) / ln(base);
+        }
+
+        /**
+         * aka the binary logarithm
+         *
+         * @return log₂(x)
+         */
+        public static double log2(double x) {
+            checkGreater0(x);
+            return lnChangeOfBase(x, 2);
         }
     }
 

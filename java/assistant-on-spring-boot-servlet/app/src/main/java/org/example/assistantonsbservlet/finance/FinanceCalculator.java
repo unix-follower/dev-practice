@@ -24,6 +24,7 @@ public final class FinanceCalculator {
 
         /**
          * No rounding.
+         *
          * @return total cost = man-hours * hourly pay
          */
         public static double manHoursTotalCostExact(int manHours, double hourlyPay) {
@@ -62,6 +63,7 @@ public final class FinanceCalculator {
 
         /**
          * RPM stands for revenue per 1000 impressions (RPM).
+         *
          * @return Estimated gross earnings = RPM * number of views / 1000
          */
         public static double youtubeGrossRevenuePerDay(double rpm, long numberOfViews) {
@@ -70,6 +72,7 @@ public final class FinanceCalculator {
 
         /**
          * YouTube takes 45% of the money made on videos on its platform.
+         *
          * @return Estimated net earnings = estimated gross earnings × (55 / 100)
          */
         public static double youtubeNetRevenuePerDay(double rpm, long numberOfViews) {
@@ -121,12 +124,29 @@ public final class FinanceCalculator {
         }
 
         /**
-         * @return FV=P(1 + r/m)^(mt)
+         * @return FV=P(1 + r/m)ᵐᵗ
          */
-        public static double drip(double moneyInvested, double dividendYield, Frequency compoundFrequency,
-                                  byte numberOfYears) {
+        public static double drip(double moneyInvested, double dividendYield,
+                                  Frequency compoundFrequency, int numberOfYears) {
+            return compoundInterest(moneyInvested, dividendYield, compoundFrequency, numberOfYears);
+        }
+
+        /**
+         * where:
+         * <ul>
+         *     <li>A — Value of the investment after t years</li>
+         *     <li>P — Initial value</li>
+         *     <li>r — Interest rate (in decimals)</li>
+         *     <li>m — Number of times the interest is compounded per year or compounding frequency</li>
+         *     <li>t — Numbers of years</li>
+         * <ul/>
+         *
+         * @return A = P(1 + r/m)ᵐᵗ
+         */
+        public static double compoundInterest(double initialValue, double interestRate,
+                                              Frequency compoundFrequency, int numberOfYears) {
             final double frequency = compoundFrequency.getNumber();
-            return moneyInvested * Math.pow((1 + dividendYield / frequency), frequency * numberOfYears);
+            return initialValue * Math.pow((1 + interestRate / frequency), frequency * numberOfYears);
         }
     }
 }

@@ -1091,6 +1091,248 @@ class MathCalcTest {
             // then
             assertEquals(0.0016, result, DELTA4);
         }
+
+        @Test
+        void testLog() {
+            // given
+            final byte number = 4;
+            // when
+            final double logarithm = MathCalc.Algebra.log(number);
+            // then
+            assertEquals(0.602, logarithm, DELTA3);
+        }
+
+        @Test
+        void testLog10ProductRule() {
+            // given
+            final double a = 5.89;
+            final double b = 4.73;
+            // when
+            final double logarithm = MathCalc.Algebra.logProductRule(a, b);
+            // then
+            assertEquals(1.444976, logarithm, DELTA6);
+        }
+
+        static List<Arguments> logProductRuleWithBaseArgs() {
+            return List.of(
+                // log₄(500) = log₄(4 × 125) = log₄(4) + log₄(125) = 1 + 3.483 = 4.483
+                Arguments.of(4, 125, 4, 4.483, DELTA3),
+                // log₅(100) = log₅(10 × 10) = log₅(10) + log₅(10) = 1.4307 + 1.4307 = 2.8614
+                Arguments.of(10, 10, 5, 2.8614, DELTA3)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("logProductRuleWithBaseArgs")
+        void testLogProductRuleWithBase(double a, double b, double base, double expectedResult, double delta) {
+            // when
+            final double logarithm = MathCalc.Algebra.logProductRule(a, b, base);
+            // then
+            assertEquals(expectedResult, logarithm, delta);
+        }
+
+        static List<Arguments> logQuotientRuleArgs() {
+            return List.of(
+                // log₃(10) = log₃(20 / 2) = log₃(20) - log₃(2) = 2.727 - 0.6309 = 2.096
+                Arguments.of(20, 2, 3, 2.096, DELTA3),
+                // log₄(64) = log₄(128 / 2) = log₄(128) - log₄(2) = 3.5 - 0.5 = 3
+                Arguments.of(128, 2, 4, 3, DELTA3)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("logQuotientRuleArgs")
+        void testLogQuotientRule(double a, double b, double base, double expectedResult, double delta) {
+            // when
+            final double logarithm = MathCalc.Algebra.logQuotientRule(a, b, base);
+            // then
+            assertEquals(expectedResult, logarithm, delta);
+        }
+
+        static List<Arguments> logPowerRuleArgs() {
+            return List.of(
+                // log₇(64) = log₇(8²) = 2 × log₇(8) = 2 × 1.0686 = 2.1372
+                Arguments.of(8, 2, 7, 2.1372, DELTA4),
+                // log₇(8) = log₇(2³) = 3 × log₇(2) = 3 × 0.3562 = 1.0686
+                Arguments.of(2, 3, 7, 1.0686, DELTA4),
+                // log₇(4) = log₇(2²) = 2 × log₇(2) = 2 × 0.3562 = 0.7124
+                Arguments.of(2, 2, 7, 0.7124, DELTA4),
+                // log₃(729) = log₃(9³) = 3 × log₃(9) = 3 × 2 = 6
+                Arguments.of(9, 3, 3, 6, DELTA1)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("logPowerRuleArgs")
+        void testLogPowerRule(double number, double exponent, double base, double expectedResult, double delta) {
+            // when
+            final double logarithm = MathCalc.Algebra.logPowerRule(number, exponent, base);
+            // then
+            assertEquals(expectedResult, logarithm, delta);
+        }
+
+        static List<Arguments> antilogArgs() {
+            return List.of(
+                Arguments.of(3, Math.E, 20.085537, DELTA6),
+                Arguments.of(3, 10, 1000, DELTA1),
+                Arguments.of(3, 2, 8, DELTA1)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("antilogArgs")
+        void testAntilog(double logarithm, double base, double expectedResult, double delta) {
+            // when
+            final double antilog = MathCalc.Algebra.antilog(logarithm, base);
+            // then
+            assertEquals(expectedResult, antilog, delta);
+        }
+
+        static List<Arguments> logAddArgs() {
+            return List.of(
+                // 3 log₆ 4 + log₆ 9 = log₆(4³ × 9) = log₆ 576 = 3.5474
+                Arguments.of(3, 4, 1, 9, 6, 3.5474, DELTA4)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("logAddArgs")
+        void testLogAdd(double x, double a, double y, double b, double base, double expectedResult, double delta) {
+            // when
+            final double logarithm = MathCalc.Algebra.logAdd(a, x, b, y, base);
+            // then
+            assertEquals(expectedResult, logarithm, delta);
+        }
+
+        static List<Arguments> logSubtractArgs() {
+            return List.of(
+                // 3 log₆ 4 - log₆ 9 = log₆(4³ / 9) = log₆ 7.111 = 1.09482
+                Arguments.of(3, 4, 1, 9, 6, 1.09482, DELTA5)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("logSubtractArgs")
+        void testLogSubtract(double x, double a, double y, double b, double base, double expectedResult, double delta) {
+            // when
+            final double logarithm = MathCalc.Algebra.logSubtract(a, x, b, y, base);
+            // then
+            assertEquals(expectedResult, logarithm, delta);
+        }
+
+        static List<Arguments> logMultiplyNumberArgs() {
+            return List.of(
+                // 3 log₆ 4 = log₆(4³) = log₆ 64 = 2.3211
+                Arguments.of(3, 4, 6, 2.3211, DELTA4)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("logMultiplyNumberArgs")
+        void testLogMultiplyNumber(double x, double a, double base, double expectedResult, double delta) {
+            // when
+            final double logarithm = MathCalc.Algebra.logMultiplyNumber(a, x, base);
+            // then
+            assertEquals(expectedResult, logarithm, delta);
+        }
+
+        @Test
+        void testLogChangeOfBase() {
+            // given
+            final byte number = 100;
+            final byte base = 2;
+            // when
+            final double logarithm = MathCalc.Algebra.logChangeOfBase(number, base);
+            // then
+            assertEquals(6.644, logarithm, DELTA3);
+        }
+
+        @Test
+        void testNegativeLog() {
+            // given
+            final byte number = 8;
+            final byte base = 2;
+            // when
+            final double logarithm = MathCalc.Algebra.negativeLog(number, base);
+            // then
+            assertEquals(-3, logarithm, DELTA1);
+        }
+
+        static List<Arguments> logChangeOfBaseArgs() {
+            return List.of(
+                Arguments.of(9, 27, 3, 0.667, DELTA3), // log₂₇(9) = log₃(9)/log₃(27) ≈ 2/3 ≈ 0.667
+                // log₅(1000) = log₁₀(1000)/log₁₀(5) ≈ 3/0.699 ≈ 4.292
+                Arguments.of(1000, 5, 10, 4.292, DELTA3),
+                // log₂(20) = log₁₀(20)/log₁₀(2) ≈ 1.301/0.301 ≈ 4.322
+                Arguments.of(20, 2, 10, 4.322, DELTA3),
+                // log₁₀(20) = logₑ(20)/logₑ(10) ≈ 2.996/2.303 ≈ 1.301
+                Arguments.of(20, 10, Math.E, 1.301, DELTA3)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("logChangeOfBaseArgs")
+        void testLogChangeOfBase(double x, double base, double newBase, double expectedResult, double delta) {
+            // when
+            final double logarithm = MathCalc.Algebra.logChangeOfBase(x, base, newBase);
+            // then
+            assertEquals(expectedResult, logarithm, delta);
+        }
+
+        static List<Arguments> lnArgs() {
+            return List.of(
+                Arguments.of(1, 0, DELTA1),
+                Arguments.of(Math.E, 1, DELTA1),
+                Arguments.of(2, 0.6931, DELTA4),
+                Arguments.of(4, 1.3863, DELTA4)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("lnArgs")
+        void testLn(double number, double expectedResult, double delta) {
+            // when
+            final double logarithm = MathCalc.Algebra.ln(number);
+            // then
+            assertEquals(expectedResult, logarithm, delta);
+        }
+
+        @Test
+        void testLnChangeOfBase() {
+            // given
+            final byte number = 100;
+            final byte base = 2;
+            // when
+            final double logarithm = MathCalc.Algebra.lnChangeOfBase(number, base);
+            // then
+            assertEquals(6.644, logarithm, DELTA3);
+        }
+
+        static List<Arguments> log2Args() {
+            return List.of(
+                Arguments.of(MathCalc.ONE_EIGHTH, -3, DELTA1),
+                Arguments.of(MathCalc.ONE_FOURTH, -2, DELTA1),
+                Arguments.of(MathCalc.ONE_HALF, -1, DELTA1),
+                Arguments.of(1, 0, DELTA1),
+                Arguments.of(2, 1, DELTA1),
+                Arguments.of(4, 2, DELTA1),
+                Arguments.of(8, 3, DELTA1),
+                Arguments.of(16, 4, DELTA1),
+                Arguments.of(32, 5, DELTA1),
+                Arguments.of(64, 6, DELTA1),
+                Arguments.of(128, 7, DELTA1),
+                Arguments.of(256, 8, DELTA1)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("log2Args")
+        void testLog2(double number, double expectedResult, double delta) {
+            // when
+            final double logarithm = MathCalc.Algebra.log2(number);
+            // then
+            assertEquals(expectedResult, logarithm, delta);
+        }
     }
 
     @Nested
