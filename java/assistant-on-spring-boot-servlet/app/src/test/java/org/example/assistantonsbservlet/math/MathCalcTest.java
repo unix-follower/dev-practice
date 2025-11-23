@@ -1,5 +1,6 @@
 package org.example.assistantonsbservlet.math;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -9,7 +10,10 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Arrays;
 import java.util.List;
+import java.util.function.BiFunction;
+import java.util.function.DoubleUnaryOperator;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -3603,6 +3607,88 @@ class MathCalcTest {
             final double number = MathCalc.Seq.harmonicNumber(end);
             // then
             assertEquals(expectedResult, number, DELTA3);
+        }
+    }
+
+    @Nested
+    class Calculus {
+        @Test
+        void testDerivativeConstantRule() {
+            // given f(x) = 3
+            final DoubleUnaryOperator constantFn = _ -> 3;
+            // when
+            final double result = MathCalc.Calculus.derivativeConstantRule(constantFn);
+            // then
+            assertEquals(0, result, DELTA1);
+        }
+
+        @Test
+        void testDerivativeConstantMultipleRule() {
+            // given f(x) = x² + 3x - 4
+            final DoubleUnaryOperator f = x -> x * x + 3 * x - 4;
+            final byte constant = 5;
+            final double x = 1;
+            // when
+            final double result = MathCalc.Calculus.derivativeConstantMultipleRule(f, constant, x);
+            // then
+            assertEquals(25, result, DELTA1); // 10x + 15
+        }
+
+        @Test
+        void testDerivativeConstantMultipleRuleWithEquationTerms() {
+            // given f(x) = x² + 3x - 4
+            final DoubleUnaryOperator xSquaredFn = x -> x * x;
+            final DoubleUnaryOperator plus3xFn = x -> 3 * x;
+            final DoubleUnaryOperator minus4Fn = _ -> -4;
+            final DoubleUnaryOperator[] equationTerms = {xSquaredFn, plus3xFn, minus4Fn};
+            final BiFunction<DoubleUnaryOperator[], Double, Double> f = (terms, x) ->
+                Arrays.stream(terms).mapToDouble(fn -> fn.applyAsDouble(x)).sum();
+            final byte constant = 5;
+            final double x = 1;
+            // when
+            final Pair<double[], Double> result = MathCalc.Calculus
+                .derivativeConstantMultipleRule(f, equationTerms, constant, x);
+            // then
+            assertNotNull(result.getLeft());
+            assertNotNull(result.getRight());
+            assertArrayEquals(new double[]{10, 15, 0}, result.getLeft(), DELTA1);
+            assertEquals(25, result.getRight(), DELTA1); // 10x + 15
+        }
+
+        @Test
+        void testLimitConstantMultipleRuleWithEquationTerms() {
+            // given f(x) = x² + 3x - 4
+            final DoubleUnaryOperator xSquaredFn = x -> x * x;
+            final DoubleUnaryOperator plus3xFn = x -> 3 * x;
+            final DoubleUnaryOperator minus4Fn = _ -> -4;
+            final DoubleUnaryOperator[] equationTerms = {xSquaredFn, plus3xFn, minus4Fn};
+            final BiFunction<DoubleUnaryOperator[], Double, Double> f = (terms, x) ->
+                Arrays.stream(terms).mapToDouble(fn -> fn.applyAsDouble(x)).sum();
+            final byte constant = 5;
+            final double x = 3;
+            // when
+            final Pair<double[], Double> result = MathCalc.Calculus
+                .limitConstantMultipleRule(f, equationTerms, constant, x);
+            // then
+            assertNotNull(result.getLeft());
+            assertNotNull(result.getRight());
+            assertArrayEquals(new double[]{45, 45, -20}, result.getLeft(), DELTA1);
+            assertEquals(70, result.getRight(), DELTA1);
+        }
+
+        @Test
+        void testIntegralConstantMultipleRule() {
+            // given f(x) = x² + 3x - 4
+            final DoubleUnaryOperator f = x -> x * x + 3 * x - 4;
+            final double lowerLimit = 2;
+            final double upperLimit = 3;
+            final int numberOfIntervals = 1000;
+            final byte constant = 5;
+            // when
+            final double result = MathCalc.Calculus
+                .integralConstantMultipleRule(f, lowerLimit, upperLimit, numberOfIntervals, constant);
+            // then
+            assertEquals(49.16, result, DELTA1); // 5x³/3 + 15x²/2 - 20x
         }
     }
 }
