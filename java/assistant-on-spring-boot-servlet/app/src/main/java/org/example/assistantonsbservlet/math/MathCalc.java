@@ -13,13 +13,16 @@ import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.BiFunction;
+import java.util.function.DoubleBinaryOperator;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.LongPredicate;
 
 public final class MathCalc {
+    public static final double ONE_FIFTH = 0.2;
     public static final double ONE_FOURTH = 0.25;
     public static final double ONE_HALF = 0.5;
     public static final double ONE_EIGHTH = 0.125;
@@ -3432,10 +3435,39 @@ public final class MathCalc {
         }
     }
 
+    /**
+     * Derivative notations:
+     * <ul>
+     *     <li>Lagrange's: f'</li>
+     *     <li>Leibniz's: dy/dx; y = f(x) → d/dx f(x)</li>
+     *     <li>Newton's: ẏ</li>
+     * </ul>
+     */
     public static final class Calculus {
         public static final double NUMERICAL_APPROXIMATE_DERIVATIVE = 1e-8;
 
         private Calculus() {
+        }
+
+        /**
+         * @return d/dx ≈ (f(x+Δx) - f(x)) / Δx
+         */
+        public static double derivativeForwardDifference(DoubleUnaryOperator f, double x, double deltaX) {
+            return (f.applyAsDouble(x + deltaX) - f.applyAsDouble(x)) / deltaX;
+        }
+
+        /**
+         * @return d/dx ≈ (f(x) - f(x-Δx)) / Δx
+         */
+        public static double derivativeBackwardDifference(DoubleUnaryOperator f, double x, double deltaX) {
+            return (f.applyAsDouble(x) - f.applyAsDouble(x - deltaX)) / deltaX;
+        }
+
+        /**
+         * @return d/dx ≈ (f(x+Δx) - f(x-Δx)) / (2 * Δx)
+         */
+        public static double derivativeCenteredDifference(DoubleUnaryOperator f, double x, double deltaX) {
+            return (f.applyAsDouble(x + deltaX) - f.applyAsDouble(x - deltaX)) / (2 * deltaX);
         }
 
         /**
@@ -3652,6 +3684,175 @@ public final class MathCalc {
                 sum += 2 * f.applyAsDouble(lowerLimit + i * h);
             }
             return sum * h / 3.0;
+        }
+
+        /**
+         * @return ∂f/∂x ≈ (f(x+Δx, y) - f(x, y)) / Δx
+         */
+        public static double partialDerivativeForwardDifferenceWrtX(
+            DoubleBinaryOperator f, double x, double y, double deltaX) {
+            return (f.applyAsDouble(x + deltaX, y) - f.applyAsDouble(x, y)) / deltaX;
+        }
+
+        /**
+         * @return ∂f/∂y ≈ (f(x, y+Δy) - f(x, y)) / Δy
+         */
+        public static double partialDerivativeForwardDifferenceWrtY(
+            DoubleBinaryOperator f, double x, double y, double deltaY) {
+            return (f.applyAsDouble(x, y + deltaY) - f.applyAsDouble(x, y)) / deltaY;
+        }
+
+        /**
+         * @return ∂(f-g)/∂x = ∂f/∂x - ∂g/∂x
+         */
+        public static double partialDerivativeDifferenceRuleWrtX(
+            DoubleBinaryOperator f, DoubleBinaryOperator g, double x, double y) {
+            final double h = NUMERICAL_APPROXIMATE_DERIVATIVE;
+            final double dfDx = partialDerivativeForwardDifferenceWrtX(f, x, y, h);
+            final double dgDx = partialDerivativeForwardDifferenceWrtX(g, x, y, h);
+            return dfDx - dgDx;
+        }
+
+        /**
+         * @return ∂(f-g)/∂y = ∂f/∂y - ∂g/∂y
+         */
+        public static double partialDerivativeDifferenceRuleWrtY(
+            DoubleBinaryOperator f, DoubleBinaryOperator g, double x, double y) {
+            final double h = NUMERICAL_APPROXIMATE_DERIVATIVE;
+            final double dfDy = partialDerivativeForwardDifferenceWrtY(f, x, y, h);
+            final double dgDy = partialDerivativeForwardDifferenceWrtY(g, x, y, h);
+            return dfDy - dgDy;
+        }
+
+        /**
+         * @return ∂(f+g)/∂x = ∂f/∂x + ∂g/∂x
+         */
+        public static double partialDerivativeSumRuleWrtX(
+            DoubleBinaryOperator f, DoubleBinaryOperator g, double x, double y) {
+            final double h = NUMERICAL_APPROXIMATE_DERIVATIVE;
+            final double dfDx = partialDerivativeForwardDifferenceWrtX(f, x, y, h);
+            final double dgDx = partialDerivativeForwardDifferenceWrtX(g, x, y, h);
+            return dfDx + dgDx;
+        }
+
+        /**
+         * @return ∂(f+g)/∂y = ∂f/∂y + ∂g/∂y
+         */
+        public static double partialDerivativeSumRuleWrtY(
+            DoubleBinaryOperator f, DoubleBinaryOperator g, double x, double y) {
+            final double h = NUMERICAL_APPROXIMATE_DERIVATIVE;
+            final double dfDy = partialDerivativeForwardDifferenceWrtY(f, x, y, h);
+            final double dgDy = partialDerivativeForwardDifferenceWrtY(g, x, y, h);
+            return dfDy + dgDy;
+        }
+
+        /**
+         * @return ∂/∂x(f₁ + f₂ + ... + fₙ) = Σⁿᵢ₌₁ ∂fᵢ/∂x
+         */
+        public static double partialDerivativeSumRuleWrtX(List<DoubleBinaryOperator> functions, double x, double y) {
+            double sum = 0;
+            for (final var f : functions) {
+                sum += partialDerivativeForwardDifferenceWrtX(f, x, y, NUMERICAL_APPROXIMATE_DERIVATIVE);
+            }
+            return sum;
+        }
+
+        /**
+         * @return ∂/∂y(f₁ + f₂ + ... + fₙ) = Σⁿᵢ₌₁ ∂fᵢ/∂y
+         */
+        public static double partialDerivativeSumRuleWrtY(List<DoubleBinaryOperator> functions, double x, double y) {
+            double sum = 0;
+            for (final var f : functions) {
+                sum += partialDerivativeForwardDifferenceWrtY(f, x, y, NUMERICAL_APPROXIMATE_DERIVATIVE);
+            }
+            return sum;
+        }
+
+        /**
+         * @return ∂(f⋅g)/∂x = f⋅∂g/∂x + g⋅∂f/∂x
+         */
+        public static double partialDerivativeProductRuleWrtX(
+            DoubleBinaryOperator f, DoubleBinaryOperator g, double x, double y) {
+            final double h = NUMERICAL_APPROXIMATE_DERIVATIVE;
+            final double dfDx = partialDerivativeForwardDifferenceWrtX(f, x, y, h);
+            final double dgDx = partialDerivativeForwardDifferenceWrtX(g, x, y, h);
+            final double fResult = f.applyAsDouble(x, y);
+            final double gResult = g.applyAsDouble(x, y);
+            return fResult * dgDx + gResult * dfDx;
+        }
+
+        /**
+         * @return ∂(f⋅g)/∂y = f⋅∂g/∂y + g⋅∂f/∂y
+         */
+        public static double partialDerivativeProductRuleWrtY(
+            DoubleBinaryOperator f, DoubleBinaryOperator g, double x, double y) {
+            final double h = NUMERICAL_APPROXIMATE_DERIVATIVE;
+            final double dfDy = partialDerivativeForwardDifferenceWrtY(f, x, y, h);
+            final double dgDy = partialDerivativeForwardDifferenceWrtY(g, x, y, h);
+            final double fResult = f.applyAsDouble(x, y);
+            final double gResult = g.applyAsDouble(x, y);
+            return fResult * dgDy + gResult * dfDy;
+        }
+
+        /**
+         * @return ∂(f/g)/∂x = (∂f/∂x⋅g - f⋅∂g/∂x)/g²
+         */
+        public static double partialDerivativeQuotientRuleWrtX(
+            DoubleBinaryOperator f, DoubleBinaryOperator g, double x, double y) {
+            final double gResult = g.applyAsDouble(x, y);
+            checkGreater0(gResult);
+            final double h = NUMERICAL_APPROXIMATE_DERIVATIVE;
+            final double dfDx = partialDerivativeForwardDifferenceWrtX(f, x, y, h);
+            final double dgDx = partialDerivativeForwardDifferenceWrtX(g, x, y, h);
+            final double fResult = f.applyAsDouble(x, y);
+            final double gResultSquared = gResult * gResult;
+            return (dfDx * gResult - fResult * dgDx) / gResultSquared;
+        }
+
+        /**
+         * @return ∂(f/g)/∂y = (∂f/∂y⋅g - f⋅∂g/∂y)/g²
+         */
+        public static double partialDerivativeQuotientRuleWrtY(
+            DoubleBinaryOperator f, DoubleBinaryOperator g, double x, double y) {
+            final double gResult = g.applyAsDouble(x, y);
+            checkGreater0(gResult);
+            final double h = NUMERICAL_APPROXIMATE_DERIVATIVE;
+            final double dfDy = partialDerivativeForwardDifferenceWrtY(f, x, y, h);
+            final double dgDy = partialDerivativeForwardDifferenceWrtY(g, x, y, h);
+            final double fResult = f.applyAsDouble(x, y);
+            final double gResultSquared = gResult * gResult;
+            return (dfDy * gResult - fResult * dgDy) / gResultSquared;
+        }
+
+        /**
+         * @return ∂f/∂x = ∂f/∂y * ∂y/∂x
+         */
+        public static double partialDerivativeChainRule(
+            DoubleBinaryOperator f,
+            double x,
+            double y,
+            DoubleUnaryOperator dyDxFn
+        ) {
+            final double h = NUMERICAL_APPROXIMATE_DERIVATIVE;
+            final double dfDx = partialDerivativeForwardDifferenceWrtX(f, x, y, h);
+            final double dfDy = partialDerivativeForwardDifferenceWrtY(f, x, y, h);
+            final double dyDx = dyDxFn.applyAsDouble(x);
+            return dfDx + dfDy * dyDx;
+        }
+
+        /**
+         * @return ∂f/∂x = ∂f/∂y * ∂y/∂x
+         */
+        public static double partialDerivativeChainRule(
+            DoubleBinaryOperator f,
+            double x,
+            double y,
+            double dyDx
+        ) {
+            final double h = NUMERICAL_APPROXIMATE_DERIVATIVE;
+            final double dfDx = partialDerivativeForwardDifferenceWrtX(f, x, y, h);
+            final double dfDy = partialDerivativeForwardDifferenceWrtY(f, x, y, h);
+            return dfDx + dfDy * dyDx;
         }
     }
 

@@ -13,6 +13,7 @@ import java.math.RoundingMode;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.BiFunction;
+import java.util.function.DoubleBinaryOperator;
 import java.util.function.DoubleUnaryOperator;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
@@ -3689,6 +3690,97 @@ class MathCalcTest {
                 .integralConstantMultipleRule(f, lowerLimit, upperLimit, numberOfIntervals, constant);
             // then
             assertEquals(49.16, result, DELTA1); // 5x³/3 + 15x²/2 - 20x
+        }
+
+        static List<Arguments> partialDerivativeForwardDifferenceWrtXArgs() {
+            // f(x,y) = 3x²y + 2y² + 7x
+            final DoubleBinaryOperator f = (x, y) -> 3 * x * x * y + 2 * y * y + 7 * x;
+            final DoubleBinaryOperator f2 = (x, _) -> 8 * x * x; // f(x,y) = f(x,2) = 8x²
+            // f(x,y) = 1/5(x² - 2xy) + 3
+            final DoubleBinaryOperator f3 = (x, y) -> MathCalc.ONE_FIFTH * (x * x - 2 * x * y) + 3;
+
+            return List.of(
+                Arguments.of(f, new double[]{2, 3}, 43, DELTA1), // 6xy + 7 = 6 * 2 * 3 + 7 = 43
+                Arguments.of(f2, new double[]{3, 2}, 48, DELTA1), // 16 * 3 = 48
+                Arguments.of(f3, new double[]{0, 2}, -4. / 5, DELTA5) // ∂/∂x(x²)=2x; 1/5(2(0)-2(2)*1)+0 = -4/5
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("partialDerivativeForwardDifferenceWrtXArgs")
+        void testPartialDerivativeForwardDifferenceWrtX(
+            DoubleBinaryOperator f, double[] args, double expectedResult, double delta) {
+            // given
+            final double h = MathCalc.Calculus.NUMERICAL_APPROXIMATE_DERIVATIVE;
+            // when
+            final double result = MathCalc.Calculus.partialDerivativeForwardDifferenceWrtX(
+                f, args[Constants.X_INDEX], args[Constants.Y_INDEX], h);
+            // then
+            assertEquals(expectedResult, result, delta);
+        }
+
+        static List<Arguments> partialDerivativeDifferenceRuleWrtYArgs() {
+            // f(x,y) = 3x²y + 2y² + 7x
+            final DoubleBinaryOperator f = (x, y) -> 3 * x * x * y + 2 * y * y + 7 * x;
+            // f(x,y) = 1/5(x² - 2xy) + 3
+            final DoubleBinaryOperator f2 = (x, y) -> MathCalc.ONE_FIFTH * (x * x - 2 * x * y) + 3;
+            return List.of(
+                Arguments.of(f, new double[]{2, 3}, 24., DELTA1), // 3x² + 4y = 24
+                Arguments.of(f2, new double[]{2, 0}, -4. / 5, DELTA3) // 1/5(0-2(2)*1)+0 = -2/5*2 = -4/5
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("partialDerivativeDifferenceRuleWrtYArgs")
+        void testPartialDerivativeForwardDifferenceWrtY(
+            DoubleBinaryOperator f, double[] args, double expectedResult, double delta) {
+            // given
+            final double h = MathCalc.Calculus.NUMERICAL_APPROXIMATE_DERIVATIVE;
+            // when
+            final double result = MathCalc.Calculus.partialDerivativeForwardDifferenceWrtY(
+                f, args[Constants.X_INDEX], args[Constants.Y_INDEX], h);
+            // then
+            assertEquals(expectedResult, result, delta);
+        }
+
+        static List<Arguments> partialDerivativeSumRuleWrtXArgs() {
+            final DoubleBinaryOperator f = (x, y) -> x * x + 3 * x * y + y * y; // f(x,y) = x² + 3xy + y²
+            final DoubleBinaryOperator g = (x, y) -> 2 * x + y; // g(x,y) = 2xy
+            return List.of(
+                // ∂/∂x(f+g) = (2*2 + 3*3) + 2 = 13 + 2 = 15
+                Arguments.of(f, g, new double[]{2, 3}, 15, DELTA1)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("partialDerivativeSumRuleWrtXArgs")
+        void testPartialDerivativeSumRuleWrtX(
+            DoubleBinaryOperator f, DoubleBinaryOperator g, double[] args, double expectedResult, double delta) {
+            // when
+            final double result = MathCalc.Calculus.partialDerivativeSumRuleWrtX(
+                f, g, args[Constants.X_INDEX], args[Constants.Y_INDEX]);
+            // then
+            assertEquals(expectedResult, result, delta);
+        }
+
+        static List<Arguments> partialDerivativeSumRuleWrtYArgs() {
+            final DoubleBinaryOperator f = (x, y) -> x * x + 3 * x * y + y * y; // f(x,y) = x² + 3xy + y²
+            final DoubleBinaryOperator g = (x, y) -> 2 * x + y; // g(x,y) = 2xy
+            return List.of(
+                // ∂/∂y(f+g) = (3*2 + 2*3) + 1 = 12 + 1 = 13
+                Arguments.of(f, g, new double[]{2, 3}, 13, DELTA1)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("partialDerivativeSumRuleWrtYArgs")
+        void testPartialDerivativeSumRuleWrtY(
+            DoubleBinaryOperator f, DoubleBinaryOperator g, double[] args, double expectedResult, double delta) {
+            // when
+            final double result = MathCalc.Calculus.partialDerivativeSumRuleWrtY(
+                f, g, args[Constants.X_INDEX], args[Constants.Y_INDEX]);
+            // then
+            assertEquals(expectedResult, result, delta);
         }
     }
 }
