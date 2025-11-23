@@ -15,6 +15,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.BiFunction;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.LongPredicate;
 
@@ -3432,7 +3433,93 @@ public final class MathCalc {
     }
 
     public static final class Calculus {
+        public static final double NUMERICAL_APPROXIMATE_DERIVATIVE = 1e-8;
+
         private Calculus() {
+        }
+
+        /**
+         * @return d/dx(c) = 0
+         */
+        public static double derivativeConstantRule(DoubleUnaryOperator constantFn) {
+            final double h = NUMERICAL_APPROXIMATE_DERIVATIVE;
+            return (constantFn.applyAsDouble(h) - constantFn.applyAsDouble(0)) / h;
+        }
+
+        /**
+         * @return d/dx(c*f(x)) = c * f'(x)
+         */
+        public static double derivativeConstantMultipleRule(DoubleUnaryOperator f, double constant, double x) {
+            final double h = NUMERICAL_APPROXIMATE_DERIVATIVE;
+            return constant * (f.applyAsDouble(x + h) - f.applyAsDouble(x)) / h;
+        }
+
+        /**
+         * @return d/dx(c*f(x)) = c * f'(x)
+         */
+        public static Pair<double[], Double> derivativeConstantMultipleRule(
+            BiFunction<DoubleUnaryOperator[], Double, Double> f, DoubleUnaryOperator[] equationTerms,
+            double constant, double x) {
+            final double h = NUMERICAL_APPROXIMATE_DERIVATIVE;
+            final double[] differentiatedTerms = new double[equationTerms.length];
+            for (int i = 0; i < differentiatedTerms.length; i++) {
+                final var term = equationTerms[i];
+                differentiatedTerms[i] = constant * (term.applyAsDouble(x + h) - term.applyAsDouble(x)) / h;
+            }
+            final double derivative = constant * (f.apply(equationTerms, x + h) - f.apply(equationTerms, x)) / h;
+            return Pair.of(differentiatedTerms, derivative);
+        }
+
+        /**
+         * <ul>
+         *     <li>limₓ→ₐ k = k</li>
+         *     <li>k * limₓ→ₐ f(x)</li>
+         * </ul>
+         *
+         * @return limₓ→ₐ k * f(x)
+         */
+        public static Pair<double[], Double> limitConstantMultipleRule(
+            BiFunction<DoubleUnaryOperator[], Double, Double> f, DoubleUnaryOperator[] equationTerms,
+            double constant, double x) {
+            final double[] computedTerms = new double[equationTerms.length];
+            for (int i = 0; i < computedTerms.length; i++) {
+                final var term = equationTerms[i];
+                computedTerms[i] = constant * term.applyAsDouble(x);
+            }
+            final double limit = constant * f.apply(equationTerms, x);
+            return Pair.of(computedTerms, limit);
+        }
+
+        /**
+         * @return Δx = h = (b-a)/n
+         */
+        public static double widthOfSubinterval(double lowerLimit, double upperLimit, int numberOfIntervals) {
+            return (upperLimit - lowerLimit) / numberOfIntervals;
+        }
+
+        /**
+         * ∫ₐ^b f(x)dx = h * [f(a)/2 + f(x₁) + f(x₂) + ... + f(xₙ₋₁) + f(b)/2]
+         *
+         * @return f(a)/2 + f(b)/2 part of the formula
+         */
+        public static double endpointsWeightedSum(DoubleUnaryOperator f, double lowerLimit, double upperLimit) {
+            return ONE_HALF * (f.applyAsDouble(lowerLimit) + f.applyAsDouble(upperLimit));
+        }
+
+        /**
+         * k ∫f(x)
+         *
+         * @return ∫k * f(x) dx = k * ∫f(x) dx
+         */
+        public static double integralConstantMultipleRule(
+            DoubleUnaryOperator f, double lowerLimit, double upperLimit, int numberOfIntervals, double constant) {
+            final double h = widthOfSubinterval(lowerLimit, upperLimit, numberOfIntervals); // dx
+            double sum = endpointsWeightedSum(f, lowerLimit, upperLimit);
+            for (int i = 1; i < numberOfIntervals; i++) {
+                final double x = lowerLimit + i * h;
+                sum += f.applyAsDouble(x);
+            }
+            return constant * sum * h;
         }
 
         /**
@@ -3537,11 +3624,11 @@ public final class MathCalc {
          * @return Approximate value of the definite integral.
          */
         public static double integrateTrapezoidal(
-            DoubleUnaryOperator f, double lowerBound, double upperBound, int numberOfIntervals) {
-            final double h = (upperBound - lowerBound) / numberOfIntervals;
-            double sum = ONE_HALF * (f.applyAsDouble(lowerBound) + f.applyAsDouble(upperBound));
+            DoubleUnaryOperator f, double lowerLimit, double upperLimit, int numberOfIntervals) {
+            final double h = widthOfSubinterval(lowerLimit, upperLimit, numberOfIntervals); // dx
+            double sum = endpointsWeightedSum(f, lowerLimit, upperLimit);
             for (int i = 1; i < numberOfIntervals; i++) {
-                sum += f.applyAsDouble(lowerBound + i * h);
+                sum += f.applyAsDouble(lowerLimit + i * h);
             }
             return sum * h;
         }
@@ -3552,17 +3639,17 @@ public final class MathCalc {
          * @return Approximate value of the definite integral.
          */
         public static double integrateSimpson(
-            DoubleUnaryOperator f, double lowerBound, double upperBound, int numberOfIntervals) {
+            DoubleUnaryOperator f, double lowerLimit, double upperLimit, int numberOfIntervals) {
             if (numberOfIntervals % 2 != 0) {
                 throw new IllegalArgumentException("numberOfIntervals must be even");
             }
-            final double h = (upperBound - lowerBound) / numberOfIntervals;
-            double sum = f.applyAsDouble(lowerBound) + f.applyAsDouble(upperBound);
+            final double h = widthOfSubinterval(lowerLimit, upperLimit, numberOfIntervals); // dx
+            double sum = f.applyAsDouble(lowerLimit) + f.applyAsDouble(upperLimit);
             for (int i = 1; i < numberOfIntervals; i += 2) {
-                sum += 4 * f.applyAsDouble(lowerBound + i * h);
+                sum += 4 * f.applyAsDouble(lowerLimit + i * h);
             }
             for (int i = 2; i < numberOfIntervals; i += 2) {
-                sum += 2 * f.applyAsDouble(lowerBound + i * h);
+                sum += 2 * f.applyAsDouble(lowerLimit + i * h);
             }
             return sum * h / 3.0;
         }
