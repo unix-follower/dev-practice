@@ -55,6 +55,18 @@ public final class MathCalc {
         }
     }
 
+    private static void checkNotEqTo(double value, double[] invalidValues) {
+        for (var invalidValue : invalidValues) {
+            if (value == invalidValue) {
+                throw new IllegalArgumentException("The value must not be equal to " + invalidValue);
+            }
+        }
+    }
+
+    private static void checkNotEq0(double value) {
+        checkNotEqTo(value, new double[]{0});
+    }
+
     private static void checkGreater0(double value) {
         final int inclusiveBound = 0;
         if (value <= inclusiveBound) {
@@ -548,6 +560,329 @@ public final class MathCalc {
         }
 
         /**
+         * a/b = c/x => x = (b * c) / a
+         * a/b = x/d => x = (a * n) / b
+         */
+        public static double[] solveProportion(double[] proportion, double[] proportionWithUnknown) {
+            exact2NumRequired(proportion);
+            exact2NumRequired(proportionWithUnknown);
+            final double a = proportion[Constants.ARR_1ST_INDEX];
+            final double b = proportion[Constants.ARR_2ND_INDEX];
+            checkGreater0(b);
+
+            final double c = proportionWithUnknown[Constants.ARR_1ST_INDEX];
+            final double d = proportionWithUnknown[Constants.ARR_2ND_INDEX];
+
+            if (Double.isInfinite(c)) {
+                final double numeratorX = (a * d) / b;
+                return new double[]{numeratorX, d};
+            } else {
+                final double denominatorX = (b * c) / a;
+                return new double[]{c, denominatorX};
+            }
+        }
+
+        /**
+         * @return A : B = C : D
+         */
+        public static double[] findEquivalentRatio(double[] ratio, double[] ratioWithUnknown) {
+            return solveProportion(ratio, ratioWithUnknown);
+        }
+
+        /**
+         * @return A : B = x × A : x × B
+         */
+        public static double[] scaleUpRatio(double[] ratio, long coefficient) {
+            exact2NumRequired(ratio);
+            final double numerator = ratio[Constants.ARR_1ST_INDEX];
+            final double denominator = ratio[Constants.ARR_2ND_INDEX];
+            checkGreater0(denominator);
+            return new double[]{numerator * coefficient, denominator * coefficient};
+        }
+
+        /**
+         * @return A : B = A/x : B/x
+         */
+        public static double[] scaleDownRatio(double[] ratio, double coefficient) {
+            exact2NumRequired(ratio);
+            final double numerator = ratio[Constants.ARR_1ST_INDEX];
+            final double denominator = ratio[Constants.ARR_2ND_INDEX];
+            checkGreater0(denominator);
+            return new double[]{numerator / coefficient, denominator / coefficient};
+        }
+
+        /**
+         * <ul>
+         *     <li>(a+b)/a = a/b</li>
+         *     <li>1 + 1/(a/b) = a/b</li>
+         *     <li>b = √(1 - a²)</li>
+         *     <li>a/b = φ</li>
+         *     <li>a/√(1 - a²) = φ</li>
+         *     <li>a = √(φ²/(1 + φ²))</li>
+         * </ul>
+         */
+        public static double[] simplifyRatio(double[] ratio) {
+            final long commonFactor = gcfWithCommonFactors(ratio);
+            return scaleDownRatio(ratio, commonFactor);
+        }
+
+        public static double[] simplifyRatio1toN(double[] ratio) {
+            final double numerator = ratio[Constants.ARR_1ST_INDEX];
+            return scaleDownRatio(ratio, numerator);
+        }
+
+        public static double[] simplifyRatioNto1(double[] ratio) {
+            final double denominator = ratio[Constants.ARR_2ND_INDEX];
+            return scaleDownRatio(ratio, denominator);
+        }
+
+        public static double[] goldenRatioGivenLongerSection(double longerSection) {
+            final double shorterSection = longerSection / GOLDEN_RATIO;
+            final double whole = longerSection + shorterSection;
+            return new double[]{longerSection, shorterSection, whole};
+        }
+
+        public static double[] goldenRatioGivenShorterSection(double shorterSection) {
+            final double longerSection = shorterSection * GOLDEN_RATIO;
+            final double whole = longerSection + shorterSection;
+            return new double[]{longerSection, shorterSection, whole};
+        }
+
+        public static double[] goldenRatioGivenWhole(double whole) {
+            final double phiSquared = GOLDEN_RATIO * GOLDEN_RATIO;
+            final double longerSection = Algebra.squareRoot(phiSquared / (1 + phiSquared));
+            final double shorterSection = whole - longerSection;
+            return new double[]{longerSection, shorterSection, whole};
+        }
+
+        /**
+         * @return w₁(n₁/d₁) + w₂(n₂/d₂)
+         */
+        public static long[] addFractions(long[] fraction1, long[] fraction2) {
+            atMost3NumRequired(fraction1);
+            atMost3NumRequired(fraction2);
+
+            if (fraction1.length == 3) {
+                fraction1 = mixedNumberToImproperFraction(fraction1);
+            }
+            final long numerator1 = fraction1[Constants.ARR_1ST_INDEX];
+            final long denominator1 = fraction1[Constants.ARR_2ND_INDEX];
+            checkGreater0(denominator1);
+
+            if (fraction2.length == 3) {
+                fraction2 = mixedNumberToImproperFraction(fraction2);
+            }
+            final long numerator2 = fraction2[Constants.ARR_1ST_INDEX];
+            final long denominator2 = fraction2[Constants.ARR_2ND_INDEX];
+            checkGreater0(denominator2);
+
+            final long[] result;
+            if (denominator1 == denominator2) {
+                result = new long[]{numerator1 + numerator2, denominator1};
+            } else {
+                final long lcm = lcmOfFractions(denominator1, denominator2);
+                final long normalizedNumerator1 = lcm / denominator1 * numerator1;
+                final long normalizedNumerator2 = lcm / denominator2 * numerator2;
+                result = new long[]{normalizedNumerator1 + normalizedNumerator2, lcm};
+            }
+            return simplifyFraction(result);
+        }
+
+        /**
+         * @return w₁(n₁/d₁) - w₂(n₂/d₂)
+         */
+        public static long[] subtractFractions(long[] fraction1, long[] fraction2) {
+            atMost3NumRequired(fraction1);
+            atMost3NumRequired(fraction2);
+
+            if (fraction1.length == 3) {
+                fraction1 = mixedNumberToImproperFraction(fraction1);
+            }
+            final long numerator1 = fraction1[Constants.ARR_1ST_INDEX];
+            final long denominator1 = fraction1[Constants.ARR_2ND_INDEX];
+            checkGreater0(denominator1);
+
+            if (fraction2.length == 3) {
+                fraction2 = mixedNumberToImproperFraction(fraction2);
+            }
+            final long numerator2 = fraction2[Constants.ARR_1ST_INDEX];
+            final long denominator2 = fraction2[Constants.ARR_2ND_INDEX];
+            checkGreater0(denominator2);
+
+            final long[] result;
+            if (denominator1 == denominator2) {
+                result = new long[]{numerator1 - numerator2, denominator1};
+            } else {
+                final long lcm = lcmOfFractions(denominator1, denominator2);
+                final long normalizedNumerator1 = lcm / denominator1 * numerator1;
+                final long normalizedNumerator2 = lcm / denominator2 * numerator2;
+                result = new long[]{normalizedNumerator1 - normalizedNumerator2, lcm};
+            }
+            return simplifyFraction(result);
+        }
+
+        /**
+         * @return w₁(n₁/d₁) * w₂(n₂/d₂)
+         */
+        public static long[] multiplyFractions(long[] fraction1, long[] fraction2) {
+            atMost3NumRequired(fraction1);
+            atMost3NumRequired(fraction2);
+
+            if (fraction1.length == 3) {
+                fraction1 = mixedNumberToImproperFraction(fraction1);
+            }
+
+            if (fraction2.length == 3) {
+                fraction2 = mixedNumberToImproperFraction(fraction2);
+            }
+
+            final long numerator1 = fraction1[Constants.ARR_1ST_INDEX];
+            final long denominator1 = fraction1[Constants.ARR_2ND_INDEX];
+            checkGreater0(denominator1);
+
+            final long numerator2 = fraction2[Constants.ARR_1ST_INDEX];
+            final long denominator2 = fraction2[Constants.ARR_2ND_INDEX];
+            checkGreater0(denominator2);
+
+            final long[] result = {numerator1 * numerator2, denominator1 * denominator2};
+            return simplifyFraction(result);
+        }
+
+        /**
+         * @return w₁(n₁/d₁) / w₂(n₂/d₂)
+         */
+        public static long[] divideFractions(long[] fraction1, long[] fraction2) {
+            atMost3NumRequired(fraction1);
+            atMost3NumRequired(fraction2);
+
+            if (fraction1.length == 3) {
+                fraction1 = mixedNumberToImproperFraction(fraction1);
+            }
+
+            if (fraction2.length == 3) {
+                fraction2 = mixedNumberToImproperFraction(fraction2);
+            }
+
+            final long numerator1 = fraction1[Constants.ARR_1ST_INDEX];
+            final long denominator1 = fraction1[Constants.ARR_2ND_INDEX];
+            checkGreater0(denominator1);
+
+            final long numerator2 = fraction2[Constants.ARR_1ST_INDEX];
+            final long denominator2 = fraction2[Constants.ARR_2ND_INDEX];
+            checkGreater0(denominator2);
+
+            final long[] result = {numerator1 * denominator2, denominator1 * numerator2};
+            return simplifyFraction(result);
+        }
+
+        public static long[] mixedNumberToImproperFraction(long[] fraction) {
+            if (fraction.length < 3) {
+                return fraction;
+            }
+
+            final long whole = fraction[Constants.ARR_1ST_INDEX];
+            final long numerator = fraction[Constants.ARR_2ND_INDEX];
+            final long denominator = fraction[Constants.ARR_3RD_INDEX];
+            return new long[]{whole * denominator + numerator, denominator};
+        }
+
+        public static long[] improperFractionToMixedNumber(long[] fraction) {
+            atLeast2NumRequired(fraction);
+
+            final long numerator = fraction[Constants.ARR_1ST_INDEX];
+            final long denominator = fraction[Constants.ARR_2ND_INDEX];
+            final long whole = numerator / denominator;
+            final long remainder = numerator - whole * denominator;
+
+            if (remainder == 0) {
+                return new long[]{whole, 0, denominator}; // Represent as whole number
+            } else if (whole == 0) {
+                return new long[]{remainder, denominator}; // Proper fraction
+            } else {
+                return new long[]{whole, remainder, denominator}; // Mixed number
+            }
+        }
+
+        public static long[] simplifyFraction(long[] fraction) {
+            atMost3NumRequired(fraction);
+
+            fraction = mixedNumberToImproperFraction(fraction);
+            final long numerator = fraction[Constants.ARR_1ST_INDEX];
+            final long denominator = fraction[Constants.ARR_2ND_INDEX];
+            checkGreater0(denominator);
+
+            final long commonFactor = gcfWithCommonFactors(new double[]{numerator, denominator});
+            final long[] simplified = {numerator / commonFactor, denominator / commonFactor};
+            return improperFractionToMixedNumber(simplified);
+        }
+
+        public static long[] decimalToFraction(double decimal) {
+            final String decimalStr = Double.toString(decimal);
+            final int index = decimalStr.indexOf('.');
+            if (index < 0) {
+                // No decimal point, it's an integer
+                return new long[]{(long) decimal, 1};
+            }
+            final int decimalPlaces = decimalStr.length() - index - 1;
+            final long denominator = (long) Math.pow(10, decimalPlaces);
+            final long numerator = Math.round(decimal * denominator);
+            return simplifyFraction(new long[]{numerator, denominator});
+        }
+
+        public static double fractionToDecimal(long[] fraction) {
+            atMost3NumRequired(fraction);
+
+            if (fraction.length == 3) {
+                fraction = mixedNumberToImproperFraction(fraction);
+            }
+
+            final long numerator = fraction[Constants.ARR_1ST_INDEX];
+            final long denominator = fraction[Constants.ARR_2ND_INDEX];
+            checkGreater0(denominator);
+            return (double) numerator / denominator;
+        }
+    }
+
+    public static final class Algebra {
+        private Algebra() {
+        }
+
+        /**
+         * @return 𝚪(n) = (n - 1)!
+         */
+        public static double gammaFunction(double x) {
+            if (x == 0) {
+                throw new IllegalArgumentException("Gamma function is undefined for 0");
+            }
+
+            // Lanczos approximation coefficients
+            final double[] p = {
+                676.5203681218851,
+                -1259.1392167224028,
+                771.32342877765313,
+                -176.61502916214059,
+                12.507343278686905,
+                -0.13857109526572012,
+                9.9843695780195716e-6,
+                1.5056327351493116e-7
+            };
+            final int g = 7;
+            if (x < 0.5) {
+                // Reflection formula
+                return Math.PI / (Math.sin(Math.PI * x) * gammaFunction(1 - x));
+            }
+            x -= 1;
+            double a = 0.99999999999980993;
+            for (int i = 0; i < p.length; i++) {
+                a += p[i] / (x + i + 1);
+            }
+            final double t = x + g + 0.5;
+            return Math.sqrt(2 * Math.PI) * Math.pow(t, x + 0.5) * Math.exp(-t) * a;
+        }
+
+        // Roots: square, cube and nth
+
+        /**
          * <table>
          *     <tr>
          *         <th>Square root</th><th>Is perfect square?</th>
@@ -779,7 +1114,7 @@ public final class MathCalc {
             final double degree = normalizedRadical[Constants.ARR_2ND_INDEX];
             final double radicand = normalizedRadical[Constants.ARR_3RD_INDEX];
 
-            final var factorCounts = primeFactorMap((long) radicand);
+            final var factorCounts = Arithmetic.primeFactorMap((long) radicand);
 
             // Extract groups according to degree
             long outsideCoef = 1;
@@ -803,7 +1138,7 @@ public final class MathCalc {
             final double degree = radical[Constants.ARR_1ST_INDEX];
             final double radicand = radical[Constants.ARR_2ND_INDEX];
 
-            final var factorCounts = primeFactorMap((long) radicand);
+            final var factorCounts = Arithmetic.primeFactorMap((long) radicand);
 
             long outsideCoef = 1;
             long insideRadicand = 1;
@@ -870,7 +1205,7 @@ public final class MathCalc {
             final double radical2degree = radical2[Constants.ARR_2ND_INDEX];
             final double radicand2 = radical2[Constants.ARR_3RD_INDEX];
 
-            final long k = lcmWithPrimeFactorization(new double[]{radical1degree, radical2degree});
+            final long k = Arithmetic.lcmWithPrimeFactorization(new double[]{radical1degree, radical2degree});
             final double s = k / radical1degree;
             final double t = k / radical2degree;
             final double radicandProduct = Math.pow(radicand1, s) * Math.pow(radicand2, t);
@@ -900,332 +1235,11 @@ public final class MathCalc {
             final double radical2degree = radical2[Constants.ARR_2ND_INDEX];
             final double radicand2 = radical2[Constants.ARR_3RD_INDEX];
 
-            final long k = lcmWithPrimeFactorization(new double[]{radical1degree, radical2degree});
+            final long k = Arithmetic.lcmWithPrimeFactorization(new double[]{radical1degree, radical2degree});
             final double s = k / radical1degree;
             final double t = (k * (radical2degree - 1)) / radical2degree;
             final double radicandProduct = Math.pow(radicand1, s) * Math.pow(radicand2, t);
             return new double[]{radical1coef / (radical2coef * radicand2), k, radicandProduct};
-        }
-
-        /**
-         * a/b = c/x => x = (b * c) / a
-         * a/b = x/d => x = (a * n) / b
-         */
-        public static double[] solveProportion(double[] proportion, double[] proportionWithUnknown) {
-            exact2NumRequired(proportion);
-            exact2NumRequired(proportionWithUnknown);
-            final double a = proportion[Constants.ARR_1ST_INDEX];
-            final double b = proportion[Constants.ARR_2ND_INDEX];
-            checkGreater0(b);
-
-            final double c = proportionWithUnknown[Constants.ARR_1ST_INDEX];
-            final double d = proportionWithUnknown[Constants.ARR_2ND_INDEX];
-
-            if (Double.isInfinite(c)) {
-                final double numeratorX = (a * d) / b;
-                return new double[]{numeratorX, d};
-            } else {
-                final double denominatorX = (b * c) / a;
-                return new double[]{c, denominatorX};
-            }
-        }
-
-        /**
-         * @return A : B = C : D
-         */
-        public static double[] findEquivalentRatio(double[] ratio, double[] ratioWithUnknown) {
-            return solveProportion(ratio, ratioWithUnknown);
-        }
-
-        /**
-         * @return A : B = x × A : x × B
-         */
-        public static double[] scaleUpRatio(double[] ratio, long coefficient) {
-            exact2NumRequired(ratio);
-            final double numerator = ratio[Constants.ARR_1ST_INDEX];
-            final double denominator = ratio[Constants.ARR_2ND_INDEX];
-            checkGreater0(denominator);
-            return new double[]{numerator * coefficient, denominator * coefficient};
-        }
-
-        /**
-         * @return A : B = A/x : B/x
-         */
-        public static double[] scaleDownRatio(double[] ratio, double coefficient) {
-            exact2NumRequired(ratio);
-            final double numerator = ratio[Constants.ARR_1ST_INDEX];
-            final double denominator = ratio[Constants.ARR_2ND_INDEX];
-            checkGreater0(denominator);
-            return new double[]{numerator / coefficient, denominator / coefficient};
-        }
-
-        /**
-         * <ul>
-         *     <li>(a+b)/a = a/b</li>
-         *     <li>1 + 1/(a/b) = a/b</li>
-         *     <li>b = √(1 - a²)</li>
-         *     <li>a/b = φ</li>
-         *     <li>a/√(1 - a²) = φ</li>
-         *     <li>a = √(φ²/(1 + φ²))</li>
-         * </ul>
-         */
-        public static double[] simplifyRatio(double[] ratio) {
-            final long commonFactor = gcfWithCommonFactors(ratio);
-            return scaleDownRatio(ratio, commonFactor);
-        }
-
-        public static double[] simplifyRatio1toN(double[] ratio) {
-            final double numerator = ratio[Constants.ARR_1ST_INDEX];
-            return scaleDownRatio(ratio, numerator);
-        }
-
-        public static double[] simplifyRatioNto1(double[] ratio) {
-            final double denominator = ratio[Constants.ARR_2ND_INDEX];
-            return scaleDownRatio(ratio, denominator);
-        }
-
-        public static double[] goldenRatioGivenLongerSection(double longerSection) {
-            final double shorterSection = longerSection / GOLDEN_RATIO;
-            final double whole = longerSection + shorterSection;
-            return new double[]{longerSection, shorterSection, whole};
-        }
-
-        public static double[] goldenRatioGivenShorterSection(double shorterSection) {
-            final double longerSection = shorterSection * GOLDEN_RATIO;
-            final double whole = longerSection + shorterSection;
-            return new double[]{longerSection, shorterSection, whole};
-        }
-
-        public static double[] goldenRatioGivenWhole(double whole) {
-            final double phiSquared = GOLDEN_RATIO * GOLDEN_RATIO;
-            final double longerSection = squareRoot(phiSquared / (1 + phiSquared));
-            final double shorterSection = whole - longerSection;
-            return new double[]{longerSection, shorterSection, whole};
-        }
-
-        /**
-         * @return w₁(n₁/d₁) + w₂(n₂/d₂)
-         */
-        public static long[] addFractions(long[] fraction1, long[] fraction2) {
-            atMost3NumRequired(fraction1);
-            atMost3NumRequired(fraction2);
-
-            if (fraction1.length == 3) {
-                fraction1 = mixedNumberToImproperFraction(fraction1);
-            }
-            final long numerator1 = fraction1[Constants.ARR_1ST_INDEX];
-            final long denominator1 = fraction1[Constants.ARR_2ND_INDEX];
-            checkGreater0(denominator1);
-
-            if (fraction2.length == 3) {
-                fraction2 = mixedNumberToImproperFraction(fraction2);
-            }
-            final long numerator2 = fraction2[Constants.ARR_1ST_INDEX];
-            final long denominator2 = fraction2[Constants.ARR_2ND_INDEX];
-            checkGreater0(denominator2);
-
-            final long[] result;
-            if (denominator1 == denominator2) {
-                result = new long[]{numerator1 + numerator2, denominator1};
-            } else {
-                final long lcm = lcmOfFractions(denominator1, denominator2);
-                final long normalizedNumerator1 = lcm / denominator1 * numerator1;
-                final long normalizedNumerator2 = lcm / denominator2 * numerator2;
-                result = new long[]{normalizedNumerator1 + normalizedNumerator2, lcm};
-            }
-            return simplifyFraction(result);
-        }
-
-        /**
-         * @return w₁(n₁/d₁) - w₂(n₂/d₂)
-         */
-        public static long[] subtractFractions(long[] fraction1, long[] fraction2) {
-            atMost3NumRequired(fraction1);
-            atMost3NumRequired(fraction2);
-
-            if (fraction1.length == 3) {
-                fraction1 = mixedNumberToImproperFraction(fraction1);
-            }
-            final long numerator1 = fraction1[Constants.ARR_1ST_INDEX];
-            final long denominator1 = fraction1[Constants.ARR_2ND_INDEX];
-            checkGreater0(denominator1);
-
-            if (fraction2.length == 3) {
-                fraction2 = mixedNumberToImproperFraction(fraction2);
-            }
-            final long numerator2 = fraction2[Constants.ARR_1ST_INDEX];
-            final long denominator2 = fraction2[Constants.ARR_2ND_INDEX];
-            checkGreater0(denominator2);
-
-            final long[] result;
-            if (denominator1 == denominator2) {
-                result = new long[]{numerator1 - numerator2, denominator1};
-            } else {
-                final long lcm = lcmOfFractions(denominator1, denominator2);
-                final long normalizedNumerator1 = lcm / denominator1 * numerator1;
-                final long normalizedNumerator2 = lcm / denominator2 * numerator2;
-                result = new long[]{normalizedNumerator1 - normalizedNumerator2, lcm};
-            }
-            return simplifyFraction(result);
-        }
-
-        /**
-         * @return w₁(n₁/d₁) * w₂(n₂/d₂)
-         */
-        public static long[] multiplyFractions(long[] fraction1, long[] fraction2) {
-            atMost3NumRequired(fraction1);
-            atMost3NumRequired(fraction2);
-
-            if (fraction1.length == 3) {
-                fraction1 = mixedNumberToImproperFraction(fraction1);
-            }
-
-            if (fraction2.length == 3) {
-                fraction2 = mixedNumberToImproperFraction(fraction2);
-            }
-
-            final long numerator1 = fraction1[Constants.ARR_1ST_INDEX];
-            final long denominator1 = fraction1[Constants.ARR_2ND_INDEX];
-            checkGreater0(denominator1);
-
-            final long numerator2 = fraction2[Constants.ARR_1ST_INDEX];
-            final long denominator2 = fraction2[Constants.ARR_2ND_INDEX];
-            checkGreater0(denominator2);
-
-            final long[] result = {numerator1 * numerator2, denominator1 * denominator2};
-            return simplifyFraction(result);
-        }
-
-        /**
-         * @return w₁(n₁/d₁) / w₂(n₂/d₂)
-         */
-        public static long[] divideFractions(long[] fraction1, long[] fraction2) {
-            atMost3NumRequired(fraction1);
-            atMost3NumRequired(fraction2);
-
-            if (fraction1.length == 3) {
-                fraction1 = mixedNumberToImproperFraction(fraction1);
-            }
-
-            if (fraction2.length == 3) {
-                fraction2 = mixedNumberToImproperFraction(fraction2);
-            }
-
-            final long numerator1 = fraction1[Constants.ARR_1ST_INDEX];
-            final long denominator1 = fraction1[Constants.ARR_2ND_INDEX];
-            checkGreater0(denominator1);
-
-            final long numerator2 = fraction2[Constants.ARR_1ST_INDEX];
-            final long denominator2 = fraction2[Constants.ARR_2ND_INDEX];
-            checkGreater0(denominator2);
-
-            final long[] result = {numerator1 * denominator2, denominator1 * numerator2};
-            return simplifyFraction(result);
-        }
-
-        public static long[] mixedNumberToImproperFraction(long[] fraction) {
-            if (fraction.length < 3) {
-                return fraction;
-            }
-
-            final long whole = fraction[Constants.ARR_1ST_INDEX];
-            final long numerator = fraction[Constants.ARR_2ND_INDEX];
-            final long denominator = fraction[Constants.ARR_3RD_INDEX];
-            return new long[]{whole * denominator + numerator, denominator};
-        }
-
-        public static long[] improperFractionToMixedNumber(long[] fraction) {
-            atLeast2NumRequired(fraction);
-
-            final long numerator = fraction[Constants.ARR_1ST_INDEX];
-            final long denominator = fraction[Constants.ARR_2ND_INDEX];
-            final long whole = numerator / denominator;
-            final long remainder = numerator - whole * denominator;
-
-            if (remainder == 0) {
-                return new long[]{whole, 0, denominator}; // Represent as whole number
-            } else if (whole == 0) {
-                return new long[]{remainder, denominator}; // Proper fraction
-            } else {
-                return new long[]{whole, remainder, denominator}; // Mixed number
-            }
-        }
-
-        public static long[] simplifyFraction(long[] fraction) {
-            atMost3NumRequired(fraction);
-
-            fraction = mixedNumberToImproperFraction(fraction);
-            final long numerator = fraction[Constants.ARR_1ST_INDEX];
-            final long denominator = fraction[Constants.ARR_2ND_INDEX];
-            checkGreater0(denominator);
-
-            final long commonFactor = gcfWithCommonFactors(new double[]{numerator, denominator});
-            final long[] simplified = {numerator / commonFactor, denominator / commonFactor};
-            return improperFractionToMixedNumber(simplified);
-        }
-
-        public static long[] decimalToFraction(double decimal) {
-            final String decimalStr = Double.toString(decimal);
-            final int index = decimalStr.indexOf('.');
-            if (index < 0) {
-                // No decimal point, it's an integer
-                return new long[]{(long) decimal, 1};
-            }
-            final int decimalPlaces = decimalStr.length() - index - 1;
-            final long denominator = (long) Math.pow(10, decimalPlaces);
-            final long numerator = Math.round(decimal * denominator);
-            return simplifyFraction(new long[]{numerator, denominator});
-        }
-
-        public static double fractionToDecimal(long[] fraction) {
-            atMost3NumRequired(fraction);
-
-            if (fraction.length == 3) {
-                fraction = mixedNumberToImproperFraction(fraction);
-            }
-
-            final long numerator = fraction[Constants.ARR_1ST_INDEX];
-            final long denominator = fraction[Constants.ARR_2ND_INDEX];
-            checkGreater0(denominator);
-            return (double) numerator / denominator;
-        }
-    }
-
-    public static final class Algebra {
-        private Algebra() {
-        }
-
-        /**
-         * @return 𝚪(n) = (n - 1)!
-         */
-        public static double gammaFunction(double x) {
-            if (x == 0) {
-                throw new IllegalArgumentException("Gamma function is undefined for 0");
-            }
-
-            // Lanczos approximation coefficients
-            final double[] p = {
-                676.5203681218851,
-                -1259.1392167224028,
-                771.32342877765313,
-                -176.61502916214059,
-                12.507343278686905,
-                -0.13857109526572012,
-                9.9843695780195716e-6,
-                1.5056327351493116e-7
-            };
-            final int g = 7;
-            if (x < 0.5) {
-                // Reflection formula
-                return Math.PI / (Math.sin(Math.PI * x) * gammaFunction(1 - x));
-            }
-            x -= 1;
-            double a = 0.99999999999980993;
-            for (int i = 0; i < p.length; i++) {
-                a += p[i] / (x + i + 1);
-            }
-            final double t = x + g + 0.5;
-            return Math.sqrt(2 * Math.PI) * Math.pow(t, x + 0.5) * Math.exp(-t) * a;
         }
 
         // Exponents and logarithms
@@ -3470,6 +3484,8 @@ public final class MathCalc {
             return (f.applyAsDouble(x + deltaX) - f.applyAsDouble(x - deltaX)) / (2 * deltaX);
         }
 
+        // Basic Derivative Rules
+
         /**
          * @return d/dx(c) = 0
          */
@@ -3482,8 +3498,8 @@ public final class MathCalc {
          * @return d/dx(c*f(x)) = c * f'(x)
          */
         public static double derivativeConstantMultipleRule(DoubleUnaryOperator f, double constant, double x) {
-            final double h = NUMERICAL_APPROXIMATE_DERIVATIVE;
-            return constant * (f.applyAsDouble(x + h) - f.applyAsDouble(x)) / h;
+            double dfDx = derivativeForwardDifference(f, x, NUMERICAL_APPROXIMATE_DERIVATIVE);
+            return constant * dfDx;
         }
 
         /**
@@ -3503,188 +3519,265 @@ public final class MathCalc {
         }
 
         /**
-         * <ul>
-         *     <li>limₓ→ₐ k = k</li>
-         *     <li>k * limₓ→ₐ f(x)</li>
-         * </ul>
-         *
-         * @return limₓ→ₐ k * f(x)
-         */
-        public static Pair<double[], Double> limitConstantMultipleRule(
-            BiFunction<DoubleUnaryOperator[], Double, Double> f, DoubleUnaryOperator[] equationTerms,
-            double constant, double x) {
-            final double[] computedTerms = new double[equationTerms.length];
-            for (int i = 0; i < computedTerms.length; i++) {
-                final var term = equationTerms[i];
-                computedTerms[i] = constant * term.applyAsDouble(x);
-            }
-            final double limit = constant * f.apply(equationTerms, x);
-            return Pair.of(computedTerms, limit);
-        }
-
-        /**
-         * @return Δx = h = (b-a)/n
-         */
-        public static double widthOfSubinterval(double lowerLimit, double upperLimit, int numberOfIntervals) {
-            return (upperLimit - lowerLimit) / numberOfIntervals;
-        }
-
-        /**
-         * ∫ₐ^b f(x)dx = h * [f(a)/2 + f(x₁) + f(x₂) + ... + f(xₙ₋₁) + f(b)/2]
-         *
-         * @return f(a)/2 + f(b)/2 part of the formula
-         */
-        public static double endpointsWeightedSum(DoubleUnaryOperator f, double lowerLimit, double upperLimit) {
-            return ONE_HALF * (f.applyAsDouble(lowerLimit) + f.applyAsDouble(upperLimit));
-        }
-
-        /**
-         * k ∫f(x)
-         *
-         * @return ∫k * f(x) dx = k * ∫f(x) dx
-         */
-        public static double integralConstantMultipleRule(
-            DoubleUnaryOperator f, double lowerLimit, double upperLimit, int numberOfIntervals, double constant) {
-            final double h = widthOfSubinterval(lowerLimit, upperLimit, numberOfIntervals); // dx
-            double sum = endpointsWeightedSum(f, lowerLimit, upperLimit);
-            for (int i = 1; i < numberOfIntervals; i++) {
-                final double x = lowerLimit + i * h;
-                sum += f.applyAsDouble(x);
-            }
-            return constant * sum * h;
-        }
-
-        /**
-         * f(x) = xⁿ
-         *
-         * @return f'(x) = n * xⁿ⁻¹
+         * @return d/dx(xⁿ) = n * xⁿ⁻¹
          */
         public static double derivativePowerRule(double x, double exponent) {
             return exponent * Math.pow(x, exponent - 1);
         }
 
         /**
-         * f(x) = eˣ
-         *
-         * @return f'(x) = eˣ
+         * @return d/dx f(x) + g(x) = f'(x) + g'(x)
          */
-        public static double derivativeExponentialRule(double x) {
-            return Math.exp(x);
+        public static double derivativeSumRule() {
+            throw new UnsupportedOperationException();
         }
 
         /**
-         * f(x) = ln(x)
-         *
-         * @return f'(x) = 1/x
+         * @return d/dx f(x) - g(x) = f'(x) - g'(x)
          */
-        public static double derivativeLogarithmicRule(double x) {
-            return 1.0 / x;
+        public static double derivativeDifferenceRule() {
+            throw new UnsupportedOperationException();
         }
 
         /**
-         * f(x) = u(x) * v(x)
-         *
-         * @return f'(x) = u'(x) * v(x) + u(x) * v'(x)
+         * @return d/dx f(x) * g(x) = f(x) * g'(x) + g(x) * f'(x)
          */
         public static double derivativeProductRule(
             double x,
-            DoubleUnaryOperator u,
-            DoubleUnaryOperator uPrime,
-            DoubleUnaryOperator v,
-            DoubleUnaryOperator vPrime
-        ) {
-            return uPrime.applyAsDouble(x) * v.applyAsDouble(x) + u.applyAsDouble(x) * vPrime.applyAsDouble(x);
-        }
-
-        /**
-         * f(x) = g(h(x))
-         *
-         * @return f'(x) = g'(h(x)) * h'(x)
-         */
-        public static double derivativeChainRule(
-            double x,
-            DoubleUnaryOperator h,
-            DoubleUnaryOperator hPrime,
+            DoubleUnaryOperator f,
+            DoubleUnaryOperator fPrime,
+            DoubleUnaryOperator g,
             DoubleUnaryOperator gPrime
         ) {
-            return gPrime.applyAsDouble(h.applyAsDouble(x)) * hPrime.applyAsDouble(x);
+            return f.applyAsDouble(x) * gPrime.applyAsDouble(x) + g.applyAsDouble(x) * fPrime.applyAsDouble(x);
         }
 
         /**
-         * f(x) = u(x) / v(x)
-         *
-         * @return f'(x) = (u'(x) * v(x) - u(x) * v'(x)) / (v(x)²)
+         * @return d/dx f(x)/g(x) = (g(x) * f(x) - f(x) * g'(x)) / (g(x)²)
          */
         public static double derivativeQuotientRule(
             double x,
-            DoubleUnaryOperator u,
-            DoubleUnaryOperator uPrime,
-            DoubleUnaryOperator v,
-            DoubleUnaryOperator vPrime
+            DoubleUnaryOperator f,
+            DoubleUnaryOperator fPrime,
+            DoubleUnaryOperator g,
+            DoubleUnaryOperator gPrime
         ) {
-            final double numerator = uPrime.applyAsDouble(x) * v.applyAsDouble(x)
-                - u.applyAsDouble(x) * vPrime.applyAsDouble(x);
-            final double denominator = Math.pow(v.applyAsDouble(x), 2);
+            final double numerator = gPrime.applyAsDouble(x) * f.applyAsDouble(x)
+                - g.applyAsDouble(x) * fPrime.applyAsDouble(x);
+            final double denominator = Math.pow(f.applyAsDouble(x), 2);
             return numerator / denominator;
         }
 
         /**
-         * y = mx + b
-         *
-         * @return ∫(ax + b)dx = (a/2)x² + bx + C
+         * @return d/dx f(g(x)) = f'(g(x)) * g'(x)
          */
-        public static double indefiniteLinearIntegral(
-            double x, double slope, double constantTerm, double constantOfIntegration) {
-            return (slope / 2) * x * x + constantTerm * x + constantOfIntegration;
+        public static double derivativeChainRule(
+            double x,
+            DoubleUnaryOperator fPrime,
+            DoubleUnaryOperator g,
+            DoubleUnaryOperator gPrime
+        ) {
+            return fPrime.applyAsDouble(g.applyAsDouble(x)) * gPrime.applyAsDouble(x);
+        }
+
+        // Common Derivatives
+
+        /**
+         * @return d/dx(x) = 1
+         */
+        public static double derivativeOfX(@SuppressWarnings("unused") double x) {
+            return 1;
         }
 
         /**
-         * y = mx + b
-         *
-         * @return ∫ₐ^b f(x)dx = F(b) - F(a)
+         * @return d/dx(cx) = c
          */
-        public static double definiteLinearIntegral(double x1, double x2, double slope, double constantTerm) {
-            final double fx2 = (slope / 2) * x2 * x2 + constantTerm * x2;
-            final double fx1 = (slope / 2) * x1 * x1 + constantTerm * x1;
-            return fx2 - fx1;
+        public static double derivativeOfProdConstantAndX(double constant, @SuppressWarnings("unused") double x) {
+            return constant;
+        }
+
+        // Derivative Rules of Exponential Functions
+
+        /**
+         * @return d/dx(eˣ) = eˣ
+         */
+        public static double derivativeOfEulerNumber(double x) {
+            return Math.exp(x);
         }
 
         /**
-         * Numerically integrates f(x) from a to b using the Trapezoidal Rule.
-         *
-         * @param numberOfIntervals (higher = more accurate).
-         * @return Approximate value of the definite integral.
+         * @return d/dx(aˣ) = aˣ ln a
          */
-        public static double integrateTrapezoidal(
-            DoubleUnaryOperator f, double lowerLimit, double upperLimit, int numberOfIntervals) {
-            final double h = widthOfSubinterval(lowerLimit, upperLimit, numberOfIntervals); // dx
-            double sum = endpointsWeightedSum(f, lowerLimit, upperLimit);
-            for (int i = 1; i < numberOfIntervals; i++) {
-                sum += f.applyAsDouble(lowerLimit + i * h);
-            }
-            return sum * h;
+        public static double derivativeExponentialRule(double number, double exponent) {
+            return Math.pow(number, exponent) * Algebra.ln(number);
+        }
+
+        // Derivative Rules of Logarithmic Functions
+
+        /**
+         * @param x x > 0
+         * @return d/dx(ln(x)) = 1/x
+         */
+        public static double derivativeOfLn(double x) {
+            checkGreater0(x);
+            return 1.0 / x;
         }
 
         /**
-         * Numerically integrates f(x) from a to b using Simpson's Rule.
-         *
-         * @return Approximate value of the definite integral.
+         * @param x x ≠ 0
+         * @return d/dx(ln(|x|)) = 1/x
          */
-        public static double integrateSimpson(
-            DoubleUnaryOperator f, double lowerLimit, double upperLimit, int numberOfIntervals) {
-            if (numberOfIntervals % 2 != 0) {
-                throw new IllegalArgumentException("numberOfIntervals must be even");
-            }
-            final double h = widthOfSubinterval(lowerLimit, upperLimit, numberOfIntervals); // dx
-            double sum = f.applyAsDouble(lowerLimit) + f.applyAsDouble(upperLimit);
-            for (int i = 1; i < numberOfIntervals; i += 2) {
-                sum += 4 * f.applyAsDouble(lowerLimit + i * h);
-            }
-            for (int i = 2; i < numberOfIntervals; i += 2) {
-                sum += 2 * f.applyAsDouble(lowerLimit + i * h);
-            }
-            return sum * h / 3.0;
+        public static double derivativeOfAbsLn(double x) {
+            checkNotEq0(x);
+            return 1.0 / x;
         }
+
+        /**
+         * @param x x > 0
+         * @return d/dx(logₐ(x)) = 1/(x ln a)
+         */
+        public static double derivativeOfLog(double x) {
+            checkGreater0(x);
+            return 1 / (x * Algebra.ln(x));
+        }
+
+        // Derivative Rules of Trigonometric Functions
+
+        /**
+         * @return d/dx(sin x) = cos x
+         */
+        public static double derivativeOfSin(double x) {
+            return Trigonometry.cos(x);
+        }
+
+        /**
+         * @return d/dx(cos x) = -sin x
+         */
+        public static double derivativeOfCos(double x) {
+            return -Trigonometry.sin(x);
+        }
+
+        /**
+         * @return d/dx(tan x) = sec²x
+         */
+        public static double derivativeOfTan(double x) {
+            return Math.pow(Trigonometry.sec(x), 2);
+        }
+
+        /**
+         * @return d/dx(csc x) = -csc x cot x
+         */
+        public static double derivativeOfCsc(double x) {
+            return -Trigonometry.csc(x) * Trigonometry.cot(x);
+        }
+
+        /**
+         * @return d/dx(sec x) = sec x tan x
+         */
+        public static double derivativeOfSec(double x) {
+            return Trigonometry.sec(x) * Trigonometry.tan(x);
+        }
+
+        /**
+         * @return d/dx(cot x) = -csc²x
+         */
+        public static double derivativeOfCot(double x) {
+            return -Math.pow(Trigonometry.csc(x), 2);
+        }
+
+        // Derivative Rules of Inverse Trigonometric Functions
+
+        /**
+         * @return d/dx(sin⁻¹x) = 1/√(1-x²)
+         */
+        public static double derivativeOfInverseSin(double x) {
+            return -Math.pow(Trigonometry.csc(x), 2);
+        }
+
+        /**
+         * @return d/dx(cos⁻¹x) = -1/√(1-x²)
+         */
+        public static double derivativeOfInverseCos(double x) {
+            return -1 / (Algebra.squareRoot(1 - x * x));
+        }
+
+        /**
+         * @return d/dx(tan⁻¹x) = 1/(1 + x²)
+         */
+        public static double derivativeOfInverseTan(double x) {
+            return 1 / (1 + x * x);
+        }
+
+        /**
+         * @param x x ≠ -1, 0, 1
+         * @return d/dx(csc⁻¹x) = -1/(|x| √(x² - 1))
+         */
+        public static double derivativeOfInverseCsc(double x) {
+            checkNotEqTo(x, new double[]{-1, 0, 1});
+            return -1 / (Math.abs(x) * Algebra.squareRoot(x * x - 1));
+        }
+
+        /**
+         * @param x x ≠ -1, 0, 1
+         * @return d/dx(sec⁻¹x) = 1/(|x| √(x² - 1))
+         */
+        public static double derivativeOfInverseSec(double x) {
+            checkNotEqTo(x, new double[]{-1, 0, 1});
+            return 1 / (Math.abs(x) * Algebra.squareRoot(x * x - 1));
+        }
+
+        /**
+         * @return d/dx(cot⁻¹x) = -1/(1 + x²)
+         */
+        public static double derivativeOfInverseCot(double x) {
+            return -1 / (1 + x * x);
+        }
+
+        // Derivative Rules of Hyperbolic Trigonometric Functions
+
+        /**
+         * @return d/dx(sinh x) = cosh x
+         */
+        public static double derivativeOfSinh(@SuppressWarnings("unused") double x) {
+            throw new UnsupportedOperationException();
+        }
+
+        /**
+         * @return d/dx(cosh x) = sinh x
+         */
+        public static double derivativeOfCosh(@SuppressWarnings("unused") double x) {
+            throw new UnsupportedOperationException();
+        }
+
+        /**
+         * @return d/dx(tanh x) = sech² x
+         */
+        public static double derivativeOfTanh(@SuppressWarnings("unused") double x) {
+            throw new UnsupportedOperationException();
+        }
+
+        /**
+         * @return d/dx(csch x) = -csch x coth x
+         */
+        public static double derivativeOfCsch(@SuppressWarnings("unused") double x) {
+            throw new UnsupportedOperationException();
+        }
+
+        /**
+         * @return d/dx(sech x) = -sech x tanh x
+         */
+        public static double derivativeOfSech(@SuppressWarnings("unused") double x) {
+            throw new UnsupportedOperationException();
+        }
+
+        /**
+         * @return d/dx(coth x) = - csch² x
+         */
+        public static double derivativeOfCoth(@SuppressWarnings("unused") double x) {
+            throw new UnsupportedOperationException();
+        }
+
+        // Partial Derivative
 
         /**
          * @return ∂f/∂x ≈ (f(x+Δx, y) - f(x, y)) / Δx
@@ -3853,6 +3946,116 @@ public final class MathCalc {
             final double dfDx = partialDerivativeForwardDifferenceWrtX(f, x, y, h);
             final double dfDy = partialDerivativeForwardDifferenceWrtY(f, x, y, h);
             return dfDx + dfDy * dyDx;
+        }
+
+        /**
+         * <ul>
+         *     <li>limₓ→ₐ k = k</li>
+         *     <li>k * limₓ→ₐ f(x)</li>
+         * </ul>
+         *
+         * @return limₓ→ₐ k * f(x)
+         */
+        public static Pair<double[], Double> limitConstantMultipleRule(
+            BiFunction<DoubleUnaryOperator[], Double, Double> f, DoubleUnaryOperator[] equationTerms,
+            double constant, double x) {
+            final double[] computedTerms = new double[equationTerms.length];
+            for (int i = 0; i < computedTerms.length; i++) {
+                final var term = equationTerms[i];
+                computedTerms[i] = constant * term.applyAsDouble(x);
+            }
+            final double limit = constant * f.apply(equationTerms, x);
+            return Pair.of(computedTerms, limit);
+        }
+
+        /**
+         * @return Δx = h = (b-a)/n
+         */
+        public static double widthOfSubinterval(double lowerLimit, double upperLimit, int numberOfIntervals) {
+            return (upperLimit - lowerLimit) / numberOfIntervals;
+        }
+
+        /**
+         * ∫ₐ^b f(x)dx = h * [f(a)/2 + f(x₁) + f(x₂) + ... + f(xₙ₋₁) + f(b)/2]
+         *
+         * @return f(a)/2 + f(b)/2 part of the formula
+         */
+        public static double endpointsWeightedSum(DoubleUnaryOperator f, double lowerLimit, double upperLimit) {
+            return ONE_HALF * (f.applyAsDouble(lowerLimit) + f.applyAsDouble(upperLimit));
+        }
+
+        /**
+         * k ∫f(x)
+         *
+         * @return ∫k * f(x) dx = k * ∫f(x) dx
+         */
+        public static double integralConstantMultipleRule(
+            DoubleUnaryOperator f, double lowerLimit, double upperLimit, int numberOfIntervals, double constant) {
+            final double h = widthOfSubinterval(lowerLimit, upperLimit, numberOfIntervals); // dx
+            double sum = endpointsWeightedSum(f, lowerLimit, upperLimit);
+            for (int i = 1; i < numberOfIntervals; i++) {
+                final double x = lowerLimit + i * h;
+                sum += f.applyAsDouble(x);
+            }
+            return constant * sum * h;
+        }
+
+        /**
+         * y = mx + b
+         *
+         * @return ∫(ax + b)dx = (a/2)x² + bx + C
+         */
+        public static double indefiniteLinearIntegral(
+            double x, double slope, double constantTerm, double constantOfIntegration) {
+            return (slope / 2) * x * x + constantTerm * x + constantOfIntegration;
+        }
+
+        /**
+         * y = mx + b
+         *
+         * @return ∫ₐ^b f(x)dx = F(b) - F(a)
+         */
+        public static double definiteLinearIntegral(double x1, double x2, double slope, double constantTerm) {
+            final double fx2 = (slope / 2) * x2 * x2 + constantTerm * x2;
+            final double fx1 = (slope / 2) * x1 * x1 + constantTerm * x1;
+            return fx2 - fx1;
+        }
+
+        /**
+         * Numerically integrates f(x) from a to b using the Trapezoidal Rule.
+         *
+         * @param numberOfIntervals (higher = more accurate).
+         * @return Approximate value of the definite integral.
+         */
+        public static double integrateTrapezoidal(
+            DoubleUnaryOperator f, double lowerLimit, double upperLimit, int numberOfIntervals) {
+            final double h = widthOfSubinterval(lowerLimit, upperLimit, numberOfIntervals); // dx
+            double sum = endpointsWeightedSum(f, lowerLimit, upperLimit);
+            for (int i = 1; i < numberOfIntervals; i++) {
+                sum += f.applyAsDouble(lowerLimit + i * h);
+            }
+            return sum * h;
+        }
+
+        /**
+         * Numerically integrates f(x) from a to b using Simpson's Rule.
+         *
+         * @return Approximate value of the definite integral.
+         */
+        public static double integrateSimpson(
+            DoubleUnaryOperator f, double lowerLimit, double upperLimit, int numberOfIntervals) {
+            if (numberOfIntervals % 2 != 0) {
+                throw new IllegalArgumentException("numberOfIntervals must be even");
+            }
+            final double h = widthOfSubinterval(lowerLimit, upperLimit, numberOfIntervals); // dx
+            double sum = f.applyAsDouble(lowerLimit) + f.applyAsDouble(upperLimit);
+            for (int i = 1; i < numberOfIntervals; i += 2) {
+                sum += 4 * f.applyAsDouble(lowerLimit + i * h);
+            }
+            for (int i = 2; i < numberOfIntervals; i += 2) {
+                sum += 2 * f.applyAsDouble(lowerLimit + i * h);
+            }
+            return sum * h / 3.0;
         }
     }
 
@@ -4208,5 +4411,32 @@ public final class MathCalc {
                 return Math.pow(1 - probabilityOfSuccess, numberOfFailures) * probabilityOfSuccess;
             }
         }
+    }
+
+    public static final class Analysis {
+    }
+
+    public static final class NumberTheory {
+    }
+
+    public static final class Combinatorics {
+    }
+
+    public static final class Probability {
+    }
+
+    public static final class Topology {
+    }
+
+    public static final class SetTheory {
+    }
+
+    public static final class Logic {
+    }
+
+    public static final class Discrete {
+    }
+
+    public static final class Applied {
     }
 }
