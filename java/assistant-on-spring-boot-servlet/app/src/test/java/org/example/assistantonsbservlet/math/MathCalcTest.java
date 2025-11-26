@@ -3613,6 +3613,46 @@ class MathCalcTest {
 
     @Nested
     class Calculus {
+        static List<Arguments> limitArgs() {
+            final DoubleUnaryOperator f = x -> x * x + 5; // x²+5
+            final DoubleUnaryOperator f2 = x -> 3 * x * x * x + 4 * x + 5; // 3x³+4x+5
+            final DoubleUnaryOperator f3 = x -> 6 * x * x + 10 * x + 15; // 6x²+10x+15
+
+            double exponent = 2;
+            double maxLimit = 4;
+            final DoubleUnaryOperator f4 = x -> (Math.pow(x, exponent) + Math.pow(maxLimit, exponent))
+                / (x - maxLimit); // (xⁿ+aⁿ)/(x-a)
+
+            final DoubleUnaryOperator f5 = Math::exp; // limₓ→₀ eˣ = 1
+            final DoubleUnaryOperator f6 = x -> (Math.exp(x) - 1) / x; // limₓ→₀ (eˣ-1) / x = 1
+            final DoubleUnaryOperator f7 = x -> (Math.pow(2, x) - 1) / x; // limₓ→₀ (aˣ-1) / x = logₑa
+            final DoubleUnaryOperator f8 = x -> Math.pow(1 + x, 1 / x); // limₓ→₀ (1 + x)¹/ˣ = e
+
+            final DoubleUnaryOperator removableDiscontinuityFn = x ->
+                (x == 1) ? Double.NaN : (x * x - 1) / (x - 1);
+
+            return List.of(
+                Arguments.of(f, 2., 9., DELTA1), // 2²+5=9
+                Arguments.of(f2, 0., 5., DELTA1), // 3(0)³+4(0)+5=5
+                Arguments.of(f3, 3., 99., DELTA1), // 6(3)²+10(3)+15=99
+                Arguments.of(f4, 3., -25., DELTA1), // (3²+4²)/(3-4)=-25
+                Arguments.of(f5, 0, 1., DELTA1),
+                Arguments.of(f6, 0, 1., DELTA1),
+                Arguments.of(f7, 0, MathCalc.Algebra.ln(2), DELTA1),
+                Arguments.of(f8, 0, Math.E, DELTA1),
+                Arguments.of(removableDiscontinuityFn, 1., 2., DELTA1)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("limitArgs")
+        void testLimit(DoubleUnaryOperator f, double x, double expectedResult, double delta) {
+            // when
+            final double limit = MathCalc.Calculus.limit(f, x);
+            // then
+            assertEquals(expectedResult, limit, delta);
+        }
+
         @Test
         void testDerivativeConstantRule() {
             // given f(x) = 3
@@ -3711,7 +3751,7 @@ class MathCalcTest {
         void testPartialDerivativeForwardDifferenceWrtX(
             DoubleBinaryOperator f, double[] args, double expectedResult, double delta) {
             // given
-            final double h = MathCalc.Calculus.NUMERICAL_APPROXIMATE_DERIVATIVE;
+            final double h = MathCalc.Calculus.NUMERICAL_APPROXIMATION;
             // when
             final double result = MathCalc.Calculus.partialDerivativeForwardDifferenceWrtX(
                 f, args[Constants.X_INDEX], args[Constants.Y_INDEX], h);
@@ -3735,7 +3775,7 @@ class MathCalcTest {
         void testPartialDerivativeForwardDifferenceWrtY(
             DoubleBinaryOperator f, double[] args, double expectedResult, double delta) {
             // given
-            final double h = MathCalc.Calculus.NUMERICAL_APPROXIMATE_DERIVATIVE;
+            final double h = MathCalc.Calculus.NUMERICAL_APPROXIMATION;
             // when
             final double result = MathCalc.Calculus.partialDerivativeForwardDifferenceWrtY(
                 f, args[Constants.X_INDEX], args[Constants.Y_INDEX], h);

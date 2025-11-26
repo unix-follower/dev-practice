@@ -3458,10 +3458,163 @@ public final class MathCalc {
      * </ul>
      */
     public static final class Calculus {
-        public static final double NUMERICAL_APPROXIMATE_DERIVATIVE = 1e-8;
+        public static final double NUMERICAL_APPROXIMATION = 1e-8;
 
         private Calculus() {
         }
+
+        // Limit
+
+        /**
+         * @return limₓ→ₐ f(x) = L
+         */
+        public static double limit(DoubleUnaryOperator f, double x) {
+            final double[] limits = oneSidedLimits(f, x);
+            final double lhs = limits[Constants.ARR_1ST_INDEX];
+            final double rhs = limits[Constants.ARR_2ND_INDEX];
+            // If both sides are close, return their average
+            final double epsilon = 1e-6; // tolerance of the difference
+            if (Math.abs(lhs - rhs) < epsilon) {
+                return (lhs + rhs) / 2.0;
+            }
+            // Infinite Discontinuity: limₓ→ₐ⁺ f(x) = ∞ and/or limₓ→ₐ⁻ f(x) = -∞
+            // Jump Discontinuity: limₓ→ₐ⁺ f(x) ≠ limₓ→ₐ⁻ f(x)
+            // The limit does not exist (DNE) or is not well-defined numerically
+            return Double.NaN;
+        }
+
+        public static double[] oneSidedLimits(DoubleUnaryOperator f, double x) {
+            final double h = NUMERICAL_APPROXIMATION; // small value
+            final double lhs = f.applyAsDouble(x - h); // limₓ→ₐ⁻ f(x) = L
+            final double rhs = f.applyAsDouble(x + h); // limₓ→ₐ⁺ f(x) = L
+            return new double[]{lhs, rhs};
+        }
+
+        /**
+         * @return lim₍ₓ,ᵧ₎→₍ₐ,b₎ f(x, y)
+         */
+        public static double limit(DoubleBinaryOperator f, double x, double y) {
+            final double h = NUMERICAL_APPROXIMATION;
+            final double epsilon = 1e-6;
+            final double[] approaches = new double[]{
+                f.applyAsDouble(x - h, y), // x approaches a⁻, y fixed
+                f.applyAsDouble(x + h, y), // x approaches a⁺, y fixed
+                f.applyAsDouble(x, y - h), // y approaches b⁻, x fixed
+                f.applyAsDouble(x, y + h), // y approaches b⁺, x fixed
+                f.applyAsDouble(x - h, y - h), // both approach from below (a,b)⁻
+                f.applyAsDouble(x + h, y + h), // both approach from above (a,b)⁺
+                f.applyAsDouble(x + h, y - h), // mixed (a⁺,b⁻)
+                f.applyAsDouble(x - h, y + h), // mixed (a⁻,b⁺)
+                f.applyAsDouble(x + h, x + h), // y = x path
+                f.applyAsDouble(x + h, -x - h), // y = -x path
+                f.applyAsDouble(x + h, 2 * (x + h)), // y = 2x path
+                f.applyAsDouble(x + h, Math.pow(x + h, 2)) // y = x^2 path
+            };
+            double avg = 0.0;
+            for (double value : approaches) {
+                avg += value;
+            }
+            avg /= approaches.length;
+            // Check if all approaches are close to the average
+            for (double value : approaches) {
+                if (Math.abs(value - avg) > epsilon) {
+                    return Double.NaN; // the limit DNE
+                }
+            }
+            return avg;
+        }
+
+        /**
+         * @return limₓ→ₐ c = c
+         */
+        public static double limitConstantRule() {
+            throw new UnsupportedOperationException();
+        }
+
+        /**
+         * @return limₓ→ₐ x = a
+         */
+        public static double limitIdentityRule() {
+            throw new UnsupportedOperationException();
+        }
+
+        /**
+         * @return limₓ→ₐ f(x) + g(x) = limₓ→ₐ f(x) + limₓ→ₐ g(x)
+         */
+        public static double limitSumRule() {
+            throw new UnsupportedOperationException();
+        }
+
+        /**
+         * @return limₓ→ₐ f(x) - g(x) = limₓ→ₐ f(x) - limₓ→ₐ g(x)
+         */
+        public static double limitDifferenceRule() {
+            throw new UnsupportedOperationException();
+        }
+
+        /**
+         * @return limₓ→ₐ c * f(x) = c * limₓ→ₐ f(x)
+         */
+        public static double limitConstantMultipleRule() {
+            throw new UnsupportedOperationException();
+        }
+
+        /**
+         * @return limₓ→ₐ c * f(x) = c * limₓ→ₐ f(x)
+         */
+        public static Pair<double[], Double> limitConstantMultipleRule(
+            BiFunction<DoubleUnaryOperator[], Double, Double> f, DoubleUnaryOperator[] equationTerms,
+            double constant, double x) {
+            final double[] computedTerms = new double[equationTerms.length];
+            for (int i = 0; i < computedTerms.length; i++) {
+                final var term = equationTerms[i];
+                computedTerms[i] = constant * term.applyAsDouble(x);
+            }
+            final double limit = constant * f.apply(equationTerms, x);
+            return Pair.of(computedTerms, limit);
+        }
+
+        /**
+         * @return limₓ→ₐ f(x) * g(x) = limₓ→ₐ f(x) * limₓ→ₐ g(x)
+         */
+        public static double limitProductRule() {
+            throw new UnsupportedOperationException();
+        }
+
+        /**
+         * limₓ→ₐ g(x) ≠ 0
+         *
+         * @return limₓ→ₐ f(x)/g(x) = (limₓ→ₐ f(x)) / (limₓ→ₐ g(x))
+         */
+        public static double limitQuotientRule() {
+            throw new UnsupportedOperationException();
+        }
+
+        /**
+         * @return limₓ→ₐ f(x)ⁿ = (limₓ→ₐ f(x))ⁿ
+         */
+        public static double limitPowerRule() {
+            throw new UnsupportedOperationException();
+        }
+
+        /**
+         * @return limₓ→ₐ ⁿ√f(x) = ⁿ√(limₓ→ₐ f(x))
+         */
+        public static double limitRootRule() {
+            throw new UnsupportedOperationException();
+        }
+
+        /**
+         * @return limₓ→ₐ p(x) = p(a)
+         */
+        public static double limitPolynomialFunction() {
+            throw new UnsupportedOperationException();
+        }
+
+        // Derivative
+        /*
+        f'(a) = limₓ→ₐ (f(x)-f(a)) / (x-a)
+         */
 
         /**
          * @return d/dx ≈ (f(x+Δx) - f(x)) / Δx
@@ -3490,7 +3643,7 @@ public final class MathCalc {
          * @return d/dx(c) = 0
          */
         public static double derivativeConstantRule(DoubleUnaryOperator constantFn) {
-            final double h = NUMERICAL_APPROXIMATE_DERIVATIVE;
+            final double h = NUMERICAL_APPROXIMATION;
             return (constantFn.applyAsDouble(h) - constantFn.applyAsDouble(0)) / h;
         }
 
@@ -3498,7 +3651,7 @@ public final class MathCalc {
          * @return d/dx(c*f(x)) = c * f'(x)
          */
         public static double derivativeConstantMultipleRule(DoubleUnaryOperator f, double constant, double x) {
-            double dfDx = derivativeForwardDifference(f, x, NUMERICAL_APPROXIMATE_DERIVATIVE);
+            double dfDx = derivativeForwardDifference(f, x, NUMERICAL_APPROXIMATION);
             return constant * dfDx;
         }
 
@@ -3508,7 +3661,7 @@ public final class MathCalc {
         public static Pair<double[], Double> derivativeConstantMultipleRule(
             BiFunction<DoubleUnaryOperator[], Double, Double> f, DoubleUnaryOperator[] equationTerms,
             double constant, double x) {
-            final double h = NUMERICAL_APPROXIMATE_DERIVATIVE;
+            final double h = NUMERICAL_APPROXIMATION;
             final double[] differentiatedTerms = new double[equationTerms.length];
             for (int i = 0; i < differentiatedTerms.length; i++) {
                 final var term = equationTerms[i];
@@ -3800,7 +3953,7 @@ public final class MathCalc {
          */
         public static double partialDerivativeDifferenceRuleWrtX(
             DoubleBinaryOperator f, DoubleBinaryOperator g, double x, double y) {
-            final double h = NUMERICAL_APPROXIMATE_DERIVATIVE;
+            final double h = NUMERICAL_APPROXIMATION;
             final double dfDx = partialDerivativeForwardDifferenceWrtX(f, x, y, h);
             final double dgDx = partialDerivativeForwardDifferenceWrtX(g, x, y, h);
             return dfDx - dgDx;
@@ -3811,7 +3964,7 @@ public final class MathCalc {
          */
         public static double partialDerivativeDifferenceRuleWrtY(
             DoubleBinaryOperator f, DoubleBinaryOperator g, double x, double y) {
-            final double h = NUMERICAL_APPROXIMATE_DERIVATIVE;
+            final double h = NUMERICAL_APPROXIMATION;
             final double dfDy = partialDerivativeForwardDifferenceWrtY(f, x, y, h);
             final double dgDy = partialDerivativeForwardDifferenceWrtY(g, x, y, h);
             return dfDy - dgDy;
@@ -3822,7 +3975,7 @@ public final class MathCalc {
          */
         public static double partialDerivativeSumRuleWrtX(
             DoubleBinaryOperator f, DoubleBinaryOperator g, double x, double y) {
-            final double h = NUMERICAL_APPROXIMATE_DERIVATIVE;
+            final double h = NUMERICAL_APPROXIMATION;
             final double dfDx = partialDerivativeForwardDifferenceWrtX(f, x, y, h);
             final double dgDx = partialDerivativeForwardDifferenceWrtX(g, x, y, h);
             return dfDx + dgDx;
@@ -3833,7 +3986,7 @@ public final class MathCalc {
          */
         public static double partialDerivativeSumRuleWrtY(
             DoubleBinaryOperator f, DoubleBinaryOperator g, double x, double y) {
-            final double h = NUMERICAL_APPROXIMATE_DERIVATIVE;
+            final double h = NUMERICAL_APPROXIMATION;
             final double dfDy = partialDerivativeForwardDifferenceWrtY(f, x, y, h);
             final double dgDy = partialDerivativeForwardDifferenceWrtY(g, x, y, h);
             return dfDy + dgDy;
@@ -3845,7 +3998,7 @@ public final class MathCalc {
         public static double partialDerivativeSumRuleWrtX(List<DoubleBinaryOperator> functions, double x, double y) {
             double sum = 0;
             for (final var f : functions) {
-                sum += partialDerivativeForwardDifferenceWrtX(f, x, y, NUMERICAL_APPROXIMATE_DERIVATIVE);
+                sum += partialDerivativeForwardDifferenceWrtX(f, x, y, NUMERICAL_APPROXIMATION);
             }
             return sum;
         }
@@ -3856,7 +4009,7 @@ public final class MathCalc {
         public static double partialDerivativeSumRuleWrtY(List<DoubleBinaryOperator> functions, double x, double y) {
             double sum = 0;
             for (final var f : functions) {
-                sum += partialDerivativeForwardDifferenceWrtY(f, x, y, NUMERICAL_APPROXIMATE_DERIVATIVE);
+                sum += partialDerivativeForwardDifferenceWrtY(f, x, y, NUMERICAL_APPROXIMATION);
             }
             return sum;
         }
@@ -3866,7 +4019,7 @@ public final class MathCalc {
          */
         public static double partialDerivativeProductRuleWrtX(
             DoubleBinaryOperator f, DoubleBinaryOperator g, double x, double y) {
-            final double h = NUMERICAL_APPROXIMATE_DERIVATIVE;
+            final double h = NUMERICAL_APPROXIMATION;
             final double dfDx = partialDerivativeForwardDifferenceWrtX(f, x, y, h);
             final double dgDx = partialDerivativeForwardDifferenceWrtX(g, x, y, h);
             final double fResult = f.applyAsDouble(x, y);
@@ -3879,7 +4032,7 @@ public final class MathCalc {
          */
         public static double partialDerivativeProductRuleWrtY(
             DoubleBinaryOperator f, DoubleBinaryOperator g, double x, double y) {
-            final double h = NUMERICAL_APPROXIMATE_DERIVATIVE;
+            final double h = NUMERICAL_APPROXIMATION;
             final double dfDy = partialDerivativeForwardDifferenceWrtY(f, x, y, h);
             final double dgDy = partialDerivativeForwardDifferenceWrtY(g, x, y, h);
             final double fResult = f.applyAsDouble(x, y);
@@ -3894,7 +4047,7 @@ public final class MathCalc {
             DoubleBinaryOperator f, DoubleBinaryOperator g, double x, double y) {
             final double gResult = g.applyAsDouble(x, y);
             checkGreater0(gResult);
-            final double h = NUMERICAL_APPROXIMATE_DERIVATIVE;
+            final double h = NUMERICAL_APPROXIMATION;
             final double dfDx = partialDerivativeForwardDifferenceWrtX(f, x, y, h);
             final double dgDx = partialDerivativeForwardDifferenceWrtX(g, x, y, h);
             final double fResult = f.applyAsDouble(x, y);
@@ -3909,7 +4062,7 @@ public final class MathCalc {
             DoubleBinaryOperator f, DoubleBinaryOperator g, double x, double y) {
             final double gResult = g.applyAsDouble(x, y);
             checkGreater0(gResult);
-            final double h = NUMERICAL_APPROXIMATE_DERIVATIVE;
+            final double h = NUMERICAL_APPROXIMATION;
             final double dfDy = partialDerivativeForwardDifferenceWrtY(f, x, y, h);
             final double dgDy = partialDerivativeForwardDifferenceWrtY(g, x, y, h);
             final double fResult = f.applyAsDouble(x, y);
@@ -3926,7 +4079,7 @@ public final class MathCalc {
             double y,
             DoubleUnaryOperator dyDxFn
         ) {
-            final double h = NUMERICAL_APPROXIMATE_DERIVATIVE;
+            final double h = NUMERICAL_APPROXIMATION;
             final double dfDx = partialDerivativeForwardDifferenceWrtX(f, x, y, h);
             final double dfDy = partialDerivativeForwardDifferenceWrtY(f, x, y, h);
             final double dyDx = dyDxFn.applyAsDouble(x);
@@ -3942,31 +4095,13 @@ public final class MathCalc {
             double y,
             double dyDx
         ) {
-            final double h = NUMERICAL_APPROXIMATE_DERIVATIVE;
+            final double h = NUMERICAL_APPROXIMATION;
             final double dfDx = partialDerivativeForwardDifferenceWrtX(f, x, y, h);
             final double dfDy = partialDerivativeForwardDifferenceWrtY(f, x, y, h);
             return dfDx + dfDy * dyDx;
         }
 
-        /**
-         * <ul>
-         *     <li>limₓ→ₐ k = k</li>
-         *     <li>k * limₓ→ₐ f(x)</li>
-         * </ul>
-         *
-         * @return limₓ→ₐ k * f(x)
-         */
-        public static Pair<double[], Double> limitConstantMultipleRule(
-            BiFunction<DoubleUnaryOperator[], Double, Double> f, DoubleUnaryOperator[] equationTerms,
-            double constant, double x) {
-            final double[] computedTerms = new double[equationTerms.length];
-            for (int i = 0; i < computedTerms.length; i++) {
-                final var term = equationTerms[i];
-                computedTerms[i] = constant * term.applyAsDouble(x);
-            }
-            final double limit = constant * f.apply(equationTerms, x);
-            return Pair.of(computedTerms, limit);
-        }
+        // Integral
 
         /**
          * @return Δx = h = (b-a)/n
@@ -3984,10 +4119,24 @@ public final class MathCalc {
             return ONE_HALF * (f.applyAsDouble(lowerLimit) + f.applyAsDouble(upperLimit));
         }
 
+        // Rules of Definite Integrals
+
         /**
-         * k ∫f(x)
-         *
-         * @return ∫k * f(x) dx = k * ∫f(x) dx
+         * @return ∫ₐᵃ f(x)dx = 0
+         */
+        public static double integralZeroWidthIntervalRule() {
+            throw new UnsupportedOperationException();
+        }
+
+        /**
+         * @return ∫ₐ^b f(x)dx = -∫ᵃ_b f(x)dx
+         */
+        public static double integralReverseLimitsRule() {
+            throw new UnsupportedOperationException();
+        }
+
+        /**
+         * @return ∫ₐ^b c * f(x)dx = c * ∫ₐ^b f(x)dx
          */
         public static double integralConstantMultipleRule(
             DoubleUnaryOperator f, double lowerLimit, double upperLimit, int numberOfIntervals, double constant) {
@@ -3998,6 +4147,27 @@ public final class MathCalc {
                 sum += f.applyAsDouble(x);
             }
             return constant * sum * h;
+        }
+
+        /**
+         * @return ∫ₐ^b [f(x) + g(x)]dx = ∫ᵃ_b f(x)dx + ∫ᵃ_b g(x)dx
+         */
+        public static double integralSumRule() {
+            throw new UnsupportedOperationException();
+        }
+
+        /**
+         * @return ∫ₐ^b [f(x) - g(x)]dx = ∫ᵃ_b f(x)dx - ∫ᵃ_b g(x)dx
+         */
+        public static double integralDifferenceRule() {
+            throw new UnsupportedOperationException();
+        }
+
+        /**
+         * @return ∫ₐᶜ f(x)dx = ∫꜀^b f(x)dx = ∫ₐ^b f(x)dx
+         */
+        public static double integralAdditivityRule() {
+            throw new UnsupportedOperationException();
         }
 
         /**
