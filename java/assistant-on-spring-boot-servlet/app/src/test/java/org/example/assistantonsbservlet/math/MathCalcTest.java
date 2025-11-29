@@ -819,6 +819,172 @@ class MathCalcTest {
             // then
             assertEquals(expectedResult, decimal, DELTA3);
         }
+
+        @Test
+        void testAverage() {
+            // given
+            final double[] dataset = new double[]{24., 55., 17., 87., 100.};
+            // when
+            final double average = MathCalc.Arithmetic.average(dataset);
+            // then
+            assertEquals(56.6, average, DELTA1);
+        }
+
+        @Test
+        void testWeightedAverage() {
+            // given
+            final double[][] dataset = new double[][]{
+                {0.25, 75.}, {0.25, 90.}, {0.25, 88.}, {0.15, 70.}, {0.10, 86.}
+            };
+            // when
+            final double weightedAverage = MathCalc.Arithmetic.weightedAverage(dataset);
+            // then
+            assertEquals(82.35, weightedAverage, DELTA2);
+        }
+
+        @Test
+        void testPartPercentOfWhole() {
+            // given
+            final byte percent = 80;
+            final byte whole = 30;
+            // when
+            final double part = MathCalc.Arithmetic.partPercentOfWhole(whole, percent);
+            // then
+            assertEquals(24, part, DELTA1);
+        }
+
+        @Test
+        void testPercentOfWhole() {
+            // given
+            final byte part = 27;
+            final byte whole = 30;
+            // when
+            final double percent = MathCalc.Arithmetic.percentOfWhole(part, whole);
+            // then
+            assertEquals(90, percent, DELTA1);
+        }
+
+        @Test
+        void testPartPercentOfWhatWhole() {
+            // given
+            final byte percent = 25;
+            final short whole = 4000;
+            // when
+            final double part = MathCalc.Arithmetic.partPercentOfWhatWhole(whole, percent);
+            // then
+            assertEquals(1000, part, DELTA1);
+        }
+
+        @Test
+        void testWholePercentOfWhatPart() {
+            // given
+            final byte part = 10;
+            final byte percent = 5;
+            // when
+            final double whole = MathCalc.Arithmetic.wholePercentOfWhatPart(part, percent);
+            // then
+            assertEquals(200, whole, DELTA1);
+        }
+
+        @Test
+        void testIncreasedByPercent() {
+            // given
+            final byte whole = 5;
+            final byte percentIncrease = 30;
+            // when
+            final double finalWhole = MathCalc.Arithmetic.increasedByPercent(whole, percentIncrease);
+            // then
+            assertEquals(6.5, finalWhole, DELTA1);
+        }
+
+        @Test
+        void testOriginalBeforePercentIncrease() {
+            // given
+            final double finalWhole = 6.5;
+            final byte percentIncrease = 30;
+            // when
+            final double whole = MathCalc.Arithmetic.originalBeforePercentIncrease(finalWhole, percentIncrease);
+            // then
+            assertEquals(5, whole, DELTA1);
+        }
+
+        @Test
+        void testDecreasedByPercent() {
+            // given
+            final double whole = 48.89;
+            final byte percentDecrease = 10;
+            // when
+            final double finalWhole = MathCalc.Arithmetic.decreasedByPercent(whole, percentDecrease);
+            // then
+            assertEquals(44, finalWhole, DELTA1);
+        }
+
+        @Test
+        void testOriginalBeforePercentDecrease() {
+            // given
+            final byte finalWhole = 44;
+            final byte percentDecrease = 10;
+            // when
+            final double whole = MathCalc.Arithmetic.originalBeforePercentDecrease(finalWhole, percentDecrease);
+            // then
+            assertEquals(48.89, whole, DELTA2);
+        }
+
+        static List<Arguments> percentageChangeArgs() {
+            return List.of(
+                Arguments.of(60., 72., 20., DELTA1),
+                Arguments.of(50., -22., -144., DELTA1),
+                Arguments.of(-10., -25., -150., DELTA1),
+                Arguments.of(253_339_000., 310_384_000., 22.517, DELTA3),
+                Arguments.of(5., 20., 300., DELTA1),
+                Arguments.of(20., 10., -50., DELTA1),
+                Arguments.of(2., 3., 50., DELTA1),
+                Arguments.of(5., 4., -20., DELTA1)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("percentageChangeArgs")
+        void testPercentageChange(double initial, double finalValue, double expectedResult, double delta) {
+            // when
+            final double percentageChange = MathCalc.Arithmetic.percentageChange(initial, finalValue);
+            // then
+            assertEquals(expectedResult, percentageChange, delta);
+        }
+
+        static List<Arguments> averagePercentageArgs() {
+            return List.of(
+                Arguments.of(new double[]{80., 40.}, 60., DELTA1),
+                Arguments.of(new double[]{80., 80., 80., 80., 40.}, 72., DELTA1)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("averagePercentageArgs")
+        void testAveragePercentage(double[] percents, double expectedResult, double delta) {
+            // when
+            final double averagePercentage = MathCalc.Arithmetic.averagePercentage(percents);
+            // then
+            assertEquals(expectedResult, averagePercentage, delta);
+        }
+
+        static List<Arguments> weightedAveragePercentageArgs() {
+            return List.of(
+                // (80%⋅4+40%⋅1) / (4+1) = 72%
+                Arguments.of(new double[][]{{4., 80.}, {1., 40.}}, 72., DELTA1),
+                // (300⋅64%+450⋅42%+250⋅36%) / (300+450+250) = 47.1%
+                Arguments.of(new double[][]{{300., 64.}, {450., 42.}, {250., 36.}}, 47.1, DELTA1)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("weightedAveragePercentageArgs")
+        void testWeightedAveragePercentage(double[][] weightedPercents, double expectedResult, double delta) {
+            // when
+            final double weightedAvgPercent = MathCalc.Arithmetic.weightedAveragePercentage(weightedPercents);
+            // then
+            assertEquals(expectedResult, weightedAvgPercent, delta);
+        }
     }
 
     @Nested
@@ -3627,6 +3793,13 @@ class MathCalcTest {
             final DoubleUnaryOperator f6 = x -> (Math.exp(x) - 1) / x; // limₓ→₀ (eˣ-1) / x = 1
             final DoubleUnaryOperator f7 = x -> (Math.pow(2, x) - 1) / x; // limₓ→₀ (aˣ-1) / x = logₑa
             final DoubleUnaryOperator f8 = x -> Math.pow(1 + x, 1 / x); // limₓ→₀ (1 + x)¹/ˣ = e
+            final DoubleUnaryOperator f9 = x -> Math.sqrt(7 * x + 22); // limₓ→₋₃ √(7x + 22)
+            // limₓ→₁ 5x³-6x²+2x-1
+            final DoubleUnaryOperator f10 = x -> 5 * Math.pow(x, 3) - 6 * x * x + 2 * x - 1;
+            // limₓ→₋₅ (5x+4) / (x+8)
+            final DoubleUnaryOperator f11 = x -> (5 * x + 4) / (x + 8);
+            // limₓ→₁ √(51-2x)
+            final DoubleUnaryOperator f12 = x -> Math.sqrt(51 - 2 * x);
 
             final DoubleUnaryOperator removableDiscontinuityFn = x ->
                 (x == 1) ? Double.NaN : (x * x - 1) / (x - 1);
@@ -3640,6 +3813,10 @@ class MathCalcTest {
                 Arguments.of(f6, 0, 1., DELTA1),
                 Arguments.of(f7, 0, MathCalc.Algebra.ln(2), DELTA1),
                 Arguments.of(f8, 0, Math.E, DELTA1),
+                Arguments.of(f9, -3, 1., DELTA1),
+                Arguments.of(f10, 1, 0, DELTA1),
+                Arguments.of(f11, -5, -7., DELTA1), // -21/3 = -7
+                Arguments.of(f12, 1, 7., DELTA1), // √49 = 7
                 Arguments.of(removableDiscontinuityFn, 1., 2., DELTA1)
             );
         }
@@ -3649,6 +3826,224 @@ class MathCalcTest {
         void testLimit(DoubleUnaryOperator f, double x, double expectedResult, double delta) {
             // when
             final double limit = MathCalc.Calculus.limit(f, x);
+            // then
+            assertEquals(expectedResult, limit, delta);
+        }
+
+        static List<Arguments> limitSumRuleArgs() {
+            final DoubleUnaryOperator f = _ -> 3;
+            final DoubleUnaryOperator g = _ -> 2;
+
+            return List.of(
+                Arguments.of(f, g, -3., 5., DELTA1) // 3+2=5
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("limitSumRuleArgs")
+        void testLimitSumRule(
+            DoubleUnaryOperator f, DoubleUnaryOperator g, double x, double expectedResult, double delta) {
+            // when
+            final double limit = MathCalc.Calculus.limitSumRule(f, g, x);
+            // then
+            assertEquals(expectedResult, limit, delta);
+        }
+
+        static List<Arguments> oneSidedLimitSumArgs() {
+            final DoubleUnaryOperator f = x -> x < -3 ? 3 : 0;
+            final DoubleUnaryOperator g = _ -> 2;
+            final DoubleUnaryOperator f1 = x -> x < -2 ? 1 : 4;
+            final DoubleUnaryOperator g1 = x -> x < -2 ? 4 : 1;
+
+            return List.of(
+                // lhs = limₓ→₃⁻ f(x) + limₓ→₃⁻ g(x) = 3+2=5
+                // rhs = limₓ→₃⁺ f(x) + limₓ→₃⁺ g(x) = 0+2=5
+                Arguments.of(f, g, -3., Double.NaN, DELTA1),
+                // lhs = limₓ→₋₂⁻ f(x) + limₓ→₋₂⁻ g(x) = 1+4=5
+                // rhs = limₓ→₋₂⁺ f(x) + limₓ→₋₂⁺ g(x) = 4+1=5
+                Arguments.of(f1, g1, -2., 5., DELTA1)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("oneSidedLimitSumArgs")
+        void testOneSidedLimitSum(
+            DoubleUnaryOperator f, DoubleUnaryOperator g, double x, double expectedResult, double delta) {
+            // when
+            final double limit = MathCalc.Calculus.oneSidedLimitSum(f, g, x);
+            // then
+            assertEquals(expectedResult, limit, delta);
+        }
+
+        static List<Arguments> limitDifferenceRuleArgs() {
+            final DoubleUnaryOperator f = x -> x < -1 ? 2 : 1;
+            final DoubleUnaryOperator g = x -> x < -1 ? 1 : 0;
+
+            return List.of(
+                Arguments.of(f, g, -1., Double.NaN, DELTA1)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("limitDifferenceRuleArgs")
+        void testLimitDifferenceRule(
+            DoubleUnaryOperator f, DoubleUnaryOperator g, double x, double expectedResult, double delta) {
+            // when
+            final double limit = MathCalc.Calculus.limitDifferenceRule(f, g, x);
+            // then
+            assertEquals(expectedResult, limit, delta);
+        }
+
+        static List<Arguments> oneSidedLimitDifferenceArgs() {
+            final DoubleUnaryOperator f = x -> x < -1 ? 2 : 1;
+            final DoubleUnaryOperator g = x -> x < -1 ? 1 : 0;
+
+            return List.of(
+                Arguments.of(f, g, -1., 1., DELTA1)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("oneSidedLimitDifferenceArgs")
+        void testOneSidedLimitDifference(
+            DoubleUnaryOperator f, DoubleUnaryOperator g, double x, double expectedResult, double delta) {
+            // when
+            final double limit = MathCalc.Calculus.oneSidedLimitDifference(f, g, x);
+            // then
+            assertEquals(expectedResult, limit, delta);
+        }
+
+        @Test
+        void testLimitConstantMultipleRuleWithEquationTerms() {
+            // given f(x) = x² + 3x - 4
+            final DoubleUnaryOperator xSquaredFn = x -> x * x;
+            final DoubleUnaryOperator plus3xFn = x -> 3 * x;
+            final DoubleUnaryOperator minus4Fn = _ -> -4;
+            final DoubleUnaryOperator[] equationTerms = {xSquaredFn, plus3xFn, minus4Fn};
+            final BiFunction<DoubleUnaryOperator[], Double, Double> f = (terms, x) ->
+                Arrays.stream(terms).mapToDouble(fn -> fn.applyAsDouble(x)).sum();
+            final byte constant = 5;
+            final double x = 3;
+            // when
+            final Pair<double[], Double> result = MathCalc.Calculus
+                .limitConstantMultipleRule(f, equationTerms, constant, x);
+            // then
+            assertNotNull(result.getLeft());
+            assertNotNull(result.getRight());
+            assertArrayEquals(new double[]{45, 45, -20}, result.getLeft(), DELTA1);
+            assertEquals(70, result.getRight(), DELTA1);
+        }
+
+        static List<Arguments> limitConstantMultipleRuleArgs() {
+            final DoubleUnaryOperator f = _ -> 2;
+
+            return List.of(
+                Arguments.of(f, 5., 3., 10., DELTA1) // 5*2=10
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("limitConstantMultipleRuleArgs")
+        void testLimitConstantMultipleRule(
+            DoubleUnaryOperator f, double constant, double x, double expectedResult, double delta) {
+            // when
+            final double limit = MathCalc.Calculus.limitConstantMultipleRule(f, constant, x);
+            // then
+            assertEquals(expectedResult, limit, delta);
+        }
+
+        static List<Arguments> limitProductRuleArgs() {
+            final DoubleUnaryOperator f = _ -> 2;
+            final DoubleUnaryOperator g = _ -> 4;
+
+            return List.of(
+                Arguments.of(f, g, -1., 8., DELTA1) // limₓ→₋₁ f(x) * limₓ→₋₁ g(x) = 2*4=8
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("limitProductRuleArgs")
+        void testLimitProductRule(
+            DoubleUnaryOperator f, DoubleUnaryOperator g, double x, double expectedResult, double delta) {
+            // when
+            final double limit = MathCalc.Calculus.limitProductRule(f, g, x);
+            // then
+            assertEquals(expectedResult, limit, delta);
+        }
+
+        static List<Arguments> oneSidedLimitProductRuleArgs() {
+            final DoubleUnaryOperator f = x -> x < 3 ? 1 : 5;
+            final DoubleUnaryOperator g = x -> x < 3 ? 5 : 1;
+            final DoubleUnaryOperator f1 = x -> x < -2 ? 4 : 2;
+            final DoubleUnaryOperator g1 = x -> 2;
+
+            return List.of(
+                // lhs = limₓ→₃⁻ f(x) * limₓ→₃⁻ g(x) = 1*5=5
+                // rhs = limₓ→₃⁺ f(x) * limₓ→₃⁺ g(x) = 5*1=5
+                Arguments.of(f, g, 3., 5., DELTA1),
+                // lhs = limₓ→₋₂⁻ f(x) * limₓ→₋₂⁻ g(x) = 4*2=8
+                // rhs = limₓ→₋₂⁺ f(x) * limₓ→₋₂⁺ g(x) = 2*2=4
+                Arguments.of(f1, g1, -2., Double.NaN, DELTA1)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("oneSidedLimitProductRuleArgs")
+        void testOneSidedLimitProductRule(
+            DoubleUnaryOperator f, DoubleUnaryOperator g, double x, double expectedResult, double delta) {
+            // when
+            final double limit = MathCalc.Calculus.oneSidedLimitProductRule(f, g, x);
+            // then
+            assertEquals(expectedResult, limit, delta);
+        }
+
+        static List<Arguments> limitQuotientRuleArgs() {
+            final DoubleUnaryOperator f = _ -> 1;
+            final DoubleUnaryOperator g = _ -> 0;
+
+            return List.of(
+                Arguments.of(f, g, -1., Double.NaN, DELTA1) // limₓ→₋₁ f(x) / limₓ→₋₁ g(x) = 1/0
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("limitQuotientRuleArgs")
+        void testLimitQuotientRule(
+            DoubleUnaryOperator f, DoubleUnaryOperator g, double x, double expectedResult, double delta) {
+            // when
+            final double limit = MathCalc.Calculus.limitQuotientRule(f, g, x);
+            // then
+            assertEquals(expectedResult, limit, delta);
+        }
+
+        static List<Arguments> limitOfCompositeFunctionsArgs() {
+            final DoubleUnaryOperator f = _ -> -1;
+            final DoubleUnaryOperator g = x -> x < -1 ? 3 : -1;
+            final DoubleUnaryOperator g1 = _ -> 3;
+            final DoubleUnaryOperator h = _ -> 1;
+            final DoubleUnaryOperator g2 = x -> x < 0 ? Double.NEGATIVE_INFINITY : Double.POSITIVE_INFINITY;
+            final DoubleUnaryOperator h1 = x -> x * 0;
+            final DoubleUnaryOperator g3 = _ -> 0;
+            final DoubleUnaryOperator h2 = x -> x < 0 ? 1 : -1;
+
+            return List.of(
+                // limₓ→₃ g(f(x)) = limₓ→₃ g(limₓ→₃ f(3)) = limₓ→₋₁ g(-1)
+                Arguments.of(f, g, 3., Double.NaN, DELTA1),
+                // limₓ→₋₁ h(g(x)) = limₓ→₋₁ h(limₓ→₋₁ g(-1)) = limₓ→₃ h(3)
+                Arguments.of(g1, h, 3., 1., DELTA1),
+                // limₓ→₋₁ h(g(x)) = limₓ→₋₁ h(limₓ→₋₁ g(-1)) = limₓ→∞ h(±∞)
+                Arguments.of(g2, h1, -1., Double.NaN, DELTA1),
+                // limₓ→₋₂ h(g(x)) = limₓ→₋₂ h(limₓ→₋₂ g(-2)) = limₓ→₀ h(0)
+                Arguments.of(g3, h2, -2., Double.NaN, DELTA1)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("limitOfCompositeFunctionsArgs")
+        void testLimitOfCompositeFunctions(
+            DoubleUnaryOperator f, DoubleUnaryOperator g, double x, double expectedResult, double delta) {
+            // when
+            final double limit = MathCalc.Calculus.limitOfCompositeFunctions(f, g, x);
             // then
             assertEquals(expectedResult, limit, delta);
         }
@@ -3694,27 +4089,6 @@ class MathCalcTest {
             assertNotNull(result.getRight());
             assertArrayEquals(new double[]{10, 15, 0}, result.getLeft(), DELTA1);
             assertEquals(25, result.getRight(), DELTA1); // 10x + 15
-        }
-
-        @Test
-        void testLimitConstantMultipleRuleWithEquationTerms() {
-            // given f(x) = x² + 3x - 4
-            final DoubleUnaryOperator xSquaredFn = x -> x * x;
-            final DoubleUnaryOperator plus3xFn = x -> 3 * x;
-            final DoubleUnaryOperator minus4Fn = _ -> -4;
-            final DoubleUnaryOperator[] equationTerms = {xSquaredFn, plus3xFn, minus4Fn};
-            final BiFunction<DoubleUnaryOperator[], Double, Double> f = (terms, x) ->
-                Arrays.stream(terms).mapToDouble(fn -> fn.applyAsDouble(x)).sum();
-            final byte constant = 5;
-            final double x = 3;
-            // when
-            final Pair<double[], Double> result = MathCalc.Calculus
-                .limitConstantMultipleRule(f, equationTerms, constant, x);
-            // then
-            assertNotNull(result.getLeft());
-            assertNotNull(result.getRight());
-            assertArrayEquals(new double[]{45, 45, -20}, result.getLeft(), DELTA1);
-            assertEquals(70, result.getRight(), DELTA1);
         }
 
         @Test

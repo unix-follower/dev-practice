@@ -841,6 +841,115 @@ public final class MathCalc {
             checkGreater0(denominator);
             return (double) numerator / denominator;
         }
+
+        /**
+         * @return (a₁ + a₂ + … + aₙ) / n = 1/n ∑ⁿᵢ₌₁ aᵢ
+         */
+        public static double average(double[] dataset) {
+            final double sum = Arrays.stream(dataset).sum();
+            return sum / dataset.length;
+        }
+
+        /**
+         * @return x = (w₁x₁ + w₂x₂ + … + wₙxₙ) / (w₁ + w₂ + … + wₙ) = (∑ⁿᵢ₌₁ wᵢxᵢ) / (∑ⁿᵢ₌₁ wᵢ)
+         */
+        public static double weightedAverage(double[][] dataset) {
+            final double weightedSum = Arrays.stream(dataset)
+                .mapToDouble(weightedDataPoint ->
+                    weightedDataPoint[Constants.ARR_1ST_INDEX] * weightedDataPoint[Constants.ARR_2ND_INDEX]
+                )
+                .sum();
+            final double sumOfWeights = Arrays.stream(dataset)
+                .mapToDouble(weightedPercent -> weightedPercent[Constants.ARR_1ST_INDEX])
+                .sum();
+            return weightedSum / sumOfWeights;
+        }
+
+        /**
+         * @return G = ⁿ√(x₁ * x₂ * … * xₙ) = (∏ⁿᵢ₌₁ xᵢ)¹/ⁿ
+         */
+        public static double geometricAverage() {
+            throw new UnsupportedOperationException();
+        }
+
+        /**
+         * @return H = n / (1/x₁ + 1/x₂ + … + 1/xₙ) = n / (∑ⁿᵢ₌₁ 1/xᵢ)
+         */
+        public static double harmonicAverage() {
+            throw new UnsupportedOperationException();
+        }
+
+        /**
+         * @return y = (x ⋅ p%) / 100%
+         */
+        public static double partPercentOfWhole(double whole, double percent) {
+            return (whole * percent) / 100;
+        }
+
+        /**
+         * @return p% = (y/x) ⋅ 100%
+         */
+        public static double percentOfWhole(double part, double whole) {
+            return (part / whole) * 100;
+        }
+
+        /**
+         * @return x = (p% / 100%) ⋅ y
+         */
+        public static double partPercentOfWhatWhole(double part, double percent) {
+            return (percent / 100) * part;
+        }
+
+        /**
+         * @return y = (x ⋅ 100%) / p%
+         */
+        public static double wholePercentOfWhatPart(double whole, double percent) {
+            return (whole * 100) / percent;
+        }
+
+        /**
+         * @return y = ±x (100% + p%) / 100%
+         */
+        public static double increasedByPercent(double whole, double percentIncrease) {
+            return whole * (100 + percentIncrease) / 100;
+        }
+
+        /**
+         * @return x = ± y / (100% + p%) ⋅ 100%
+         */
+        public static double originalBeforePercentIncrease(double finalWhole, double percentIncrease) {
+            return finalWhole / (100 + percentIncrease) * 100;
+        }
+
+        /**
+         * @return y = ± x (100% - p%) / 100%
+         */
+        public static double decreasedByPercent(double whole, double percentDecrease) {
+            return whole * (100 - percentDecrease) / 100;
+        }
+
+        /**
+         * @return x = ± y / (100% - p%) ⋅ 100%
+         */
+        public static double originalBeforePercentDecrease(double finalWhole, double percentDecrease) {
+            return finalWhole / (100 - percentDecrease) * 100;
+        }
+
+        /**
+         * @return % change = 100% × ((final−initial) / ∣initial∣)
+         */
+        public static double percentageChange(double initial, double finalValue) {
+            return 100 * ((finalValue - initial) / Math.abs(initial));
+        }
+
+
+        public static double averagePercentage(double[] percents) {
+            return average(percents);
+        }
+
+        public static double weightedAveragePercentage(double[][] weightedPercents) {
+            return weightedAverage(weightedPercents);
+        }
     }
 
     public static final class Algebra {
@@ -3466,14 +3575,22 @@ public final class MathCalc {
         // Limit
 
         /**
+         * Polynomial function: limₓ→ₐ p(x) = p(a)
+         * Rational function: limₓ→ₐ r(x) = r(a)
+         * Square-root function: limₓ→ₐ q(x) = q(a)
+         *
          * @return limₓ→ₐ f(x) = L
          */
         public static double limit(DoubleUnaryOperator f, double x) {
             final double[] limits = oneSidedLimits(f, x);
             final double lhs = limits[Constants.ARR_1ST_INDEX];
             final double rhs = limits[Constants.ARR_2ND_INDEX];
+            return limitDiffTolerance(lhs, rhs);
+        }
+
+        private static double limitDiffTolerance(double lhs, double rhs) {
             // If both sides are close, return their average
-            final double epsilon = 1e-6; // tolerance of the difference
+            final double epsilon = 1e-6; // small value
             if (Math.abs(lhs - rhs) < epsilon) {
                 return (lhs + rhs) / 2.0;
             }
@@ -3541,22 +3658,54 @@ public final class MathCalc {
         /**
          * @return limₓ→ₐ f(x) + g(x) = limₓ→ₐ f(x) + limₓ→ₐ g(x)
          */
-        public static double limitSumRule() {
-            throw new UnsupportedOperationException();
+        public static double limitSumRule(DoubleUnaryOperator f, DoubleUnaryOperator g, double x) {
+            final double fLimit = limit(f, x);
+            final double gLimit = limit(g, x);
+            return fLimit + gLimit;
+        }
+
+        /**
+         * lhs = limₓ→ₐ⁻ f(x) + limₓ→ₐ⁻ g(x)
+         * rhs = limₓ→ₐ⁺ f(x) + limₓ→ₐ⁺ g(x)
+         *
+         * @return lhs + rhs
+         */
+        public static double oneSidedLimitSum(DoubleUnaryOperator f, DoubleUnaryOperator g, double x) {
+            final double[] fLimits = oneSidedLimits(f, x);
+            final double[] gLimits = oneSidedLimits(g, x);
+            final double lhsLimitSum = fLimits[Constants.ARR_1ST_INDEX] + gLimits[Constants.ARR_1ST_INDEX];
+            final double rhsLimitSum = fLimits[Constants.ARR_2ND_INDEX] + gLimits[Constants.ARR_2ND_INDEX];
+            return limitDiffTolerance(lhsLimitSum, rhsLimitSum);
         }
 
         /**
          * @return limₓ→ₐ f(x) - g(x) = limₓ→ₐ f(x) - limₓ→ₐ g(x)
          */
-        public static double limitDifferenceRule() {
-            throw new UnsupportedOperationException();
+        public static double limitDifferenceRule(DoubleUnaryOperator f, DoubleUnaryOperator g, double x) {
+            final double fLimit = limit(f, x);
+            final double gLimit = limit(g, x);
+            return fLimit - gLimit;
+        }
+
+        /**
+         * lhs = limₓ→ₐ⁻ f(x) - limₓ→ₐ⁻ g(x)
+         * rhs = limₓ→ₐ⁺ f(x) - limₓ→ₐ⁺ g(x)
+         *
+         * @return lhs - rhs
+         */
+        public static double oneSidedLimitDifference(DoubleUnaryOperator f, DoubleUnaryOperator g, double x) {
+            final double[] fLimits = oneSidedLimits(f, x);
+            final double[] gLimits = oneSidedLimits(g, x);
+            final double lhsLimitDiff = fLimits[Constants.ARR_1ST_INDEX] - gLimits[Constants.ARR_1ST_INDEX];
+            final double rhsLimitDiff = fLimits[Constants.ARR_2ND_INDEX] - gLimits[Constants.ARR_2ND_INDEX];
+            return limitDiffTolerance(lhsLimitDiff, rhsLimitDiff);
         }
 
         /**
          * @return limₓ→ₐ c * f(x) = c * limₓ→ₐ f(x)
          */
-        public static double limitConstantMultipleRule() {
-            throw new UnsupportedOperationException();
+        public static double limitConstantMultipleRule(DoubleUnaryOperator f, double constant, double x) {
+            return constant * limit(f, x);
         }
 
         /**
@@ -3577,8 +3726,24 @@ public final class MathCalc {
         /**
          * @return limₓ→ₐ f(x) * g(x) = limₓ→ₐ f(x) * limₓ→ₐ g(x)
          */
-        public static double limitProductRule() {
-            throw new UnsupportedOperationException();
+        public static double limitProductRule(DoubleUnaryOperator f, DoubleUnaryOperator g, double x) {
+            final double fLimit = limit(f, x);
+            final double gLimit = limit(g, x);
+            return fLimit * gLimit;
+        }
+
+        /**
+         * lhs = limₓ→ₐ⁻ f(x) * limₓ→ₐ⁻ g(x)
+         * rhs = limₓ→ₐ⁺ f(x) * limₓ→ₐ⁺ g(x)
+         *
+         * @return lhs - rhs
+         */
+        public static double oneSidedLimitProductRule(DoubleUnaryOperator f, DoubleUnaryOperator g, double x) {
+            final double[] fLimits = oneSidedLimits(f, x);
+            final double[] gLimits = oneSidedLimits(g, x);
+            final double lhsLimitProduct = fLimits[Constants.ARR_1ST_INDEX] * gLimits[Constants.ARR_1ST_INDEX];
+            final double rhsLimitProduct = fLimits[Constants.ARR_2ND_INDEX] * gLimits[Constants.ARR_2ND_INDEX];
+            return limitDiffTolerance(lhsLimitProduct, rhsLimitProduct);
         }
 
         /**
@@ -3586,8 +3751,13 @@ public final class MathCalc {
          *
          * @return limₓ→ₐ f(x)/g(x) = (limₓ→ₐ f(x)) / (limₓ→ₐ g(x))
          */
-        public static double limitQuotientRule() {
-            throw new UnsupportedOperationException();
+        public static double limitQuotientRule(DoubleUnaryOperator f, DoubleUnaryOperator g, double x) {
+            final double fLimit = limit(f, x);
+            final double gLimit = limit(g, x);
+            if (gLimit == 0) {
+                return Double.NaN;
+            }
+            return fLimit / gLimit;
         }
 
         /**
@@ -3605,10 +3775,13 @@ public final class MathCalc {
         }
 
         /**
-         * @return limₓ→ₐ p(x) = p(a)
+         * limₓ→ₐ f(x) = L
+         *
+         * @return limₓ→ₐ g(f(x)) = limₓ→L g(L)
          */
-        public static double limitPolynomialFunction() {
-            throw new UnsupportedOperationException();
+        public static double limitOfCompositeFunctions(DoubleUnaryOperator f, DoubleUnaryOperator g, double x) {
+            final double fLimit = limit(f, x);
+            return limit(g, fLimit);
         }
 
         // Derivative
