@@ -26,6 +26,7 @@ public final class MathCalc {
     public static final double ONE_FOURTH = 0.25;
     public static final double ONE_HALF = 0.5;
     public static final double ONE_EIGHTH = 0.125;
+    public static final double ONE_SIXTEENTH = 0.0625;
     public static final byte ONE = 1;
 
     /**
@@ -942,13 +943,58 @@ public final class MathCalc {
             return 100 * ((finalValue - initial) / Math.abs(initial));
         }
 
-
         public static double averagePercentage(double[] percents) {
             return average(percents);
         }
 
         public static double weightedAveragePercentage(double[][] weightedPercents) {
             return weightedAverage(weightedPercents);
+        }
+
+        /**
+         * @return percentage = (progress / goal) × 100
+         */
+        public static double percentToGoal(double progress, double goal) {
+            return (progress / goal) * 100;
+        }
+
+        /**
+         * @return Percentage points = Percentage #2 - Percentage #1
+         */
+        public static double percentagePoint(double percent1, double percent2) {
+            return percent2 - percent1;
+        }
+
+        /**
+         * @return percent error = (OV - TV) / TV × 100%
+         */
+        public static double percentError(double trueValue, double observedValue) {
+            return (observedValue - trueValue) / trueValue * 100;
+        }
+
+        /**
+         * @return % difference = 100 × |V₁ - V₂| / ((V₁ + V₂) / 2)
+         */
+        public static double percentageDifference(double value1, double value2) {
+            return 100 * Math.abs(value1 - value2) / ((value1 + value2) / 2);
+        }
+
+        /**
+         * aka cumulative percentage
+         *
+         * @return cumulative % = (percent1 / 100) * (percent2 / 100) * 100
+         */
+        public static double[] percentOfPercent(double percent1, double percent2) {
+            final double firstPercent = percent1 / 100;
+            final double secondPercent = percent2 / 100;
+            return new double[]{(firstPercent) * (secondPercent) * 100, firstPercent, secondPercent};
+        }
+
+        /**
+         * @return % of the total time = (First time duration / Second time duration) × 100
+         */
+        public static double percentTime(double hoursSpent, double totalHours) {
+            return (hoursSpent / totalHours) * 100;
         }
     }
 
@@ -1562,6 +1608,15 @@ public final class MathCalc {
         public static double log2(double x) {
             checkGreater0(x);
             return lnChangeOfBase(x, 2);
+        }
+
+        /**
+         * Alternative: 1 / log₂(1 + increase %)
+         *
+         * @return log(x) / log(1 + increase %)
+         */
+        public static double doublingTime(double initialAmount, double increase) {
+            return log(initialAmount) / log(1 + increase / 100);
         }
     }
 
@@ -3605,6 +3660,10 @@ public final class MathCalc {
             final double lhs = f.applyAsDouble(x - h); // limₓ→ₐ⁻ f(x) = L
             final double rhs = f.applyAsDouble(x + h); // limₓ→ₐ⁺ f(x) = L
             return new double[]{lhs, rhs};
+        }
+
+        public static double oneSidedLimitRHS(DoubleUnaryOperator f, double x) {
+            return oneSidedLimits(f, x)[Constants.ARR_2ND_INDEX];
         }
 
         /**
