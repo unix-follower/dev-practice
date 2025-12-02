@@ -1,6 +1,7 @@
 package org.example.assistantonsbservlet.math;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.math.complex.Complex;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -985,6 +986,83 @@ class MathCalcTest {
             // then
             assertEquals(expectedResult, weightedAvgPercent, delta);
         }
+
+        @Test
+        void testPercentToGoal() {
+            // given
+            final short progress = 8_500;
+            final short goal = 15_500;
+            // when
+            final double percent = MathCalc.Arithmetic.percentToGoal(progress, goal);
+            // then
+            assertEquals(54.84, percent, DELTA2);
+        }
+
+        @Test
+        void testPercentagePoint() {
+            // given
+            final byte percent1 = 5;
+            final byte percent2 = 7;
+            // when
+            final double percentagePoint = MathCalc.Arithmetic.percentagePoint(percent1, percent2);
+            final double percentChange = MathCalc.Arithmetic.percentageChange(percent1, percent2);
+            // then
+            assertEquals(2, percentagePoint, DELTA1);
+            assertEquals(40, percentChange, DELTA1);
+        }
+
+        @Test
+        void testPercentError() {
+            // given
+            final short trueValue = 343;
+            final short observedValue = 329;
+            // when
+            final double percentError = MathCalc.Arithmetic.percentError(trueValue, observedValue);
+            // then
+            assertEquals(-4.082, percentError, DELTA3);
+        }
+
+        @Test
+        void testPercentageDifference() {
+            // given
+            final short value1 = 70;
+            final short value2 = 85;
+            // when
+            final double percentageDifference = MathCalc.Arithmetic.percentageDifference(value1, value2);
+            final double difference = MathCalc.Arithmetic.percentagePoint(value1, value2);
+            // then
+            assertEquals(19.355, percentageDifference, DELTA3);
+            assertEquals(15, difference, DELTA1);
+        }
+
+        @Test
+        void testPercentOfPercent() {
+            // given
+            final byte percent1 = 40;
+            final byte percent2 = 90;
+            // when
+            final double[] cumulativePercentResults = MathCalc.Arithmetic.percentOfPercent(percent1, percent2);
+            // then
+            assertNotNull(cumulativePercentResults);
+            assertEquals(3, cumulativePercentResults.length);
+            final double cumulativePercent = cumulativePercentResults[Constants.ARR_1ST_INDEX];
+            assertEquals(36, cumulativePercent, DELTA1);
+            final double firstPercent = cumulativePercentResults[Constants.ARR_2ND_INDEX];
+            assertEquals(0.4, firstPercent, DELTA1);
+            final double secondPercent = cumulativePercentResults[Constants.ARR_3RD_INDEX];
+            assertEquals(0.9, secondPercent, DELTA1);
+        }
+
+        @Test
+        void testPercentTime() {
+            // given
+            final byte hoursSpent = 2;
+            final byte totalHours = 8;
+            // when
+            final double percentOfTotalTime = MathCalc.Arithmetic.percentTime(hoursSpent, totalHours);
+            // then
+            assertEquals(25, percentOfTotalTime, DELTA1);
+        }
     }
 
     @Nested
@@ -1503,6 +1581,54 @@ class MathCalcTest {
             final double logarithm = MathCalc.Algebra.log2(number);
             // then
             assertEquals(expectedResult, logarithm, delta);
+        }
+
+        static List<Arguments> doublingTimeArgs() {
+            return List.of(
+                Arguments.of(2, 15, 4.95948, DELTA5),
+                Arguments.of(2, 430, 0.415629, DELTA6),
+                Arguments.of(2, 2, 35.0028, DELTA4)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("doublingTimeArgs")
+        void testDoublingTime(double initialAmount, double increase, double expectedResult, double delta) {
+            // when
+            final double doublingTime = MathCalc.Algebra.doublingTime(initialAmount, increase);
+            // then
+            assertEquals(expectedResult, doublingTime, delta);
+        }
+
+        static List<Arguments> conjugateArgs() {
+            return List.of(
+                // 2+2i => 2-2i
+                Arguments.of(new Complex(2, 2), new Complex(2, -2), DELTA1),
+                // 5-i => 5+i
+                Arguments.of(new Complex(5, -1), new Complex(5, 1), DELTA1),
+                Arguments.of(new Complex(-7, 0), new Complex(-7, 0), DELTA1), // -7 => -7
+                // 7+32i => 7-32i
+                Arguments.of(new Complex(7, 32), new Complex(7, -32), DELTA1),
+                // 1.2-2.5i => 1.2+2.5i
+                Arguments.of(new Complex(1.2, -2.5), new Complex(1.2, 2.5), DELTA1),
+                // 6+0.7i => 6-0.7i
+                Arguments.of(new Complex(6, 0.7), new Complex(6, -0.7), DELTA1),
+                Arguments.of(new Complex(0, 1), new Complex(0, -1), DELTA1), // i => -i
+                Arguments.of(new Complex(0, -3), new Complex(0, 3), DELTA1), // -3i => 3i
+                Arguments.of(new Complex(18, 0), new Complex(18, 0), DELTA1), // 18 => 18
+                // -9-0.03i => -9+0.03i
+                Arguments.of(new Complex(-9, -0.03), new Complex(-9, 0.03), DELTA1)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("conjugateArgs")
+        void testConjugate(Complex complex, Complex expectedResult, double delta) {
+            // when
+            final var conjugate = complex.conjugate(); // conjugate(a+bi) = a-bi
+            // then
+            assertEquals(expectedResult.getReal(), conjugate.getReal(), delta);
+            assertEquals(expectedResult.getImaginary(), conjugate.getImaginary(), delta);
         }
     }
 
@@ -3800,30 +3926,93 @@ class MathCalcTest {
             final DoubleUnaryOperator f11 = x -> (5 * x + 4) / (x + 8);
             // limₓ→₁ √(51-2x)
             final DoubleUnaryOperator f12 = x -> Math.sqrt(51 - 2 * x);
+            final DoubleUnaryOperator f13 = x -> -4. / (2 * x - 5);
+            final DoubleUnaryOperator f14 = x -> (2 * x) / (x * x - 7 * x + 6);
+            final DoubleUnaryOperator f15 = x -> (3 * x) / ((x - 2) * (x + 2));
+            final DoubleUnaryOperator f16 = x -> Math.pow(x - 5, 2) / Math.pow(x - 3, 2);
+            // (12x³+12x²) / (x⁴-x²)
+            final DoubleUnaryOperator f17 = x -> (12. * Math.pow(x, 3) + 12. * (x * x)) / (Math.pow(x, 4) - x * x);
+            // limₓ→₂ (x⁴+3x³-10x²) / (x²-2x) = limₓ→₂ (x²-5x)
+            final DoubleUnaryOperator f18 = x -> (Math.pow(x, 4) + 3 * Math.pow(x, 3) - 10 * x * x) / (x * x - 2 * x);
+            // limₓ→₅ (12x-60) / (x²-6x+5) = limₓ→₅ 12 / (x - 1)
+            final DoubleUnaryOperator f19 = x -> (12. * x - 60) / (x * x - 6 * x + 5);
+            // limₓ→₃ (x³-9x) / (x²-3x) = limₓ→₅ (x+3)
+            final DoubleUnaryOperator f20 = x -> (Math.pow(x, 3) - 9 * x) / (x * x - 3 * x);
+            // {x² for x≤0
+            // {ln(x) for x>0
+            final DoubleUnaryOperator piecewiseFn1 = x -> x <= 0 ? x * x : BigDecimal.valueOf(MathCalc.Algebra.ln(x))
+                .setScale(8, RoundingMode.HALF_EVEN)
+                .doubleValue();
+            // {sin(x) for 0≤x≤π
+            // {x/π - 1 for π<x≤10
+            final DoubleUnaryOperator piecewiseFn2 = x -> {
+                if (x <= Math.PI) {
+                    return MathCalc.Trigonometry.sin(x);
+                } else if (x <= 10) {
+                    return x / Math.PI - 1;
+                } else {
+                    throw new IllegalArgumentException();
+                }
+            };
+            // {1/(2x) for x≤-2
+            // {2ˣ for -2<x≤0
+            final DoubleUnaryOperator piecewiseFn3 = x -> {
+                if (x <= -2) {
+                    return 1 / (2 * x);
+                } else if (x <= 0) {
+                    return Math.pow(2, x);
+                } else {
+                    throw new IllegalArgumentException();
+                }
+            };
+            // {2ˣ-1 for -8≤x<1
+            // {√x for x≥1
+            final DoubleUnaryOperator piecewiseFn4 = x ->
+                x <= -2 ? Math.pow(2, x) - 1 : MathCalc.Algebra.squareRoot(x);
+
+            final DoubleUnaryOperator cot = MathCalc.Trigonometry::cot;
+            final DoubleUnaryOperator sin = MathCalc.Trigonometry::sin;
+            final DoubleUnaryOperator tan = MathCalc.Trigonometry::tan;
 
             final DoubleUnaryOperator removableDiscontinuityFn = x ->
                 (x == 1) ? Double.NaN : (x * x - 1) / (x - 1);
 
             return List.of(
-                Arguments.of(f, 2., 9., DELTA1), // 2²+5=9
-                Arguments.of(f2, 0., 5., DELTA1), // 3(0)³+4(0)+5=5
-                Arguments.of(f3, 3., 99., DELTA1), // 6(3)²+10(3)+15=99
-                Arguments.of(f4, 3., -25., DELTA1), // (3²+4²)/(3-4)=-25
-                Arguments.of(f5, 0, 1., DELTA1),
-                Arguments.of(f6, 0, 1., DELTA1),
-                Arguments.of(f7, 0, MathCalc.Algebra.ln(2), DELTA1),
-                Arguments.of(f8, 0, Math.E, DELTA1),
-                Arguments.of(f9, -3, 1., DELTA1),
-                Arguments.of(f10, 1, 0, DELTA1),
-                Arguments.of(f11, -5, -7., DELTA1), // -21/3 = -7
-                Arguments.of(f12, 1, 7., DELTA1), // √49 = 7
-                Arguments.of(removableDiscontinuityFn, 1., 2., DELTA1)
+                Arguments.of("#1", f, 2., 9., DELTA1), // 2²+5=9
+                Arguments.of("#2", f2, 0., 5., DELTA1), // 3(0)³+4(0)+5=5
+                Arguments.of("#3", f3, 3., 99., DELTA1), // 6(3)²+10(3)+15=99
+                Arguments.of("#4", f4, 3., -25., DELTA1), // (3²+4²)/(3-4)=-25
+                Arguments.of("#5", f5, 0, 1., DELTA1),
+                Arguments.of("#6", f6, 0, 1., DELTA1),
+                Arguments.of("#7", f7, 0, MathCalc.Algebra.ln(2), DELTA1),
+                Arguments.of("#8", f8, 0, Math.E, DELTA1),
+                Arguments.of("#9", f9, -3., 1., DELTA1),
+                Arguments.of("#10", f10, 1., 0, DELTA1),
+                Arguments.of("#11", f11, -5., -7., DELTA1), // -21/3 = -7
+                Arguments.of("#12", f12, 1, 7., DELTA1), // √49 = 7
+                Arguments.of("#13", f13, 3, -4., DELTA1),
+                Arguments.of("#14", f14, 1, Double.NaN, DELTA1),
+                Arguments.of("#15", f15, 4, 1, DELTA1),
+                Arguments.of("#16", f16, 3, Double.NaN, DELTA1),
+                Arguments.of("#17", f17, -1, -6, DELTA1),
+                Arguments.of("#18", f18, 2, 14, DELTA1),
+                Arguments.of("#19", f19, 5, 3., DELTA1),
+                Arguments.of("#20", f20, 3, 6., DELTA1),
+                Arguments.of("piecewise#1", piecewiseFn1, 1, 0, DELTA1),
+                Arguments.of("piecewise#2", piecewiseFn2, Math.PI, 0, DELTA1),
+                Arguments.of("piecewise#3", piecewiseFn3, -2, Double.NaN, DELTA1), // -1/4 ≠ 1/4
+                Arguments.of("piecewise#4", piecewiseFn4, 4, 2, DELTA1), // √4 = 2
+                Arguments.of("trig#1", cot, MathCalc.Trigonometry.PI_OVER_4, 1, DELTA1),
+                Arguments.of("trig#2", sin, MathCalc.Trigonometry.PI_OVER_6, MathCalc.ONE_HALF, DELTA1),
+                Arguments.of("trig#3", cot, 0, Double.NaN, DELTA1),
+                Arguments.of("trig#4", tan, 0, 0, DELTA1),
+                Arguments.of("removableDiscontinuity#1", removableDiscontinuityFn, 1., 2., DELTA1)
             );
         }
 
-        @ParameterizedTest
+        @ParameterizedTest(name = "{0}")
         @MethodSource("limitArgs")
-        void testLimit(DoubleUnaryOperator f, double x, double expectedResult, double delta) {
+        void testLimit(String testName, DoubleUnaryOperator f, double x, double expectedResult, double delta) {
             // when
             final double limit = MathCalc.Calculus.limit(f, x);
             // then
@@ -3845,6 +4034,25 @@ class MathCalcTest {
             DoubleUnaryOperator f, DoubleUnaryOperator g, double x, double expectedResult, double delta) {
             // when
             final double limit = MathCalc.Calculus.limitSumRule(f, g, x);
+            // then
+            assertEquals(expectedResult, limit, delta);
+        }
+
+        static List<Arguments> oneSidedLimitRHSArgs() {
+            final DoubleUnaryOperator f = x -> x <= -4 ? 1 / (x + 1) : Math.pow(2, x);
+
+            return List.of(
+                // rhs = limₓ→₋₄⁺ 2ˣ = 2⁻⁴ = (1/2)⁴ = 1/16
+                Arguments.of(f, -4., MathCalc.ONE_SIXTEENTH, DELTA1)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("oneSidedLimitRHSArgs")
+        void testOneSidedLimitRHS(
+            DoubleUnaryOperator f, double x, double expectedResult, double delta) {
+            // when
+            final double limit = MathCalc.Calculus.oneSidedLimitRHS(f, x);
             // then
             assertEquals(expectedResult, limit, delta);
         }

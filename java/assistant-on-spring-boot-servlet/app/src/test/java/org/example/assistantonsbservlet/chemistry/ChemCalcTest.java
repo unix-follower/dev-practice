@@ -15,7 +15,7 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class ChemCalculatorTest {
+class ChemCalcTest {
     @Nested
     class General {
         @Test
@@ -23,7 +23,7 @@ class ChemCalculatorTest {
             // given
             final int sodium = 11;
             // when
-            final int protons = ChemCalculator.General.protons(sodium);
+            final int protons = ChemCalc.General.protons(sodium);
             // then
             assertEquals(sodium, protons);
         }
@@ -33,7 +33,7 @@ class ChemCalculatorTest {
             // given
             final int sodium = 11;
             // when
-            final int atomicNumber = ChemCalculator.General.atomicNumber(sodium);
+            final int atomicNumber = ChemCalc.General.atomicNumber(sodium);
             // then
             assertEquals(sodium, atomicNumber);
         }
@@ -44,7 +44,7 @@ class ChemCalculatorTest {
             final int sodium = 11;
             final double sodiumAtomicMass = 22.99;
             // when
-            final double neutrons = ChemCalculator.General.neutrons(sodiumAtomicMass, sodium);
+            final double neutrons = ChemCalc.General.neutrons(sodiumAtomicMass, sodium);
             // then
             assertEquals(12, Math.round(neutrons));
         }
@@ -54,7 +54,7 @@ class ChemCalculatorTest {
             // given
             final int sodium = 11;
             // when
-            final double electrons = ChemCalculator.General.neutralElectrons(sodium);
+            final double electrons = ChemCalc.General.neutralElectrons(sodium);
             // then
             assertEquals(sodium, electrons);
         }
@@ -64,7 +64,7 @@ class ChemCalculatorTest {
             // given
             final int sulfur = 16;
             // when
-            final double atomicMass = ChemCalculator.General.atomicMass(sulfur, sulfur);
+            final double atomicMass = ChemCalc.General.atomicMass(sulfur, sulfur);
             // then
             assertEquals(32, atomicMass);
         }
@@ -81,7 +81,7 @@ class ChemCalculatorTest {
                 {chlorine37Mass, chlorine37NaturalAbundance}
             };
             // when
-            final double avgAtomicMass = ChemCalculator.General.averageAtomicMass(isotopes);
+            final double avgAtomicMass = ChemCalc.General.averageAtomicMass(isotopes);
             // then
             assertEquals(35.452536, avgAtomicMass, 0.000001);
         }
@@ -102,7 +102,7 @@ class ChemCalculatorTest {
                 .toArray(double[][]::new);
 
             // when
-            final double avgAtomicMass = ChemCalculator.General.averageAtomicMass(chlorineIsotopes);
+            final double avgAtomicMass = ChemCalc.General.averageAtomicMass(chlorineIsotopes);
             // then
             final double roundedMass = BigDecimal.valueOf(avgAtomicMass)
                 .setScale(4, RoundingMode.HALF_UP).doubleValue();
@@ -115,7 +115,7 @@ class ChemCalculatorTest {
             final int sulfurProtons = 16;
             final int sulfurElectrons = 18;
             // when
-            final double charge = ChemCalculator.General.charge(sulfurProtons, sulfurElectrons);
+            final double charge = ChemCalc.General.charge(sulfurProtons, sulfurElectrons);
             // then
             assertEquals(-2, charge);
         }
@@ -126,7 +126,7 @@ class ChemCalculatorTest {
             final int bondingElectrons = 2;
             final int antibondingElectrons = 0;
             // when
-            final int bondOrder = ChemCalculator.General.bondOrder(bondingElectrons, antibondingElectrons);
+            final int bondOrder = ChemCalc.General.bondOrder(bondingElectrons, antibondingElectrons);
             // then
             final var smilesParser = new SmilesParser(DefaultChemObjectBuilder.getInstance());
             final var molecule = smilesParser.parseSmiles("[H][H]");
@@ -140,7 +140,7 @@ class ChemCalculatorTest {
             final int bondingElectrons = 8;
             final int antibondingElectrons = 2;
             // when
-            final int bondOrder = ChemCalculator.General.bondOrder(bondingElectrons, antibondingElectrons);
+            final int bondOrder = ChemCalc.General.bondOrder(bondingElectrons, antibondingElectrons);
             // then
             final var smilesParser = new SmilesParser(DefaultChemObjectBuilder.getInstance());
             final var molecule = smilesParser.parseSmiles("[C-]#[O+]");

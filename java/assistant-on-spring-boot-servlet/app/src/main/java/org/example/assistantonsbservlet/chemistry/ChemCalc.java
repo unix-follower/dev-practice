@@ -3,17 +3,18 @@ package org.example.assistantonsbservlet.chemistry;
 import java.util.Arrays;
 
 /**
- * Phase change
  * <table>
- *     <tr><th>Phase name</th><th>Description</th></tr>
- *     <tr><td>Melting</td><td>From a solid to a liquid</td></tr>
- *     <tr><td>Freezing</td><td>From a liquid to a solid</td></tr>
- *     <tr><td>Condensation</td><td>From a gas to a liquid</td></tr>
- *     <tr><td>Boiling</td><td>From a liquid to a gas</td></tr>
+ *     <tr><th>Phase change</th><th>From</th><th>To</th></tr>
+ *     <tr><td>Melting</td><td>Solid</td><td>Liquid</td></tr>
+ *     <tr><td>Freezing</td><td>Liquid</td><td>Solid</td></tr>
+ *     <tr><td>Vaporization</td><td>Liquid</td><td>Gas</td></tr>
+ *     <tr><td>Condensation</td><td>Gas</td><td>Liquid</td></tr>
+ *     <tr><td>Sublimation</td><td>Solid</td><td>Gas</td></tr>
+ *     <tr><td>Deposition</td><td>Gas</td><td>Solid</td></tr>
  * </table>
  */
-public final class ChemCalculator {
-    private ChemCalculator() {
+public final class ChemCalc {
+    private ChemCalc() {
     }
 
     private static void checkProtonsNum(int protons) {
@@ -35,6 +36,10 @@ public final class ChemCalculator {
     public static boolean isAnion(int protons, int electrons) {
         checkProtonsNum(protons);
         return protons < electrons;
+    }
+
+    public static double density(double mass, double volume) {
+        return mass / volume;
     }
 
     public static final class General {
