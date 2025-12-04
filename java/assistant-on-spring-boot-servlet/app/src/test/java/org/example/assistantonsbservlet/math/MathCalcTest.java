@@ -1737,6 +1737,93 @@ class MathCalcTest {
             // then
             assertArrayEquals(expectedResult, polynomials, delta);
         }
+
+        static List<Arguments> multiplyPolynomialsArgs() {
+            return List.of(
+                // x⁴ - 3x² + 2x + 4
+                // -0.5x² + x - 2
+                // -0.5x⁶ + x⁵ - 0.5x⁴ - 4x³ + 6x² - 8
+                Arguments.of(
+                    new double[]{4, 2, -3, 0, 1},
+                    new double[]{-2, 1, -MathCalc.ONE_HALF},
+                    new double[]{-8, 0, 6, -4, -MathCalc.ONE_HALF, 1, -MathCalc.ONE_HALF},
+                    DELTA1
+                )
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("multiplyPolynomialsArgs")
+        void testMultiplyPolynomials(double[] polynomial1, double[] polynomial2,
+                                     double[] expectedResult, double delta) {
+            // when
+            final double[] polynomials = MathCalc.Algebra.multiplyPolynomials(polynomial1, polynomial2);
+            // then
+            assertArrayEquals(expectedResult, polynomials, delta);
+        }
+
+        static List<Arguments> quadraticStdFormulaToVertexArgs() {
+            return List.of(
+                // Standard form: f(x) = 4x² + 4x - 3
+                // Vertex form: f(x) = 4(x + 0.5)² - 4
+                Arguments.of(new double[]{-3, 4, 4}, new double[]{-4, -MathCalc.ONE_HALF, 4}, DELTA1),
+                // Standard form: f(x) = x² + 1
+                // Vertex form: f(x) = x² + 1
+                Arguments.of(new double[]{1, 0, 1}, new double[]{1, 0, 1}, DELTA1)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("quadraticStdFormulaToVertexArgs")
+        void testQuadraticStdFormulaToVertex(double[] quadratic, double[] expectedResult, double delta) {
+            // when
+            final double[] terms = MathCalc.Algebra.quadraticStdFormulaToVertex(quadratic);
+            // then
+            assertArrayEquals(expectedResult, terms, delta);
+        }
+
+        static List<Arguments> quadraticStdFormulaToFactoredArgs() {
+            return List.of(
+                // Standard form: f(x) = 4x² + 4x - 3
+                // Vertex form: f(x) = 4(x - 0.5)(x + 1.5)
+                Arguments.of(new double[]{-3, 4, 4}, new double[]{4, 0.5, -1.5}, DELTA1),
+                // Standard form: f(x) = x² + 1
+                // Factored form: f(x) = (x + i)(x - i)
+                Arguments.of(new double[]{1, 0, 1}, new double[]{1, 0, 1}, DELTA1)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("quadraticStdFormulaToFactoredArgs")
+        void testQuadraticStdFormulaToFactored(double[] quadratic, double[] expectedResult, double delta) {
+            // when
+            final double[] terms = MathCalc.Algebra.quadraticStdFormulaToFactored(quadratic);
+            // then
+            assertArrayEquals(expectedResult, terms, delta);
+        }
+
+        static List<Arguments> quadraticRootsArgs() {
+            return List.of(
+                // 4x² + 3x – 7 = -4 – x
+                // 4x² + (3 + 1)x + (-7 + 4) = 0
+                // 4x² + 4x - 3 = 0
+                Arguments.of(new double[]{-3, 4, 4}, new double[]{MathCalc.ONE_HALF, -1.5}, DELTA1),
+                // x² + 1 = 0
+                // Δ = b² – 4ac = 0² - 4×1×1 = -4
+                // (0 + 2i) / (2×1) = i
+                // (0 - 2i) / (2×1) = -i
+                Arguments.of(new double[]{1, 0, 1}, new double[]{0, 1}, DELTA1)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("quadraticRootsArgs")
+        void testQuadraticRoots(double[] quadratic, double[] expectedResult, double delta) {
+            // when
+            final double[] roots = MathCalc.Algebra.quadraticRoots(quadratic);
+            // then
+            assertArrayEquals(expectedResult, roots, delta);
+        }
     }
 
     @Nested

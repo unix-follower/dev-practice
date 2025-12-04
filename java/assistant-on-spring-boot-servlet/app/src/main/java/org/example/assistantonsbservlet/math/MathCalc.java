@@ -1723,6 +1723,8 @@ public final class MathCalc {
         /**
          * Both binomial1 and binomial2 params should be in ascending order (the lowest terms go first).
          * (a₁x + a₀) × (b₁x + b₀) = c₂x² + c₁x + c₀
+         * (a + b) × (c + d) = a × (c + d) + b × (c + d) = a×c + a×d + b×c + b×d
+         * (a + b) × (c + d) = (a + b) × c + (a + b) × d = a×c + b×c + a×d + b×d
          *
          * @return (a₁b₁)x² + (a₁b₀ + a₀b₁)x + (a₀b₀)
          */
@@ -1767,8 +1769,6 @@ public final class MathCalc {
             final int n = polynomial.length;
             switch (n) {
                 case 3 -> {
-                    // The quadratic formula: x = (-b ±√(b² − 4ac)) / (2a)
-                    // The quadratic equation: ax² + bx + c = 0
                     // D = b² − 4ac
                     final double c = polynomial[Constants.ARR_1ST_INDEX];
                     final double b = polynomial[Constants.ARR_2ND_INDEX];
@@ -1929,6 +1929,83 @@ public final class MathCalc {
                 result[i] = p[i] - q[i];
             }
             return result;
+        }
+
+        /**
+         * <p>
+         * Both polynomial1 and polynomial2 params should have the lowest terms go first: a₀ + a₁x + … + aₙxⁿ
+         * (a + b + c) × (d + e) = a × (d + e) + b × (d + e) + c × (d + e) = a×d + a×e + b×d + b×e + c×d + c×e
+         * (a + b + c) × (d + e) = (a + b + c) × d + (a + b + c) × e = a×d + b×d + c×d + a×e + b×e + c×e
+         *
+         * @return P(x) * Q(x)
+         */
+        public static double[] multiplyPolynomials(double[] polynomial1, double[] polynomial2) {
+            Objects.requireNonNull(polynomial1);
+            Objects.requireNonNull(polynomial2);
+            final int size = polynomial1.length + polynomial2.length - 1;
+            final double[] result = new double[size];
+            for (int i = 0; i < polynomial1.length; i++) {
+                for (int j = 0; j < polynomial2.length; j++) {
+                    result[i + j] += polynomial1[i] * polynomial2[j];
+                }
+            }
+            return result;
+        }
+
+        public static double[] quadraticStdFormulaToVertex(double[] quadratic) {
+            final double c = quadratic[Constants.ARR_1ST_INDEX];
+            final double b = quadratic[Constants.ARR_2ND_INDEX];
+            final double a = quadratic[Constants.ARR_3RD_INDEX];
+            final double h = -b / (2 * a);
+            final double k = a * h * h + b * h + c;
+            return new double[]{k, h, a};
+        }
+
+        public static double[] quadraticStdFormulaToFactored(double[] quadratic) {
+            final double b = quadratic[Constants.ARR_2ND_INDEX];
+            final double a = quadratic[Constants.ARR_3RD_INDEX];
+
+            final double discriminant = discriminant(quadratic);
+            final double doubleA = 2 * a;
+            if (discriminant >= 0) {
+                final double sqrtDiscriminant = squareRoot(discriminant);
+                return new double[]{a, (-b + sqrtDiscriminant) / doubleA, (-b - sqrtDiscriminant) / doubleA};
+            } else {
+                final double realPart = -b / doubleA;
+                final double imagPart = squareRoot(-discriminant) / doubleA;
+                return new double[] {a, realPart, imagPart};
+            }
+        }
+
+        /**
+         * Formula form:
+         * <ul>
+         *     <li>Standard: ax² + bx + c = 0</li>
+         *     <li>Vertex: a(x - h)² + k = 0</li>
+         *     <li>Factored : a(x - x₁)(x - x₂) = 0</li>
+         * </ul>
+         * The quadratic formula: x = (-b ± √Δ)/2a = (-b ±√(b² − 4ac)) / (2a)
+         * For Δ < 0 use complex number, Real(x) = -B/2A Imaginary(x) = ±(√Δ)/2A
+         *
+         * @param quadratic the lowest terms go first: c + bx + ax²
+         * @return [
+         * x₁ = (-b + √Δ)/2a
+         * x₂ = (-b – √Δ)/2a
+         * ]
+         */
+        public static double[] quadraticRoots(double[] quadratic) {
+            final double discriminantBeforeTakingSqRoot = discriminant(quadratic);
+            final double b = quadratic[Constants.ARR_2ND_INDEX];
+            final double a = quadratic[Constants.ARR_3RD_INDEX];
+            final double doubleA = 2 * a;
+            if (discriminantBeforeTakingSqRoot < 0) {
+                final double realPart = -b / doubleA;
+                final double imagPart = squareRoot(-discriminantBeforeTakingSqRoot) / doubleA;
+                return new double[] {realPart, imagPart};
+            } else {
+                final double discriminant = squareRoot(discriminantBeforeTakingSqRoot);
+                return new double[] {(-b + discriminant) / doubleA, (-b - discriminant) / doubleA};
+            }
         }
     }
 
