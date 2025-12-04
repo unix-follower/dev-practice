@@ -1002,6 +1002,96 @@ public final class MathCalc {
         private Algebra() {
         }
 
+        // Algebraic Identities
+
+        /**
+         * @return (a + b)² = a² + 2ab + b²
+         */
+        public static double binomialSquareOfSum() {
+            throw new UnsupportedOperationException();
+        }
+
+        /**
+         * @return (a - b)² = a² - 2ab + b²
+         */
+        public static double binomialSquareOfDifference() {
+            throw new UnsupportedOperationException();
+        }
+
+        /**
+         * @return a² - b² = (a + b)(a - b)
+         */
+        public static double binomialDifferenceOfSquares() {
+            throw new UnsupportedOperationException();
+        }
+
+        /**
+         * @return a³ + b³ = (a + b)(a² - ab + b²)
+         */
+        public static double binomialSumOfCubes() {
+            throw new UnsupportedOperationException();
+        }
+
+        /**
+         * @return a³ - b³ = (a - b)(a² + ab + b²)
+         */
+        public static double binomialDifferenceOfCubes() {
+            throw new UnsupportedOperationException();
+        }
+
+        /**
+         * Alternative: (a + b)³ = a³ + b³ + 3ab(a + b)
+         *
+         * @return (a + b)³ = a³ + 3a²b + 3ab² + b³
+         */
+        public static double cubeOfBinomialSum() {
+            throw new UnsupportedOperationException();
+        }
+
+        /**
+         * Alternative: (a - b)³ = a³ - b³ - 3ab(a - b)
+         *
+         * @return (a - b)³ = a³ - 3a²b + 3ab² - b³
+         */
+        public static double cubeOfBinomialDifference() {
+            throw new UnsupportedOperationException();
+        }
+
+        /**
+         * @return (x + a)(x + b) = x² + (a + b)x + ab
+         */
+        public static double binomialFactoring() {
+            throw new UnsupportedOperationException();
+        }
+
+        /**
+         * @return (a + b)(b + c)(c + a) = (a + b + c)(ab + ac + bc) - 2abc
+         */
+        public static double trinomialFactoring() {
+            throw new UnsupportedOperationException();
+        }
+
+        /**
+         * @return (a + b + c)² = a² + b² + c² + 2ab + 2bc + 2ca
+         */
+        public static double trinomialSumSquared() {
+            throw new UnsupportedOperationException();
+        }
+
+        /**
+         * @return a² + b² + c² = (a + b + c)² - 2(ab + bc + ca)
+         */
+        public static double trinomialSumOfSquares() {
+            throw new UnsupportedOperationException();
+        }
+
+        /**
+         * @return a³ + b³ + c³ - 3abc = (a + b + c)(a² + b² + c² - ab - ca - bc)
+         */
+        public static double trinomialSumOfCubes() {
+            throw new UnsupportedOperationException();
+        }
+
         /**
          * @return 𝚪(n) = (n - 1)!
          */
@@ -1617,6 +1707,228 @@ public final class MathCalc {
          */
         public static double doublingTime(double initialAmount, double increase) {
             return log(initialAmount) / log(1 + increase / 100);
+        }
+
+        /**
+         * (n) = ( n )
+         * (k)   (n-k)
+         * C(n,k) = C(n,n-k)
+         *
+         * @return (a+b)ⁿ = C₀aⁿ + C₁aⁿ⁻¹b + C₂aⁿ⁻²b² + ... + Cₙbⁿ
+         */
+        public static long binomialCoefficient(long totalItems, long numberOfItemsChosen) {
+            return Combinatorics.combinations(totalItems, numberOfItemsChosen);
+        }
+
+        /**
+         * Both binomial1 and binomial2 params should be in ascending order (the lowest terms go first).
+         * (a₁x + a₀) × (b₁x + b₀) = c₂x² + c₁x + c₀
+         *
+         * @return (a₁b₁)x² + (a₁b₀ + a₀b₁)x + (a₀b₀)
+         */
+        public static double[] multiplyBinomials(double[] binomial1, double[] binomial2) {
+            Objects.requireNonNull(binomial1);
+            Objects.requireNonNull(binomial2);
+            final int idx2 = Constants.ARR_2ND_INDEX;
+            Objects.checkIndex(idx2, binomial1.length);
+            Objects.checkIndex(idx2, binomial2.length);
+
+            final double[] result = new double[3];
+            final int idx1 = Constants.ARR_1ST_INDEX;
+            final double a0 = binomial1[idx1];
+            final double b0 = binomial2[idx1];
+            final double a1 = binomial1[idx2];
+            final double b1 = binomial2[idx2];
+            result[idx1] = a0 * b0;
+            result[idx2] = a1 * b0 + a0 * b1;
+            result[Constants.ARR_3RD_INDEX] = a1 * b1;
+            return result;
+        }
+
+        /**
+         * Polynomial's degree
+         * <ul>
+         *     <li>Second: a₂x² + a₁x + a₀</li>
+         *     <li>Third: a₃x³ + a₂x² + a₁x + a₀</li>
+         *     <li>Fourth: a₄x⁴ + a₃x³ + a₂x² + a₁x + a₀</li>
+         *     <li>Fifth: a₅x⁵ + a₄x⁴ + a₃x³ + a₂x² + a₁x + a₀</li>
+         * </ul>
+         *
+         * <ul>
+         *     <li>D > 0: two distinct real number solutions.</li>
+         *     <li>D = 0: repeated real number solution.</li>
+         *     <li>D < 0: neither of the solutions are real numbers.</li>
+         * </ul>
+         *
+         * @param polynomial the lowest terms go first: a₀ + a₁x + … + aₙxⁿ
+         */
+        public static double discriminant(double[] polynomial) {
+            Objects.requireNonNull(polynomial);
+            final int n = polynomial.length;
+            switch (n) {
+                case 3 -> {
+                    // The quadratic formula: x = (-b ±√(b² − 4ac)) / (2a)
+                    // The quadratic equation: ax² + bx + c = 0
+                    // D = b² − 4ac
+                    final double c = polynomial[Constants.ARR_1ST_INDEX];
+                    final double b = polynomial[Constants.ARR_2ND_INDEX];
+                    final double a = polynomial[Constants.ARR_3RD_INDEX];
+                    return b * b - 4 * a * c;
+                }
+                case 4 -> {
+                    // cubic: ax³ + bx² + cx + d = 0
+                    // D = b²c² - 4ac³ - 4b³d - 27a²d² + 18abcd
+                    final double d = polynomial[Constants.ARR_1ST_INDEX];
+                    final double c = polynomial[Constants.ARR_2ND_INDEX];
+                    final double b = polynomial[Constants.ARR_3RD_INDEX];
+                    final double a = polynomial[Constants.ARR_4TH_INDEX];
+                    return b * b * c * c - 4 * a * Math.pow(c, 3) - 4 * Math.pow(b, 3) * d
+                        - 27 * a * a * d * d + 18 * a * b * c * d;
+                }
+                case 5 -> {
+                    // quartic: ax⁴ + bx³ + cx² + dx + e = 0
+                    // D = 256a³e³ - 192a²bde² - 128a²c²e²
+                    //   + 144a²cd²e - 27a²d⁴ + 144ab²ce²
+                    //   - 6ab²d²e - 80abc²de + 18abcd³
+                    //   + 16ac⁴e - 4ac³d² - 27b²e²
+                    //   + 18b³cde - 4b³d³ - 3b²c³e
+                    //   + b²c²d²
+                    final double e = polynomial[Constants.ARR_1ST_INDEX];
+                    final double d = polynomial[Constants.ARR_2ND_INDEX];
+                    final double c = polynomial[Constants.ARR_3RD_INDEX];
+                    final double b = polynomial[Constants.ARR_4TH_INDEX];
+                    final double a = polynomial[Constants.ARR_5TH_INDEX];
+                    final double aSquare = a * a;
+                    final double aCube = aSquare * a;
+                    final double bSquare = b * b;
+                    final double bCube = bSquare * b;
+                    final double cSquare = c * c;
+                    final double cCube = cSquare * c;
+                    final double dSquare = d * d;
+                    final double dCube = dSquare * d;
+                    final double eSquare = e * e;
+                    final double eCube = eSquare * e;
+                    return 256 * aCube * eCube - 192 * aSquare * b * d * eSquare - 128 * aSquare * cSquare * eSquare
+                        + 144 * aSquare * c * dSquare * e - 27 * aSquare * Math.pow(d, 4)
+                        + 144 * a * bSquare * c * eSquare
+                        - 6 * a * bSquare * dSquare * e - 80 * a * b * cSquare * d * e + 18 * a * b * c * dCube
+                        + 16 * a * Math.pow(c, 4) * e - 4 * a * cCube * dSquare - 27 * bSquare * eSquare
+                        + 18 * bCube * c * d * e - 4 * bCube * dCube - 3 * bCube * cCube * e
+                        + bSquare * cSquare * dSquare;
+                }
+                default -> throw new UnsupportedOperationException();
+            }
+        }
+
+        private static double sylvesterResultant(double[] f, double[] g) {
+            final int m = f.length - 1;
+            final int n = g.length - 1;
+            final int size = m + n;
+            final double[][] sylvester = new double[size][size];
+
+            // Fill Sylvester matrix for f
+            for (int i = 0; i < n; i++) {
+                for (int j = 0; j < f.length; j++) {
+                    if (i + j < size) {
+                        sylvester[i][i + j] = f[j];
+                    }
+                }
+            }
+            // Fill Sylvester matrix for g
+            for (int i = 0; i < m; i++) {
+                for (int j = 0; j < g.length; j++) {
+                    if (i + j < size) {
+                        sylvester[n + i][i + j] = g[j];
+                    }
+                }
+            }
+            return LinearAlgebra.determinant(sylvester);
+        }
+
+        /**
+         * p(x) = aₙxⁿ + … + a₁x + a₀
+         * D(p) = aₙx²ⁿ⁻² ∏ⁿᵢ,ⱼ (rᵢ - rⱼ)², i<j
+         */
+        public static double discriminantFromRoots(double[] polynomial, double[] roots) {
+            Objects.requireNonNull(polynomial);
+            Objects.requireNonNull(roots);
+
+            final int n = roots.length;
+            if (polynomial.length != n + 1) {
+                throw new IllegalArgumentException("Roots and coefficients mismatch");
+            }
+
+            double prod = 1;
+            for (int i = 0; i < n; i++) {
+                for (int j = i + 1; j < n; j++) {
+                    final double diff = roots[i] - roots[j];
+                    prod *= diff * diff;
+                }
+            }
+            final double an = polynomial[Constants.ARR_1ST_INDEX];
+            return Math.pow(an, 2. * n - 2) * prod;
+        }
+
+        /**
+         * P(x) = a₆x⁶ + a₅x⁵ + a₄x⁴ + a₃x³ + a₂x² + a₁x + a₀
+         * Q(x) = b₆x⁶ + b₅x⁵ + b₄x⁴ + b₃x³ + b₂x² + b₁x + b₀
+         * <p>
+         * Both polynomial1 and polynomial2 params should have the lowest terms go first: a₀ + a₁x + … + aₙxⁿ
+         *
+         * @return P(x) + Q(x)
+         */
+        public static double[] addPolynomials(double[] polynomial1, double[] polynomial2) {
+            Objects.requireNonNull(polynomial1);
+            Objects.requireNonNull(polynomial2);
+            final int size = Math.max(polynomial1.length, polynomial2.length);
+            final double[] p;
+            final double[] q;
+            if (size > polynomial1.length) {
+                p = Arrays.copyOf(polynomial1, size);
+            } else {
+                p = polynomial1;
+            }
+            if (size > polynomial2.length) {
+                q = Arrays.copyOf(polynomial2, size);
+            } else {
+                q = polynomial2;
+            }
+            final double[] result = new double[size];
+            for (int i = 0; i < size; i++) {
+                result[i] = p[i] + q[i];
+            }
+            return result;
+        }
+
+        /**
+         * P(x) = a₆x⁶ + a₅x⁵ + a₄x⁴ + a₃x³ + a₂x² + a₁x + a₀
+         * Q(x) = b₆x⁶ + b₅x⁵ + b₄x⁴ + b₃x³ + b₂x² + b₁x + b₀
+         * <p>
+         * Both polynomial1 and polynomial2 params should have the lowest terms go first: a₀ + a₁x + … + aₙxⁿ
+         *
+         * @return P(x) - Q(x)
+         */
+        public static double[] subtractPolynomials(double[] polynomial1, double[] polynomial2) {
+            Objects.requireNonNull(polynomial1);
+            Objects.requireNonNull(polynomial2);
+            final int size = Math.max(polynomial1.length, polynomial2.length);
+            final double[] p;
+            final double[] q;
+            if (size > polynomial1.length) {
+                p = Arrays.copyOf(polynomial1, size);
+            } else {
+                p = polynomial1;
+            }
+            if (size > polynomial2.length) {
+                q = Arrays.copyOf(polynomial2, size);
+            } else {
+                q = polynomial2;
+            }
+            final double[] result = new double[size];
+            for (int i = 0; i < size; i++) {
+                result[i] = p[i] - q[i];
+            }
+            return result;
         }
     }
 
@@ -3588,6 +3900,38 @@ public final class MathCalc {
         }
 
         public static double determinant(double[][] matrix) {
+            final int n = matrix.length;
+            final byte row1 = 0;
+            final byte col1 = 0;
+            if (n == 1) {
+                return matrix[row1][col1];
+            }
+
+            final byte row2 = 1;
+            final byte col2 = 1;
+            if (n == 2) {
+                return matrix[row1][col1] * matrix[row2][col2] - matrix[row1][col2] * matrix[row2][col1];
+            }
+
+            final int size = n - 1;
+            double det = 0;
+            for (int column = 0; column < n; column++) {
+                final double[][] subMatrix = new double[size][size];
+                for (int i = 1; i < n; i++) {
+                    int subColumn = 0;
+                    for (int j = 0; j < n; j++) {
+                        if (j == column) {
+                            continue;
+                        }
+                        subMatrix[i - 1][subColumn++] = matrix[i][j];
+                    }
+                }
+                det += Math.pow(-1, column) * matrix[row1][column] * determinant(subMatrix);
+            }
+            return det;
+        }
+
+        public static double determinantUsingApacheLib(double[][] matrix) {
             final var realMatrix = MatrixUtils.createRealMatrix(matrix);
             return new LUDecompositionImpl(realMatrix).getDeterminant();
         }
@@ -4635,111 +4979,6 @@ public final class MathCalc {
             }
         }
 
-        public static final class ProbabilityTheory {
-            private ProbabilityTheory() {
-            }
-
-            /**
-             * @return (tp + tn) / (tp + tn + fp + fn)
-             */
-            public static double accuracy(double truePositive, double trueNegative,
-                                          double falsePositive, double falseNegative) {
-                return (truePositive + trueNegative) / (truePositive + trueNegative + falsePositive + falseNegative);
-            }
-
-            /**
-             * Sensitivity = TP / (TP + FN)
-             * Specificity = TN / (FP + TN)
-             *
-             * @return (Sensitivity × Prevalence) + (Specificity × (1 − Prevalence))
-             */
-            public static double accuracy(double sensitivity, double specificity, double prevalence) {
-                return (sensitivity * prevalence) + (specificity * (1 - prevalence));
-            }
-
-            /**
-             * @return (|(Vo − Va)|/Va) × 100
-             */
-            public static double percentError(double observedValue, double acceptedValue) {
-                return (Math.abs(observedValue - acceptedValue) / acceptedValue) * 100;
-            }
-
-            /**
-             * @return tp / (tp + fp)
-             */
-            public static double precision(double truePositive, double falsePositive) {
-                return truePositive / (truePositive + falsePositive);
-            }
-
-            /**
-             * @return tp / (tp + fn)
-             */
-            public static double recall(double truePositive, double falseNegative) {
-                return truePositive / (truePositive + falseNegative);
-            }
-
-            public static double f1Score(double precision, double recall) {
-                return 2 * ((precision * recall) / (precision + recall));
-            }
-
-            /**
-             * @return ₙCᵣ = n! / (r!(n - r)!)
-             */
-            public static long combinations(long totalObjects, long sampleSize) {
-                checkCombinationInputs(totalObjects, sampleSize);
-                final long numerator = Arithmetic.factorial(totalObjects);
-                final long denominator = Arithmetic.factorial(sampleSize)
-                    * Arithmetic.factorial(totalObjects - sampleSize);
-                return numerator / denominator;
-            }
-
-            private static void checkNonNegativeCombinationInputs(long totalObjects, long sampleSize) {
-                if (totalObjects < 0 || sampleSize < 0) {
-                    throw new IllegalArgumentException("Inputs must be non-negative.");
-                }
-            }
-
-            private static void checkCombinationInputs(long totalObjects, long sampleSize) {
-                checkNonNegativeCombinationInputs(totalObjects, sampleSize);
-                if (totalObjects == 0 && sampleSize > 0) {
-                    throw new IllegalArgumentException(
-                        "Cannot choose combinations with replacement from zero objects.");
-                }
-            }
-
-            /**
-             * @return Cᴿ(n, r) = (n + r - 1)! / (r!(n - 1)!)
-             */
-            public static long combinationsWithReplacement(long totalObjects, long sampleSize) {
-                checkCombinationInputs(totalObjects, sampleSize);
-                final long numerator = Arithmetic.factorial(totalObjects + sampleSize - 1);
-                final long denominator = Arithmetic.factorial(sampleSize) * Arithmetic.factorial(totalObjects - 1);
-                return numerator / denominator;
-            }
-
-            /**
-             * @return ₙPᵣ = n! / ((n - r)!)
-             */
-            public static long permutations(long totalObjects, long sampleSize) {
-                checkNonNegativeCombinationInputs(totalObjects, sampleSize);
-                if (sampleSize > totalObjects) {
-                    throw new IllegalArgumentException("sampleSize cannot be greater than totalObjects.");
-                }
-
-                final long numerator = Arithmetic.factorial(totalObjects);
-                final long denominator = Arithmetic.factorial(totalObjects - sampleSize);
-                return numerator / denominator;
-            }
-
-            /**
-             * @return Pᴿ(n, r) = nʳ
-             */
-            public static double permutationsWithReplacement(long totalObjects, long sampleSize) {
-                checkNonNegativeCombinationInputs(totalObjects, sampleSize);
-                return Math.pow(totalObjects, sampleSize);
-            }
-        }
-
         public static final class Distributions {
             private Distributions() {
             }
@@ -4762,8 +5001,7 @@ public final class MathCalc {
                         "Number of required successes cannot exceed the number of events.");
                 }
 
-                final long numberOfCombinations = ProbabilityTheory
-                    .combinations(numberOfEvents, numberOfRequiredSuccesses);
+                final long numberOfCombinations = Combinatorics.combinations(numberOfEvents, numberOfRequiredSuccesses);
 
                 return numberOfCombinations * Math.pow(probabilityOfOneSuccess, numberOfRequiredSuccesses) *
                     Math.pow((1 - probabilityOfOneSuccess), (double) numberOfEvents - numberOfRequiredSuccesses);
@@ -4822,9 +5060,113 @@ public final class MathCalc {
     }
 
     public static final class Combinatorics {
+        private Combinatorics() {
+        }
+
+        /**
+         * @return ₙCᵣ = n! / (r!(n - r)!)
+         */
+        public static long combinations(long totalObjects, long sampleSize) {
+            checkCombinationInputs(totalObjects, sampleSize);
+            final long numerator = Arithmetic.factorial(totalObjects);
+            final long denominator = Arithmetic.factorial(sampleSize)
+                * Arithmetic.factorial(totalObjects - sampleSize);
+            return numerator / denominator;
+        }
+
+        private static void checkNonNegativeCombinationInputs(long totalObjects, long sampleSize) {
+            if (totalObjects < 0 || sampleSize < 0) {
+                throw new IllegalArgumentException("Inputs must be non-negative.");
+            }
+        }
+
+        private static void checkCombinationInputs(long totalObjects, long sampleSize) {
+            checkNonNegativeCombinationInputs(totalObjects, sampleSize);
+            if (totalObjects == 0 && sampleSize > 0) {
+                throw new IllegalArgumentException(
+                    "Cannot choose combinations with replacement from zero objects.");
+            }
+        }
+
+        /**
+         * @return Cᴿ(n, r) = (n + r - 1)! / (r!(n - 1)!)
+         */
+        public static long combinationsWithReplacement(long totalObjects, long sampleSize) {
+            checkCombinationInputs(totalObjects, sampleSize);
+            final long numerator = Arithmetic.factorial(totalObjects + sampleSize - 1);
+            final long denominator = Arithmetic.factorial(sampleSize) * Arithmetic.factorial(totalObjects - 1);
+            return numerator / denominator;
+        }
+
+        /**
+         * @return ₙPᵣ = n! / ((n - r)!)
+         */
+        public static long permutations(long totalObjects, long sampleSize) {
+            checkNonNegativeCombinationInputs(totalObjects, sampleSize);
+            if (sampleSize > totalObjects) {
+                throw new IllegalArgumentException("sampleSize cannot be greater than totalObjects.");
+            }
+
+            final long numerator = Arithmetic.factorial(totalObjects);
+            final long denominator = Arithmetic.factorial(totalObjects - sampleSize);
+            return numerator / denominator;
+        }
+
+        /**
+         * @return Pᴿ(n, r) = nʳ
+         */
+        public static double permutationsWithReplacement(long totalObjects, long sampleSize) {
+            checkNonNegativeCombinationInputs(totalObjects, sampleSize);
+            return Math.pow(totalObjects, sampleSize);
+        }
     }
 
     public static final class Probability {
+        private Probability() {
+        }
+
+        /**
+         * @return (tp + tn) / (tp + tn + fp + fn)
+         */
+        public static double accuracy(double truePositive, double trueNegative,
+                                      double falsePositive, double falseNegative) {
+            return (truePositive + trueNegative) / (truePositive + trueNegative + falsePositive + falseNegative);
+        }
+
+        /**
+         * Sensitivity = TP / (TP + FN)
+         * Specificity = TN / (FP + TN)
+         *
+         * @return (Sensitivity × Prevalence) + (Specificity × (1 − Prevalence))
+         */
+        public static double accuracy(double sensitivity, double specificity, double prevalence) {
+            return (sensitivity * prevalence) + (specificity * (1 - prevalence));
+        }
+
+        /**
+         * @return (|(Vo − Va)|/Va) × 100
+         */
+        public static double percentError(double observedValue, double acceptedValue) {
+            return (Math.abs(observedValue - acceptedValue) / acceptedValue) * 100;
+        }
+
+        /**
+         * @return tp / (tp + fp)
+         */
+        public static double precision(double truePositive, double falsePositive) {
+            return truePositive / (truePositive + falsePositive);
+        }
+
+        /**
+         * @return tp / (tp + fn)
+         */
+        public static double recall(double truePositive, double falseNegative) {
+            return truePositive / (truePositive + falseNegative);
+        }
+
+        public static double f1Score(double precision, double recall) {
+            return 2 * ((precision * recall) / (precision + recall));
+        }
     }
 
     public static final class Topology {

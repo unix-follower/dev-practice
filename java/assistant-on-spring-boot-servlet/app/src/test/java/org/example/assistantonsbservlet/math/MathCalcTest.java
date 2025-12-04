@@ -1630,6 +1630,113 @@ class MathCalcTest {
             assertEquals(expectedResult.getReal(), conjugate.getReal(), delta);
             assertEquals(expectedResult.getImaginary(), conjugate.getImaginary(), delta);
         }
+
+        static List<Arguments> binomialCoefficientArgs() {
+            return List.of(
+                Arguments.of(4, 2, 6),
+                Arguments.of(6, 2, 15)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("binomialCoefficientArgs")
+        void testBinomialCoefficient(long totalItems, long numberOfItemsChosen, long expectedResult) {
+            // when
+            final long result = MathCalc.Algebra.binomialCoefficient(totalItems, numberOfItemsChosen);
+            // then
+            assertEquals(expectedResult, result);
+        }
+
+        static List<Arguments> multiplyBinomialsArgs() {
+            return List.of(
+                // (3x−2)(x+5) = (3 × 1)x2² + ((3 × 5) + (-2 × 1))x + (-2 × 5)
+                // = 3x² + (15 + -2)x + -10 = 3x² + 13x + -10
+                Arguments.of(
+                    new double[]{-2, 3},
+                    new double[]{5, 1},
+                    new double[]{-10, 13, 3},
+                    DELTA1
+                )
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("multiplyBinomialsArgs")
+        void testMultiplyBinomials(double[] binomial1, double[] binomial2, double[] expectedResult, double delta) {
+            // when
+            final double[] result = MathCalc.Algebra.multiplyBinomials(binomial1, binomial2);
+            // then
+            assertArrayEquals(expectedResult, result, delta);
+        }
+
+        static List<Arguments> discriminantArgs() {
+            return List.of(
+                // quadratic
+                Arguments.of(new double[]{-18, 21, -8}, -135, DELTA1), // -8x² + 21x - 18
+                Arguments.of(new double[]{-7, 2, 9}, 256, DELTA1), // 0 = -7x² + 2x + 9; D = ±√256=±16
+                Arguments.of(new double[]{6, 10, -1}, 124, DELTA1), // 6x² + 10x - 1 = 0
+                // cubic
+                Arguments.of(new double[]{2, -3, 0, 1}, 0, DELTA1), // x³ - 3x + 2 = 0
+                // quartic
+                Arguments.of(new double[]{1, 5, 0, -1, 4}, -238_383, DELTA1) // 4x⁴ - x³ + 5x + 1
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("discriminantArgs")
+        void testDiscriminant(double[] polynomialTerms, double expectedResult, double delta) {
+            // when
+            final double discriminant = MathCalc.Algebra.discriminant(polynomialTerms);
+            // then
+            assertEquals(expectedResult, discriminant, delta);
+        }
+
+        static List<Arguments> addPolynomialsArgs() {
+            return List.of(
+                // P(x) = 4x⁴ - x³ + 5x + 1
+                // Q(x) = x⁵ + 4x⁴ - 7x³ - 3x² + x + 12
+                // x⁵ + 8x⁴ - 8x³ - 3x² + 6x + 13
+                Arguments.of(
+                    new double[]{1, 5, 0, -1, 4},
+                    new double[]{12, 1, -3, -7, 4, 1},
+                    new double[]{13, 6, -3, -8, 8, 1},
+                    DELTA1
+                )
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("addPolynomialsArgs")
+        void testAddPolynomials(double[] polynomial1, double[] polynomial2, double[] expectedResult, double delta) {
+            // when
+            final double[] polynomials = MathCalc.Algebra.addPolynomials(polynomial1, polynomial2);
+            // then
+            assertArrayEquals(expectedResult, polynomials, delta);
+        }
+
+        static List<Arguments> subtractPolynomialsArgs() {
+            return List.of(
+                // P(x) = 4x⁴ - x³ + 5x + 1
+                // Q(x) = x⁵ + 4x⁴ - 7x³ - 3x² + x + 12
+                // -x⁵ + 6x³ + 3x² + 4x - 11
+                Arguments.of(
+                    new double[]{1, 5, 0, -1, 4},
+                    new double[]{12, 1, -3, -7, 4, 1},
+                    new double[]{-11, 4, 3, 6, 0, -1},
+                    DELTA1
+                )
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("subtractPolynomialsArgs")
+        void testSubtractPolynomials(double[] polynomial1, double[] polynomial2,
+                                     double[] expectedResult, double delta) {
+            // when
+            final double[] polynomials = MathCalc.Algebra.subtractPolynomials(polynomial1, polynomial2);
+            // then
+            assertArrayEquals(expectedResult, polynomials, delta);
+        }
     }
 
     @Nested
