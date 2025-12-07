@@ -3,11 +3,20 @@ package org.example.assistantonsbservlet.physics;
 import org.example.assistantonsbservlet.math.ConversionCalculator;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-class PhysicsCalculatorTest {
+class PhysicsCalcTest {
+    private static final double DELTA1 = 0.1;
+    private static final double DELTA2 = 0.01;
+
     @Nested
     class Kinematics {
         @Test
@@ -19,7 +28,7 @@ class PhysicsCalculatorTest {
             final double arrowWeight = 400; // gr
             final double additionalWeightOnString = 5; // gr
             // when
-            final double result = PhysicsCalculator.Kinematics.arrowSpeed(ibo, drawLengthOfBow, peakDrawWeight,
+            final double result = PhysicsCalc.Kinematics.arrowSpeed(ibo, drawLengthOfBow, peakDrawWeight,
                 additionalWeightOnString, arrowWeight);
             // then
             assertEquals(301.67, result, 0.1);
@@ -34,7 +43,7 @@ class PhysicsCalculatorTest {
                 .squareMillimetersToSquareInches(132.73);
 
             // when
-            final double result = PhysicsCalculator.Kinematics.ballisticCoefficient(
+            final double result = PhysicsCalc.Kinematics.ballisticCoefficient(
                 projectileMass, dragCoefficient, crossSectionArea);
             // then
             assertEquals(1.0506, result, 0.1);
@@ -46,7 +55,7 @@ class PhysicsCalculatorTest {
             final double mass = 65; // kg
             final double velocity = 2;
             // when
-            final double result = PhysicsCalculator.Kinematics.momentum(mass, velocity);
+            final double result = PhysicsCalc.Kinematics.momentum(mass, velocity);
             // then
             assertEquals(130, result, 0.1);
         }
@@ -56,9 +65,9 @@ class PhysicsCalculatorTest {
             // given
             final double velocityXDirection = 2;
             final double velocityYDirection = 3;
-            final double[] velocity2d = new double[] {velocityXDirection, velocityYDirection};
+            final double[] velocity2d = new double[]{velocityXDirection, velocityYDirection};
             // when
-            final double magnitude = PhysicsCalculator.Kinematics.velocityMagnitude(velocity2d);
+            final double magnitude = PhysicsCalc.Kinematics.velocityMagnitude(velocity2d);
             // then
             assertEquals(3.6056, magnitude, 0.1);
         }
@@ -69,9 +78,9 @@ class PhysicsCalculatorTest {
             final double mass = 65; // kg
             final double velocityXDirection = 2;
             final double velocityYDirection = 3;
-            final double[] velocity2d = new double[] {velocityXDirection, velocityYDirection};
+            final double[] velocity2d = new double[]{velocityXDirection, velocityYDirection};
             // when
-            final double magnitude = PhysicsCalculator.Kinematics.momentumMagnitude(mass, velocity2d);
+            final double magnitude = PhysicsCalc.Kinematics.momentumMagnitude(mass, velocity2d);
             // then
             assertEquals(234.364, magnitude, 0.1);
         }
@@ -82,9 +91,9 @@ class PhysicsCalculatorTest {
             final double velocityXDirection = 2;
             final double velocityYDirection = 3;
             final double velocityZDirection = 1;
-            final double[] velocity3d = new double[] {velocityXDirection, velocityYDirection, velocityZDirection};
+            final double[] velocity3d = new double[]{velocityXDirection, velocityYDirection, velocityZDirection};
             // when
-            final double magnitude = PhysicsCalculator.Kinematics.velocityMagnitude(velocity3d);
+            final double magnitude = PhysicsCalc.Kinematics.velocityMagnitude(velocity3d);
             // then
             assertEquals(3.742, magnitude, 0.1);
         }
@@ -96,9 +105,9 @@ class PhysicsCalculatorTest {
             final double velocityXDirection = 2;
             final double velocityYDirection = 3;
             final double velocityZDirection = 1;
-            final double[] velocity3d = new double[] {velocityXDirection, velocityYDirection, velocityZDirection};
+            final double[] velocity3d = new double[]{velocityXDirection, velocityYDirection, velocityZDirection};
             // when
-            final double magnitude = PhysicsCalculator.Kinematics.momentumMagnitude(mass, velocity3d);
+            final double magnitude = PhysicsCalc.Kinematics.momentumMagnitude(mass, velocity3d);
             // then
             assertEquals(243.23, magnitude, 0.1);
         }
@@ -109,7 +118,7 @@ class PhysicsCalculatorTest {
             final double momentum = 195;
             final double mass = 65; // kg
             // when
-            final double velocity = PhysicsCalculator.Kinematics.velocityOfDesiredMomentum(momentum, mass);
+            final double velocity = PhysicsCalc.Kinematics.velocityOfDesiredMomentum(momentum, mass);
             // then
             assertEquals(3, velocity, 0.1);
         }
@@ -123,7 +132,7 @@ class PhysicsCalculatorTest {
             final double stationaryObj2Mass = 4; // kg
             final double stationaryObj2InitialVelocity = 0;
             // when
-            final double obj2FinalVelocity = PhysicsCalculator.Kinematics.conservationOfMomentum(
+            final double obj2FinalVelocity = PhysicsCalc.Kinematics.conservationOfMomentum(
                 obj1Mass, obj1InitialVelocity, obj1FinalVelocity,
                 stationaryObj2Mass, stationaryObj2InitialVelocity
             );
@@ -139,7 +148,7 @@ class PhysicsCalculatorTest {
             final double stationaryObj2Mass = 4; // kg
             final double stationaryObj2InitialVelocity = 0;
             // when
-            final double[] finalVelocities = PhysicsCalculator.Kinematics.conservationOfMomentum(
+            final double[] finalVelocities = PhysicsCalc.Kinematics.conservationOfMomentum(
                 obj1Mass, obj1InitialVelocity,
                 stationaryObj2Mass, stationaryObj2InitialVelocity, CollisionType.PERFECTLY_ELASTIC);
             // then
@@ -157,7 +166,7 @@ class PhysicsCalculatorTest {
             final double stationaryObj2Mass = 4; // kg
             final double stationaryObj2InitialVelocity = 0;
             // when
-            final double[] finalVelocities = PhysicsCalculator.Kinematics.conservationOfMomentum(
+            final double[] finalVelocities = PhysicsCalc.Kinematics.conservationOfMomentum(
                 obj1Mass, obj1InitialVelocity,
                 stationaryObj2Mass, stationaryObj2InitialVelocity, CollisionType.PERFECTLY_INELASTIC);
             // then
@@ -173,7 +182,7 @@ class PhysicsCalculatorTest {
             final long time = ConversionCalculator.Time.hoursToSeconds(2);
             final double averageVelocity = 31.3889; // m/s
             // when
-            final double displacement = PhysicsCalculator.Kinematics.displacement(averageVelocity, time);
+            final double displacement = PhysicsCalc.Kinematics.displacement(averageVelocity, time);
             // then
             assertEquals(226_000, displacement, 0.1);
         }
@@ -185,7 +194,7 @@ class PhysicsCalculatorTest {
             final double initialVelocity = 2; // m/s
             final double acceleration = 0.5; // m/s²
             // when
-            final double displacementInMeters = PhysicsCalculator.Kinematics.displacement(
+            final double displacementInMeters = PhysicsCalc.Kinematics.displacement(
                 acceleration, initialVelocity, time);
             // then
             assertEquals(12_974_400, displacementInMeters);
@@ -198,7 +207,7 @@ class PhysicsCalculatorTest {
             final double initialVelocity = 2; // m/s
             final double finalVelocity = 3602; // m/s
             // when
-            final double displacementInMeters = PhysicsCalculator.Kinematics.displacementOfVelocities(
+            final double displacementInMeters = PhysicsCalc.Kinematics.displacementOfVelocities(
                 initialVelocity, finalVelocity, time);
             // then
             assertEquals(12_974_400, displacementInMeters, 0.1);
@@ -210,7 +219,7 @@ class PhysicsCalculatorTest {
             final int timeInSec = 8;
             final int initialVelocity = 0;
             // when
-            final double velocity = PhysicsCalculator.Kinematics.freeFallVelocity(initialVelocity, timeInSec);
+            final double velocity = PhysicsCalc.Kinematics.freeFallVelocity(initialVelocity, timeInSec);
             // then
             assertEquals(78.45, velocity, 0.01); // m/s
         }
@@ -220,7 +229,7 @@ class PhysicsCalculatorTest {
             // given
             final int timeInSec = 8;
             // when
-            final double distanceInM = PhysicsCalculator.Kinematics.freeFallDistance(timeInSec);
+            final double distanceInM = PhysicsCalc.Kinematics.freeFallDistance(timeInSec);
             // then
             assertEquals(313.81, distanceInM, 0.01);
         }
@@ -231,7 +240,7 @@ class PhysicsCalculatorTest {
             final double airResistanceCoef = 0.24;
             final double terminalVelocity = 55.4;
             // when
-            final double dragForce = PhysicsCalculator.Kinematics.freeFallDistanceWithAirResistance(
+            final double dragForce = PhysicsCalc.Kinematics.freeFallDistanceWithAirResistance(
                 airResistanceCoef, terminalVelocity);
             // then
             assertEquals(736.6, dragForce, 0.1);
@@ -246,7 +255,7 @@ class PhysicsCalculatorTest {
             final double crossSectionalArea = 0.18; // m²
             final double dragCoef = 0.7;
             // when
-            final double terminalVelocity = PhysicsCalculator.Kinematics.terminalVelocity(
+            final double terminalVelocity = PhysicsCalc.Kinematics.terminalVelocity(
                 massInKg, gravitationalAcceleration, densityOfFluid, dragCoef, crossSectionalArea);
             // then
             assertEquals(98.48, terminalVelocity, 0.01);
@@ -259,9 +268,9 @@ class PhysicsCalculatorTest {
             final double gravitationalAcceleration = 9.81; // m/s²
             final double densityOfFluid = 1.2041; // kg/m³
             final double crossSectionalArea = 0.004393; // m²
-            final double dragCoef = PhysicsCalculator.DragCoefficient.BASEBALL;
+            final double dragCoef = PhysicsCalc.DragCoefficient.BASEBALL;
             // when
-            final double terminalVelocity = PhysicsCalculator.Kinematics.terminalVelocity(
+            final double terminalVelocity = PhysicsCalc.Kinematics.terminalVelocity(
                 massInKg, gravitationalAcceleration, densityOfFluid, dragCoef, crossSectionalArea);
             // then
             assertEquals(41.056, terminalVelocity, 0.001);
@@ -274,9 +283,9 @@ class PhysicsCalculatorTest {
             final double gravitationalAcceleration = 9.81; // m/s²
             final double densityOfFluid = 1.2041; // kg/m³
             final double crossSectionalArea = 0.001385442; // m²
-            final double dragCoef = PhysicsCalculator.DragCoefficient.GOLF_BALL;
+            final double dragCoef = PhysicsCalc.DragCoefficient.GOLF_BALL;
             // when
-            final double terminalVelocity = PhysicsCalculator.Kinematics.terminalVelocity(
+            final double terminalVelocity = PhysicsCalc.Kinematics.terminalVelocity(
                 massInKg, gravitationalAcceleration, densityOfFluid, dragCoef, crossSectionalArea);
             // then
             assertEquals(32.734, terminalVelocity, 0.001);
@@ -287,7 +296,7 @@ class PhysicsCalculatorTest {
             // given
             final double massInKg = 60;
             // when
-            final double weight = PhysicsCalculator.Kinematics.weightOfFreeFallingBody(massInKg);
+            final double weight = PhysicsCalc.Kinematics.weightOfFreeFallingBody(massInKg);
             // then
             assertEquals(588.399, weight, 0.01);
         }
@@ -298,7 +307,7 @@ class PhysicsCalculatorTest {
             final double frictionCoef = 0.13;
             final double normalForceInNewtons = 250;
             // when
-            final double friction = PhysicsCalculator.Kinematics.friction(frictionCoef, normalForceInNewtons);
+            final double friction = PhysicsCalc.Kinematics.friction(frictionCoef, normalForceInNewtons);
             // then
             assertEquals(32.5, friction, 0.1);
         }
@@ -312,7 +321,7 @@ class PhysicsCalculatorTest {
             final double gravitationalAcceleration = 9.81; // m/s²
             final double theta = 0.1;
             // when
-            final double friction = PhysicsCalculator.Kinematics.energyLostToFriction(
+            final double friction = PhysicsCalc.Kinematics.energyLostToFriction(
                 frictionCoef, distanceTraveled, massInKg, gravitationalAcceleration, theta);
             // then
             assertEquals(4.49, friction, 0.01);
@@ -325,10 +334,10 @@ class PhysicsCalculatorTest {
             final int windSpeedInKnots = 20;
             final double courseInRadians = 0.08726646259971647;
             final double windDirectionInRadians = 1.0471975511965976;
-            final double windCorrectionAngle = PhysicsCalculator.Kinematics.windCorrectionAngle(
+            final double windCorrectionAngle = PhysicsCalc.Kinematics.windCorrectionAngle(
                 trueAirspeedInKnots, windSpeedInKnots, courseInRadians, windDirectionInRadians);
             // when
-            final double headingInRadians = PhysicsCalculator.Kinematics.aircraftHeading(
+            final double headingInRadians = PhysicsCalc.Kinematics.aircraftHeading(
                 courseInRadians, windCorrectionAngle);
             // then
             assertEquals(0.252, headingInRadians, 0.001);
@@ -344,7 +353,7 @@ class PhysicsCalculatorTest {
             final int initialVelocity = 100; // m/s
             final int finalVelocity = 120; // m/s
             // when
-            final double acceleration = PhysicsCalculator.Dynamics.acceleration(
+            final double acceleration = PhysicsCalc.Dynamics.acceleration(
                 initialVelocity, finalVelocity, deltaTimeInSec);
             // then
             assertEquals(3.333, acceleration, 0.001);
@@ -356,7 +365,7 @@ class PhysicsCalculatorTest {
             final int massInKg = 60;
             final int netForceInNewtons = 1000;
             // when
-            final double acceleration = PhysicsCalculator.Dynamics.acceleration(massInKg, netForceInNewtons);
+            final double acceleration = PhysicsCalc.Dynamics.acceleration(massInKg, netForceInNewtons);
             // then
             assertEquals(16.667, acceleration, 0.001);
         }
@@ -368,10 +377,97 @@ class PhysicsCalculatorTest {
             final int distanceInM = 200;
             final int timeInSec = 6;
             // when
-            final double acceleration = PhysicsCalculator.Dynamics.accelerationWithDeltaDistance(
+            final double acceleration = PhysicsCalc.Dynamics.accelerationWithDeltaDistance(
                 initialVelocity, distanceInM, timeInSec);
             // then
             assertEquals(-22.22, acceleration, 0.01);
+        }
+
+        @Test
+        void testNormalForceWithHorizontalSurfaceAndDownwardExternalForce() {
+            // given
+            final byte massInKg = 100;
+            final short outsideForce = 250; // Newtons
+            final double outsideForceAngle = Math.toRadians(45);
+            // when
+            final double normalForce = PhysicsCalc.Dynamics
+                .normalForceWithHorizontalSurfaceAndDownwardExternalForce(massInKg, outsideForce, outsideForceAngle);
+            // then
+            assertEquals(1157.4, normalForce, DELTA1);
+        }
+
+        @Test
+        void testNormalForceWithHorizontalSurfaceAndUpwardExternalForce() {
+            // given
+            final byte massInKg = 100;
+            final short outsideForce = 250; // Newtons
+            final double outsideForceAngle = Math.toRadians(45);
+            // when
+            final double normalForce = PhysicsCalc.Dynamics
+                .normalForceWithHorizontalSurfaceAndUpwardExternalForce(massInKg, outsideForce, outsideForceAngle);
+            // then
+            assertEquals(803.9, normalForce, DELTA1);
+        }
+
+        @Test
+        void testNormalForceWithHorizontalSurface() {
+            // given
+            final double massInKg = 0.6;
+            // when
+            final double normalForce = PhysicsCalc.Dynamics.normalForceWithHorizontalSurface(massInKg);
+            // then
+            assertEquals(5.884, normalForce, DELTA1);
+        }
+
+        @Test
+        void testNormalForceWithInclinedSurface() {
+            // given
+            final double massInKg = 2.5;
+            final double inclinationAngle = Math.toRadians(15);
+            // when
+            final double normalForce = PhysicsCalc.Dynamics.normalForceWithInclinedSurface(massInKg, inclinationAngle);
+            // then
+            assertEquals(23.68, normalForce, DELTA2);
+        }
+
+        static List<Arguments> netForceArgs() {
+            return List.of(
+                Arguments.of(new double[][]{{10, 0}, {15, Math.PI}}, new double[]{-5, 0, 5, Math.PI}, DELTA1),
+                Arguments.of(new double[][]{
+                    {10, 0}, {15, Math.PI}, {2, Math.toRadians(5)}, {4, Math.toRadians(10)}, {8, Math.toRadians(15)},
+                    {16, Math.toRadians(20)}, {32, Math.toRadians(25)}, {64, Math.toRadians(30)},
+                    {128, Math.toRadians(35)}, {256, Math.toRadians(40)},
+                }, new double[]{409.08, 291.91, 502.55, Math.toRadians(35.51)}, DELTA2)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("netForceArgs")
+        void testNetForce(double[][] forces, double[] expectedResult, double delta) {
+            // when
+            final double[] resultantForce = PhysicsCalc.Dynamics.netForce(forces);
+            // then
+            assertArrayEquals(expectedResult, resultantForce, delta);
+        }
+    }
+
+    @Nested
+    class Electronics {
+        static List<Arguments> electricalChargeInCapacitorArgs() {
+            return List.of(
+                Arguments.of(220, 25, 5_500, DELTA1)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("electricalChargeInCapacitorArgs")
+        void testElectricalChargeInCapacitor(
+            double capacitanceMicroFarads, double voltageVolts, double expectedResult, double delta) {
+            // when
+            final double capacity = PhysicsCalc.Electronics
+                .electricalChargeInCapacitor(capacitanceMicroFarads, voltageVolts);
+            // then
+            assertEquals(expectedResult, capacity, delta);
         }
     }
 }

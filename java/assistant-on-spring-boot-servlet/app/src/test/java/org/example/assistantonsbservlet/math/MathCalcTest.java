@@ -1709,9 +1709,9 @@ class MathCalcTest {
         @MethodSource("addPolynomialsArgs")
         void testAddPolynomials(double[] polynomial1, double[] polynomial2, double[] expectedResult, double delta) {
             // when
-            final double[] polynomials = MathCalc.Algebra.addPolynomials(polynomial1, polynomial2);
+            final double[] added = MathCalc.Algebra.addPolynomials(polynomial1, polynomial2);
             // then
-            assertArrayEquals(expectedResult, polynomials, delta);
+            assertArrayEquals(expectedResult, added, delta);
         }
 
         static List<Arguments> subtractPolynomialsArgs() {
@@ -1733,9 +1733,9 @@ class MathCalcTest {
         void testSubtractPolynomials(double[] polynomial1, double[] polynomial2,
                                      double[] expectedResult, double delta) {
             // when
-            final double[] polynomials = MathCalc.Algebra.subtractPolynomials(polynomial1, polynomial2);
+            final double[] subtracted = MathCalc.Algebra.subtractPolynomials(polynomial1, polynomial2);
             // then
-            assertArrayEquals(expectedResult, polynomials, delta);
+            assertArrayEquals(expectedResult, subtracted, delta);
         }
 
         static List<Arguments> multiplyPolynomialsArgs() {
@@ -1757,9 +1757,31 @@ class MathCalcTest {
         void testMultiplyPolynomials(double[] polynomial1, double[] polynomial2,
                                      double[] expectedResult, double delta) {
             // when
-            final double[] polynomials = MathCalc.Algebra.multiplyPolynomials(polynomial1, polynomial2);
+            final double[] multiplied = MathCalc.Algebra.multiplyPolynomials(polynomial1, polynomial2);
             // then
-            assertArrayEquals(expectedResult, polynomials, delta);
+            assertArrayEquals(expectedResult, multiplied, delta);
+        }
+
+        static List<Arguments> dividePolynomialsArgs() {
+            return List.of(
+                // (x⁴ - 27x³ + 239x² - 753x + 540) / (x - 1) = x³ - 26x² + 213x - 540
+                Arguments.of(
+                    new double[]{540, -753, 239, -27, 1},
+                    new double[]{-1, 1},
+                    new double[]{-540, 213, -26, 1},
+                    DELTA1
+                )
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("dividePolynomialsArgs")
+        void testDividePolynomials(double[] polynomial1, double[] polynomial2,
+                                   double[] expectedResult, double delta) {
+            // when
+            final double[] divided = MathCalc.Algebra.dividePolynomials(polynomial1, polynomial2);
+            // then
+            assertArrayEquals(expectedResult, divided, delta);
         }
 
         static List<Arguments> quadraticStdFormulaToVertexArgs() {
@@ -4098,6 +4120,46 @@ class MathCalcTest {
     }
 
     @Nested
+    class LinearAlgebra {
+        static List<Arguments> vectorAddWithMultiplesArgs() {
+            return List.of(
+                Arguments.of(new double[]{-3, 2, 8}, 1,
+                    new double[]{2, 2, -4}, 3, new double[]{3, 8, -4}, DELTA1)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("vectorAddWithMultiplesArgs")
+        void testVectorAddWithMultiples(double[] vectorA, double multipleAlpha,
+                                        double[] vectorB, double multipleBeta, double[] expectedResult, double delta) {
+            // when
+            final double[] result = MathCalc.LinearAlgebra
+                .vectorAddWithMultiples(vectorA, multipleAlpha, vectorB, multipleBeta);
+            // then
+            assertArrayEquals(expectedResult, result, delta);
+        }
+
+        static List<Arguments> vectorSubtractWithMultiplesArgs() {
+            return List.of(
+                Arguments.of(new double[]{-3, 2, 8}, 1,
+                    new double[]{2, 2, -4}, 3, new double[]{-9, -4, 20}, DELTA1)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("vectorSubtractWithMultiplesArgs")
+        void testVectorSubtractWithMultiples(
+            double[] vectorA, double multipleAlpha, double[] vectorB, double multipleBeta,
+            double[] expectedResult, double delta) {
+            // when
+            final double[] result = MathCalc.LinearAlgebra
+                .vectorSubtractWithMultiples(vectorA, multipleAlpha, vectorB, multipleBeta);
+            // then
+            assertArrayEquals(expectedResult, result, delta);
+        }
+    }
+
+    @Nested
     class Calculus {
         static List<Arguments> limitArgs() {
             final DoubleUnaryOperator f = x -> x * x + 5; // x²+5
@@ -4168,6 +4230,22 @@ class MathCalcTest {
             final DoubleUnaryOperator sin = MathCalc.Trigonometry::sin;
             final DoubleUnaryOperator tan = MathCalc.Trigonometry::tan;
 
+            // limₓ→₃ (x-3) / (√(4x+4)-4) = limₓ→₃ (√(4x+4)+4) / 4
+            final DoubleUnaryOperator conjugateFn1 = x ->
+                (x - 3) / (MathCalc.Algebra.squareRoot(4 * x + 4) - 4);
+
+            // limₓ→₋₂ (√(3x+10)-2) / (x+2) = limₓ→₋₂ 3 / (√(3x+10)+2)
+            final DoubleUnaryOperator conjugateFn2 = x ->
+                (MathCalc.Algebra.squareRoot(3 * x + 10) - 2) / (x + 2);
+
+            // limₓ→₃ (x-3) / (2-√(x+1)) = limₓ→₃ -2 - √(x+1), for x ≠ 3
+            final DoubleUnaryOperator conjugateFn3 = x ->
+                (x - 3) / (2 - MathCalc.Algebra.squareRoot(x + 1));
+
+            // limₓ→₂ (3-√(5x-1)) / (x-2) = limₓ→₂ -5 / (3+√(5x-1)), for x ≠ 2
+            final DoubleUnaryOperator conjugateFn4 = x ->
+                (3 - MathCalc.Algebra.squareRoot(5 * x - 1)) / (x - 2);
+
             final DoubleUnaryOperator removableDiscontinuityFn = x ->
                 (x == 1) ? Double.NaN : (x * x - 1) / (x - 1);
 
@@ -4200,6 +4278,10 @@ class MathCalcTest {
                 Arguments.of("trig#2", sin, MathCalc.Trigonometry.PI_OVER_6, MathCalc.ONE_HALF, DELTA1),
                 Arguments.of("trig#3", cot, 0, Double.NaN, DELTA1),
                 Arguments.of("trig#4", tan, 0, 0, DELTA1),
+                Arguments.of("conjugate#1", conjugateFn1, 3, 2, DELTA1),
+                Arguments.of("conjugate#2", conjugateFn2, -2, MathCalc.THREE_FOURTH, DELTA2),
+                Arguments.of("conjugate#3", conjugateFn3, 3, -4, DELTA1),
+                Arguments.of("conjugate#4", conjugateFn4, 2, -MathCalc.FIVE_SIXTH, DELTA6),
                 Arguments.of("removableDiscontinuity#1", removableDiscontinuityFn, 1., 2., DELTA1)
             );
         }

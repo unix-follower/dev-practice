@@ -22,11 +22,13 @@ import java.util.function.DoubleUnaryOperator;
 import java.util.function.LongPredicate;
 
 public final class MathCalc {
-    public static final double ONE_FIFTH = 0.2;
-    public static final double ONE_FOURTH = 0.25;
-    public static final double ONE_HALF = 0.5;
-    public static final double ONE_EIGHTH = 0.125;
-    public static final double ONE_SIXTEENTH = 0.0625;
+    public static final double ONE_FIFTH = 0.2; // 1/5
+    public static final double ONE_FOURTH = 0.25; // 1/4
+    public static final double ONE_HALF = 0.5; // 1/2
+    public static final double ONE_EIGHTH = 0.125; // 1/8
+    public static final double ONE_SIXTEENTH = 0.0625;  // 1/16
+    public static final double THREE_FOURTH = 0.75;  // 3/4
+    public static final double FIVE_SIXTH = 0.83333333;  // 5/6
     public static final byte ONE = 1;
 
     /**
@@ -78,6 +80,12 @@ public final class MathCalc {
     private static void checkGreater(double value, double inclusiveBound) {
         if (value <= inclusiveBound) {
             throw new IllegalArgumentException("This value must be greater than " + inclusiveBound);
+        }
+    }
+
+    private static void check2dSize(double[] vector) {
+        if (vector == null || vector.length != 2) {
+            throw new IllegalArgumentException("The 2d vector is required");
         }
     }
 
@@ -1829,16 +1837,18 @@ public final class MathCalc {
             // Fill Sylvester matrix for f
             for (int i = 0; i < n; i++) {
                 for (int j = 0; j < f.length; j++) {
-                    if (i + j < size) {
-                        sylvester[i][i + j] = f[j];
+                    final int col = i + j;
+                    if (col < size) {
+                        sylvester[i][col] = f[j];
                     }
                 }
             }
             // Fill Sylvester matrix for g
             for (int i = 0; i < m; i++) {
                 for (int j = 0; j < g.length; j++) {
-                    if (i + j < size) {
-                        sylvester[n + i][i + j] = g[j];
+                    final int col = i + j;
+                    if (col < size) {
+                        sylvester[n + i][col] = g[j];
                     }
                 }
             }
@@ -1873,7 +1883,7 @@ public final class MathCalc {
          * P(x) = a₆x⁶ + a₅x⁵ + a₄x⁴ + a₃x³ + a₂x² + a₁x + a₀
          * Q(x) = b₆x⁶ + b₅x⁵ + b₄x⁴ + b₃x³ + b₂x² + b₁x + b₀
          * <p>
-         * Both polynomial1 and polynomial2 params should have the lowest terms go first: a₀ + a₁x + … + aₙxⁿ
+         * Both polynomials params expect the lowest terms go first: a₀ + a₁x + … + aₙxⁿ
          *
          * @return P(x) + Q(x)
          */
@@ -1904,7 +1914,7 @@ public final class MathCalc {
          * P(x) = a₆x⁶ + a₅x⁵ + a₄x⁴ + a₃x³ + a₂x² + a₁x + a₀
          * Q(x) = b₆x⁶ + b₅x⁵ + b₄x⁴ + b₃x³ + b₂x² + b₁x + b₀
          * <p>
-         * Both polynomial1 and polynomial2 params should have the lowest terms go first: a₀ + a₁x + … + aₙxⁿ
+         * Both polynomials params expect the lowest terms go first: a₀ + a₁x + … + aₙxⁿ
          *
          * @return P(x) - Q(x)
          */
@@ -1932,10 +1942,9 @@ public final class MathCalc {
         }
 
         /**
-         * <p>
-         * Both polynomial1 and polynomial2 params should have the lowest terms go first: a₀ + a₁x + … + aₙxⁿ
          * (a + b + c) × (d + e) = a × (d + e) + b × (d + e) + c × (d + e) = a×d + a×e + b×d + b×e + c×d + c×e
          * (a + b + c) × (d + e) = (a + b + c) × d + (a + b + c) × e = a×d + b×d + c×d + a×e + b×e + c×e
+         * Both polynomials params expect the lowest terms go first: a₀ + a₁x + … + aₙxⁿ
          *
          * @return P(x) * Q(x)
          */
@@ -1950,6 +1959,39 @@ public final class MathCalc {
                 }
             }
             return result;
+        }
+
+        /**
+         * (aₙxⁿ + aₙ₋₁xⁿ⁻¹ + ... + a₁x + a₀) / bₖxᵏ = aₙxⁿ / bₖxᵏ + aₙ₋₁xⁿ⁻¹ / bₖxᵏ + ... + a₁x / bₖxᵏ + a₀ / bₖxᵏ
+         * Both polynomials params expect the lowest terms go first: a₀ + a₁x + … + aₙxⁿ
+         *
+         * @return P(x) / Q(x)
+         */
+        public static double[] dividePolynomials(double[] dividend, double[] divisor) {
+            Objects.requireNonNull(dividend);
+            Objects.requireNonNull(divisor);
+
+            final int n = dividend.length - 1;
+            final int m = divisor.length - 1;
+            if (m < 0) {
+                throw new IllegalArgumentException("Divisor cannot be zero polynomial");
+            }
+            if (n < m) {
+                return new double[]{0}; // Degree of dividend < divisor
+            }
+
+            final double[] quotient = new double[n - m + 1];
+            final double[] remainder = Arrays.copyOf(dividend, dividend.length);
+
+            for (int k = n; k >= m; k--) {
+                final double coeff = remainder[k] / divisor[m];
+                quotient[k - m] = coeff;
+                for (int j = 0; j <= m; j++) {
+                    remainder[k - j] -= coeff * divisor[m - j];
+                }
+            }
+            // In ascending order
+            return quotient;
         }
 
         public static double[] quadraticStdFormulaToVertex(double[] quadratic) {
@@ -1973,7 +2015,7 @@ public final class MathCalc {
             } else {
                 final double realPart = -b / doubleA;
                 final double imagPart = squareRoot(-discriminant) / doubleA;
-                return new double[] {a, realPart, imagPart};
+                return new double[]{a, realPart, imagPart};
             }
         }
 
@@ -1982,7 +2024,7 @@ public final class MathCalc {
          * <ul>
          *     <li>Standard: ax² + bx + c = 0</li>
          *     <li>Vertex: a(x - h)² + k = 0</li>
-         *     <li>Factored : a(x - x₁)(x - x₂) = 0</li>
+         *     <li>Factored: a(x - x₁)(x - x₂) = 0</li>
          * </ul>
          * The quadratic formula: x = (-b ± √Δ)/2a = (-b ±√(b² − 4ac)) / (2a)
          * For Δ < 0 use complex number, Real(x) = -B/2A Imaginary(x) = ±(√Δ)/2A
@@ -1994,17 +2036,17 @@ public final class MathCalc {
          * ]
          */
         public static double[] quadraticRoots(double[] quadratic) {
-            final double discriminantBeforeTakingSqRoot = discriminant(quadratic);
+            final double discriminant = discriminant(quadratic);
             final double b = quadratic[Constants.ARR_2ND_INDEX];
             final double a = quadratic[Constants.ARR_3RD_INDEX];
             final double doubleA = 2 * a;
-            if (discriminantBeforeTakingSqRoot < 0) {
+            if (discriminant < 0) {
                 final double realPart = -b / doubleA;
-                final double imagPart = squareRoot(-discriminantBeforeTakingSqRoot) / doubleA;
-                return new double[] {realPart, imagPart};
+                final double imagPart = squareRoot(-discriminant) / doubleA;
+                return new double[]{realPart, imagPart};
             } else {
-                final double discriminant = squareRoot(discriminantBeforeTakingSqRoot);
-                return new double[] {(-b + discriminant) / doubleA, (-b - discriminant) / doubleA};
+                final double sqrtDiscriminant = squareRoot(discriminant);
+                return new double[]{(-b + sqrtDiscriminant) / doubleA, (-b - sqrtDiscriminant) / doubleA};
             }
         }
     }
@@ -2772,12 +2814,6 @@ public final class MathCalc {
         private CoordinateGeometry() {
         }
 
-        private static void check2dSize(double[] vector) {
-            if (vector == null || vector.length != 2) {
-                throw new IllegalArgumentException("The 2d vector is required");
-            }
-        }
-
         private static void check3dSize(double[] vector) {
             if (vector == null || vector.length != 3) {
                 throw new IllegalArgumentException("The 3d vector is required");
@@ -2936,7 +2972,8 @@ public final class MathCalc {
         }
 
         /**
-         * The theta is in radians.
+         * m = √(x² + y²)
+         * θ = arccos(x / m)
          * x = ρ * cos(θ)
          * y = ρ * sin(θ)
          * z = z
@@ -3740,7 +3777,7 @@ public final class MathCalc {
          * <br/>- Range: −1 ≤ cos(α) ≤ 1
          */
         public static double cos(double angleRadians) {
-            return Math.sin(angleRadians);
+            return Math.cos(angleRadians);
         }
 
         /**
@@ -3761,6 +3798,20 @@ public final class MathCalc {
          */
         public static double tan(double angleRadians) {
             return Math.tan(angleRadians);
+        }
+
+        /**
+         * @return tan⁻¹(x)
+         */
+        public static double tanInverse(double angle) {
+            return Math.atan(angle);
+        }
+
+        /**
+         * @return tan⁻¹(y/x)
+         */
+        public static double multivaluedTanInverse(double y, double x) {
+            return Math.atan2(y, x);
         }
 
         /**
@@ -4031,6 +4082,57 @@ public final class MathCalc {
         public static double[] eigenvalues(double[][] matrix) {
             final var realMatrix = MatrixUtils.createRealMatrix(matrix);
             return new EigenDecompositionImpl(realMatrix, 0).getRealEigenvalues();
+        }
+
+        /**
+         * (a,b) + (d,e) = (a + d, b + e)
+         * (a,b,c) + (d,e,f) = (a + d, b + e, c + f)
+         * x + y = (x₁ + y₁, x₂ + y₂, ..., xₖ + yₖ)
+         *
+         * @return perform the addition coordinate-wise. α × v + β × w
+         */
+        public static double[] vectorAddWithMultiples(double[] vectorA, double alphaCopies,
+                                                      double[] vectorB, double betaCopies) {
+            Objects.requireNonNull(vectorA);
+            Objects.requireNonNull(vectorB);
+            checkSameDimensions(vectorA, vectorB);
+
+            final double[] result = new double[vectorA.length];
+            for (int i = 0; i < vectorA.length; i++) {
+                result[i] = alphaCopies * vectorA[i] + betaCopies * vectorB[i];
+            }
+            return result;
+        }
+
+        /**
+         * x + y = (x₁ + y₁, x₂ + y₂)
+         *
+         * @return θ = arctan((x₂ + y₂)/(x₁ + y₁))
+         */
+        public static double angleInVector2dAddition(double[] vectorA, double[] vectorB) {
+            check2dSize(vectorA);
+            Objects.requireNonNull(vectorB);
+            checkSameDimensions(vectorA, vectorB);
+
+            final double x1 = vectorA[Constants.ARR_1ST_INDEX];
+            final double x2 = vectorA[Constants.ARR_2ND_INDEX];
+            final double y1 = vectorA[Constants.ARR_1ST_INDEX];
+            final double y2 = vectorA[Constants.ARR_2ND_INDEX];
+            final double quotient = (x2 + y2) / (x1 + y1);
+            return Trigonometry.tanInverse(quotient);
+        }
+
+        public static double[] vectorSubtractWithMultiples(double[] vectorA, double alphaCopies,
+                                                           double[] vectorB, double betaCopies) {
+            Objects.requireNonNull(vectorA);
+            Objects.requireNonNull(vectorB);
+            checkSameDimensions(vectorA, vectorB);
+
+            final double[] result = new double[vectorA.length];
+            for (int i = 0; i < vectorA.length; i++) {
+                result[i] = alphaCopies * vectorA[i] - betaCopies * vectorB[i];
+            }
+            return result;
         }
     }
 
