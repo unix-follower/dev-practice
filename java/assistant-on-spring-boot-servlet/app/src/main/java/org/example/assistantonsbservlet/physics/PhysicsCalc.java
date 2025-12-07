@@ -1,12 +1,33 @@
 package org.example.assistantonsbservlet.physics;
 
+import org.example.assistantonsbservlet.math.Constants;
 import org.example.assistantonsbservlet.math.MathCalc;
+import org.example.assistantonsbservlet.math.MathCalc.Algebra;
+import org.example.assistantonsbservlet.math.MathCalc.Trigonometry;
 
 import java.util.Arrays;
 import java.util.function.DoubleUnaryOperator;
 
-public final class PhysicsCalculator {
-    private PhysicsCalculator() {
+public final class PhysicsCalc {
+    public static final double GRAVITATIONAL_ACCELERATION_IN_M_PER_S2 = 9.80665;
+    public static final double AVOGADRO_NUMBER = 6.02214082e23;
+    /**
+     * ~3.00 * 10⁸ m/s. Also, 300 * 10^⁶ m/s
+     */
+    public static final double SPEED_OF_LIGHT_IN_M_PER_SEC = 2.99792458e8;
+    public static final double ELECTRON_CHARGE_IN_COULOMBS = 1.6021766208e-19;
+    public static final double BLINK_OF_AN_EYE_SEC = 0.350; // 350e-3
+    /**
+     * (6.02214 * 10^23 electrons/mole) / (6.24151 * 10^18 electrons/coulomb) = 96485 coulombs/mole
+     * {@link #AVOGADRO_NUMBER} {@link #ONE_COULOMB}
+     */
+    public static final double FARADAY_CONSTANT = 96_485;
+    /**
+     * The number of electron charges
+     */
+    public static final double ONE_COULOMB = 6.241509343e18;
+
+    private PhysicsCalc() {
     }
 
     /**
@@ -417,14 +438,14 @@ public final class PhysicsCalculator {
          * @return v = v₀ + g * t. The units are m/s
          */
         public static double freeFallVelocity(double initialVelocity, long fallTime) {
-            return initialVelocity + Constants.GRAVITATIONAL_ACCELERATION_IN_M_PER_S2 * fallTime;
+            return initialVelocity + GRAVITATIONAL_ACCELERATION_IN_M_PER_S2 * fallTime;
         }
 
         /**
          * @return s = (1 / 2) * g * t². The units are meters
          */
         public static double freeFallDistance(long fallTimeInSec) {
-            return 0.5 * Constants.GRAVITATIONAL_ACCELERATION_IN_M_PER_S2 * fallTimeInSec * fallTimeInSec;
+            return 0.5 * GRAVITATIONAL_ACCELERATION_IN_M_PER_S2 * fallTimeInSec * fallTimeInSec;
         }
 
         /**
@@ -440,7 +461,7 @@ public final class PhysicsCalculator {
          * @return W = mg. The units are Newtons
          */
         public static double weightOfFreeFallingBody(double mass) {
-            return mass * Constants.GRAVITATIONAL_ACCELERATION_IN_M_PER_S2;
+            return mass * GRAVITATIONAL_ACCELERATION_IN_M_PER_S2;
         }
 
         /**
@@ -606,6 +627,84 @@ public final class PhysicsCalculator {
          */
         public static double acceleration(double mass, double netForce) {
             return netForce / mass;
+        }
+
+        /**
+         * @return Fₙ = m ⋅ g + F ⋅ sin(x). The units are Newtons
+         */
+        public static double normalForceWithHorizontalSurfaceAndDownwardExternalForce(
+            double massInKg, double outsideForce, double outsideForceAngleRad) {
+            return massInKg * GRAVITATIONAL_ACCELERATION_IN_M_PER_S2 + outsideForce
+                * Trigonometry.sin(outsideForceAngleRad);
+        }
+
+        /**
+         * @return Fₙ = m ⋅ g − F ⋅ sin(x). The units are Newtons
+         */
+        public static double normalForceWithHorizontalSurfaceAndUpwardExternalForce(
+            double massInKg, double outsideForce, double outsideForceAngleRad) {
+            return massInKg * GRAVITATIONAL_ACCELERATION_IN_M_PER_S2 - outsideForce
+                * Trigonometry.sin(outsideForceAngleRad);
+        }
+
+        /**
+         * @return Fₙ = m ⋅ g. The units are Newtons
+         */
+        public static double normalForceWithHorizontalSurface(double massInKg) {
+            return massInKg * GRAVITATIONAL_ACCELERATION_IN_M_PER_S2;
+        }
+
+        /**
+         * @return Fₙ = m ⋅ g ⋅ cos(α). The units are Newtons
+         */
+        public static double normalForceWithInclinedSurface(double massInKg, double inclinationAngleRad) {
+            return massInKg * GRAVITATIONAL_ACCELERATION_IN_M_PER_S2 * Trigonometry.cos(inclinationAngleRad);
+        }
+
+        /**
+         * →   →    →    →          →
+         * F = F₁ + F₂ + F₃ + ... + Fₙ
+         * →      →
+         * F = ∑∞ Fᵢ
+         * F₁ₓ = F₁ cos θ₁
+         * Fₓ = F₁ₓ + F₂ₓ
+         * F₁ᵧ = F₁ sin θ₁
+         * Fᵧ = F₁ᵧ + F₂ᵧ
+         * F = √(F²ₓ + F²ᵧ)
+         * θ = tan⁻¹(Fᵧ / Fₓ)
+         * The units are Newtons
+         */
+        public static double[] netForce(double[][] forces) {
+            final double[] resultantForce = new double[4];
+            final byte horizontalComponentIdx = Constants.ARR_1ST_INDEX;
+            final byte verticalComponentIdx = Constants.ARR_2ND_INDEX;
+            for (var forceComponents : forces) {
+                final double force = forceComponents[Constants.ARR_1ST_INDEX];
+                final double angle = forceComponents[Constants.ARR_2ND_INDEX];
+                resultantForce[horizontalComponentIdx] += force * Trigonometry.cos(angle);
+                resultantForce[verticalComponentIdx] += force * Trigonometry.sin(angle);
+            }
+            final double fx = resultantForce[horizontalComponentIdx];
+            final double fy = resultantForce[verticalComponentIdx];
+            // Magnitude (F)
+            resultantForce[Constants.ARR_3RD_INDEX] = Algebra.squareRoot(fx * fx + fy * fy);
+            // Direction (θ)
+            resultantForce[Constants.ARR_4TH_INDEX] = Trigonometry.multivaluedTanInverse(fy, fx);
+            return resultantForce;
+        }
+    }
+
+    public static final class Electronics {
+        private Electronics() {
+        }
+
+        /**
+         * C = Q / V
+         *
+         * @return Q = C * V. the units are μC
+         */
+        public static double electricalChargeInCapacitor(double capacitanceMicroFarads, double voltageVolts) {
+            return capacitanceMicroFarads * voltageVolts;
         }
     }
 }
