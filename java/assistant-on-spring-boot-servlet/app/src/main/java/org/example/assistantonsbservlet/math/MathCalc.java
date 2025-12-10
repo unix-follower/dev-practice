@@ -28,6 +28,7 @@ public final class MathCalc {
     public static final double ONE_EIGHTH = 0.125; // 1/8
     public static final double ONE_SIXTEENTH = 0.0625;  // 1/16
     public static final double THREE_FOURTH = 0.75;  // 3/4
+    public static final double FOUR_FIFTH = 0.8;  // 4/5
     public static final double FIVE_SIXTH = 0.83333333;  // 5/6
     public static final byte ONE = 1;
 

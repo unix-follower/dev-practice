@@ -1,6 +1,7 @@
 package org.example.assistantonsbservlet.physics;
 
 import org.example.assistantonsbservlet.math.ConversionCalculator;
+import org.example.assistantonsbservlet.math.MathCalc;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -16,6 +17,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 class PhysicsCalcTest {
     private static final double DELTA1 = 0.1;
     private static final double DELTA2 = 0.01;
+    private static final double DELTA4 = 0.0001;
+    private static final double DELTA9 = 0.000000001;
 
     @Nested
     class Kinematics {
@@ -468,6 +471,135 @@ class PhysicsCalcTest {
                 .electricalChargeInCapacitor(capacitanceMicroFarads, voltageVolts);
             // then
             assertEquals(expectedResult, capacity, delta);
+        }
+
+        static List<Arguments> energyStoredInCapacitorArgs() {
+            return List.of(
+                Arguments.of(300, 20, 0.06, DELTA2),
+                Arguments.of(0.00012, 1.5, 1.35e-10, DELTA9)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("energyStoredInCapacitorArgs")
+        void testEnergyStoredInCapacitor(
+            double capacityMicroFarads, double voltageVolts, double expectedResult, double delta) {
+            // given
+            final double farads = CapacityUnit.microFaradsToFarads(capacityMicroFarads);
+            // when
+            final double storedEnergyInJ = PhysicsCalc.Electronics.energyStoredInCapacitor(farads, voltageVolts);
+            // then
+            assertEquals(expectedResult, storedEnergyInJ, delta);
+        }
+
+        static List<Arguments> capacitorSizeArgs() {
+            return List.of(
+                Arguments.of(64, 16, MathCalc.ONE_HALF, DELTA1)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("capacitorSizeArgs")
+        void testCapacitorSize(
+            double startupEnergyMicroJoules, double voltageVolts, double expectedResult, double delta) {
+            // when
+            final double capacitorSize = PhysicsCalc.Electronics.capacitorSize(startupEnergyMicroJoules, voltageVolts);
+            // then
+            assertEquals(expectedResult, capacitorSize, delta);
+        }
+
+        static List<Arguments> ohmsLawPowerArgs() {
+            return List.of(
+                Arguments.of(6, 18, 108, DELTA1)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("ohmsLawPowerArgs")
+        void testOhmsLawPower(double currentAmperes, double voltageVolts, double expectedResultW, double delta) {
+            // when
+            final double powerWatts = PhysicsCalc.Electronics.ohmsLawPower(currentAmperes, voltageVolts);
+            // then
+            assertEquals(expectedResultW, powerWatts, delta);
+        }
+
+        static List<Arguments> capacitorsInSeriesArgs() {
+            return List.of(
+                Arguments.of(new double[]{2000, 5, 6, 0.2}, 0.1863, DELTA4)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("capacitorsInSeriesArgs")
+        void testCapacitorsInSeries(double[] capacitorsMicroFarads, double expectedResultInMicroFarads, double delta) {
+            // when
+            final double capacitanceInSeries = PhysicsCalc.Electronics.capacitorsInSeries(capacitorsMicroFarads);
+            // then
+            assertEquals(expectedResultInMicroFarads, capacitanceInSeries, delta);
+        }
+
+        static List<Arguments> resistorBand4ValueArgs() {
+            return List.of(
+                Arguments.of(ResistorColorCode.GREEN, ResistorColorCode.RED, ResistorColorCode.MultiplierBand.RED,
+                    ResistorColorCode.Tolerance.GOLD, new double[]{5200, 4940, 5460}, DELTA2)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("resistorBand4ValueArgs")
+        void testResistorBand4Value(
+            ResistorColorCode band1, ResistorColorCode band2,
+            ResistorColorCode.MultiplierBand multiplierBand, ResistorColorCode.Tolerance tolerance,
+            double[] expectedResult, double delta) {
+            // when
+            final double[] resistorValues = PhysicsCalc.Electronics
+                .resistorBand4Value(band1, band2, multiplierBand, tolerance);
+            // then
+            assertArrayEquals(expectedResult, resistorValues, delta);
+        }
+
+        static List<Arguments> resistorBand5ValueArgs() {
+            return List.of(
+                Arguments.of(ResistorColorCode.GREEN, ResistorColorCode.RED, ResistorColorCode.BLUE,
+                    ResistorColorCode.MultiplierBand.RED, ResistorColorCode.Tolerance.GOLD,
+                    new double[]{52600, 49970, 55230}, DELTA1)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("resistorBand5ValueArgs")
+        void testResistorBand5Value(
+            ResistorColorCode band1, ResistorColorCode band2, ResistorColorCode band3,
+            ResistorColorCode.MultiplierBand multiplierBand, ResistorColorCode.Tolerance tolerance,
+            double[] expectedResult, double delta) {
+            // when
+            final double[] resistorValues = PhysicsCalc.Electronics
+                .resistorBand5Value(band1, band2, band3, multiplierBand, tolerance);
+            // then
+            assertArrayEquals(expectedResult, resistorValues, delta);
+        }
+
+        static List<Arguments> resistorBand6ValueArgs() {
+            return List.of(
+                Arguments.of(new ResistorColorCode[]{
+                        ResistorColorCode.GREEN, ResistorColorCode.BLACK, ResistorColorCode.BLACK},
+                    ResistorColorCode.MultiplierBand.GOLD, ResistorColorCode.Tolerance.BLUE, ResistorColorCode.TCR.RED,
+                    25, 50, new double[]{50.0625, 49.875, 50.125}, DELTA4)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("resistorBand6ValueArgs")
+        void testResistorBand6Value(
+            ResistorColorCode[] bands,
+            ResistorColorCode.MultiplierBand multiplierBand, ResistorColorCode.Tolerance tolerance,
+            ResistorColorCode.TCR temperatureCoeff, double temperatureStart, double temperatureEnd,
+            double[] expectedResult, double delta) {
+            // when
+            final double[] resistorValues = PhysicsCalc.Electronics.resistorBand6Value(bands, multiplierBand, tolerance,
+                temperatureCoeff, temperatureStart, temperatureEnd);
+            // then
+            assertArrayEquals(expectedResult, resistorValues, delta);
         }
     }
 }

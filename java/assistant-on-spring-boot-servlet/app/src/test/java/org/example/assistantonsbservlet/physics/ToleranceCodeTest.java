@@ -14,17 +14,27 @@ class ToleranceCodeTest {
 
     static List<Arguments> convertCodeToCapacityArgs() {
         return List.of(
-            Arguments.of(104, 100_000)
+            Arguments.of(100, 10),
+            Arguments.of(220, 22),
+            Arguments.of(331, 330),
+            Arguments.of(102, 1000),
+            Arguments.of(152, 1500),
+            Arguments.of(472, 4700),
+            Arguments.of(562, 5600),
+            Arguments.of(333, 33_000),
+            Arguments.of(104, 100_000),
+            Arguments.of(224, 220_000),
+            Arguments.of(225, 2_200_000)
         );
     }
 
     @ParameterizedTest
     @MethodSource("convertCodeToCapacityArgs")
-    void testConvertCodeToCapacity(int code, double expectedResult) {
+    void testConvertCodeToCapacity(int code, double expectedResultPF) {
         // when
-        final double capacity = ToleranceCode.convertCodeToCapacity(code);
+        final double capacityPF = ToleranceCode.convertCodeToCapacity(code);
         // then
-        assertEquals(expectedResult, capacity, DELTA1);
+        assertEquals(expectedResultPF, capacityPF, DELTA1);
     }
 
     static List<Arguments> convertCapacityToCodeArgs() {

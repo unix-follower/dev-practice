@@ -31,64 +31,6 @@ public final class PhysicsCalc {
     }
 
     /**
-     * v = Ri
-     * R is a constant of proportionality, representing the resistance.
-     * i = I is current
-     */
-    public static double ohmLawVoltage(double resistance, double current) {
-        return resistance * current;
-    }
-
-    /**
-     * i = dq/dt
-     * i = C * (dv/dt)
-     *
-     * @return i = v/R
-     */
-    public static double ohmLawCurrent(double voltage, double resistance) {
-        return voltage / resistance;
-    }
-
-    /**
-     * @return R = v/i
-     */
-    public static double ohmLawResistance(double voltage, double current) {
-        return voltage / current;
-    }
-
-    /**
-     * Equivalents:
-     * <br/>p = dU/dt = dU/dq * dq/dt
-     * <br/>p = vi
-     * <br/>p = (iR)i = i²R
-     * <br/>p = v(v/R) = v²/R
-     *
-     * @return p = dU/dt. The units are joules/second (aka watts)
-     */
-    public static double power(double changeInEnergy, double changeInTime) {
-        return changeInEnergy / changeInTime;
-    }
-
-    /**
-     * Equivalent: p = vi
-     *
-     * @return p = iL * di/dt
-     */
-    public static double powerInInductor(
-        double current, double inductance, double changeInCurrent, double changeInTime) {
-        return current * inductance * (changeInCurrent / changeInTime);
-    }
-
-    /**
-     * The constant of proportionality C is the capacitance.
-     *
-     * @return Q = CV
-     */
-    public static double capacitorCharge(double capacitance, double voltage) {
-        return capacitance * voltage;
-    }
-
-    /**
      * @return v = 1/C ∫ᵀ_(-∞) i * dt
      */
     public static double integrateCapacitorVoltage(
@@ -701,10 +643,217 @@ public final class PhysicsCalc {
         /**
          * C = Q / V
          *
-         * @return Q = C * V. the units are μC
+         * @return Q = C * V. The units are μC
          */
         public static double electricalChargeInCapacitor(double capacitanceMicroFarads, double voltageVolts) {
             return capacitanceMicroFarads * voltageVolts;
+        }
+
+        /**
+         * Alternatives: E = ½ × Q² / C or E = ½ × Q × V.
+         *
+         * @return E = ½ × C × V². The units are Joules
+         */
+        public static double energyStoredInCapacitor(double capacityFarads, double voltageVolts) {
+            return MathCalc.ONE_HALF * capacityFarads * voltageVolts * voltageVolts;
+        }
+
+        /**
+         *
+         * @return C = 2(E/V²). The units are MicroFarads μF
+         */
+        public static double capacitorSize(double startupEnergyMicroJoules, double voltageVolts) {
+            final double voltageVoltsSquared = voltageVolts * voltageVolts;
+            return 2 * (startupEnergyMicroJoules / voltageVoltsSquared);
+        }
+
+        /**
+         * I = I is current
+         * R is a constant of proportionality, representing the resistance.
+         *
+         * @return V = I*R
+         */
+        public static double ohmsLawVoltage(double current, double resistance) {
+            return current * resistance;
+        }
+
+        /**
+         * @return V = P/I
+         */
+        public static double ohmsLawVoltageGivenPower(double current, double power) {
+            return power / current;
+        }
+
+        /**
+         * @return V = √(P*R)
+         */
+        public static double ohmsLawVoltageGivenPowerAndResistance(double power, double resistance) {
+            return Algebra.squareRoot(power * resistance);
+        }
+
+        /**
+         * Equivalents:
+         * <br/>P = dU/dt = dU/dq * dq/dt
+         * P = dU/dt. The units are joules/second (aka watts)
+         *
+         * @return P = I × V. The units are Watts W
+         */
+        public static double ohmsLawPower(double currentAmperes, double voltageVolts) {
+            return currentAmperes * voltageVolts;
+        }
+
+        /**
+         * Equivalent: P = I*V
+         *
+         * @return P = I*L * dI/dt. The units are Watts W
+         */
+        public static double ohmsLawPowerInInductor(
+            double current, double inductance, double changeInCurrent, double changeInTime) {
+            return current * inductance * (changeInCurrent / changeInTime);
+        }
+
+        /**
+         * @return P = V²/R. The units are Watts W
+         */
+        public static double ohmsLawPowerGivenVoltageAndResistance(double voltage, double resistance) {
+            return (voltage * voltage) / resistance;
+        }
+
+        /**
+         * @return P = R*I². The units are Watts W
+         */
+        public static double ohmsLawPowerGivenResistanceAndCurrent(double resistance, double current) {
+            return resistance * (current * current);
+        }
+
+        /**
+         * Alternatives:
+         * <br/>I = dq/dt
+         * <br/>I = C * (dv/dt)
+         *
+         * @return I = V/R. The units are Amperes
+         */
+        public static double ohmsLawCurrent(double voltage, double resistance) {
+            return voltage / resistance;
+        }
+
+        /**
+         * @return I = P/V. The units are Amperes
+         */
+        public static double ohmsLawCurrentGivenPowerAndVoltage(double power, double voltage) {
+            return power / voltage;
+        }
+
+        /**
+         * @return I = √(P/V). The units are Amperes
+         */
+        public static double ohmsLawCurrentGivenPowerAndResistance(double power, double resistance) {
+            return Algebra.squareRoot(power / resistance);
+        }
+
+        /**
+         * @return R = V/I. The units are Ohms
+         */
+        public static double ohmsLawResistance(double voltage, double current) {
+            return voltage / current;
+        }
+
+        /**
+         * @return R = P/I². The units are Ohms
+         */
+        public static double ohmsLawResistanceGivenPowerAndCurrent(double power, double current) {
+            return power / (current * current);
+        }
+
+        /**
+         * @return R = V²/P. The units are Ohms
+         */
+        public static double ohmsLawResistanceGivenVoltageAndPower(double voltage, double power) {
+            return (voltage * voltage) / power;
+        }
+
+        /**
+         * <ul>
+         *     <li>ρ - Specific resistance of the conductive material</li>
+         *     <li>E - Electric field vector</li>
+         *     <li>J - Current density vector</li>
+         * </ul>
+         *
+         * @return ρ = E/J. The units are Ohms
+         */
+        public static double ohmsLawForAnisotropicMaterial() {
+            throw new UnsupportedOperationException();
+        }
+
+        /**
+         * V = V₁ + V₂ + … → Q / C = Q / C₁ + Q / C₂ + …
+         *
+         * @return 1 / C = 1 / C₁ + 1 / C₂ + …. The units are μF
+         */
+        public static double capacitorsInSeries(double[] capacitorsInMicroFarads) {
+            final double inverseOfCapacitanceSum = Arrays.stream(capacitorsInMicroFarads)
+                .map(capacitor -> 1 / capacitor)
+                .sum();
+            return 1 / inverseOfCapacitanceSum;
+        }
+
+        /**
+         * R = band₃×(10×band₁+band₂)±band₄
+         * <br/>Rₘᵢₙ = R−(band₄×R)
+         * <br/>Rₘₐₓ = R+(band₄×R)
+         *
+         * @return {R, Rₘᵢₙ, Rₘₐₓ}
+         */
+        public static double[] resistorBand4Value(
+            ResistorColorCode band1,
+            ResistorColorCode band2,
+            ResistorColorCode.MultiplierBand multiplierBand,
+            ResistorColorCode.Tolerance tolerance) {
+            final double resistorValue = multiplierBand.getMultiplier() * (10 * band1.ordinal() + band2.ordinal());
+            final double min = resistorValue - (tolerance.getTolerancePercent() * resistorValue);
+            final double max = resistorValue + (tolerance.getTolerancePercent() * resistorValue);
+            return new double[]{resistorValue, min, max};
+        }
+
+        /**
+         * R = band₄*(100×band₁+10×band₂+band₃)±band₅
+         * <br/>Rₘᵢₙ = R−(band₅×R)
+         * <br/>Rₘₐₓ = R+(band₅×R)
+         *
+         * @return {R, Rₘᵢₙ, Rₘₐₓ}
+         */
+        public static double[] resistorBand5Value(
+            ResistorColorCode band1,
+            ResistorColorCode band2,
+            ResistorColorCode band3,
+            ResistorColorCode.MultiplierBand multiplierBand,
+            ResistorColorCode.Tolerance tolerance) {
+            final double resistorValue = multiplierBand.getMultiplier()
+                * (100 * band1.ordinal() + 10 * band2.ordinal() + band3.ordinal());
+            final double min = resistorValue - (tolerance.getTolerancePercent() * resistorValue);
+            final double max = resistorValue + (tolerance.getTolerancePercent() * resistorValue);
+            return new double[]{resistorValue, min, max};
+        }
+
+        /**
+         * R = R₀×(1+TCR×(T−T₀))
+         *
+         * @return {R, Rₘᵢₙ, Rₘₐₓ}
+         */
+        public static double[] resistorBand6Value(
+            ResistorColorCode[] bands,
+            ResistorColorCode.MultiplierBand multiplierBand,
+            ResistorColorCode.Tolerance tolerance,
+            ResistorColorCode.TCR tcr,
+            double temperatureStart, double temperatureEnd
+        ) {
+            final var band1 = bands[Constants.ARR_1ST_INDEX];
+            final var band2 = bands[Constants.ARR_2ND_INDEX];
+            final var band3 = bands[Constants.ARR_3RD_INDEX];
+            final double[] r0values = resistorBand5Value(band1, band2, band3, multiplierBand, tolerance);
+            final double r0 = r0values[Constants.ARR_1ST_INDEX];
+            final double resistorValue = r0 * (1 + tcr.getTempCoeff() * (temperatureEnd - temperatureStart));
+            return new double[]{resistorValue, r0values[Constants.ARR_2ND_INDEX], r0values[Constants.ARR_3RD_INDEX]};
         }
     }
 }
