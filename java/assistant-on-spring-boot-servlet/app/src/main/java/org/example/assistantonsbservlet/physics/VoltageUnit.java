@@ -5,4 +5,10 @@ public enum VoltageUnit {
     VOLTS, // V
     KILOVOLTS, // kV
     MEGAVOLTS; // MV
+
+    public static final int ONE_KILOVOLT_IN_VOLTS = 1000;
+
+    public static double voltsToKilovolts(double volts) {
+        return volts * ONE_KILOVOLT_IN_VOLTS;
+    }
 }

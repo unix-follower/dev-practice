@@ -4246,6 +4246,18 @@ class MathCalcTest {
             final DoubleUnaryOperator conjugateFn4 = x ->
                 (3 - MathCalc.Algebra.squareRoot(5 * x - 1)) / (x - 2);
 
+            // limₓ→₋₃ (√(4x+28)-4) / (x+3) = limₓ→₋₃ 4 / (√(4x+28)-4), for x ≠ -3
+            final DoubleUnaryOperator conjugateFn5 = x ->
+                (MathCalc.Algebra.squareRoot(4 * x + 28) - 4) / (x + 3);
+
+            // limₓ→₋₂ (3-√(6x+21)) / (x+2) = limₓ→₋₂ -6 / (3+√(6x+21)), for x ≠ -2
+            final DoubleUnaryOperator conjugateFn6 = x ->
+                (3 - MathCalc.Algebra.squareRoot(6 * x + 21)) / (x + 2);
+
+            // limₓ→₁ (x-1) / (√(5x-1)-2) = limₓ→₁ (√(5x-1)+2) / 5, for x ≠ 1
+            final DoubleUnaryOperator conjugateFn7 = x ->
+                (x - 1) / (MathCalc.Algebra.squareRoot(5 * x - 1) - 2);
+
             final DoubleUnaryOperator removableDiscontinuityFn = x ->
                 (x == 1) ? Double.NaN : (x * x - 1) / (x - 1);
 
@@ -4282,6 +4294,9 @@ class MathCalcTest {
                 Arguments.of("conjugate#2", conjugateFn2, -2, MathCalc.THREE_FOURTH, DELTA2),
                 Arguments.of("conjugate#3", conjugateFn3, 3, -4, DELTA1),
                 Arguments.of("conjugate#4", conjugateFn4, 2, -MathCalc.FIVE_SIXTH, DELTA6),
+                Arguments.of("conjugate#5", conjugateFn5, -3, MathCalc.ONE_HALF, DELTA1),
+                Arguments.of("conjugate#6", conjugateFn6, -2, -1, DELTA1),
+                Arguments.of("conjugate#7", conjugateFn7, 1, MathCalc.FOUR_FIFTH, DELTA1),
                 Arguments.of("removableDiscontinuity#1", removableDiscontinuityFn, 1., 2., DELTA1)
             );
         }
