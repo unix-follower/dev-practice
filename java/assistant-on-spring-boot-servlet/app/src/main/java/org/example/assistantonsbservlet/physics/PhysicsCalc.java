@@ -296,7 +296,7 @@ public final class PhysicsCalc {
          * @return ||p|| = m * √(vₓ² + vᵧ² + v_z²) ⇒ ||p|| = m * ||v||
          */
         public static double velocityMagnitude(double[] velocityVector) {
-            return MathCalc.CoordinateGeometry.vectorMagnitude(velocityVector);
+            return MathCalc.LinearAlgebra.vectorMagnitude(velocityVector);
         }
 
         /**

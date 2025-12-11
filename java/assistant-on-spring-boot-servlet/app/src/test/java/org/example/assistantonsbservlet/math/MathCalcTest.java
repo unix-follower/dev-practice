@@ -2793,199 +2793,6 @@ class MathCalcTest {
 
     @Nested
     class CoordinateGeometry {
-        @Test
-        void calculateVectorMagnitude2d() {
-            // given
-            final int x = -3;
-            final int y = 8;
-            final double[] vector = {x, y};
-            // when
-            final double magnitude = MathCalc.CoordinateGeometry.vectorMagnitude(vector);
-            // then
-            assertEquals(8.544, magnitude, 0.001);
-        }
-
-        @Test
-        void calculateVectorMagnitude3d() {
-            // given
-            final int x = -3;
-            final int y = 8;
-            final int z = 2;
-            final double[] vector = {x, y, z};
-            // when
-            final double magnitude = MathCalc.CoordinateGeometry.vectorMagnitude(vector);
-            // then
-            assertEquals(8.775, magnitude, 0.001);
-        }
-
-        @Test
-        void calculateVectorMagnitude5d() {
-            // given
-            final int x = 3;
-            final int y = 1;
-            final int z = 2;
-            final int t = -3;
-            final int w = 4;
-            final double[] vector = {x, y, z, t, w};
-            // when
-            final double magnitude = MathCalc.CoordinateGeometry.vectorMagnitude(vector);
-            // then
-            assertEquals(6.245, magnitude, 0.001);
-        }
-
-        @Test
-        void calculateUnitVector() {
-            // given
-            final int x = 8;
-            final int y = -3;
-            final int z = 5;
-            final double[] vector = {x, y, z};
-            // when
-            final var unitVectorResultData = MathCalc.CoordinateGeometry.unitVector(vector);
-            // then
-            final double vectorMagnitude = unitVectorResultData.getLeft();
-            final double[] unitVectorResult = unitVectorResultData.getMiddle();
-            final double unitVectorResultMagnitude = unitVectorResultData.getRight();
-            assertEquals(9.9, vectorMagnitude, 0.1);
-
-            assertNotNull(unitVectorResult);
-            assertEquals(3, unitVectorResult.length);
-            assertEquals(0.80812, unitVectorResult[Constants.X_INDEX], 0.00001);
-            assertEquals(-0.303046, unitVectorResult[Constants.Y_INDEX], 0.000001);
-            assertEquals(0.50508, unitVectorResult[Constants.Z_INDEX], 0.00001);
-
-            assertEquals(1, unitVectorResultMagnitude, 0.1);
-        }
-
-        @Test
-        void testFindMissingUnitVectorComponent() {
-            // given
-            final double x = 0.80812;
-            final double y = -0.303046;
-            final double[] unitVector = {x, y};
-            // when
-            final var unitVectorResultData = MathCalc.CoordinateGeometry
-                .findMissingUnitVectorComponent(unitVector);
-            // then
-            final double[] unitVectorResult = unitVectorResultData.getLeft();
-            final double magnitude = unitVectorResultData.getRight();
-            assertEquals(1, magnitude, 0.1);
-
-            assertNotNull(unitVectorResult);
-            assertEquals(3, unitVectorResult.length);
-            assertEquals(x, unitVectorResult[Constants.X_INDEX], 0.00001);
-            assertEquals(y, unitVectorResult[Constants.Y_INDEX], 0.000001);
-            assertEquals(0.50508, unitVectorResult[Constants.Z_INDEX], 0.00001);
-        }
-
-        @Test
-        void testCrossProduct() {
-            // given
-            final double[] vectorA = {2, 3, 7};
-            final double[] vectorB = {1, 2, 4};
-            // when
-            final double[] resultVector = MathCalc.CoordinateGeometry.crossProduct(vectorA, vectorB);
-            // then
-            assertNotNull(resultVector);
-            assertEquals(3, resultVector.length);
-            assertEquals(-2, resultVector[Constants.X_INDEX], 0.1);
-            assertEquals(-1, resultVector[Constants.Y_INDEX], 0.1);
-            assertEquals(1, resultVector[Constants.Z_INDEX], 0.1);
-        }
-
-        @Test
-        void testUnsupportedDimsForCrossProduct() {
-            // given
-            final double[] vectorA = {2, 3};
-            final double[] vectorB = {1, 2};
-            // when
-            final var exception = assertThrows(IllegalArgumentException.class,
-                () -> MathCalc.CoordinateGeometry.crossProduct(vectorA, vectorB));
-            // then
-            assertEquals("The cross product can only be applied to 3D vectors", exception.getMessage());
-        }
-
-        @Test
-        void testDotProduct2d() {
-            // given
-            final double[] vectorA = {5, 4};
-            final double[] vectorB = {2, 3};
-            // when
-            final double result = MathCalc.CoordinateGeometry.dotProduct(vectorA, vectorB);
-            // then
-            assertEquals(22, result, 0.1);
-        }
-
-        @Test
-        void testDotProduct3d() {
-            // given
-            final double[] vectorA = {4, 5, -3};
-            final double[] vectorB = {1, -2, -2};
-            // when
-            final double result = MathCalc.CoordinateGeometry.dotProduct(vectorA, vectorB);
-            // then
-            assertEquals(0, result, 0.1);
-        }
-
-        @Test
-        void testDotProductOfMatrix() {
-            // given
-            final double[][] matrixA = {
-                {4, 5, -3},
-                {2, -1, 4}
-            };
-            final double[][] matrixB = {
-                {1, -2, -2},
-                {5, 1, 3}
-            };
-            // when
-            final double result = MathCalc.CoordinateGeometry.dotProduct(matrixA, matrixB);
-            // then
-            // 4*1 + 5*-2 + -3*-2 = [4, -10, 6] = 0
-            // 2*5 + -1*1 + 4*3   = [10, -1, 12] = 21
-            assertEquals(21, result, 0.1);
-        }
-
-        @Test
-        void testDotProduct2dAndAngleBetween() {
-            // given
-            final double[] vectorA = {5, 4};
-            final double[] vectorB = {2, 3};
-            // when
-            final double[] resultData = MathCalc.CoordinateGeometry.dotProductAndAngleBetween(vectorA, vectorB);
-            // then
-            assertNotNull(resultData);
-            assertEquals(4, resultData.length);
-            final double dot = resultData[Constants.ARR_1ST_INDEX];
-            final double magnitudeA = resultData[Constants.ARR_2ND_INDEX];
-            final double magnitudeB = resultData[Constants.ARR_3RD_INDEX];
-            final double angleRadians = resultData[Constants.ARR_4TH_INDEX];
-            assertEquals(22, dot, 0.1);
-            assertEquals(6.403, magnitudeA, 0.001);
-            assertEquals(3.6056, magnitudeB, 0.0001);
-            assertEquals(0.30814, angleRadians, 0.00001);
-        }
-
-        @Test
-        void testDotProduct3dAndAngleBetween() {
-            // given
-            final double[] vectorA = {4, 5, 3};
-            final double[] vectorB = {1, -2, -2};
-            // when
-            final double[] resultData = MathCalc.CoordinateGeometry.dotProductAndAngleBetween(vectorA, vectorB);
-            // then
-            assertNotNull(resultData);
-            assertEquals(4, resultData.length);
-            final double dot = resultData[Constants.ARR_1ST_INDEX];
-            final double magnitudeA = resultData[Constants.ARR_2ND_INDEX];
-            final double magnitudeB = resultData[Constants.ARR_3RD_INDEX];
-            final double angleRadians = resultData[Constants.ARR_4TH_INDEX];
-            assertEquals(-12, dot, 0.1);
-            assertEquals(7.071, magnitudeA, 0.001);
-            assertEquals(3, magnitudeB, 0.0001);
-            assertEquals(2.172, angleRadians, 0.001);
-        }
-
         static List<Arguments> manhattanDistanceParams() {
             return List.of(
                 Arguments.of(new double[]{2}, new double[]{3}, 1), // 1d
@@ -3088,49 +2895,6 @@ class MathCalcTest {
             assertEquals(2, cartesianCoords[Constants.X_INDEX], 0.1);
             assertEquals(5, cartesianCoords[Constants.Y_INDEX], 0.1);
             assertEquals(3, cartesianCoords[Constants.Z_INDEX], 0.1);
-        }
-
-        @Test
-        void testVectorProjection2d() {
-            // given
-            final double[] vectorA = {3, 4};
-            final double[] vectorB = {2, 6};
-            // when
-            final var projectionResult = MathCalc.CoordinateGeometry
-                .vectorProjection(vectorA, vectorB);
-            // then
-            assertNotNull(projectionResult);
-
-            final double[] projection = projectionResult.getLeft();
-            assertNotNull(projection);
-            assertEquals(2, projection.length);
-            assertEquals(1.5, projection[Constants.X_INDEX], 0.1);
-            assertEquals(4.5, projection[Constants.Y_INDEX], 0.1);
-
-            final double projectionFactor = projectionResult.getRight();
-            assertEquals(0.75, projectionFactor, 0.01);
-        }
-
-        @Test
-        void testVectorProjection3d() {
-            // given
-            final double[] vectorA = {2, -3, 5};
-            final double[] vectorB = {3, 6, -4};
-            // when
-            final var projectionResult = MathCalc.CoordinateGeometry
-                .vectorProjection(vectorA, vectorB);
-            // then
-            assertNotNull(projectionResult);
-
-            final double[] projection = projectionResult.getLeft();
-            assertNotNull(projection);
-            assertEquals(3, projection.length);
-            assertEquals(-1.5738, projection[Constants.X_INDEX], 0.0001);
-            assertEquals(-3.1475, projection[Constants.Y_INDEX], 0.0001);
-            assertEquals(2.0984, projection[Constants.Z_INDEX], 0.0001);
-
-            final double projectionFactor = projectionResult.getRight();
-            assertEquals(-0.5246, projectionFactor, 0.0001);
         }
 
         static List<Arguments> distanceBetween2pointsParams() {
@@ -4121,6 +3885,240 @@ class MathCalcTest {
 
     @Nested
     class LinearAlgebra {
+        @Test
+        void testVectorMagnitude2d() {
+            // given
+            final int x = -3;
+            final int y = 8;
+            final double[] vector = {x, y};
+            // when
+            final double magnitude = MathCalc.LinearAlgebra.vectorMagnitude(vector);
+            // then
+            assertEquals(8.544, magnitude, DELTA3);
+        }
+
+        @Test
+        void testVectorMagnitude3d() {
+            // given
+            final int x = -3;
+            final int y = 8;
+            final int z = 2;
+            final double[] vector = {x, y, z};
+            // when
+            final double magnitude = MathCalc.LinearAlgebra.vectorMagnitude(vector);
+            // then
+            assertEquals(8.775, magnitude, DELTA3);
+        }
+
+        @Test
+        void testVectorMagnitude5d() {
+            // given
+            final int x = 3;
+            final int y = 1;
+            final int z = 2;
+            final int t = -3;
+            final int w = 4;
+            final double[] vector = {x, y, z, t, w};
+            // when
+            final double magnitude = MathCalc.LinearAlgebra.vectorMagnitude(vector);
+            // then
+            assertEquals(6.245, magnitude, DELTA3);
+        }
+
+        @Test
+        void testUnitVector() {
+            // given
+            final int x = 8;
+            final int y = -3;
+            final int z = 5;
+            final double[] vector = {x, y, z};
+            // when
+            final var unitVectorResultData = MathCalc.LinearAlgebra.unitVector(vector);
+            // then
+            final double vectorMagnitude = unitVectorResultData.getLeft();
+            final double[] unitVectorResult = unitVectorResultData.getMiddle();
+            final double unitVectorResultMagnitude = unitVectorResultData.getRight();
+            assertEquals(9.9, vectorMagnitude, DELTA3);
+
+            assertNotNull(unitVectorResult);
+            assertEquals(3, unitVectorResult.length);
+            assertEquals(0.80812, unitVectorResult[Constants.X_INDEX], DELTA5);
+            assertEquals(-0.303046, unitVectorResult[Constants.Y_INDEX], DELTA6);
+            assertEquals(0.50508, unitVectorResult[Constants.Z_INDEX], DELTA5);
+
+            assertEquals(1, unitVectorResultMagnitude, DELTA1);
+        }
+
+        @Test
+        void testVectorProjection2d() {
+            // given
+            final double[] vectorA = {3, 4};
+            final double[] vectorB = {2, 6};
+            // when
+            final var projectionResult = MathCalc.LinearAlgebra.vectorProjection(vectorA, vectorB);
+            // then
+            assertNotNull(projectionResult);
+
+            final double[] projection = projectionResult.getLeft();
+            assertNotNull(projection);
+            assertEquals(2, projection.length);
+            assertEquals(1.5, projection[Constants.X_INDEX], DELTA1);
+            assertEquals(4.5, projection[Constants.Y_INDEX], DELTA1);
+
+            final double projectionFactor = projectionResult.getRight();
+            assertEquals(0.75, projectionFactor, DELTA1);
+        }
+
+        @Test
+        void testVectorProjection3d() {
+            // given
+            final double[] vectorA = {2, -3, 5};
+            final double[] vectorB = {3, 6, -4};
+            // when
+            final var projectionResult = MathCalc.LinearAlgebra.vectorProjection(vectorA, vectorB);
+            // then
+            assertNotNull(projectionResult);
+
+            final double[] projection = projectionResult.getLeft();
+            assertNotNull(projection);
+            assertEquals(3, projection.length);
+            assertEquals(-1.5738, projection[Constants.X_INDEX], DELTA4);
+            assertEquals(-3.1475, projection[Constants.Y_INDEX], DELTA4);
+            assertEquals(2.0984, projection[Constants.Z_INDEX], DELTA4);
+
+            final double projectionFactor = projectionResult.getRight();
+            assertEquals(-0.5246, projectionFactor, DELTA4);
+        }
+
+        @Test
+        void testFindMissingUnitVectorComponent() {
+            // given
+            final double x = 0.80812;
+            final double y = -0.303046;
+            final double[] unitVector = {x, y};
+            // when
+            final var unitVectorResultData = MathCalc.LinearAlgebra
+                .findMissingUnitVectorComponent(unitVector);
+            // then
+            final double[] unitVectorResult = unitVectorResultData.getLeft();
+            final double magnitude = unitVectorResultData.getRight();
+            assertEquals(1, magnitude, DELTA1);
+
+            assertNotNull(unitVectorResult);
+            assertEquals(3, unitVectorResult.length);
+            assertEquals(x, unitVectorResult[Constants.X_INDEX], DELTA5);
+            assertEquals(y, unitVectorResult[Constants.Y_INDEX], DELTA6);
+            assertEquals(0.50508, unitVectorResult[Constants.Z_INDEX], DELTA5);
+        }
+
+        @Test
+        void testCrossProduct() {
+            // given
+            final double[] vectorA = {2, 3, 7};
+            final double[] vectorB = {1, 2, 4};
+            // when
+            final double[] resultVector = MathCalc.LinearAlgebra.crossProduct(vectorA, vectorB);
+            // then
+            assertNotNull(resultVector);
+            assertEquals(3, resultVector.length);
+            assertEquals(-2, resultVector[Constants.X_INDEX], DELTA1);
+            assertEquals(-1, resultVector[Constants.Y_INDEX], DELTA1);
+            assertEquals(1, resultVector[Constants.Z_INDEX], DELTA1);
+        }
+
+        @Test
+        void testUnsupportedDimsForCrossProduct() {
+            // given
+            final double[] vectorA = {2, 3};
+            final double[] vectorB = {1, 2};
+            // when
+            final var exception = assertThrows(IllegalArgumentException.class,
+                () -> MathCalc.LinearAlgebra.crossProduct(vectorA, vectorB));
+            // then
+            assertEquals("The cross product can only be applied to 3D vectors", exception.getMessage());
+        }
+
+        @Test
+        void testDotProduct2d() {
+            // given
+            final double[] vectorA = {5, 4};
+            final double[] vectorB = {2, 3};
+            // when
+            final double result = MathCalc.LinearAlgebra.dotProduct(vectorA, vectorB);
+            // then
+            assertEquals(22, result, DELTA1);
+        }
+
+        @Test
+        void testDotProduct3d() {
+            // given
+            final double[] vectorA = {4, 5, -3};
+            final double[] vectorB = {1, -2, -2};
+            // when
+            final double result = MathCalc.LinearAlgebra.dotProduct(vectorA, vectorB);
+            // then
+            assertEquals(0, result, DELTA1);
+        }
+
+        @Test
+        void testDotProductOfMatrix() {
+            // given
+            final double[][] matrixA = {
+                {4, 5, -3},
+                {2, -1, 4}
+            };
+            final double[][] matrixB = {
+                {1, -2, -2},
+                {5, 1, 3}
+            };
+            // when
+            final double result = MathCalc.LinearAlgebra.dotProduct(matrixA, matrixB);
+            // then
+            // 4*1 + 5*-2 + -3*-2 = [4, -10, 6] = 0
+            // 2*5 + -1*1 + 4*3   = [10, -1, 12] = 21
+            assertEquals(21, result, DELTA1);
+        }
+
+        @Test
+        void testDotProduct2dAndAngleBetween() {
+            // given
+            final double[] vectorA = {5, 4};
+            final double[] vectorB = {2, 3};
+            // when
+            final double[] resultData = MathCalc.LinearAlgebra.dotProductAndAngleBetween(vectorA, vectorB);
+            // then
+            assertNotNull(resultData);
+            assertEquals(4, resultData.length);
+            final double dot = resultData[Constants.ARR_1ST_INDEX];
+            final double magnitudeA = resultData[Constants.ARR_2ND_INDEX];
+            final double magnitudeB = resultData[Constants.ARR_3RD_INDEX];
+            final double angleRadians = resultData[Constants.ARR_4TH_INDEX];
+            assertEquals(22, dot, DELTA1);
+            assertEquals(6.403, magnitudeA, DELTA3);
+            assertEquals(3.6056, magnitudeB, DELTA4);
+            assertEquals(0.30814, angleRadians, DELTA5);
+        }
+
+        @Test
+        void testDotProduct3dAndAngleBetween() {
+            // given
+            final double[] vectorA = {4, 5, 3};
+            final double[] vectorB = {1, -2, -2};
+            // when
+            final double[] resultData = MathCalc.LinearAlgebra.dotProductAndAngleBetween(vectorA, vectorB);
+            // then
+            assertNotNull(resultData);
+            assertEquals(4, resultData.length);
+            final double dot = resultData[Constants.ARR_1ST_INDEX];
+            final double magnitudeA = resultData[Constants.ARR_2ND_INDEX];
+            final double magnitudeB = resultData[Constants.ARR_3RD_INDEX];
+            final double angleRadians = resultData[Constants.ARR_4TH_INDEX];
+            assertEquals(-12, dot, DELTA1);
+            assertEquals(7.071, magnitudeA, DELTA3);
+            assertEquals(3, magnitudeB, DELTA4);
+            assertEquals(2.172, angleRadians, DELTA3);
+        }
+
         static List<Arguments> vectorAddWithMultiplesArgs() {
             return List.of(
                 Arguments.of(new double[]{-3, 2, 8}, 1,
@@ -4156,6 +4154,101 @@ class MathCalcTest {
                 .vectorSubtractWithMultiples(vectorA, multipleAlpha, vectorB, multipleBeta);
             // then
             assertArrayEquals(expectedResult, result, delta);
+        }
+
+        static List<Arguments> determinantArgs() {
+            return List.of(
+                // 2x2
+                Arguments.of(new double[][]{
+                    {2, 5},
+                    {4, 1},
+                }, -18, DELTA1),
+                // 3x3
+                Arguments.of(new double[][]{
+                    {2, 5, 1},
+                    {4, 1, 7},
+                    {6, 8, 3},
+                }, 70, DELTA1),
+                // 4x4
+                Arguments.of(new double[][]{
+                    {2, 5, 1, 3}, // a₁ - a₄
+                    {4, 1, 7, 9}, // b₁ - b₄
+                    {6, 8, 3, 2}, // c₁ - c₄
+                    {7, 8, 1, 4}, // d₁ - d₄
+                }, 630, DELTA1),
+                Arguments.of(new double[][]{
+                    // col1 + (-2) * col3
+                    {0, 5, 1, 3},
+                    {-10, 1, 7, 9},
+                    {0, 8, 3, 2},
+                    {5, 8, 1, 4},
+                }, 630, DELTA1),
+                // 5x5
+                Arguments.of(new double[][]{
+                    {2, 5, 1, 3, 1},
+                    {4, 1, 7, 9, 2},
+                    {6, 8, 3, 2, 3},
+                    {7, 8, 1, 4, 4},
+                    {1, 2, 3, 4, 5},
+                }, 2940, DELTA1),
+                // 6x6
+                Arguments.of(new double[][]{
+                    {2, 5, 1, 3, 1},
+                    {4, 1, 7, 9, 2},
+                    {6, 8, 3, 2, 3},
+                    {7, 8, 1, 4, 4},
+                    {1, 2, 3, 4, 5},
+                }, 2940, DELTA1),
+                // 10x10
+                Arguments.of(new double[][]{
+                    {2, 5, 1, 3, 1, 2, 3, 4, 5, 6},
+                    {4, 1, 7, 9, 2, 3, 4, 5, 6, 7},
+                    {6, 8, 3, 25, 3, 4, 15, 6, 7, 8},
+                    {7, 8, 1, 4, 4, -5, 6, 7, 8, 9},
+                    {1, 2, 33, 4, 5, 61, 7, 8, 9, 10},
+                    {24, 50, 42, 51, 36, 77, 8, 9, 10, 11},
+                    {3, 4, 5, -6, 7, 81, 99, 10, 11, 12},
+                    {4, 3, -6, 7, 8, 9, 10, 11, 12, 13},
+                    {5, 2, 7, 8, 9, 11, 11, 12, 13, 14},
+                    {6, 1, 8, 9, 10, 11, 12, 13, 14, 25}
+                }, -51_561_264_000d, DELTA1)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("determinantArgs")
+        void testDeterminant(double[][] matrix, double expectedResult, double delta) {
+            // when
+            final double result = MathCalc.LinearAlgebra.determinant(matrix);
+            // then
+            assertEquals(expectedResult, result, delta);
+        }
+
+        static List<Arguments> eigenvaluesEigenvectorsOf2x2Args() {
+            return List.of(
+                // 2x2
+                Arguments.of(new double[][]{
+                    {2, 5},
+                    {4, 1},
+                }, Pair.of(new double[]{6, -3}, new double[][]{{1, MathCalc.FOUR_FIFTH}, {1, -1}}), DELTA2)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("eigenvaluesEigenvectorsOf2x2Args")
+        void testEigenvaluesEigenvectorsOf2x2(
+            double[][] matrix, Pair<double[], double[][]> expectedResult, double delta) {
+            // when
+            final var result = MathCalc.LinearAlgebra.eigenvaluesEigenvectorsOf2x2(matrix);
+            // then
+            assertNotNull(result);
+            assertArrayEquals(expectedResult.getLeft(), result.getLeft(), delta);
+            final double[][] expectedEigenVectors = expectedResult.getRight();
+            final double[][] eigenVectors = result.getRight();
+            assertEquals(expectedEigenVectors.length, eigenVectors.length);
+            for (int i = 0; i < expectedEigenVectors.length; i++) {
+                assertArrayEquals(expectedEigenVectors[i], eigenVectors[i], delta);
+            }
         }
     }
 
