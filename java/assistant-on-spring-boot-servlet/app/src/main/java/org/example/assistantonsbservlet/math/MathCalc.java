@@ -2828,118 +2828,6 @@ public final class MathCalc {
         }
 
         /**
-         * @return |v| = √(x² + y² + z²)
-         */
-        public static double vectorMagnitude(double[] vector) {
-            return Math.sqrt(Arrays.stream(vector).map(m -> m * m).sum());
-        }
-
-        /**
-         * û = u / |u|
-         * where:
-         * û — Unit vector;
-         * u — Arbitrary vector in the form (x, y, z);
-         * |u| — Magnitude of the vector u.
-         */
-        public static Triple<Double, double[], Double> unitVector(double[] vector) {
-            final double magnitude = vectorMagnitude(vector);
-            final double[] result = Arrays.stream(vector).map(m -> m / magnitude).toArray();
-            final double resultMagnitude = vectorMagnitude(result);
-            return Triple.of(magnitude, result, resultMagnitude);
-        }
-
-        /**
-         * Find one of the missing components.
-         * For example, find z |v| = √(x² + y² + ?)
-         */
-        public static Pair<double[], Double> findMissingUnitVectorComponent(double[] unitVector) {
-            final double sum = Arrays.stream(unitVector).map(m -> {
-                if (m > 1) {
-                    throw new IllegalArgumentException("Unit vector components must be less than or equal to 1");
-                }
-                return m;
-            }).sum();
-            final double[] result = Arrays.copyOf(unitVector, unitVector.length + 1);
-            result[result.length - 1] = sum;
-            final double resultMagnitude = vectorMagnitude(result);
-            return Pair.of(result, resultMagnitude);
-        }
-
-        /**
-         * @return v × w = (v₂w₃ - v₃w₂, v₃w₁ - v₁w₃, v₁w₂ - v₂w₁)
-         */
-        public static double[] crossProduct(double[] vectorA, double[] vectorB) {
-            if (vectorA.length != 3 || vectorB.length != 3) {
-                throw new IllegalArgumentException("The cross product can only be applied to 3D vectors");
-            }
-
-            final var a = vectorA;
-            final var b = vectorB;
-            final int i1 = Constants.ARR_1ST_INDEX;
-            final int i2 = Constants.ARR_2ND_INDEX;
-            final int i3 = Constants.ARR_3RD_INDEX;
-            return new double[]{
-                a[i2] * b[i3] - a[i3] * b[i2],
-                a[i3] * b[i1] - a[i1] * b[i3],
-                a[i1] * b[i2] - a[i2] * b[i1],
-            };
-        }
-
-        /**
-         * @return a⋅b = a₁b₁ + a₂b₂ + a₃b₃
-         */
-        public static double dotProduct(double[] vectorA, double[] vectorB) {
-            checkSameDimensions(vectorA, vectorB);
-
-            double result = 0;
-            for (int i = 0; i < vectorA.length; i++) {
-                result += vectorA[i] * vectorB[i];
-            }
-            return result;
-        }
-
-        /**
-         * @return c_ij=a_i1 * b_1j + a_i2 * b_2j +...+ a_in * b_nj = ∑_k a_ik * b_kj
-         */
-        public static double dotProduct(double[][] matrixA, double[][] matrixB) {
-            checkSameDimensions(matrixA, matrixB);
-
-            double result = 0;
-            for (int i = 0; i < matrixA.length; i++) {
-                for (int j = 0; j < matrixA[i].length; j++) {
-                    result += matrixA[i][j] * matrixB[i][j];
-                }
-            }
-            return result;
-        }
-
-        public static double[] dotProductAndAngleBetween(double[] vectorA, double[] vectorB) {
-            return dotProductAndAngleBetween(vectorA, vectorB, 4, RoundingMode.HALF_UP);
-        }
-
-        /**
-         * a⋅b = |a| × |b| × cos α
-         * cos α = a⋅b / (|a| × |b|)
-         */
-        public static double[] dotProductAndAngleBetween(
-            double[] vectorA, double[] vectorB, int scale, RoundingMode roundingMode) {
-            final var dot = BigDecimal.valueOf(dotProduct(vectorA, vectorB))
-                .setScale(scale, roundingMode);
-            final var magnitudeA = BigDecimal.valueOf(vectorMagnitude(vectorA))
-                .setScale(scale, roundingMode);
-            final var magnitudeB = BigDecimal.valueOf(vectorMagnitude(vectorB))
-                .setScale(scale, roundingMode);
-
-            final double angleRadians = dot.divide(magnitudeA.multiply(magnitudeB), roundingMode).doubleValue();
-            return new double[]{
-                dot.doubleValue(),
-                magnitudeA.doubleValue(),
-                magnitudeB.doubleValue(),
-                Math.acos(angleRadians)
-            };
-        }
-
-        /**
          * @return d = ∣a₁ − b₁∣ + ... + ∣a_N − b_N∣
          */
         public static double manhattanDistance(double[] vectorA, double[] vectorB) {
@@ -3043,24 +2931,6 @@ public final class MathCalc {
             final double y = radius * Math.sin(theta) * Math.sin(phi);
             final double z = radius * Math.cos(theta);
             return new double[]{x, y, z};
-        }
-
-        public static Pair<double[], Double> vectorProjection(double[] vectorA, double[] vectorB) {
-            checkSameDimensions(vectorA, vectorB);
-
-            final double dotProduct = dotProduct(vectorA, vectorB);
-            final double squaredNormOfB = dotProduct(vectorB, vectorB);
-            if (squaredNormOfB == 0) {
-                throw new ArithmeticException(DIVISION_BY_ZERO);
-            }
-
-            final double projectionFactor = dotProduct / squaredNormOfB;
-
-            final double[] result = new double[vectorA.length];
-            for (int i = 0; i < vectorA.length; i++) {
-                result[i] = projectionFactor * vectorB[i];
-            }
-            return Pair.of(result, projectionFactor);
         }
 
         /**
@@ -4028,18 +3898,236 @@ public final class MathCalc {
         private LinearAlgebra() {
         }
 
+        /**
+         * @return |v| = √(x² + y² + z²)
+         */
+        public static double vectorMagnitude(double[] vector) {
+            return Algebra.squareRoot(Arrays.stream(vector).map(m -> m * m).sum());
+        }
+
+        /**
+         * û = u / |u|
+         * where:
+         * û — Unit vector;
+         * u — Arbitrary vector in the form (x, y, z);
+         * |u| — Magnitude of the vector u.
+         */
+        public static Triple<Double, double[], Double> unitVector(double[] vector) {
+            final double magnitude = vectorMagnitude(vector);
+            final double[] result = Arrays.stream(vector).map(m -> m / magnitude).toArray();
+            final double resultMagnitude = vectorMagnitude(result);
+            return Triple.of(magnitude, result, resultMagnitude);
+        }
+
+        public static Pair<double[], Double> vectorProjection(double[] vectorA, double[] vectorB) {
+            checkSameDimensions(vectorA, vectorB);
+
+            final double dotProduct = dotProduct(vectorA, vectorB);
+            final double squaredNormOfB = dotProduct(vectorB, vectorB);
+            if (squaredNormOfB == 0) {
+                throw new ArithmeticException(DIVISION_BY_ZERO);
+            }
+
+            final double projectionFactor = dotProduct / squaredNormOfB;
+
+            final double[] result = new double[vectorA.length];
+            for (int i = 0; i < vectorA.length; i++) {
+                result[i] = projectionFactor * vectorB[i];
+            }
+            return Pair.of(result, projectionFactor);
+        }
+
+        /**
+         * Find one of the missing components.
+         * For example, find z |v| = √(x² + y² + ?)
+         */
+        public static Pair<double[], Double> findMissingUnitVectorComponent(double[] unitVector) {
+            final double sum = Arrays.stream(unitVector).map(m -> {
+                if (m > 1) {
+                    throw new IllegalArgumentException("Unit vector components must be less than or equal to 1");
+                }
+                return m;
+            }).sum();
+            final double[] result = Arrays.copyOf(unitVector, unitVector.length + 1);
+            result[result.length - 1] = sum;
+            final double resultMagnitude = vectorMagnitude(result);
+            return Pair.of(result, resultMagnitude);
+        }
+
+        /**
+         * @return v × w = (v₂w₃ - v₃w₂, v₃w₁ - v₁w₃, v₁w₂ - v₂w₁)
+         */
+        public static double[] crossProduct(double[] vectorA, double[] vectorB) {
+            if (vectorA.length != 3 || vectorB.length != 3) {
+                throw new IllegalArgumentException("The cross product can only be applied to 3D vectors");
+            }
+
+            final var a = vectorA;
+            final var b = vectorB;
+            final int i1 = Constants.ARR_1ST_INDEX;
+            final int i2 = Constants.ARR_2ND_INDEX;
+            final int i3 = Constants.ARR_3RD_INDEX;
+            return new double[]{
+                a[i2] * b[i3] - a[i3] * b[i2],
+                a[i3] * b[i1] - a[i1] * b[i3],
+                a[i1] * b[i2] - a[i2] * b[i1],
+            };
+        }
+
+        /**
+         * @return a⋅b = a₁b₁ + a₂b₂ + a₃b₃
+         */
+        public static double dotProduct(double[] vectorA, double[] vectorB) {
+            checkSameDimensions(vectorA, vectorB);
+
+            double result = 0;
+            for (int i = 0; i < vectorA.length; i++) {
+                result += vectorA[i] * vectorB[i];
+            }
+            return result;
+        }
+
+        /**
+         * @return c_ij=a_i1 * b_1j + a_i2 * b_2j +...+ a_in * b_nj = ∑_k a_ik * b_kj
+         */
+        public static double dotProduct(double[][] matrixA, double[][] matrixB) {
+            checkSameDimensions(matrixA, matrixB);
+
+            double result = 0;
+            for (int i = 0; i < matrixA.length; i++) {
+                for (int j = 0; j < matrixA[i].length; j++) {
+                    result += matrixA[i][j] * matrixB[i][j];
+                }
+            }
+            return result;
+        }
+
+        public static double[] dotProductAndAngleBetween(double[] vectorA, double[] vectorB) {
+            return dotProductAndAngleBetween(vectorA, vectorB, 4, RoundingMode.HALF_UP);
+        }
+
+        /**
+         * a⋅b = |a| × |b| × cos α
+         * cos α = a⋅b / (|a| × |b|)
+         */
+        public static double[] dotProductAndAngleBetween(
+            double[] vectorA, double[] vectorB, int scale, RoundingMode roundingMode) {
+            final var dot = BigDecimal.valueOf(dotProduct(vectorA, vectorB))
+                .setScale(scale, roundingMode);
+            final var magnitudeA = BigDecimal.valueOf(vectorMagnitude(vectorA))
+                .setScale(scale, roundingMode);
+            final var magnitudeB = BigDecimal.valueOf(vectorMagnitude(vectorB))
+                .setScale(scale, roundingMode);
+
+            final double angleRadians = dot.divide(magnitudeA.multiply(magnitudeB), roundingMode).doubleValue();
+            return new double[]{
+                dot.doubleValue(),
+                magnitudeA.doubleValue(),
+                magnitudeB.doubleValue(),
+                Math.acos(angleRadians)
+            };
+        }
+
+        /**
+         * ∣A∣ = ∑(−1)ˢᵍⁿ⁽σ⁾ ∏aᵢ,σ₍ᵢ₎
+         * <br/>where:
+         * <ul>
+         *     <li>∑ is the sum of all permutations of the set {1,2…,n}</li>
+         *     <li>∏ is the product of i-s from 1 to n.</li>
+         * </ul>
+         * <p/>For 2x2 matrix:
+         * A=|a₁ a₂|
+         *   |b₁ b₂|
+         * ∣A∣ = a₁⋅b₂−a₂⋅b₁
+         * <br/>Alternative:
+         * A=|a b|
+         *   |c d|
+         * ∣A∣ = ad−bc
+         * <p/>For 3x3 matrix:
+         *   |a₁ b₁ c₁|
+         * A=|a₂ b₂ c₂|
+         *   |a₃ b₃ c₃|
+         * ∣A∣ = a₁⋅b₂⋅c₃ + a₂⋅b₃⋅c₁ + a₃⋅b₁⋅c₂ − a₃⋅b₂⋅c₁ − a₁⋅b₃⋅c₂ − a₂⋅b₁⋅c₃
+         * <br/>Alternatives:
+         *   |a b c|
+         * A=|d e f|
+         *   |g h i|
+         * <br/>|A| = a(ei − fh) − b(di − fg) + c(dh − eg) = aei + bfg + cdh − ceg − bdi - afh
+         * |A| = a * |e f| - b * |d f| + c * |d e|
+         *           |h i|       |g i|       |g h|
+         * <p/>For 4x4 matrix:
+         *   |a₁ b₁ c₁ d₁|
+         * A=|a₂ b₂ c₂ d₂|
+         *   |a₃ b₃ c₃ d₃|
+         *   |a₄ b₄ c₄ d₄|
+         * ∣A∣ = a₁⋅b₂⋅c₃⋅d₄ − a₂⋅b₁⋅c₃⋅d₄ + a₃⋅b₁⋅c₂⋅d₄
+         *      −a₁⋅b₃⋅c₂⋅d₄ + a₂⋅b₃⋅c₁⋅d₄ − a₃⋅b₂⋅c₁⋅d₄
+         *      +a₃⋅b₂⋅c₄⋅d₁ − a₂⋅b₃⋅c₄⋅d₁ + a₄⋅b₃⋅c₂⋅d₁
+         *      −a₃⋅b₄⋅c₂⋅d₁ + a₂⋅b₄⋅c₃⋅d₁ − a₄⋅b₂⋅c₃⋅d₁
+         *      +a₄⋅b₁⋅c₃⋅d₂ − a₁⋅b₄⋅c₃⋅d₂ + a₃⋅b₄⋅c₁⋅d₂
+         *      −a₄⋅b₃⋅c₁⋅d₂ + a₁⋅b₃⋅c₄⋅d₂ − a₃⋅b₁⋅c₄⋅d₂
+         *      +a₂⋅b₁⋅c₄⋅d₃ − a₁⋅b₂⋅c₄⋅d₃ + a₄⋅b₂⋅c₁⋅d₃
+         *      −a₂⋅b₄⋅c₁⋅d₃ + a₁⋅b₄⋅c₂⋅d₃ − a₄⋅b₁⋅c₂⋅d₃
+         * <br/>Alternatives:
+         *   |a b c d|
+         * A=|e f g h|
+         *   |i j k l|
+         *   |m n o p|
+         *           |f g h|       |e g h|       |e f h|       |e f g|
+         * |A| = a * |j k l| - b * |i k l| + c * |i j l| - d * |i j k|
+         *           |n o p|       |m o p|       |m n p|       |m n o|
+         *
+         * @return det(A) = ∣A∣
+         */
         public static double determinant(double[][] matrix) {
             final int n = matrix.length;
-            final byte row1 = 0;
-            final byte col1 = 0;
+            final byte row1 = Constants.ARR_1ST_INDEX;
+            final byte col1 = Constants.ARR_1ST_INDEX;
             if (n == 1) {
                 return matrix[row1][col1];
             }
 
-            final byte row2 = 1;
-            final byte col2 = 1;
+            final byte row2 = Constants.ARR_2ND_INDEX;
+            final byte col2 = Constants.ARR_2ND_INDEX;
             if (n == 2) {
                 return matrix[row1][col1] * matrix[row2][col2] - matrix[row1][col2] * matrix[row2][col1];
+            }
+
+            final byte row3 = Constants.ARR_3RD_INDEX;
+            final byte col3 = Constants.ARR_3RD_INDEX;
+
+            final double a1 = matrix[row1][col1];
+            final double a2 = matrix[row2][col1];
+            final double a3 = matrix[row3][col1];
+            final double b1 = matrix[row1][col2];
+            final double b2 = matrix[row2][col2];
+            final double b3 = matrix[row3][col2];
+            final double c1 = matrix[row1][col3];
+            final double c2 = matrix[row2][col3];
+            final double c3 = matrix[row3][col3];
+            if (n == 3) {
+                return a1 * b2 * c3 + a2 * b3 * c1 + a3 * b1 * c2 - a3 * b2 * c1 - a1 * b3 * c2 - a2 * b1 * c3;
+            }
+
+            final byte row4 = Constants.ARR_4TH_INDEX;
+            final byte col4 = Constants.ARR_4TH_INDEX;
+
+            final double a4 = matrix[row4][col1];
+            final double b4 = matrix[row4][col2];
+            final double c4 = matrix[row4][col3];
+            final double d1 = matrix[row1][col4];
+            final double d2 = matrix[row2][col4];
+            final double d3 = matrix[row3][col4];
+            final double d4 = matrix[row4][col4];
+            if (n == 4) {
+                return a1 * b2 * c3 * d4 - a2 * b1 * c3 * d4 + a3 * b1 * c2 * d4
+                    - a1 * b3 * c2 * d4 + a2 * b3 * c1 * d4 - a3 * b2 * c1 * d4
+                    + a3 * b2 * c4 * d1 - a2 * b3 * c4 * d1 + a4 * b3 * c2 * d1
+                    - a3 * b4 * c2 * d1 + a2 * b4 * c3 * d1 - a4 * b2 * c3 * d1
+                    + a4 * b1 * c3 * d2 - a1 * b4 * c3 * d2 + a3 * b4 * c1 * d2
+                    - a4 * b3 * c1 * d2 + a1 * b3 * c4 * d2 - a3 * b1 * c4 * d2
+                    + a2 * b1 * c4 * d3 - a1 * b2 * c4 * d3 + a4 * b2 * c1 * d3
+                    - a2 * b4 * c1 * d3 + a1 * b4 * c2 * d3 - a4 * b1 * c2 * d3;
             }
 
             final int size = n - 1;
@@ -4134,6 +4222,51 @@ public final class MathCalc {
                 result[i] = alphaCopies * vectorA[i] - betaCopies * vectorB[i];
             }
             return result;
+        }
+
+        /**
+         * A×v = λ×v
+         * (A−λI)v = 0
+         */
+        public static Pair<double[], double[][]> eigenvaluesEigenvectorsOf2x2(double[][] matrix) {
+            final byte row1 = Constants.ARR_1ST_INDEX;
+            final byte col1 = Constants.ARR_1ST_INDEX;
+            final byte row2 = Constants.ARR_2ND_INDEX;
+            final byte col2 = Constants.ARR_2ND_INDEX;
+
+            final double a = matrix[row1][col1];
+            final double b = matrix[row1][col2];
+            final double c = matrix[row2][col1];
+            final double d = matrix[row2][col2];
+            // only one eigenvalue
+            // A=|1 k|
+            //   |0 1|
+            // or
+            // A=|k 0|
+            //   |0 k|
+            final double tr = a + d;
+            final double det = determinant(matrix);
+            final double sqrt = Algebra.squareRoot(tr * tr - 4 * det);
+            final double lambda1 = (tr + sqrt) / 2;
+            final double lambda2 = (tr - sqrt) / 2;
+
+            // (q−λI)v = 0
+            final double[] vector1;
+            final double[] vector2;
+            if (b != 0) {
+                vector1 = new double[]{1, (lambda1 - a) / b};
+                vector2 = new double[]{1, (lambda2 - a) / b};
+            } else if (c != 0) {
+                vector1 = new double[]{(lambda1 - d) / c, 1};
+                vector2 = new double[]{(lambda2 - d) / c, 1};
+            } else {
+                vector1 = new double[]{1, 0};
+                vector2 = new double[]{0, 1};
+            }
+
+            final double[] eigenvalues = {lambda1, lambda2};
+            final double[][] eigenvectors = {vector1, vector2};
+            return Pair.of(eigenvalues, eigenvectors);
         }
     }
 
