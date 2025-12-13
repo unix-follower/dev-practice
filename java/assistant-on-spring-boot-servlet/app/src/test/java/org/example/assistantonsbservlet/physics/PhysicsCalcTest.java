@@ -18,6 +18,7 @@ class PhysicsCalcTest {
     private static final double DELTA1 = 0.1;
     private static final double DELTA2 = 0.01;
     private static final double DELTA4 = 0.0001;
+    private static final double DELTA7 = 0.0000001;
     private static final double DELTA9 = 0.000000001;
 
     @Nested
@@ -600,6 +601,17 @@ class PhysicsCalcTest {
                 temperatureCoeff, temperatureStart, temperatureEnd);
             // then
             assertArrayEquals(expectedResult, resistorValues, delta);
+        }
+
+        @Test
+        void testInductorEnergy() {
+            // given
+            final double inductanceHenries = HenryUnit.microHenriesToHenries(20);
+            final double currentAmperes = 0.3;
+            // when
+            final double storedEnergy = PhysicsCalc.Electronics.inductorEnergy(inductanceHenries, currentAmperes);
+            // then
+            assertEquals(9e-7, storedEnergy, DELTA7);
         }
     }
 }

@@ -4245,10 +4245,211 @@ class MathCalcTest {
             assertArrayEquals(expectedResult.getLeft(), result.getLeft(), delta);
             final double[][] expectedEigenVectors = expectedResult.getRight();
             final double[][] eigenVectors = result.getRight();
-            assertEquals(expectedEigenVectors.length, eigenVectors.length);
-            for (int i = 0; i < expectedEigenVectors.length; i++) {
-                assertArrayEquals(expectedEigenVectors[i], eigenVectors[i], delta);
+            assertMatrixEquals(expectedEigenVectors, eigenVectors, delta);
+        }
+
+        static List<Arguments> matrixTraceArgs() {
+            return List.of(
+                // 2x2
+                Arguments.of(new double[][]{{1, 2}, {3, 4}}, 5, DELTA1),
+                // 3x3
+                Arguments.of(new double[][]{{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}, 15, DELTA1),
+                // 4x4
+                Arguments.of(new double[][]{
+                    {1, 2, 3, 4}, {5, 6, 7, 8}, {9, 10, 11, 12}, {13, 14, 15, 16}}, 34, DELTA1),
+                // 5x5
+                Arguments.of(new double[][]{
+                    {1, 2, 3, 4, 5},
+                    {6, 7, 8, 9, 10},
+                    {11, 12, 13, 14, 15},
+                    {16, 17, 18, 19, 20},
+                    {21, 22, 23, 24, 25}
+                }, 65, DELTA1)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("matrixTraceArgs")
+        void testMatrixTrace(double[][] matrix, double expectedResult, double delta) {
+            // when
+            final double result = MathCalc.LinearAlgebra.matrixTrace(matrix);
+            // then
+            assertEquals(expectedResult, result, delta);
+        }
+
+        static List<Arguments> matrixMultiplyScalarArgs() {
+            return List.of(
+                // 2x2
+                Arguments.of(new double[][]{{1, 2}, {3, 4}}, 0, new double[][]{{0, 0}, {0, 0}}, DELTA1),
+                Arguments.of(new double[][]{{1, 2}, {3, 4}}, 5, new double[][]{{5, 10}, {15, 20}}, DELTA1),
+                // 3x3
+                Arguments.of(new double[][]{{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}, 2,
+                    new double[][]{{2, 4, 6}, {8, 10, 12}, {14, 16, 18}}, DELTA1),
+                // 4x4
+                Arguments.of(new double[][]{
+                    {1, 2, 3, 4}, {5, 6, 7, 8}, {9, 10, 11, 12}, {13, 14, 15, 16}}, 2, new double[][]{
+                    {2, 4, 6, 8}, {10, 12, 14, 16}, {18, 20, 22, 24}, {26, 28, 30, 32}}, DELTA1),
+                // 5x5
+                Arguments.of(new double[][]{
+                    {1, 2, 3, 4, 5},
+                    {6, 7, 8, 9, 10},
+                    {11, 12, 13, 14, 15},
+                    {16, 17, 18, 19, 20},
+                    {21, 22, 23, 24, 25}
+                }, 2, new double[][]{
+                    {2, 4, 6, 8, 10},
+                    {12, 14, 16, 18, 20},
+                    {22, 24, 26, 28, 30},
+                    {32, 34, 36, 38, 40},
+                    {42, 44, 46, 48, 50}
+                }, DELTA1)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("matrixMultiplyScalarArgs")
+        void testMatrixMultiplyScalar(double[][] matrix, double multiplier, double[][] expectedResult, double delta) {
+            // when
+            final double[][] result = MathCalc.LinearAlgebra.matrixMultiplyScalar(matrix, multiplier);
+            // then
+            assertMatrixEquals(expectedResult, result, delta);
+        }
+
+        private static void assertMatrixEquals(double[][] expectedResult, double[][] result, double delta) {
+            assertNotNull(result);
+            assertEquals(expectedResult.length, result.length);
+            for (int i = 0; i < expectedResult.length; i++) {
+                assertArrayEquals(expectedResult[i], result[i], delta);
             }
+        }
+
+        static List<Arguments> matrixDivideScalarArgs() {
+            return List.of(
+                // 2x2
+                Arguments.of(new double[][]{{5, 10}, {15, 20}}, 5, new double[][]{{1, 2}, {3, 4}}, DELTA1),
+                // 3x3
+                Arguments.of(new double[][]{{2, 4, 6}, {8, 10, 12}, {14, 16, 18}}, 2,
+                    new double[][]{{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}, DELTA1),
+                // 4x4
+                Arguments.of(new double[][]{
+                    {2, 4, 6, 8}, {10, 12, 14, 16}, {18, 20, 22, 24}, {26, 28, 30, 32}}, 2, new double[][]{
+                    {1, 2, 3, 4}, {5, 6, 7, 8}, {9, 10, 11, 12}, {13, 14, 15, 16}}, DELTA1),
+                // 5x5
+                Arguments.of(new double[][]{
+                    {2, 4, 6, 8, 10},
+                    {12, 14, 16, 18, 20},
+                    {22, 24, 26, 28, 30},
+                    {32, 34, 36, 38, 40},
+                    {42, 44, 46, 48, 50}
+                }, 2, new double[][]{
+                    {1, 2, 3, 4, 5},
+                    {6, 7, 8, 9, 10},
+                    {11, 12, 13, 14, 15},
+                    {16, 17, 18, 19, 20},
+                    {21, 22, 23, 24, 25}
+                }, DELTA1)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("matrixDivideScalarArgs")
+        void testMatrixDivideScalar(double[][] matrix, double divisor, double[][] expectedResult, double delta) {
+            // when
+            final double[][] result = MathCalc.LinearAlgebra.matrixDivideScalar(matrix, divisor);
+            // then
+            assertMatrixEquals(expectedResult, result, delta);
+        }
+
+        static List<Arguments> matrixAddArgs() {
+            return List.of(
+                // 3x3
+                Arguments.of(new double[][]{{3000, 3000, 3000}, {3000, 3000, 3000}, {3000, 3000, 3000}},
+                    new double[][]{{250, 0, 0}, {-400, -400, 300}, {300, 300, 550}},
+                    new double[][]{{3250, 3000, 3000}, {2600, 2600, 3300}, {3300, 3300, 3550}}, DELTA1)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("matrixAddArgs")
+        void testMatrixAdd(double[][] matrix, double[][] matrixChange, double[][] expectedResult, double delta) {
+            // when
+            final double[][] result = MathCalc.LinearAlgebra.matrixAdd(matrix, matrixChange);
+            // then
+            assertMatrixEquals(expectedResult, result, delta);
+        }
+
+        static List<Arguments> matrixSubtractArgs() {
+            return List.of(
+                // 3x3
+                Arguments.of(new double[][]{{3250, 3000, 3000}, {2600, 2600, 3300}, {3300, 3300, 3550}},
+                    new double[][]{{250, 0, 0}, {-400, -400, 300}, {300, 300, 550}},
+                    new double[][]{{3000, 3000, 3000}, {3000, 3000, 3000}, {3000, 3000, 3000}}, DELTA1)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("matrixSubtractArgs")
+        void testMatrixSubtract(double[][] matrix, double[][] matrixChange, double[][] expectedResult, double delta) {
+            // when
+            final double[][] result = MathCalc.LinearAlgebra.matrixSubtract(matrix, matrixChange);
+            // then
+            assertMatrixEquals(expectedResult, result, delta);
+        }
+
+        static List<Arguments> cofactorMatrixArgs() {
+            return List.of(
+                // 2x2
+                Arguments.of(new double[][]{{1, 2}, {3, 4}}, new double[][]{{4, -3}, {-2, 1}}, DELTA1),
+                // 3x3
+                Arguments.of(new double[][]{{1, 2, 3}, {4, 5, 6}, {7, 8, 9}},
+                    new double[][]{{-3, 6, -3}, {6, -12, 6}, {-3, 6, -3}}, DELTA1),
+                // 4x4
+                Arguments.of(new double[][]{
+                    {1, 2, 3, 4}, {5, 6, 7, 8}, {9, 10, 21, 12}, {33, 14, 15, 1}}, new double[][]{
+                    {-1000, 2550, -100, -1200}, {420, -1230, 200, 360}, {60, -40, -100, 80}, {-80, 120, 0, -40}},
+                    DELTA1)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("cofactorMatrixArgs")
+        void testCofactorMatrix(double[][] matrix, double[][] expectedResult, double delta) {
+            // when
+            final double[][] result = MathCalc.LinearAlgebra.cofactorMatrix(matrix);
+            // then
+            assertMatrixEquals(expectedResult, result, delta);
+        }
+
+        static List<Arguments> matrixNormArgs() {
+            return List.of(
+                // 3x3
+                Arguments.of(new double[][]{{2, 2, 6}, {1, 3, 9}, {6, 1, 0}}, new double[]{15, 13, 9}, DELTA3)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("matrixNormArgs")
+        void testMatrixNorm(double[][] matrix, double[] expectedResult, double delta) {
+            // when
+            final double[] result = MathCalc.LinearAlgebra.matrixNorm(matrix);
+            // then
+            assertArrayEquals(expectedResult, result, delta);
+        }
+
+        static List<Arguments> transposeMatrixArgs() {
+            return List.of(
+                // 3x2
+                Arguments.of(new double[][]{{3, -1}, {0, 2}, {1, -1}}, new double[][]{{3, 0, 1}, {-1, 2, -1}}, DELTA1)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("transposeMatrixArgs")
+        void testTransposeMatrix(double[][] matrix, double[][] expectedResult, double delta) {
+            // when
+            final double[][] result = MathCalc.LinearAlgebra.transposeMatrix(matrix);
+            // then
+            assertMatrixEquals(expectedResult, result, delta);
         }
     }
 
