@@ -4080,6 +4080,7 @@ public final class MathCalc {
          * @return det(A) = ∣A∣
          */
         public static double determinant(double[][] matrix) {
+            Objects.requireNonNull(matrix);
             final int n = matrix.length;
             final byte row1 = Constants.ARR_1ST_INDEX;
             final byte col1 = Constants.ARR_1ST_INDEX;
@@ -4143,6 +4144,8 @@ public final class MathCalc {
                         subMatrix[i - 1][subColumn++] = matrix[i][j];
                     }
                 }
+                // The cofactor expansion (Laplace expansion)
+                // Cᵢⱼ = (-1)ᶦ⁺ʲ × det(Aᵢⱼ)
                 det += Math.pow(-1, column) * matrix[row1][column] * determinant(subMatrix);
             }
             return det;
@@ -4227,6 +4230,8 @@ public final class MathCalc {
         /**
          * A×v = λ×v
          * (A−λI)v = 0
+         * p(λ) = x² − tr(A)·λ + det(A)
+         * ½ tr(A) ± ½√(tr(A)² − 4·det(A))
          */
         public static Pair<double[], double[][]> eigenvaluesEigenvectorsOf2x2(double[][] matrix) {
             final byte row1 = Constants.ARR_1ST_INDEX;
@@ -4267,6 +4272,242 @@ public final class MathCalc {
             final double[] eigenvalues = {lambda1, lambda2};
             final double[][] eigenvectors = {vector1, vector2};
             return Pair.of(eigenvalues, eigenvectors);
+        }
+
+        /**
+         * <ul>
+         *     <li>tr(A+B) = tr(A)+tr(B)</li>
+         *     <li>tr(kA) = k tr(A), where k is a scalar</li>
+         *     <li>tr(AB) = tr(BA)</li>
+         *     <li>tr(ABC) = tr(BCA) = tr(CAB)</li>
+         *     <li>tr(ABCD) = tr(BCDA) = tr(CDAB) = tr(DABC)</li>
+         *     <li>tr(ABC) ≠ tr(ACB)</li>
+         *     <li>tr(A₁ … Aₙ) = tr(A₂ … AₙA₁) = tr(A₃ … AₙA₁A₂) = …</li>
+         *     <li>tr(Aᵀ) = tr(A)</li>
+         *     <li>tr(A⊗B) = tr(A)tr(B)</li>
+         *     <li>tr(Iₙ) = n</li>
+         *     <li>tr(x·A + y·B) = x × tr(A) + y × tr(B), where A and B are square matrices of the same size,
+         *     and x and y are scalars.</li>
+         * </ul>
+         */
+        public static double matrixTrace(double[][] matrix) {
+            Objects.requireNonNull(matrix);
+            checkSquareMatrix(matrix);
+
+            final int n = matrix.length;
+            double trace = 0.0;
+            for (int i = 0; i < n; i++) {
+                trace += matrix[i][i];
+            }
+            return trace;
+        }
+
+        private static void checkSquareMatrix(double[][] matrix) {
+            final int n = matrix.length;
+            for (double[] row : matrix) {
+                if (row.length != n) {
+                    throw new IllegalArgumentException("The matrix must be square");
+                }
+            }
+        }
+
+        /**
+         * <ul>
+         *     <li>Associative: (xy)A = x(yA)</li>
+         *     <li>Distributive over addition: x(A + B) = xA + xB</li>
+         *     <li>1A = A</li>
+         *     <li>det(kA) = kⁿ det(A)</li>
+         * </ul>
+         *
+         * @return k ⋅ A
+         */
+        public static double[][] matrixMultiplyScalar(double[][] matrix, double multiplier) {
+            Objects.requireNonNull(matrix);
+
+            final int rows = matrix.length;
+            if (rows == 0) {
+                return new double[0][0];
+            }
+
+            final int columns = matrix[Constants.ARR_1ST_INDEX].length;
+            final double[][] multiplied = new double[rows][columns]; // m×n
+            for (int i = 0; i < rows; i++) {
+                final double[] row = matrix[i];
+                for (int j = 0; j < columns; j++) {
+                    multiplied[i][j] = multiplier * row[j];
+                }
+            }
+            return multiplied;
+        }
+
+        /**
+         * @return A/k
+         */
+        public static double[][] matrixDivideScalar(double[][] matrix, double divisor) {
+            Objects.requireNonNull(matrix);
+            checkGreater0(divisor);
+
+            final int rows = matrix.length;
+            if (rows == 0) {
+                return new double[0][0];
+            }
+
+            final int columns = matrix[Constants.ARR_1ST_INDEX].length;
+            final double[][] multiplied = new double[rows][columns]; // m×n
+            for (int i = 0; i < rows; i++) {
+                final double[] row = matrix[i];
+                for (int j = 0; j < columns; j++) {
+                    multiplied[i][j] = row[j] / divisor;
+                }
+            }
+            return multiplied;
+        }
+
+        public static double[][] matrixAdd(double[][] matrixBase, double[][] matrixChange) {
+            Objects.requireNonNull(matrixBase);
+            Objects.requireNonNull(matrixChange);
+            checkSameDimensions(matrixBase, matrixChange);
+
+            final int rows = matrixBase.length;
+            final int columns = matrixBase[Constants.ARR_1ST_INDEX].length;
+
+            final double[][] added = new double[rows][columns]; // m×n
+            for (int i = 0; i < rows; i++) {
+                final double[] row = matrixBase[i];
+                for (int j = 0; j < columns; j++) {
+                    added[i][j] = row[j] + matrixChange[i][j];
+                }
+            }
+            return added;
+        }
+
+        public static double[][] matrixSubtract(double[][] matrixBase, double[][] matrixChange) {
+            Objects.requireNonNull(matrixBase);
+            Objects.requireNonNull(matrixChange);
+            checkSameDimensions(matrixBase, matrixChange);
+
+            final int rows = matrixBase.length;
+            final int columns = matrixBase[Constants.ARR_1ST_INDEX].length;
+
+            final double[][] subtracted = new double[rows][columns]; // m×n
+            for (int i = 0; i < rows; i++) {
+                final double[] row = matrixBase[i];
+                for (int j = 0; j < columns; j++) {
+                    subtracted[i][j] = row[j] - matrixChange[i][j];
+                }
+            }
+            return subtracted;
+        }
+
+        /**
+         * |+ -|
+         * |- +|
+         * <br/>
+         * |+ - +|
+         * |- + -|
+         * |+ - +|
+         * <br/>
+         * |+ - + -|
+         * |- + - +|
+         * |+ - + -|
+         * |- + - +|
+         * Sign factor is (-1)ᶦ⁺ʲ
+         * cofactor
+         * (|a b|) = |d -c|
+         * (|c d|)   |-b a|
+         */
+        public static double[][] cofactorMatrix(double[][] matrix) {
+            Objects.requireNonNull(matrix);
+            final int n = matrix.length;
+            checkSquareMatrix(matrix);
+
+            final double[][] cofactors = new double[n][n];
+            for (int i = 0; i < n; i++) {
+                for (int j = 0; j < n; j++) {
+                    cofactors[i][j] = cofactor(matrix, i, j);
+                }
+            }
+            return cofactors;
+        }
+
+        private static double cofactor(double[][] matrix, int row, int col) {
+            final double[][] minor = minor(matrix, row, col);
+            final double sign = ((row + col) % 2 == 0) ? 1 : -1;
+            return sign * determinant(minor);
+        }
+
+        private static double[][] minor(double[][] matrix, int rowToRemove, int colToRemove) {
+            final int n = matrix.length;
+            final double[][] minor = new double[n - 1][n - 1];
+            int row = 0;
+            for (int i = 0; i < n; i++) {
+                if (i == rowToRemove) {
+                    continue;
+                }
+                int column = 0;
+                for (int j = 0; j < n; j++) {
+                    if (j == colToRemove) {
+                        continue;
+                    }
+                    minor[row][column] = matrix[i][j];
+                    column++;
+                }
+                row++;
+            }
+            return minor;
+        }
+
+        /**
+         * ∥A∥₁ = max_₁≤ⱼ≤ₙ ∑ᵐᵢ₌₁ ∣aᵢ,ⱼ∣
+         * ∥A∥∞ = max_₁≤ᵢ≤ₘ ∑ⁿⱼ₌₁ ∣aᵢ,ⱼ∣
+         * ∥A∥₂ = √(λₘₐₓ(Aᵀ⋅A))
+         * ∥A∥_F = √(trace(Aᵀ⋅A))
+         * ∥A∥ₘₐₓ = maxᵢ,ⱼ ∣aᵢ,ⱼ∣
+         */
+        public static double[] matrixNorm(double[][] matrix) {
+            Objects.requireNonNull(matrix);
+
+            final double[] rowSums = new double[matrix.length];
+            final double[] columnSums = new double[matrix.length];
+            double maxNorm = 0;
+            for (int i = 0; i < matrix.length; i++) {
+                for (int j = 0; j < matrix[i].length; j++) {
+                    final double cellValue = matrix[i][j];
+                    rowSums[i] += cellValue;
+                    columnSums[i] += matrix[j][i];
+                    if (cellValue > maxNorm) {
+                        maxNorm = cellValue;
+                    }
+                }
+            }
+            final double norm1 = Arrays.stream(columnSums).max().orElseThrow();
+            final double infinityNorm = Arrays.stream(rowSums).max().orElseThrow();
+            return new double[]{norm1, infinityNorm, maxNorm};
+        }
+
+        /**
+         * <ul>
+         *     <li>(Aᵀ)ᵀ = A</li>
+         *     <li>(A+B)ᵀ = Aᵀ + Bᵀ, where A and B are arbitrary matrices of the same size.</li>
+         *     <li>(AB)ᵀ = BᵀAᵀ</li>
+         *     <li>∣A∣ = ∣Aᵀ∣</li>
+         * </ul>
+         *
+         * @return Aᵀ
+         */
+        public static double[][] transposeMatrix(double[][] matrix) {
+            Objects.requireNonNull(matrix);
+
+            final int rows = matrix.length;
+            final int columns = matrix[Constants.ARR_1ST_INDEX].length;
+
+            final double[][] transpose = new double[columns][rows];
+            for (int i = 0; i < rows; i++) {
+                for (int j = 0; j < columns; j++) {
+                    transpose[j][i] = matrix[i][j];
+                }
+            }
+            return transpose;
         }
     }
 

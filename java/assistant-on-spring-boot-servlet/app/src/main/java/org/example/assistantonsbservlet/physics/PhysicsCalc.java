@@ -659,6 +659,13 @@ public final class PhysicsCalc {
         }
 
         /**
+         * @return E = ½ × L × I². The units are Joules
+         */
+        public static double inductorEnergy(double inductanceHenries, double currentAmperes) {
+            return MathCalc.ONE_HALF * inductanceHenries * currentAmperes * currentAmperes;
+        }
+
+        /**
          *
          * @return C = 2(E/V²). The units are MicroFarads μF
          */
