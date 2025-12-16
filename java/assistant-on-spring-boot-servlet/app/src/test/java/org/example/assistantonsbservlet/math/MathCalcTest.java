@@ -4405,8 +4405,8 @@ class MathCalcTest {
                     new double[][]{{-3, 6, -3}, {6, -12, 6}, {-3, 6, -3}}, DELTA1),
                 // 4x4
                 Arguments.of(new double[][]{
-                    {1, 2, 3, 4}, {5, 6, 7, 8}, {9, 10, 21, 12}, {33, 14, 15, 1}}, new double[][]{
-                    {-1000, 2550, -100, -1200}, {420, -1230, 200, 360}, {60, -40, -100, 80}, {-80, 120, 0, -40}},
+                        {1, 2, 3, 4}, {5, 6, 7, 8}, {9, 10, 21, 12}, {33, 14, 15, 1}}, new double[][]{
+                        {-1000, 2550, -100, -1200}, {420, -1230, 200, 360}, {60, -40, -100, 80}, {-80, 120, 0, -40}},
                     DELTA1)
             );
         }
@@ -4423,7 +4423,7 @@ class MathCalcTest {
         static List<Arguments> matrixNormArgs() {
             return List.of(
                 // 3x3
-                Arguments.of(new double[][]{{2, 2, 6}, {1, 3, 9}, {6, 1, 0}}, new double[]{15, 13, 9}, DELTA3)
+                Arguments.of(new double[][]{{2, 2, 6}, {1, 3, 9}, {6, 1, 0}}, new double[]{15, 13, 13.115, 9}, DELTA3)
             );
         }
 
@@ -4448,6 +4448,211 @@ class MathCalcTest {
         void testTransposeMatrix(double[][] matrix, double[][] expectedResult, double delta) {
             // when
             final double[][] result = MathCalc.LinearAlgebra.transposeMatrix(matrix);
+            // then
+            assertMatrixEquals(expectedResult, result, delta);
+        }
+
+        static List<Arguments> matrixMultiplyArgs() {
+            return List.of(
+                // 3x2 * 2x2
+                Arguments.of(new double[][]{{3, -1}, {0, 2}, {1, -1}}, new double[][]{{1, 0}, {-1, 4}},
+                    new double[][]{{4, -4}, {-2, 8}, {2, -4}}, DELTA1)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("matrixMultiplyArgs")
+        void testMatrixMultiply(double[][] matrix, double[][] matrix2, double[][] expectedResult, double delta) {
+            // when
+            final double[][] result = MathCalc.LinearAlgebra.matrixMultiply(matrix, matrix2);
+            // then
+            assertMatrixEquals(expectedResult, result, delta);
+        }
+
+        static List<Arguments> matrixInverseArgs() {
+            return List.of(
+                // 3x3
+                Arguments.of(new double[][]{{1, 0, 5}, {2, 1, 6}, {3, 4, 0}},
+                    new double[][]{{-24, 20, -5}, {18, -15, 4}, {5, -4, 1}}, DELTA1)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("matrixInverseArgs")
+        void testMatrixInverse(double[][] matrix, double[][] expectedResult, double delta) {
+            // when
+            final double[][] result = MathCalc.LinearAlgebra.matrixInverse(matrix);
+            // then
+            assertMatrixEquals(expectedResult, result, delta);
+        }
+
+        static List<Arguments> gaussJordanEliminationSolverArgs() {
+            return List.of(
+                // 3x3
+                // x+y+z=32
+                // -x+2y=25
+                // -y+2z=16
+                Arguments.of(new double[][]{{1, 1, 1}, {-1, 2, 0}, {0, -1, 2}}, new double[]{32, 25, 16},
+                    new double[]{3, 14, 15}, DELTA1)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("gaussJordanEliminationSolverArgs")
+        void testGaussJordanEliminationSolver(
+            double[][] coeffMatrix, double[] constantVector, double[] expectedResult, double delta) {
+            // when
+            final double[] result = MathCalc.LinearAlgebra.gaussJordanEliminationSolver(coeffMatrix, constantVector);
+            // then
+            assertArrayEquals(expectedResult, result, delta);
+        }
+
+        static List<Arguments> cramersRuleArgs() {
+            return List.of(
+                // 3x3
+                Arguments.of(new double[][]{{1, 1, 1}, {0, 1, -2}, {2, 0, -1}}, new double[]{26, 6, 12},
+                    new double[]{8, 14, 4}, DELTA1)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("cramersRuleArgs")
+        void testCramersRule(
+            double[][] coeffMatrix, double[] constantVector, double[] expectedResult, double delta) {
+            // when
+            final double[] result = MathCalc.LinearAlgebra.cramersRule(coeffMatrix, constantVector);
+            // then
+            assertArrayEquals(expectedResult, result, delta);
+        }
+
+        static List<Arguments> matrixLUDecompositionArgs() {
+            return List.of(
+                // 3x3
+                Arguments.of(new double[][]{{24, 20, -5}, {18, -15, 4}, {5, -4, 1}},
+                    Pair.of(new double[][]{{1, 0, 0}, {0.75, 1, 0}, {0.20833, 0.2722, 1}},
+                        new double[][]{{24, 20, -5}, {0, -30, 7.75}, {0, 0, -0.06806}}), DELTA5)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("matrixLUDecompositionArgs")
+        void testMatrixLUDecomposition(double[][] matrix, Pair<double[][], double[][]> expectedResult, double delta) {
+            // when
+            final var result = MathCalc.LinearAlgebra.matrixLUDecomposition(matrix);
+            // then
+            assertNotNull(result);
+
+            final double[][] expectedLowerMatrix = expectedResult.getRight();
+            final double[][] lowerMatrix = result.getRight();
+            assertMatrixEquals(expectedLowerMatrix, lowerMatrix, delta);
+
+            final double[][] expectedUpperMatrix = expectedResult.getRight();
+            final double[][] upperMatrix = result.getRight();
+            assertMatrixEquals(expectedUpperMatrix, upperMatrix, delta);
+        }
+
+        static List<Arguments> matrixCholeskyDecompositionArgs() {
+            return List.of(
+                // 3x3
+                Arguments.of(new double[][]{{25, 15, 5}, {15, 13, 11}, {5, 11, 21}},
+                    new double[][]{{5, 0, 0}, {3, 2, 0}, {1, 4, 2}}, DELTA1)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("matrixCholeskyDecompositionArgs")
+        void testMatrixCholeskyDecomposition(double[][] matrix, double[][] expectedResult, double delta) {
+            // when
+            final double[][] result = MathCalc.LinearAlgebra.matrixCholeskyDecomposition(matrix);
+            // then
+            assertMatrixEquals(expectedResult, result, delta);
+        }
+
+        static List<Arguments> matrixNullSpaceArgs() {
+            return List.of(
+                // 2x4
+                Arguments.of(new double[][]{{2, -4, 8, 2}, {6, -12, 3, 13}},
+                    new double[][]{{2, 1, 0, 0}, {-2.333, 0, 0.333, 1}}, DELTA3)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("matrixNullSpaceArgs")
+        void testMatrixNullSpace(double[][] matrix, double[][] expectedResult, double delta) {
+            // when
+            final double[][] vectors = MathCalc.LinearAlgebra.matrixNullSpace(matrix);
+            // then
+            assertMatrixEquals(expectedResult, vectors, delta);
+        }
+
+        static List<Arguments> isLinearlyIndependentArgs() {
+            return List.of(
+                Arguments.of(new double[][]{{1, 3, -2}, {4, 7, 1}, {3, -1, -12}}, true),
+                Arguments.of(new double[][]{{1, 3, -2}, {4, 7, 1}, {3, -1, 12}}, false)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("isLinearlyIndependentArgs")
+        void testIsLinearlyIndependent(double[][] vectors, boolean expectedResult) {
+            // when
+            final boolean independent = MathCalc.LinearAlgebra.isLinearlyIndependent(vectors);
+            // then
+            assertEquals(expectedResult, independent);
+        }
+
+        static List<Arguments> linearCombinationLCMArgs() {
+            return List.of(
+                // x - 4y = 1
+                // -2x + 4y = 2
+                Arguments.of(new double[][]{{1, -4, 1}, {-2, 4, 2}}, new double[]{-3, -1}, DELTA1),
+                // 2x + 3y = 3
+                // 2x - y = -3
+                Arguments.of(new double[][]{{2, 3, 3}, {2, -1, -3}}, new double[]{-0.75, 1.5}, DELTA2),
+                // 3x - 7y = 1
+                // 4x + 4y = -2
+                Arguments.of(new double[][]{{3, -7, 1}, {4, 4, -2}}, new double[]{-0.25, -0.25}, DELTA2)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("linearCombinationLCMArgs")
+        void testLinearCombinationLCM(double[][] equations, double[] expectedResult, double delta) {
+            // when
+            final double[] solution = MathCalc.LinearAlgebra.linearCombinationLCM(equations);
+            // then
+            assertArrayEquals(expectedResult, solution, delta);
+        }
+
+        static List<Arguments> matrixRankArgs() {
+            return List.of(
+                // 4x3
+                Arguments.of(new double[][]{{0, 2, -1}, {1, 0, 1}, {2, -1, 3}, {1, 1, 4}}, 3)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("matrixRankArgs")
+        void testMatrixRank(double[][] matrix, int expectedResult) {
+            // when
+            final int rank = MathCalc.LinearAlgebra.matrixRank(matrix);
+            // then
+            assertEquals(expectedResult, rank);
+        }
+
+        static List<Arguments> gramSchmidtArgs() {
+            return List.of(
+                // 3x3
+                Arguments.of(new double[][]{{1, 3, -2}, {4, 7, 1}, {3, -1, 12}},
+                    new double[][]{{0.2673, 0.8018, -0.5345}, {0.4438, 0.39, 0.8068}}, DELTA4)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("gramSchmidtArgs")
+        void testGramSchmidt(double[][] matrix, double[][] expectedResult, double delta) {
+            // when
+            final double[][] result = MathCalc.LinearAlgebra.gramSchmidt(matrix);
             // then
             assertMatrixEquals(expectedResult, result, delta);
         }

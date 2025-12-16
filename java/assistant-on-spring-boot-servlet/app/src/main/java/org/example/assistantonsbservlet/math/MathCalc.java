@@ -3,7 +3,6 @@ package org.example.assistantonsbservlet.math;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.apache.commons.math.linear.EigenDecompositionImpl;
-import org.apache.commons.math.linear.LUDecompositionImpl;
 import org.apache.commons.math.linear.MatrixUtils;
 import org.apache.commons.math.linear.SingularValueDecompositionImpl;
 
@@ -31,6 +30,8 @@ public final class MathCalc {
     public static final double FOUR_FIFTH = 0.8;  // 4/5
     public static final double FIVE_SIXTH = 0.83333333;  // 5/6
     public static final byte ONE = 1;
+
+    private static final double EPSILON_NEGATIVE10 = 1e-10;
 
     /**
      * ϕ=½(1+√5)
@@ -4151,11 +4152,6 @@ public final class MathCalc {
             return det;
         }
 
-        public static double determinantUsingApacheLib(double[][] matrix) {
-            final var realMatrix = MatrixUtils.createRealMatrix(matrix);
-            return new LUDecompositionImpl(realMatrix).getDeterminant();
-        }
-
         public static double l2norm(double[][] matrix) {
             final var realMatrix = MatrixUtils.createRealMatrix(matrix);
             return new SingularValueDecompositionImpl(realMatrix).getNorm();
@@ -4164,11 +4160,6 @@ public final class MathCalc {
         public static double l2norm(double[] vector) {
             final var realVector = MatrixUtils.createRealVector(vector);
             return realVector.getNorm();
-        }
-
-        public static double rank(double[][] matrix) {
-            final var realMatrix = MatrixUtils.createRealMatrix(matrix);
-            return new SingularValueDecompositionImpl(realMatrix).getRank();
         }
 
         public static double[] eigenvalues(double[][] matrix) {
@@ -4458,6 +4449,17 @@ public final class MathCalc {
         }
 
         /**
+         * ∥x∥₂ = √(∑ⁿₖ₌₁ |xₖ|²)
+         */
+        public static double vectorL2Norm(double[] vector) {
+            double norm = 0.0;
+            for (double v : vector) {
+                norm += v * v;
+            }
+            return Algebra.squareRoot(norm);
+        }
+
+        /**
          * ∥A∥₁ = max_₁≤ⱼ≤ₙ ∑ᵐᵢ₌₁ ∣aᵢ,ⱼ∣
          * ∥A∥∞ = max_₁≤ᵢ≤ₘ ∑ⁿⱼ₌₁ ∣aᵢ,ⱼ∣
          * ∥A∥₂ = √(λₘₐₓ(Aᵀ⋅A))
@@ -4482,7 +4484,9 @@ public final class MathCalc {
             }
             final double norm1 = Arrays.stream(columnSums).max().orElseThrow();
             final double infinityNorm = Arrays.stream(rowSums).max().orElseThrow();
-            return new double[]{norm1, infinityNorm, maxNorm};
+            final double[][] transposed = transposeMatrix(matrix);
+            final double frobeniusNorm = Algebra.squareRoot(matrixTrace(matrixMultiply(matrix, transposed)));
+            return new double[]{norm1, infinityNorm, frobeniusNorm, maxNorm};
         }
 
         /**
@@ -4508,6 +4512,510 @@ public final class MathCalc {
                 }
             }
             return transpose;
+        }
+
+        /**
+         * @return cₙ,ₘ = aₙ,₁ × b₁,ₘ + aₙ,₂ × b₂,ₘ + aₙ,₃ × b₃,ₘ + ...
+         */
+        public static double[][] matrixMultiply(double[][] matrix, double[][] matrix2) {
+            Objects.requireNonNull(matrix);
+            Objects.requireNonNull(matrix2);
+
+            final int rowsA = matrix.length;
+            final int colsA = matrix[Constants.ARR_1ST_INDEX].length;
+            final int rowsB = matrix2.length;
+            final int colsB = matrix2[Constants.ARR_1ST_INDEX].length;
+
+            if (colsA != rowsB) {
+                throw new IllegalArgumentException(
+                    "Number of columns of first matrix must be equal to the number of rows of second matrix.");
+            }
+
+            final double[][] result = new double[rowsA][colsB];
+            for (int i = 0; i < rowsA; i++) {
+                for (int j = 0; j < colsB; j++) {
+                    for (int k = 0; k < colsA; k++) {
+                        result[i][j] += matrix[i][k] * matrix2[k][j];
+                    }
+                }
+            }
+            return result;
+        }
+
+        /**
+         * A⋅A⁻¹ = A⁻¹⋅A = I
+         * |(−1)¹⁺¹×A₁₁ (−1)¹⁺²×A₁₂ ⋯ (−1)¹⁺ⁿ×A₁ₙ|ᵀ
+         * 1/∣A∣ × |(−1)²⁺¹×A₂₁ (−1)²⁺²×A₂₂ ⋯ (−1)²⁺ⁿ×A₂ₙ|
+         * |     ⋮           ⋮      ⋱      ⋮     |
+         * |(−1)ⁿ⁺¹×Aₙ₁ (−1)ⁿ⁺²×Aₙ₂  ⋯ (−1)ⁿ⁺ⁿ×Aₙₙ|
+         * A⁻¹ = 1/(a×d-b×c) × |d -b|
+         * |-c a|
+         * <ul>
+         *     <li>(A⁻¹)⁻¹ = A</li>
+         *     <li>(A⋅B)⁻¹ = B⁻¹ ⋅ A⁻¹</li>
+         *     <li>(Aᵀ)⁻¹ = (A⁻¹)ᵀ</li>
+         *     <li>A singular matrix doesn't have an inverse, a nonsingular matrix does.</li>
+         * </ul>
+         */
+        public static double[][] matrixInverse(double[][] matrix) {
+            final double det = determinant(matrix);
+            if (det == 0) {
+                throw new IllegalStateException("The inverse doesn't exist");
+            }
+
+            final double[][] cofactors = cofactorMatrix(matrix);
+            final double[][] adjugate = transposeMatrix(cofactors);
+            return matrixMultiplyScalar(adjugate, 1 / det);
+        }
+
+        /**
+         * {a₁x + b₁y + c₁z = d₁
+         * {a₂x + b₂y + c₂z = d₂
+         * {a₃x + b₃y + c₃z = d₃
+         * x = ∣Wₓ∣/∣W∣
+         * y = ∣Wᵧ∣/∣W∣
+         * z = ∣W_z∣/∣W∣
+         */
+        public static double[] cramersRule(double[][] coefficientMatrix, double[] constantVector) {
+            Objects.requireNonNull(coefficientMatrix);
+            Objects.requireNonNull(constantVector);
+
+            final int n = coefficientMatrix.length;
+            if (coefficientMatrix[Constants.ARR_1ST_INDEX].length != n || constantVector.length != n) {
+                throw new IllegalArgumentException("Matrix must be square and vector length must match.");
+            }
+
+            final double det = determinant(coefficientMatrix);
+            if (Math.abs(det) < EPSILON_NEGATIVE10) {
+                throw new IllegalArgumentException("System has no unique solution (determinant is zero).");
+            }
+
+            final double[] solution = new double[n];
+            for (int varIdx = 0; varIdx < n; varIdx++) {
+                final double[][] temp = new double[n][n];
+                for (int i = 0; i < n; i++) {
+                    for (int j = 0; j < n; j++) {
+                        temp[i][j] = (j == varIdx) ? constantVector[i] : coefficientMatrix[i][j];
+                    }
+                }
+                solution[varIdx] = determinant(temp) / det;
+            }
+            return solution;
+        }
+
+        /**
+         * aka reduced row echelon form (RREF)
+         * {a₁x + b₁y + c₁z = d₁
+         * {a₂x + b₂y + c₂z = d₂
+         * {a₃x + b₃y + c₃z = d₃
+         */
+        public static double[] gaussJordanEliminationSolver(double[][] coefficientMatrix, double[] constantVector) {
+            Objects.requireNonNull(coefficientMatrix);
+            Objects.requireNonNull(constantVector);
+
+            final int rows = coefficientMatrix.length;
+            final int cols = coefficientMatrix[Constants.ARR_1ST_INDEX].length;
+
+            final double[][] augmented = new double[rows][cols + 1];
+            for (int i = 0; i < rows; i++) {
+                System.arraycopy(coefficientMatrix[i], 0, augmented[i], 0, cols);
+                augmented[i][cols] = constantVector[i];
+            }
+
+            int lead = 0;
+            for (int row = 0; row < rows; row++) {
+                if (lead >= cols) {
+                    break;
+                }
+                int currentRow = row;
+                while (Math.abs(augmented[currentRow][lead]) < EPSILON_NEGATIVE10) {
+                    currentRow++;
+                    if (currentRow == rows) {
+                        currentRow = row;
+                        lead++;
+                        if (lead == cols) {
+                            break;
+                        }
+                    }
+                }
+                if (lead == cols) {
+                    break;
+                }
+                // Swap currentRow and row
+                final double[] temp = augmented[row];
+                augmented[row] = augmented[currentRow];
+                augmented[currentRow] = temp;
+
+                // Normalize row
+                final double pivotValue = augmented[row][lead];
+                for (int j = 0; j < cols + 1; j++) {
+                    augmented[row][j] /= pivotValue;
+                }
+
+                // Eliminate other rows
+                for (int eliminationRow = 0; eliminationRow < rows; eliminationRow++) {
+                    if (eliminationRow != row) {
+                        final double otherPivotValue = augmented[eliminationRow][lead];
+                        for (int j = 0; j < cols + 1; j++) {
+                            augmented[eliminationRow][j] -= otherPivotValue * augmented[row][j];
+                        }
+                    }
+                }
+                lead++;
+            }
+
+            // Extract solution (last column)
+            final double[] solution = new double[rows];
+            for (int i = 0; i < rows; i++) {
+                solution[i] = augmented[i][cols];
+            }
+            return solution;
+        }
+
+        /**
+         * A = LU where:
+         * <ul>
+         *     <li>L — lower triangular matrix (all elements above the diagonal are zero)</li>
+         *     <li>U — upper triangular matrix (all the elements below the diagonal are zero)</li>
+         * </ul>
+         * <p>LU factorization with partial pivoting PA = LU
+         * where P is a permutation matrix (it reorders the rows of A)</p>
+         * |a₁₁ a₁₂ a₁₃|   |ℓ₁₁ 0   0  |   |u₁₁ u₁₂ u₁₃|
+         * |a₂₁ a₂₂ a₂₃| = |ℓ₂₁ ℓ₂₂ 0  | ⋅ |0   u₂₂ u₂₃|
+         * |a₃₁ a₃₂ a₃₃|   |ℓ₃₁ ℓ₃₂ ℓ₃₃|   |0   0   u₃₃|
+         * <ul>
+         *     <li>det(A) = det(L)⋅det(U) = (ℓ₁₁ ⋅ ... ⋅ ℓₙₙ)(u₁₁ ⋅ ... ⋅ uₙₙ)</li>
+         *     <li>where:</li>
+         *     <li>ℓ₁₁ ⋅ ... ⋅ ℓₙₙ are the diagonal entries of L</li>
+         *     <li>u₁₁ ⋅ ... ⋅ uₙₙ are the diagonal entries of U</li>
+         * </ul>
+         * <br/>A⁻¹ = U⁻¹L⁻¹
+         * <ol>
+         *     <li>u₁ⱼ = a₁ⱼ <br/>ℓⱼ₁ = aⱼ₁ / u₁ⱼ</li>
+         *     <li>uᵢᵢ = aᵢᵢ - ∑ᶦ⁻¹ₚ₌₁ ℓᵢₚuₚᵢ</li>
+         *     <li>uᵢⱼ = aᵢⱼ - ∑ᶦ⁻¹ₚ₌₁ ℓᵢₚuₚⱼ</li>
+         *     <li>ℓⱼᵢ = 1/uᵢᵢ (aⱼᵢ - ∑ᶦ⁻¹ₚ₌₁ ℓⱼₚuₚᵢ)</li>
+         *     <li>for j = i+1, ..., n</li>
+         *     <li>uₙₙ = aₙₙ - ∑ⁿ⁻¹ₚ₌₁ ℓₙₚuₚₙ</li>
+         * </ol>
+         */
+        public static Pair<double[][], double[][]> matrixLUDecomposition(double[][] matrix) {
+            Objects.requireNonNull(matrix);
+
+            final int n = matrix.length;
+            checkSquareMatrix(matrix);
+
+            final double[][] lower = new double[n][n];
+            final double[][] upper = new double[n][n];
+
+            for (int i = 0; i < n; i++) {
+                // Upper Triangular
+                for (int k = i; k < n; k++) {
+                    double sum = 0;
+                    for (int j = 0; j < i; j++) {
+                        sum += lower[i][j] * upper[j][k];
+                    }
+                    upper[i][k] = matrix[i][k] - sum;
+                }
+
+                // Lower Triangular
+                for (int k = i; k < n; k++) {
+                    if (i == k) {
+                        lower[i][i] = 1; // Diagonal as 1
+                    } else {
+                        double sum = 0;
+                        for (int j = 0; j < i; j++) {
+                            sum += lower[k][j] * upper[j][i];
+                        }
+                        lower[k][i] = (matrix[k][i] - sum) / upper[i][i];
+                    }
+                }
+            }
+            return Pair.of(lower, upper);
+        }
+
+        /**
+         * <ul>
+         *     <li>A = L⋅Lᵀ</li>
+         *     <li>A = Aᵀ</li>
+         *     <li>ɪ · ɪᵀ = ɪ·ɪ = ɪ</li>
+         *     <li>A must be symmetric.</li>
+         *     <li>A must be square.</li>
+         *     <li>A must be positive definite (meaning its eigenvalues must all be positive).</li>
+         *     <li>For elements on L's diagonal: bⱼ,ⱼ = √(aⱼⱼ - ∑ʲ⁻¹ₖ₌₁ (bⱼ,ₖ)²</li>
+         *     <li>For elements off L's diagonal: bᵢ,ⱼ = 1/bⱼ,ⱼ (aⱼⱼ - ∑ʲ⁻¹ₖ₌₁ bᵢ,ₖ ⋅ bⱼ,ₖ)</li>
+         * </ul>
+         */
+        public static double[][] matrixCholeskyDecomposition(double[][] matrix) {
+            Objects.requireNonNull(matrix);
+
+            final int n = matrix.length;
+            checkSquareMatrix(matrix);
+
+            // Lower Triangular
+            final double[][] lower = new double[n][n];
+
+            for (int i = 0; i < n; i++) {
+                for (int j = 0; j <= i; j++) {
+                    double sum = 0.0;
+                    for (int k = 0; k < j; k++) {
+                        sum += lower[i][k] * lower[j][k];
+                    }
+                    if (i == j) {
+                        lower[i][j] = Algebra.squareRoot(matrix[i][i] - sum);
+                    } else {
+                        lower[i][j] = (matrix[i][j] - sum) / lower[j][j];
+                    }
+                }
+            }
+            return lower;
+        }
+
+        public static double[][] gaussJordanElimination(double[][] matrix) {
+            Objects.requireNonNull(matrix);
+            final int rows = matrix.length;
+            final int cols = matrix[Constants.ARR_1ST_INDEX].length;
+
+            final double[][] rref = new double[rows][cols];
+            for (int i = 0; i < rows; i++) {
+                System.arraycopy(matrix[i], 0, rref[i], 0, cols);
+            }
+
+            int lead = 0;
+            for (int row = 0; row < rows; row++) {
+                if (lead >= cols) {
+                    break;
+                }
+                int currentRow = row;
+                while (Math.abs(rref[currentRow][lead]) < EPSILON_NEGATIVE10) {
+                    currentRow++;
+                    if (currentRow == rows) {
+                        currentRow = row;
+                        lead++;
+                        if (lead == cols) {
+                            return new double[0][0];
+                        }
+                    }
+                }
+                // Swap rows currentRow and row
+                final double[] temp = rref[row];
+                rref[row] = rref[currentRow];
+                rref[currentRow] = temp;
+
+                // Normalize row
+                final double pivotValue = rref[row][lead];
+                for (int j = 0; j < cols; j++) {
+                    rref[row][j] /= pivotValue;
+                }
+
+                // Eliminate other rows
+                for (int eliminationRow = 0; eliminationRow < rows; eliminationRow++) {
+                    if (eliminationRow != row) {
+                        final double otherPivotValue = rref[eliminationRow][lead];
+                        for (int j = 0; j < cols; j++) {
+                            rref[eliminationRow][j] -= otherPivotValue * rref[row][j];
+                        }
+                    }
+                }
+                lead++;
+            }
+            return rref;
+        }
+
+        /**
+         * v = (v₁, v₂, … , vₙ)
+         * A⋅v = 0
+         */
+        public static double[][] matrixNullSpace(double[][] matrix) {
+            Objects.requireNonNull(matrix);
+            final int rows = matrix.length;
+            final int cols = matrix[Constants.ARR_1ST_INDEX].length;
+            final double[][] rref = gaussJordanElimination(matrix);
+
+            final double epsilon = 1e-8;
+            // Step 1: Identify pivot columns
+            boolean[] isPivot = new boolean[cols];
+            int r = 0;
+            for (int c = 0; c < cols && r < rows; c++) {
+                if (Math.abs(rref[r][c] - 1.0) < epsilon) {
+                    isPivot[c] = true;
+                    r++;
+                }
+            }
+
+            // Step 2: For each free variable (non-pivot column), build a null space vector
+            int numFree = 0;
+            for (boolean b : isPivot) {
+                if (!b) {
+                    numFree++;
+                }
+            }
+            final double[][] nullSpace = new double[numFree][cols];
+            int freeIdx = 0;
+            for (int freeCol = 0; freeCol < cols; freeCol++) {
+                if (isPivot[freeCol]) {
+                    continue;
+                }
+                final double[] vec = new double[cols];
+                vec[freeCol] = 1.0;
+                // For each pivot row, set the value so that A*v = 0
+                int pivotRow = 0;
+                for (int c = 0; c < cols; c++) {
+                    if (isPivot[c]) {
+                        vec[c] = -rref[pivotRow][freeCol];
+                        pivotRow++;
+                    }
+                }
+                nullSpace[freeIdx++] = vec;
+            }
+            return nullSpace;
+        }
+
+        /**
+         * v⃗₁, v⃗₂, v⃗₃, ..., v⃗ₙ are linearly independent vectors if the equation
+         * α₁ ⋅ v⃗₁ + α₂ ⋅ v⃗₂ + α₃ ⋅ v⃗₃ + ... + αₙ ⋅ v⃗ₙ = 0 ⃗ holds iff α₁=α₂=α₃=...=αₙ
+         * w = α₁ ⋅ v⃗₁ + α₂ ⋅ v⃗₂ + α₃ ⋅ v⃗₃ + ... + αₙ ⋅ v⃗ₙ
+         */
+        public static boolean isLinearlyIndependent(double[][] vectors) {
+            Objects.requireNonNull(vectors);
+            final int rank = matrixRank(vectors);
+            final int cols = vectors[Constants.ARR_1ST_INDEX].length;
+            return rank == cols;
+        }
+
+        /**
+         * a₁x + b₁y = c₁
+         * a₂x + b₂y = c₂
+         * m₁ := LCM(a₁, a2) / a₁
+         * m₂ := LCM(a1, a₂) / a₂
+         * LCM(a₁, a₂)x + [LCM(a₁, a₂)b₁/a₁]y = LCM(a₁,a₂)c₁/a₁
+         * -LCM(a₁, a₂)x - [LCM(a₁, a₂)b₂/a₂]y = -LCM(a₁, a₂)c₂/a₂
+         * LCM(a₁, a₂) = L
+         * L⋅x + L⋅b₁/a₁⋅y = L⋅c₁/a₁
+         * -L⋅x - L⋅b₂/a₂⋅y = -L⋅c₂/a₂
+         * (L⋅b₁/a₁ - L⋅b₂/a₂)⋅y = L⋅c₁/a₁ -L⋅c₂/a₂
+         * y = (L⋅c₁/a₁ - L⋅c₂/a₂)/(L⋅b₁/a₁ - L⋅b₂/a₂)
+         */
+        public static double[] linearCombinationLCM(double[][] equations) {
+            Objects.requireNonNull(equations);
+
+            if (equations.length != 2 || equations[Constants.ARR_1ST_INDEX].length != 3
+                || equations[Constants.ARR_2ND_INDEX].length != 3) {
+                throw new IllegalArgumentException("Input must be two equations of the form [a, b, c]");
+            }
+
+            final byte row1 = Constants.ARR_1ST_INDEX;
+            final byte row2 = Constants.ARR_2ND_INDEX;
+            final byte col1 = Constants.ARR_1ST_INDEX;
+            final byte col2 = Constants.ARR_2ND_INDEX;
+            final byte col3 = Constants.ARR_3RD_INDEX;
+            final double a1 = equations[row1][col1];
+            final double a2 = equations[row2][col1];
+            final double b1 = equations[row1][col2];
+            final double b2 = equations[row2][col2];
+            final double c1 = equations[row1][col3];
+            final double c2 = equations[row2][col3];
+
+            final long lcm = Arithmetic.lcmWithPrimeFactorization(new double[]{Math.abs(a1), Math.abs(a2)});
+
+            // Scale equations to equalize x coefficients
+            final double scale1 = lcm / Math.abs(a1);
+            double scale2 = lcm / Math.abs(a2);
+
+            // Adjust sign to make coefficients opposite for elimination
+            if (a1 * a2 > 0) {
+                scale2 = -scale2;
+            }
+
+            // Eliminate x
+            final double yCoeff = b1 * scale1 + b2 * scale2;
+            final double constTerm = c1 * scale1 + c2 * scale2;
+            final double y = constTerm / yCoeff;
+
+            // Substitute y back to find x
+            final double x = (c1 - b1 * y) / a1;
+
+            return new double[]{x, y};
+        }
+
+        /**
+         * rank(A) ≤ min(n,m)
+         */
+        public static int matrixRank(double[][] matrix) {
+            Objects.requireNonNull(matrix);
+
+            final double[][] rref = gaussJordanElimination(matrix);
+
+            int rank = 0;
+            for (double[] row : rref) {
+                boolean nonZero = false;
+                for (double v : row) {
+                    if (Math.abs(v) > EPSILON_NEGATIVE10) {
+                        nonZero = true;
+                        break;
+                    }
+                }
+                if (nonZero) {
+                    rank++;
+                }
+            }
+            return rank;
+        }
+
+        /**
+         * <ol>
+         *     <li>Set u₁ = v₁.</li>
+         *     <li>Normalize u₁: e₁ = u₁/|u₁|. This is the first element of the orthonormal basis.</li>
+         *     <li>Find the second vector of the basis by choosing the vector orthogonal
+         *     to u₁: u₂ = v₂ - [(v₂ ⋅ u₁)/(u₁ ⋅ u₁)] × u₁.</li>
+         *     <li>Normalize u₂: e₂ = u₂/|u₂|.</li>
+         *     <li>Repeat the procedure for v₃. Finding the null vector means that the original
+         *     set is not linearly independent: they span a two-dimensional vector space.</li>
+         * </ol>
+         * v = (a₁, a₂, a₃)
+         * w = (b₁, b₂, b₃)
+         * u = (c₁, c₂, c₃)
+         */
+        public static double[][] gramSchmidt(double[][] matrix) {
+            Objects.requireNonNull(matrix);
+
+            final int rows = matrix.length;
+            final int cols = matrix[Constants.ARR_1ST_INDEX].length;
+
+            // Store orthonormal vectors as rows
+            final double[][] orthonormal = new double[rows][cols];
+            int orthoCount = 0;
+
+            for (int i = 0; i < rows; i++) {
+                // Copy the current row vector
+                final double[] v = new double[cols];
+                System.arraycopy(matrix[i], 0, v, 0, cols);
+
+                // Subtract projections onto previous orthonormal vectors
+                for (int j = 0; j < orthoCount; j++) {
+                    final double dot = dotProduct(v, orthonormal[j]);
+                    for (int k = 0; k < cols; k++) {
+                        v[k] -= dot * orthonormal[j][k];
+                    }
+                }
+
+                final double norm = vectorL2Norm(v);
+
+                // If norm is not zero, normalize and add to orthonormal set
+                if (norm > EPSILON_NEGATIVE10) {
+                    for (int k = 0; k < cols; k++) {
+                        v[k] /= norm;
+                    }
+                    orthonormal[orthoCount++] = v;
+                }
+            }
+
+            // Return only the nonzero orthonormal vectors (as rows, to match expectedResult)
+            final double[][] result = new double[orthoCount][cols];
+            for (int i = 0; i < orthoCount; i++) {
+                System.arraycopy(orthonormal[i], 0, result[i], 0, cols);
+            }
+            return result;
         }
     }
 
