@@ -5,7 +5,7 @@
                                        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
 
     <changeSet id="pubchem-food-additive-1" author="Artsem_Nikitsenka">
-        <sqlFile path="initial/food_additive_substance.sql" relativeToChangelogFile="true" />
+        <sqlFile path="initial/food_additive_substance.sql" relativeToChangelogFile="true"/>
     </changeSet>
 
 </databaseChangeLog>

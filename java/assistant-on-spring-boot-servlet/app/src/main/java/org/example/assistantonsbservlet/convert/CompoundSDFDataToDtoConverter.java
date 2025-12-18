@@ -130,8 +130,8 @@ public class CompoundSDFDataToDtoConverter implements Converter<IAtomContainer, 
             final var fromAtom = bond.getBegin();
             final var fromIndex = (fromAtom != null) ? fromAtom.getIndex() : null;
 
-            final var toAtom   = bond.getEnd();
-            final var toIndex   = (toAtom != null) ? toAtom.getIndex() : null;
+            final var toAtom = bond.getEnd();
+            final var toIndex = (toAtom != null) ? toAtom.getIndex() : null;
 
             final var bond2DCenterDto = mapPoint2dDto(bond);
             final var bond3DCenterDto = mapPoint3dDto(bond);

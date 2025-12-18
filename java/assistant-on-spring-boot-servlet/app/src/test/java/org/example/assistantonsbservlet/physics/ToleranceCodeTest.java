@@ -6,8 +6,8 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ToleranceCodeTest {
     private static final double DELTA1 = 0.1;

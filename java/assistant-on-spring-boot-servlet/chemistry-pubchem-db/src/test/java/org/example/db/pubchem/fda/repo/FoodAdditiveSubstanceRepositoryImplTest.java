@@ -1,8 +1,8 @@
 package org.example.db.pubchem.fda.repo;
 
-import org.example.db.pubchem.fda.model.FoodAdditiveSubstance;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
+import org.example.db.pubchem.fda.model.FoodAdditiveSubstance;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
