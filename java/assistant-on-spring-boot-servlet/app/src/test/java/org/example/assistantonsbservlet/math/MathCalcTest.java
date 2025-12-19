@@ -1,7 +1,9 @@
 package org.example.assistantonsbservlet.math;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 import org.apache.commons.math.complex.Complex;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -4248,6 +4250,43 @@ class MathCalcTest {
             assertMatrixEquals(expectedEigenVectors, eigenVectors, delta);
         }
 
+        static List<Arguments> eigenvaluesEigenvectorsArgs() {
+            return List.of(
+                // 3x3
+                Arguments.of(new double[][]{
+                    {2, 5, 6},
+                    {3, 7, 8},
+                    {4, 8, 11},
+                }, Pair.of(new double[]{-0.21047, 0.73175, 19.47871},
+                    new double[][]{{0.57, 0.78, 1}, {-3.49, 0.34, 1}, {-0.34, -1.11, 1}}), DELTA5),
+                Arguments.of(new double[][]{
+                    {1, 2, 1},
+                    {6, -1, 0},
+                    {-1, -2, -1},
+                }, Pair.of(new double[]{-4, 0, 3}, new double[][]{{-1, 2, 1}, {-1, -6, 13}, {-2, -3, 2}}), DELTA1)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("eigenvaluesEigenvectorsArgs")
+        void testEigenvaluesEigenvectors(
+            double[][] matrix, Pair<double[], double[][]> expectedResult, double delta) {
+            // when
+            final var result = MathCalc.LinearAlgebra.eigenvaluesEigenvectors(matrix);
+            // then
+            assertNotNull(result);
+            final double[] expectedEigenvalues = expectedResult.getLeft();
+            assertArrayEquals(expectedEigenvalues, result.getLeft(), delta);
+
+            final double[][] eigenvectors = result.getRight();
+            for (int i = 0; i < expectedEigenvalues.length; i++) {
+                final double[] eigenvector = eigenvectors[i];
+                final double[] scaled = MathCalc.LinearAlgebra.scaleEigenvector(expectedEigenvalues[i], eigenvector);
+                final double[] matrixVectorProd = MathCalc.LinearAlgebra.multiplyMatrixVector(matrix, eigenvector);
+                assertArrayEquals(matrixVectorProd, scaled, delta);
+            }
+        }
+
         static List<Arguments> matrixTraceArgs() {
             return List.of(
                 // 2x2
@@ -4423,7 +4462,8 @@ class MathCalcTest {
         static List<Arguments> matrixNormArgs() {
             return List.of(
                 // 3x3
-                Arguments.of(new double[][]{{2, 2, 6}, {1, 3, 9}, {6, 1, 0}}, new double[]{15, 13, 13.115, 9}, DELTA3)
+                Arguments.of(new double[][]{{2, 2, 6}, {1, 3, 9}, {6, 1, 0}},
+                    new double[]{15, 13, 11.67, 13.115, 9}, DELTA3)
             );
         }
 
@@ -4585,6 +4625,24 @@ class MathCalcTest {
             assertMatrixEquals(expectedResult, vectors, delta);
         }
 
+        static List<Arguments> matrixColumnSpaceArgs() {
+            return List.of(
+                // 3x3
+                Arguments.of(new double[][]{{1, 4, 3}, {3, 7, -1}, {-2, 1, 12}},
+                    new double[][]{{1, 3, -2}, {4, 7, 1}}, DELTA1)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("matrixColumnSpaceArgs")
+        @Disabled
+        void testMatrixColumnSpace(double[][] matrix, double[][] expectedResult, double delta) {
+            // when
+            final double[][] vectors = MathCalc.LinearAlgebra.matrixColumnSpace(matrix);
+            // then
+            assertMatrixEquals(expectedResult, vectors, delta);
+        }
+
         static List<Arguments> isLinearlyIndependentArgs() {
             return List.of(
                 Arguments.of(new double[][]{{1, 3, -2}, {4, 7, 1}, {3, -1, -12}}, true),
@@ -4653,6 +4711,182 @@ class MathCalcTest {
         void testGramSchmidt(double[][] matrix, double[][] expectedResult, double delta) {
             // when
             final double[][] result = MathCalc.LinearAlgebra.gramSchmidt(matrix);
+            // then
+            assertMatrixEquals(expectedResult, result, delta);
+        }
+
+        static List<Arguments> svdArgs() {
+            // 2x2
+            return List.of(
+                Arguments.of(new double[][]{{1, 2}, {3, 4}}, Triple.of(
+                    new double[][]{{0.4047, 0.9125}, {0.9144, -0.4091}}, new double[][]{{5.4653, 0}, {0, 0.3606}},
+                    new double[][]{{0.5735, 0.8192}, {-0.8176, 0.5758}}), DELTA2)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("svdArgs")
+        @Disabled
+        void testSvd(double[][] matrix, Triple<double[][], double[][], double[][]> expectedResult, double delta) {
+            // when
+            final var result = MathCalc.LinearAlgebra.svd(matrix);
+            // then
+            assertNotNull(result);
+            final double[][] reconstructed = MathCalc.LinearAlgebra
+                .reconstructFromSVD(result.getLeft(), result.getMiddle(), result.getRight());
+            assertMatrixApproxEquals(matrix, reconstructed, delta);
+            assertMatrixEquals(expectedResult.getLeft(), result.getLeft(), delta);
+            assertMatrixEquals(expectedResult.getMiddle(), result.getMiddle(), delta);
+            assertMatrixEquals(expectedResult.getRight(), result.getRight(), delta);
+        }
+
+        private static void assertMatrixApproxEquals(double[][] expected, double[][] actual, double delta) {
+            assertEquals(expected.length, actual.length);
+            for (int i = 0; i < expected.length; i++) {
+                assertEquals(expected[i].length, actual[i].length);
+                for (int j = 0; j < expected[i].length; j++) {
+                    assertEquals(expected[i][j], actual[i][j], delta);
+                }
+            }
+        }
+
+        static List<Arguments> matrixPowerArgs() {
+            // 3x3
+            return List.of(
+                Arguments.of(new double[][]{{1, 0, 0}, {2, 1, -1}, {0, -1, 1}}, 13,
+                    new double[][]{{1, 0, 0}, {8192, 4096, -4096}, {-8190, -4096, 4096}}, DELTA1)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("matrixPowerArgs")
+        void testMatrixPower(double[][] matrix, int exponent, double[][] expectedResult, double delta) {
+            // when
+            final double[][] result = MathCalc.LinearAlgebra.matrixPower(matrix, exponent);
+            // then
+            assertMatrixEquals(expectedResult, result, delta);
+        }
+
+        static List<Arguments> hadamardProductArgs() {
+            // 3x3
+            return List.of(
+                Arguments.of(new double[][]{{1, 2, 3}, {11, 22, 33}, {111, 222, 333}},
+                    new double[][]{{2, 2, 2}, {3, 3, 3}, {1, 2, 3}},
+                    new double[][]{{2, 4, 6}, {33, 66, 99}, {111, 444, 999}}, DELTA1)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("hadamardProductArgs")
+        void testHadamardProduct(double[][] matrix, double[][] matrix2, double[][] expectedResult, double delta) {
+            // when
+            final double[][] result = MathCalc.LinearAlgebra.hadamardProduct(matrix, matrix2);
+            // then
+            assertMatrixEquals(expectedResult, result, delta);
+        }
+
+        static List<Arguments> tensorProductArgs() {
+            // 3x3
+            return List.of(
+                Arguments.of(new double[][]{{1, 2}, {3, 4}}, new double[][]{{2, 4}, {6, 8}},
+                    new double[][]{{2, 4, 4, 8}, {6, 8, 12, 16}, {6, 12, 8, 16}, {18, 24, 24, 32}}, DELTA1)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("tensorProductArgs")
+        void testTensorProduct(double[][] matrix, double[][] matrix2, double[][] expectedResult, double delta) {
+            // when
+            final double[][] result = MathCalc.LinearAlgebra.tensorProduct(matrix, matrix2);
+            // then
+            assertMatrixEquals(expectedResult, result, delta);
+        }
+
+        static List<Arguments> diagonalizeMatrixArgs() {
+            // 3x3
+            return List.of(
+                Arguments.of(new double[][]{{1, 0, 0}, {2, 1, -1}, {0, -1, 1}}, new double[]{2, 0, 1},
+                    new double[][]{{2, 0, 0}, {0, 0, 0}, {0, 0, 1}}, DELTA1)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("diagonalizeMatrixArgs")
+        void testDiagonalizeMatrix(double[][] matrix, double[] eigenvalues, double[][] expectedResult, double delta) {
+            // when
+            final double[][] result = MathCalc.LinearAlgebra.diagonalizeMatrix(matrix, eigenvalues);
+            // then
+            assertMatrixEquals(expectedResult, result, delta);
+        }
+
+        static List<Arguments> characteristicPolynomialArgs() {
+            return List.of(
+                // 2x2
+                Arguments.of(new double[][]{{2, 3}, {4, 3}}, new double[]{1, -5, -6}, DELTA1),
+                // 3x3
+                Arguments.of(new double[][]{{0, 2, 1}, {1, 3, -1}, {2, 0, 2}},
+                    new double[]{1, -5, 2, 14}, DELTA1)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("characteristicPolynomialArgs")
+        void testCharacteristicPolynomial(double[][] matrix, double[] expectedResult, double delta) {
+            // when
+            final double[] result = MathCalc.LinearAlgebra.characteristicPolynomial(matrix);
+            // then
+            assertArrayEquals(expectedResult, result, delta);
+        }
+
+        static List<Arguments> adjointMatrixArgs() {
+            return List.of(
+                // 3x3
+                Arguments.of(new double[][]{{1, 2, 3}, {4, 5, 6}, {7, 8, 9}},
+                    new double[][]{{-3, 6, -3}, {6, -12, 6}, {-3, 6, -3}}, DELTA1)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("adjointMatrixArgs")
+        void testAdjointMatrix(double[][] matrix, double[][] expectedResult, double delta) {
+            // when
+            final double[][] result = MathCalc.LinearAlgebra.adjointMatrix(matrix);
+            // then
+            assertMatrixEquals(expectedResult, result, delta);
+        }
+
+        static List<Arguments> singularValuesArgs() {
+            return List.of(
+                // 3x3
+                Arguments.of(new double[][]{{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}, new double[]{16.848, 1.0677, 0}, DELTA3)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("singularValuesArgs")
+        void testSingularValues(double[][] matrix, double[] expectedResult, double delta) {
+            // when
+            final double[] result = MathCalc.LinearAlgebra.singularValues(matrix);
+            // then
+            assertArrayEquals(expectedResult, result, delta);
+        }
+
+        static List<Arguments> pseudoinverseArgs() {
+            return List.of(
+                // 3x2
+                Arguments.of(new double[][]{{1, 3}, {2, 4}, {3, 3}},
+                    new double[][]{{-0.3421, -0.1579, 0.5526}, {0.2895, 0.21053, -0.23684}}, DELTA5),
+                Arguments.of(new double[][]{{1, 2}, {2, 4}, {3, 6}},
+                    new double[][]{{0.014286, 0.02857, 0.04286}, {0.02857, 0.05714, 0.08571}}, DELTA5)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("pseudoinverseArgs")
+        @Disabled
+        void testPseudoinverse(double[][] matrix, double[][] expectedResult, double delta) {
+            // when
+            final double[][] result = MathCalc.LinearAlgebra.pseudoinverse(matrix);
             // then
             assertMatrixEquals(expectedResult, result, delta);
         }
