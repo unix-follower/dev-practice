@@ -1,9 +1,9 @@
 package org.example.assistantonsbservlet.api.chemistry;
 
 import org.example.assistantonsbservlet.api.ErrorCode;
-import org.example.assistantonsbservlet.api.chemistry.model.req.ChemCalculatorFormulaInput;
 import org.example.assistantonsbservlet.api.chemistry.model.req.ChemCalculateMolarMassReq;
 import org.example.assistantonsbservlet.api.chemistry.model.req.ChemCalculateMoleReq;
+import org.example.assistantonsbservlet.api.chemistry.model.req.ChemCalculatorFormulaInput;
 import org.example.assistantonsbservlet.api.model.resp.CalculatorScalarResponse;
 import org.example.assistantonsbservlet.chemistry.ChemCalculatorApiFacade;
 import org.example.assistantonsbservlet.exception.ChemistryApiException;

@@ -12,6 +12,7 @@ public record CalculatorScalarResponse(
     public CalculatorScalarResponse(double result) {
         this(result, null, result);
     }
+
     public CalculatorScalarResponse(double result, Enum<?> unit) {
         this(result, unit, result);
     }

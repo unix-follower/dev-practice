@@ -89,7 +89,7 @@ class ChemCalcTest {
             final double chlorine35NaturalAbundance = 75.78; // %
             final double chlorine37Mass = 36.96590;
             final double chlorine37NaturalAbundance = 24.22; // %
-            final double[][] isotopes = new double[][] {
+            final double[][] isotopes = new double[][]{
                 {chlorine35Mass, chlorine35NaturalAbundance},
                 {chlorine37Mass, chlorine37NaturalAbundance}
             };
@@ -108,7 +108,7 @@ class ChemCalcTest {
             final var isotopeMassNums = Set.of(35, 37);
             final double[][] chlorineIsotopes = Arrays.stream(isotopeList)
                 .filter(isotope -> isotopeMassNums.contains(isotope.getMassNumber()))
-                .map(isotope -> new double[] {
+                .map(isotope -> new double[]{
                     isotope.getExactMass(), isotope.getNaturalAbundance(),
                 })
                 .toList()
