@@ -5122,6 +5122,10 @@ public final class MathCalc {
             return nullSpace;
         }
 
+        /**
+         * w = α₁ ⋅ v⃗₁ + α₂ ⋅ v⃗₂ + α₃ ⋅ v⃗₃ + ... + αₙ ⋅ v⃗ₙ
+         * where α₁, α₂, α₃, ... αₙ are any numbers
+         */
         public static double[][] matrixColumnSpace(double[][] matrix) {
             Objects.requireNonNull(matrix);
 
@@ -5168,7 +5172,6 @@ public final class MathCalc {
         /**
          * v⃗₁, v⃗₂, v⃗₃, ..., v⃗ₙ are linearly independent vectors if the equation
          * α₁ ⋅ v⃗₁ + α₂ ⋅ v⃗₂ + α₃ ⋅ v⃗₃ + ... + αₙ ⋅ v⃗ₙ = 0 ⃗ holds iff α₁=α₂=α₃=...=αₙ
-         * w = α₁ ⋅ v⃗₁ + α₂ ⋅ v⃗₂ + α₃ ⋅ v⃗₃ + ... + αₙ ⋅ v⃗ₙ
          */
         public static boolean isLinearlyIndependent(double[][] vectors) {
             Objects.requireNonNull(vectors);
