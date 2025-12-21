@@ -1848,6 +1848,16 @@ class MathCalcTest {
             // then
             assertArrayEquals(expectedResult, roots, delta);
         }
+
+        @Test
+        void testRMS() {
+            // given
+            final double[] dataset = new double[]{2, 6, 3, -4, 2, 4, -1, 3, 2, -1};
+            // when
+            final double rms = MathCalc.Algebra.rms(dataset);
+            // then
+            assertEquals(3.1623, rms, DELTA4);
+        }
     }
 
     @Nested

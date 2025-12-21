@@ -6,6 +6,7 @@ import org.example.assistantonsbservlet.math.MathCalc.Algebra;
 import org.example.assistantonsbservlet.math.MathCalc.Trigonometry;
 
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.function.DoubleUnaryOperator;
 
 public final class PhysicsCalc {
@@ -26,6 +27,9 @@ public final class PhysicsCalc {
      * The number of electron charges
      */
     public static final double ONE_COULOMB = 6.241509343e18;
+    public static final short HORSEPOWER = 746;
+    public static final double BOLTZMANN_CONSTANT = 1.380649e-23; // J/K
+    public static final double REF_VOLTAGE_FOR_0_DBU = 0.77459667;
 
     private PhysicsCalc() {
     }
@@ -637,6 +641,8 @@ public final class PhysicsCalc {
     }
 
     public static final class Electronics {
+        public static final double THREE_PHASE_GENERATOR = 1.732; // √3
+
         private Electronics() {
         }
 
@@ -797,11 +803,18 @@ public final class PhysicsCalc {
          *
          * @return 1 / C = 1 / C₁ + 1 / C₂ + …. The units are μF
          */
-        public static double capacitorsInSeries(double[] capacitorsInMicroFarads) {
+        public static double capacitorInSeries(double[] capacitorsInMicroFarads) {
             final double inverseOfCapacitanceSum = Arrays.stream(capacitorsInMicroFarads)
                 .map(capacitor -> 1 / capacitor)
                 .sum();
             return 1 / inverseOfCapacitanceSum;
+        }
+
+        /**
+         * @return C = C₁ + C₂ + …. The units are F
+         */
+        public static double capacitorInParallel(double[] capacitorsInFarads) {
+            return Arrays.stream(capacitorsInFarads).sum();
         }
 
         /**
@@ -861,6 +874,203 @@ public final class PhysicsCalc {
             final double r0 = r0values[Constants.ARR_1ST_INDEX];
             final double resistorValue = r0 * (1 + tcr.getTempCoeff() * (temperatureEnd - temperatureStart));
             return new double[]{resistorValue, r0values[Constants.ARR_2ND_INDEX], r0values[Constants.ARR_3RD_INDEX]};
+        }
+
+        /**
+         * @return V⋅I/1000. The units are kVA
+         */
+        public static double apparentPowerACSinglePhase(double currentAmpres, double voltageVolts) {
+            return apparentPowerAC(1, currentAmpres, voltageVolts);
+        }
+
+        /**
+         * @return V⋅I⋅P_F/1000. The units are kW
+         */
+        public static double acPowerSinglePhase(double currentAmpres, double voltageVolts, double powerFactor) {
+            return acPower(1, currentAmpres, voltageVolts, powerFactor);
+        }
+
+        /**
+         * @return V⋅I⋅P_F⋅η/746. The units are hp
+         */
+        public static double motorOutputHorsepowerACSinglePhase(
+            double currentAmpres, double voltageVolts, double powerFactor, double efficiency) {
+            return motorOutputHorsepowerAC(1, currentAmpres, voltageVolts, powerFactor, efficiency);
+        }
+
+        /**
+         * @return V⋅I/1000. The units are kVA
+         */
+        public static double apparentPowerACThreePhase(double currentAmpres, double voltageVolts) {
+            return apparentPowerAC(THREE_PHASE_GENERATOR, currentAmpres, voltageVolts);
+        }
+
+        /**
+         * @return V⋅I⋅P_F/1000. The units are kW
+         */
+        public static double acPowerThreePhase(double currentAmpres, double voltageVolts, double powerFactor) {
+            return acPower(THREE_PHASE_GENERATOR, currentAmpres, voltageVolts, powerFactor);
+        }
+
+        /**
+         * @return V⋅I⋅P_F⋅η/746. The units are hp
+         */
+        public static double motorOutputHorsepowerACThreePhase(
+            double currentAmpres, double voltageVolts, double powerFactor, double efficiency) {
+            return motorOutputHorsepowerAC(THREE_PHASE_GENERATOR, currentAmpres, voltageVolts, powerFactor, efficiency);
+        }
+
+        public static double apparentPowerAC(double phase, double currentAmpres, double voltageVolts) {
+            return phase * voltageVolts * currentAmpres / 1000;
+        }
+
+        /**
+         * AC - Alternating Current
+         */
+        public static double acPower(double phase, double currentAmpres, double voltageVolts, double powerFactor) {
+            return phase * voltageVolts * currentAmpres * powerFactor / 1000;
+        }
+
+        public static double motorOutputHorsepowerAC(
+            double phase, double currentAmpres, double voltageVolts, double powerFactorPercent, double efficiency) {
+            return phase * voltageVolts * currentAmpres * powerFactorPercent * efficiency / HORSEPOWER;
+        }
+
+        /**
+         * @return V⋅I⋅P_F/1000. The units are kW
+         */
+        public static double powerDirectCurrent(double currentAmpres, double voltageVolts) {
+            return currentAmpres * voltageVolts / 1000;
+        }
+
+        public static double motorOutputHorsepowerDirectCurrent(
+            double currentAmpres, double voltageVolts, double efficiency) {
+            return voltageVolts * currentAmpres * efficiency / HORSEPOWER;
+        }
+
+        /**
+         * @param inductors in Henries (H)
+         * @return L = 1/(1/L₁ + 1/L₂ + ... + 1/Lₙ). The units are H
+         */
+        public static double equivalentInductanceInParallel(double[] inductors) {
+            return 1 / Arrays.stream(inductors).map(inductor -> 1 / inductor).sum();
+        }
+
+        public static double missingInductorInParallel(double[] inductors, double desiredTotalInductance) {
+            final double reciprocalSum = Arrays.stream(inductors).map(inductor -> 1 / inductor).sum();
+            final double reciprocalMissing = (1 / desiredTotalInductance) - reciprocalSum;
+            return 1 / reciprocalMissing;
+        }
+
+        /**
+         * @param inductors in Henries (H)
+         * @return L = L₁ + L₂ + ... + Lₙ. The units are H
+         */
+        public static double equivalentInductanceInSeries(double[] inductors) {
+            return Arrays.stream(inductors).sum();
+        }
+
+        public static double missingInductorInSeries(double[] inductors, double desiredTotalInductance) {
+            return desiredTotalInductance - equivalentInductanceInSeries(inductors);
+        }
+
+        /**
+         * @param resistors in Ohms (Ω)
+         * @return R = R₁ + R₂ + ... + Rₙ. The units are Ω
+         */
+        public static double equivalentResistanceInParallel(double[] resistors) {
+            return 1 / Arrays.stream(resistors).map(resistor -> 1 / resistor).sum();
+        }
+
+        public static double missingResistorInParallel(double[] resistors, double desiredTotalResistance) {
+            final double reciprocalSum = Arrays.stream(resistors).map(resistor -> 1 / resistor).sum();
+            final double reciprocalMissing = (1 / desiredTotalResistance) - reciprocalSum;
+            return 1 / reciprocalMissing;
+        }
+
+        /**
+         * @return P = I²⋅R = V²/R. The units are watts (W)
+         */
+        public static double[] resistorDissipatedPower(double resistanceOhms, double voltageVolts) {
+            return new double[]{
+                ohmsLawPowerGivenVoltageAndResistance(voltageVolts, resistanceOhms),
+                ohmsLawCurrent(voltageVolts, resistanceOhms)
+            };
+        }
+
+        public static double[][] resistorWattageInParallel(double[] resistors, double constantVoltage) {
+            final int rows = resistors.length;
+            final int columns = 4;
+            final double[][] resistorWattages = new double[rows][columns];
+            for (int i = 0; i < rows; i++) {
+                final double resistor = resistors[i];
+                double[] dissipatedPower = resistorDissipatedPower(resistor, constantVoltage);
+                final double[] row = new double[columns];
+                row[Constants.ARR_1ST_INDEX] = resistor;
+                row[Constants.ARR_2ND_INDEX] = dissipatedPower[Constants.ARR_2ND_INDEX];
+                row[Constants.ARR_3RD_INDEX] = 0;
+                row[Constants.ARR_4TH_INDEX] = dissipatedPower[Constants.ARR_1ST_INDEX];
+                resistorWattages[i] = row;
+            }
+            return resistorWattages;
+        }
+
+        /**
+         * RR - Resistor + Resistor
+         *
+         * @param resistors in ohms (Ω)
+         * @return V₂ = R₂ / (R₁+R₂)V₁. The units are volts (V)
+         */
+        public static double voltageDividerRR(double[] resistors, double inputVoltageVolts) {
+            Objects.requireNonNull(resistors);
+
+            final double lastResistor = resistors[resistors.length - 1];
+            final double sum = Arrays.stream(resistors).sum();
+            return lastResistor / sum * inputVoltageVolts;
+        }
+
+        /**
+         * CC - Capacitor + Capacitor
+         *
+         * @param capacitors in farads (F)
+         * @return V₂ = C₁ / (C₁+C₂)V₁. The units are volts (V)
+         */
+        public static double voltageDividerCC(double[] capacitors, double inputVoltageVolts) {
+            Objects.requireNonNull(capacitors);
+
+            final double fistCapacitor = capacitors[Constants.ARR_1ST_INDEX];
+            final double sum = Arrays.stream(capacitors).sum();
+            return fistCapacitor / sum * inputVoltageVolts;
+        }
+
+        /**
+         * LL - Inductor + Inductor
+         *
+         * @param inductors in henries (H)
+         * @return V₂ = L₂ / (L₁+L₂)V₁. The units are volts (V)
+         */
+        public static double voltageDividerLL(double[] inductors, double inputVoltageVolts) {
+            Objects.requireNonNull(inductors);
+
+            final double lastInductor = inductors[inductors.length - 1];
+            final double sum = Arrays.stream(inductors).sum();
+            return lastInductor / sum * inputVoltageVolts;
+        }
+
+        /**
+         * E = √(4⋅R⋅k⋅T⋅ΔF). The units are volts (V).
+         * Lᵤ = 20⋅log₁₀(V/V₀) where V₀ is the reference voltage for noise level Lᵤ.
+         * The units are decibels unloaded (dBu).
+         * Lᵥ = 20⋅log₁₀(V/V₀) where V₀ = 1 V. The units are decibel Volt (dBV).
+         *
+         * @return [E, Lᵤ, Lᵥ]
+         */
+        public static double[] resistorNoise(double resistanceOhms, double temperatureKelvins, double bandwidthHz) {
+            final double resistorNoise = Algebra
+                .squareRoot(4 * resistanceOhms * BOLTZMANN_CONSTANT * temperatureKelvins * bandwidthHz);
+            final double noiseLevelLu = 20 * Algebra.log(resistorNoise / REF_VOLTAGE_FOR_0_DBU);
+            final double noiseLevelLv = 20 * Algebra.log(resistorNoise);
+            return new double[]{resistorNoise, noiseLevelLu, noiseLevelLv};
         }
     }
 }

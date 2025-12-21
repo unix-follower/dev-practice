@@ -1,7 +1,9 @@
 package org.example.assistantonsbservlet.physics;
 
+import org.example.assistantonsbservlet.math.Constants;
 import org.example.assistantonsbservlet.math.ConversionCalculator;
 import org.example.assistantonsbservlet.math.MathCalc;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -17,9 +19,19 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 class PhysicsCalcTest {
     private static final double DELTA1 = 0.1;
     private static final double DELTA2 = 0.01;
+    private static final double DELTA3 = 0.001;
     private static final double DELTA4 = 0.0001;
+    private static final double DELTA6 = 0.000001;
     private static final double DELTA7 = 0.0000001;
     private static final double DELTA9 = 0.000000001;
+
+    private static void assertMatrixEquals(double[][] expectedResult, double[][] result, double delta) {
+        assertNotNull(result);
+        assertEquals(expectedResult.length, result.length);
+        for (int i = 0; i < expectedResult.length; i++) {
+            assertArrayEquals(expectedResult[i], result[i], delta);
+        }
+    }
 
     @Nested
     class Kinematics {
@@ -524,19 +536,34 @@ class PhysicsCalcTest {
             assertEquals(expectedResultW, powerWatts, delta);
         }
 
-        static List<Arguments> capacitorsInSeriesArgs() {
+        static List<Arguments> capacitorInSeriesArgs() {
             return List.of(
                 Arguments.of(new double[]{2000, 5, 6, 0.2}, 0.1863, DELTA4)
             );
         }
 
         @ParameterizedTest
-        @MethodSource("capacitorsInSeriesArgs")
-        void testCapacitorsInSeries(double[] capacitorsMicroFarads, double expectedResultInMicroFarads, double delta) {
+        @MethodSource("capacitorInSeriesArgs")
+        void testCapacitorInSeries(double[] capacitorsMicroFarads, double expectedResultInMicroFarads, double delta) {
             // when
-            final double capacitanceInSeries = PhysicsCalc.Electronics.capacitorsInSeries(capacitorsMicroFarads);
+            final double capacitanceInSeries = PhysicsCalc.Electronics.capacitorInSeries(capacitorsMicroFarads);
             // then
             assertEquals(expectedResultInMicroFarads, capacitanceInSeries, delta);
+        }
+
+        @Test
+        void testCapacitorInParallel() {
+            // given
+            final double[] capacitors = new double[]{
+                CapacityUnit.milliFaradsToFarads(30),
+                CapacityUnit.milliFaradsToFarads(0.5),
+                CapacityUnit.milliFaradsToFarads(6),
+                CapacityUnit.milliFaradsToFarads(0.75)
+            };
+            // when
+            final double capacitance = PhysicsCalc.Electronics.capacitorInParallel(capacitors);
+            // then
+            assertEquals(37.25, CapacityUnit.faradsToMilliFarads(capacitance), DELTA2);
         }
 
         static List<Arguments> resistorBand4ValueArgs() {
@@ -606,12 +633,258 @@ class PhysicsCalcTest {
         @Test
         void testInductorEnergy() {
             // given
-            final double inductanceHenries = HenryUnit.microHenriesToHenries(20);
+            final double inductanceHenries = InductanceUnit.microHenriesToHenries(20);
             final double currentAmperes = 0.3;
             // when
             final double storedEnergy = PhysicsCalc.Electronics.inductorEnergy(inductanceHenries, currentAmperes);
             // then
             assertEquals(9e-7, storedEnergy, DELTA7);
+        }
+
+        @Test
+        void testApparentAcPowerSinglePhase() {
+            // given
+            final byte currentA = 100;
+            final short voltageV = 220;
+            // when
+            final double apparentPower = PhysicsCalc.Electronics.apparentPowerACSinglePhase(currentA, voltageV);
+            // then
+            assertEquals(22, apparentPower, DELTA1);
+        }
+
+        @Test
+        void testAcPowerSinglePhase() {
+            // given
+            final byte currentA = 100;
+            final short voltageV = 220;
+            final double powerFactor = 0.8; // 80%
+            // when
+            final double power = PhysicsCalc.Electronics.acPowerSinglePhase(currentA, voltageV, powerFactor);
+            // then
+            assertEquals(17.6, power, DELTA1);
+        }
+
+        @Test
+        void testMotorOutputHorsepowerACSinglePhase() {
+            // given
+            final byte currentA = 100;
+            final short voltageV = 220;
+            final double powerFactor = 0.8; // 80%
+            final double efficiency = 0.7; // 70%
+            // when
+            final double horsepower = PhysicsCalc.Electronics
+                .motorOutputHorsepowerACSinglePhase(currentA, voltageV, powerFactor, efficiency);
+            // then
+            assertEquals(16.515, horsepower, DELTA3);
+        }
+
+        @Test
+        void testApparentAcPowerThreePhase() {
+            // given
+            final byte currentA = 100;
+            final short voltageV = 220;
+            // when
+            final double apparentPower = PhysicsCalc.Electronics
+                .apparentPowerACThreePhase(currentA, voltageV);
+            // then
+            assertEquals(38.104, apparentPower, DELTA3);
+        }
+
+        @Test
+        void testAcPowerThreePhase() {
+            // given
+            final byte currentA = 100;
+            final short voltageV = 220;
+            final double powerFactor = 0.8; // 80%
+            // when
+            final double power = PhysicsCalc.Electronics.acPowerThreePhase(currentA, voltageV, powerFactor);
+            // then
+            assertEquals(30.483, power, DELTA3);
+        }
+
+        @Test
+        void testMotorOutputHorsepowerACThreePhase() {
+            // given
+            final byte currentA = 100;
+            final short voltageV = 220;
+            final double powerFactor = 0.8; // 80%
+            final double efficiency = 0.7; // 70%
+            // when
+            final double horsepower = PhysicsCalc.Electronics
+                .motorOutputHorsepowerACThreePhase(currentA, voltageV, powerFactor, efficiency);
+            // then
+            assertEquals(28.604, horsepower, DELTA3);
+        }
+
+        @Test
+        void testPowerDirectCurrent() {
+            // given
+            final byte currentA = 100;
+            final short voltageV = 220;
+            // when
+            final double power = PhysicsCalc.Electronics.powerDirectCurrent(currentA, voltageV);
+            // then
+            assertEquals(22, power, DELTA1);
+        }
+
+        @Test
+        void testMotorOutputHorsepowerDirectCurrent() {
+            // given
+            final byte currentA = 100;
+            final short voltageV = 220;
+            final double efficiency = 0.7; // 70%
+            // when
+            final double horsepower = PhysicsCalc.Electronics
+                .motorOutputHorsepowerDirectCurrent(currentA, voltageV, efficiency);
+            // then
+            assertEquals(20.643, horsepower, DELTA3);
+        }
+
+        @Test
+        void testEquivalentInductanceInParallel() {
+            // given
+            final double[] parallelInductors = new double[]{5, 10, 15};
+            // when
+            final double equivalentInductance = PhysicsCalc.Electronics
+                .equivalentInductanceInParallel(parallelInductors);
+            // then
+            assertEquals(2.727, equivalentInductance, DELTA3);
+        }
+
+        @Test
+        void testMissingInductorInParallel() {
+            // given
+            final double desiredTotalInductance = 2.727;
+            final double[] parallelInductors = new double[]{5, 10};
+            // when
+            final double inductor = PhysicsCalc.Electronics
+                .missingInductorInParallel(parallelInductors, desiredTotalInductance);
+            // then
+            assertEquals(15, inductor, DELTA1);
+        }
+
+        @Test
+        void testEquivalentInductanceInSeries() {
+            // given
+            final double[] inductors = new double[]{5, 10, 15};
+            // when
+            final double equivalentInductance = PhysicsCalc.Electronics.equivalentInductanceInSeries(inductors);
+            // then
+            assertEquals(30, equivalentInductance, DELTA1);
+        }
+
+        @Test
+        void testMissingInductorInSeries() {
+            // given
+            final double desiredTotalInductance = 30;
+            final double[] inductors = new double[]{5, 10};
+            // when
+            final double inductor = PhysicsCalc.Electronics.missingInductorInSeries(inductors, desiredTotalInductance);
+            // then
+            assertEquals(15, inductor, DELTA1);
+        }
+
+        @Test
+        void testEquivalentResistanceInParallel() {
+            // given
+            final double[] resistors = new double[]{2, 4};
+            // when
+            final double equivalentResistance = PhysicsCalc.Electronics.equivalentResistanceInParallel(resistors);
+            // then
+            assertEquals(1.333333, equivalentResistance, DELTA6);
+        }
+
+        @Test
+        void testMissingResistorInParallel() {
+            // given
+            final byte desiredTotalResistance = 1;
+            final double[] resistors = new double[]{2, 4};
+            // when
+            final double resistor = PhysicsCalc.Electronics
+                .missingResistorInParallel(resistors, desiredTotalResistance);
+            // then
+            assertEquals(4, resistor, DELTA1);
+        }
+
+        @Test
+        void testResistorDissipatedPower() {
+            // given
+            final byte resistance = 100;
+            final byte voltage = 125;
+            // when
+            final double[] results = PhysicsCalc.Electronics.resistorDissipatedPower(resistance, voltage);
+            // then
+            assertNotNull(results);
+            assertEquals(2, results.length);
+            final double power = results[Constants.ARR_1ST_INDEX];
+            final double current = results[Constants.ARR_2ND_INDEX];
+            assertEquals(156.25, power, DELTA2);
+            assertEquals(1.25, current, DELTA2);
+        }
+
+        @Test
+        void testVoltageDividerRR() {
+            // given
+            final short inputVoltage = 1210;
+            final double[] resistors = new double[]{20, 30};
+            // when
+            final double outputVoltage = PhysicsCalc.Electronics.voltageDividerRR(resistors, inputVoltage);
+            // then
+            assertEquals(726, outputVoltage, DELTA1);
+        }
+
+        @Test
+        void testVoltageDividerCC() {
+            // given
+            final short inputVoltage = 1210;
+            final double[] capacitors = new double[]{
+                CapacityUnit.microFaradsToFarads(100), CapacityUnit.microFaradsToFarads(200)
+            };
+            // when
+            final double outputVoltage = PhysicsCalc.Electronics.voltageDividerCC(capacitors, inputVoltage);
+            // then
+            assertEquals(403.3, outputVoltage, DELTA1);
+        }
+
+        @Test
+        void testVoltageDividerLL() {
+            // given
+            final short inputVoltage = 1210;
+            final double[] inductors = new double[]{
+                InductanceUnit.microHenriesToHenries(100), InductanceUnit.microHenriesToHenries(200)
+            };
+            // when
+            final double outputVoltage = PhysicsCalc.Electronics.voltageDividerLL(inductors, inputVoltage);
+            // then
+            assertEquals(806.7, outputVoltage, DELTA1);
+        }
+
+        @Test
+        @Disabled
+        void testResistorWattageInParallel() {
+            // given
+            final byte constantVoltage = 125;
+            final double[] resistors = new double[]{20, 30, 50};
+            // when
+            final double[][] results = PhysicsCalc.Electronics.resistorWattageInParallel(resistors, constantVoltage);
+            // then
+            assertMatrixEquals(new double[][]{
+                {20, 60.5, 1210, 73200},
+                {30, 40.3, 1210, 48800},
+                {50, 24.2, 1210, 48800},
+            }, results, DELTA2);
+        }
+
+        @Test
+        void testResistorNoise() {
+            // given
+            final short resistance = 20_000;
+            final double temperature = TemperatureUnit.celsiusToKelvin(20);
+            final short bandwidth = 1000;
+            // when
+            final double[] noiseResults = PhysicsCalc.Electronics.resistorNoise(resistance, temperature, bandwidth);
+            // then
+            assertArrayEquals(new double[]{5.69e-7, -122.68, -124.9}, noiseResults, DELTA2);
         }
     }
 }
