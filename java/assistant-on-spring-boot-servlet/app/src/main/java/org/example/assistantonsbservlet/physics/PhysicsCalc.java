@@ -3,9 +3,12 @@ package org.example.assistantonsbservlet.physics;
 import org.example.assistantonsbservlet.math.Constants;
 import org.example.assistantonsbservlet.math.MathCalc;
 import org.example.assistantonsbservlet.math.MathCalc.Algebra;
+import org.example.assistantonsbservlet.math.MathCalc.Arithmetic;
+import org.example.assistantonsbservlet.math.MathCalc.Geometry;
 import org.example.assistantonsbservlet.math.MathCalc.Trigonometry;
 
 import java.util.Arrays;
+import java.util.Map;
 import java.util.Objects;
 import java.util.function.DoubleUnaryOperator;
 
@@ -640,6 +643,78 @@ public final class PhysicsCalc {
         }
     }
 
+    public static final class Electromagnetism {
+        public static final Map<String, Double> CONDUCTIVITY_MAP; // in S/m
+        public static final Map<String, Double> RESISTIVITY_MAP; // in S/m
+
+        static {
+            CONDUCTIVITY_MAP = Map.ofEntries(
+                Map.entry("Ag", 62_893_082.0), // Silver
+                Map.entry("Annealed Cu", 58_479_532.0), // Annealed copper
+                Map.entry("Au", 40_983_607.0), // Gold
+                Map.entry("Al", 37_735_849.0), // Aluminum
+                Map.entry("W", 17_857_143.0), // Tungsten
+                Map.entry("Li", 10_775_862.0), // Lithium
+                Map.entry("Fe", 10_298_661.0), // Iron
+                Map.entry("Pt", 9_433_962.0), // Platinum
+                Map.entry("Hg", 1_020_408.0), // Mercury
+                Map.entry("C", 1_538.5), // Carbon
+                Map.entry("Si", 0.0015625), // Silicon
+                Map.entry("SiO2", 1e-13), // Glass
+                Map.entry("C2F4", 1e-24), // Teflon
+                Map.entry("Cu", 59_523_810.0) // Copper
+            );
+
+            RESISTIVITY_MAP = Map.ofEntries(
+                Map.entry("Ag", 1.59e-8),
+                Map.entry("Annealed Cu", 1.71e-8),
+                Map.entry("Au", 2.44e-8),
+                Map.entry("Al", 2.65e-8),
+                Map.entry("W", 5.6e-8),
+                Map.entry("Li", 9.28e-8),
+                Map.entry("Fe", 9.71e-8),
+                Map.entry("Pt", 1.06e-7),
+                Map.entry("Hg", 9.8e-7),
+                Map.entry("C", 0.00065),
+                Map.entry("Si", 640.0),
+                Map.entry("SiO2", 10_000_000_000_000d),
+                Map.entry("C2F4", 1e+24),
+                Map.entry("Cu", 1.68e-8)
+            );
+        }
+
+        private Electromagnetism() {
+        }
+
+        public static double conductivityOf(String chemicalSymbol) {
+            return CONDUCTIVITY_MAP.get(chemicalSymbol);
+        }
+
+        public static double resistivityOf(String chemicalSymbol) {
+            return RESISTIVITY_MAP.get(chemicalSymbol);
+        }
+
+        /**
+         * ρ = 1/σ
+         *
+         * @param conductivity in S/m
+         * @return resistivity in Ω*m
+         */
+        public static double conductivityToResistivity(double conductivity) {
+            return Arithmetic.reciprocal(conductivity);
+        }
+
+        /**
+         * σ = 1/ρ
+         *
+         * @param resistivity in Ω*m
+         * @return conductivity in S/m
+         */
+        public static double resistivityToConductivity(double resistivity) {
+            return Arithmetic.reciprocal(resistivity);
+        }
+    }
+
     public static final class Electronics {
         public static final double THREE_PHASE_GENERATOR = 1.732; // √3
 
@@ -1203,6 +1278,32 @@ public final class PhysicsCalc {
          */
         public static double rmsVoltageFullWaveRectifiedSineWaveVavg(double voltageVolts) {
             return Math.PI * voltageVolts / (2 * Algebra.squareRoot(2));
+        }
+
+        /**
+         * @return R = ρ × L / A. The units are ohms
+         */
+        public static double wireResistance(
+            double lengthMeters, double diameterMeters, double electricalResistivity) {
+            final double crossSectionalArea = Geometry.crossSectionalAreaOfCircularWire(diameterMeters);
+            return electricalResistivity * lengthMeters / crossSectionalArea;
+        }
+
+        /**
+         * @return R = 1 / G. The units are ohms
+         */
+        public static double wireResistance(double conductanceSiemens) {
+            return Arithmetic.reciprocal(conductanceSiemens);
+        }
+
+        /**
+         * @param electricalConductivity in S/m
+         * @param crossSectionalArea     in m²
+         * @return G = σ × A / L. The units are siemens
+         */
+        public static double wireConductance(
+            double electricalConductivity, double crossSectionalArea, double lengthMeters) {
+            return electricalConductivity * crossSectionalArea / lengthMeters;
         }
     }
 }

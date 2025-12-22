@@ -1065,6 +1065,40 @@ class MathCalcTest {
             // then
             assertEquals(25, percentOfTotalTime, DELTA1);
         }
+
+        static List<Arguments> reciprocalArgs() {
+            return List.of(
+                Arguments.of(5, 0.2, DELTA1),
+                Arguments.of(MathCalc.TWO_THIRDS, 1.5, DELTA1),
+                Arguments.of(MathCalc.ONE, MathCalc.ONE, DELTA1)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("reciprocalArgs")
+        void testReciprocal(double x, double expectedResult, double delta) {
+            // when
+            final double result = MathCalc.Arithmetic.reciprocal(x);
+            // then
+            assertEquals(expectedResult, result, delta);
+        }
+
+        static List<Arguments> reciprocalOfFractionArgs() {
+            return List.of(
+                Arguments.of(new long[]{5, 1}, new long[]{1, 5}),
+                Arguments.of(new long[]{2, 3}, new long[]{3, 2}),
+                Arguments.of(new long[]{1, 2, 3}, new long[]{3, 5})
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("reciprocalOfFractionArgs")
+        void testReciprocal(long[] fraction, long[] expectedResult) {
+            // when
+            final long[] result = MathCalc.Arithmetic.reciprocal(fraction);
+            // then
+            assertArrayEquals(expectedResult, result);
+        }
     }
 
     @Nested
@@ -2801,10 +2835,8 @@ class MathCalcTest {
             assertEquals(Math.toRadians(150), angles[Constants.ARR_1ST_INDEX], DELTA6);
             assertEquals(Math.toRadians(210), angles[Constants.ARR_2ND_INDEX], DELTA6);
         }
-    }
 
-    @Nested
-    class CoordinateGeometry {
+
         static List<Arguments> manhattanDistanceParams() {
             return List.of(
                 Arguments.of(new double[]{2}, new double[]{3}, 1), // 1d
@@ -2818,7 +2850,7 @@ class MathCalcTest {
         @MethodSource("manhattanDistanceParams")
         void testManhattanDistance(double[] vectorA, double[] vectorB, double expectedResult) {
             // when
-            final double distance = MathCalc.CoordinateGeometry.manhattanDistance(vectorA, vectorB);
+            final double distance = MathCalc.Geometry.manhattanDistance(vectorA, vectorB);
             // then
             assertEquals(expectedResult, distance, 0.1);
         }
@@ -2828,8 +2860,7 @@ class MathCalcTest {
             // given
             final double[] cartesianCoords = {2, 5, 3};
             // when
-            final double[] cylindricalCoords = MathCalc.CoordinateGeometry
-                .cartesianToCylindricalCoordinates(cartesianCoords);
+            final double[] cylindricalCoords = MathCalc.Geometry.cartesianToCylindricalCoordinates(cartesianCoords);
             // then
             assertNotNull(cylindricalCoords);
             assertEquals(3, cylindricalCoords.length);
@@ -2843,8 +2874,7 @@ class MathCalcTest {
             // given
             final double[] cylindricalCoords = {5.385, 1.1903, 3};
             // when
-            final double[] cartesianCoords = MathCalc.CoordinateGeometry
-                .cylindricalToCartesianCoordinates(cylindricalCoords);
+            final double[] cartesianCoords = MathCalc.Geometry.cylindricalToCartesianCoordinates(cylindricalCoords);
             // then
             assertNotNull(cartesianCoords);
             assertEquals(3, cartesianCoords.length);
@@ -2858,7 +2888,7 @@ class MathCalcTest {
             // given
             final double[] cartesianCoords = {2, 3};
             // when
-            final double[] polarCoords = MathCalc.CoordinateGeometry.cartesianToPolarCoordinates(cartesianCoords);
+            final double[] polarCoords = MathCalc.Geometry.cartesianToPolarCoordinates(cartesianCoords);
             // then
             assertNotNull(polarCoords);
             assertEquals(2, polarCoords.length);
@@ -2871,7 +2901,7 @@ class MathCalcTest {
             // given
             final double[] polarCoords = {3.6056, 0.9828};
             // when
-            final double[] cartesianCoords = MathCalc.CoordinateGeometry.polarToCartesianCoordinates(polarCoords);
+            final double[] cartesianCoords = MathCalc.Geometry.polarToCartesianCoordinates(polarCoords);
             // then
             assertNotNull(cartesianCoords);
             assertEquals(2, cartesianCoords.length);
@@ -2884,8 +2914,7 @@ class MathCalcTest {
             // given
             final double[] cartesianCoords = {2, 5, 3};
             // when
-            final double[] sphericalCoords = MathCalc.CoordinateGeometry
-                .cartesianToSphericalCoordinates(cartesianCoords);
+            final double[] sphericalCoords = MathCalc.Geometry.cartesianToSphericalCoordinates(cartesianCoords);
             // then
             assertNotNull(sphericalCoords);
             assertEquals(3, sphericalCoords.length);
@@ -2899,8 +2928,7 @@ class MathCalcTest {
             // given
             final double[] sphericalCoords = {6.164, 1.0625, 1.1903};
             // when
-            final double[] cartesianCoords = MathCalc.CoordinateGeometry
-                .sphericalToCartesianCoordinates(sphericalCoords);
+            final double[] cartesianCoords = MathCalc.Geometry.sphericalToCartesianCoordinates(sphericalCoords);
             // then
             assertNotNull(cartesianCoords);
             assertEquals(3, cartesianCoords.length);
@@ -2923,7 +2951,7 @@ class MathCalcTest {
         void testDistanceBetween2points(
             double[] pointACoords, double[] pointBCoords, double expectedResult, double delta) {
             // when
-            final double distance = MathCalc.CoordinateGeometry.distance(pointACoords, pointBCoords);
+            final double distance = MathCalc.Geometry.distance(pointACoords, pointBCoords);
             // then
             assertEquals(expectedResult, distance, delta);
         }
@@ -2935,9 +2963,9 @@ class MathCalcTest {
             final double[] pointBCoords = {9, 15, 5};
             final double[] pointCCoords = {2, 7, 1};
             // when
-            final double abDistance = MathCalc.CoordinateGeometry.distance(pointACoords, pointBCoords);
-            final double bcDistance = MathCalc.CoordinateGeometry.distance(pointBCoords, pointCCoords);
-            final double acDistance = MathCalc.CoordinateGeometry.distance(pointACoords, pointCCoords);
+            final double abDistance = MathCalc.Geometry.distance(pointACoords, pointBCoords);
+            final double bcDistance = MathCalc.Geometry.distance(pointBCoords, pointCCoords);
+            final double acDistance = MathCalc.Geometry.distance(pointACoords, pointCCoords);
             // then
             assertEquals(12.0416, abDistance, 0.0001);
             assertEquals(11.35782, bcDistance, 0.00001);
@@ -2951,7 +2979,7 @@ class MathCalcTest {
             final int lineSlope = 2;
             final int lineYIntercept = 6;
             // when
-            final double distance = MathCalc.CoordinateGeometry
+            final double distance = MathCalc.Geometry
                 .distanceBetweenPointsAndStraightLine(pointCoords, lineSlope, lineYIntercept);
             // then
             assertEquals(3.130495, distance, 0.000001);
@@ -2964,10 +2992,10 @@ class MathCalcTest {
             final int line1YIntercept = 6;
             final int line2YIntercept = 8;
             // when
-            final double distance = MathCalc.CoordinateGeometry
+            final double distance = MathCalc.Geometry
                 .distanceBetweenParallelLines(slope, line1YIntercept, line2YIntercept);
             // then
-            assertEquals(0.894427, distance, 0.000001);
+            assertEquals(0.894427, distance, DELTA6);
         }
 
         @Test
@@ -2976,12 +3004,12 @@ class MathCalcTest {
             final double[] pointCoords = {3, 4};
             final double angleTheta = Math.toRadians(60);
             // when
-            final double[] resultCoords = MathCalc.CoordinateGeometry.rotation(pointCoords, angleTheta);
+            final double[] resultCoords = MathCalc.Geometry.rotation(pointCoords, angleTheta);
             // then
             assertNotNull(resultCoords);
             assertEquals(2, resultCoords.length);
-            assertEquals(-1.964, resultCoords[Constants.X_INDEX], 0.001);
-            assertEquals(4.598, resultCoords[Constants.Y_INDEX], 0.001);
+            assertEquals(-1.964, resultCoords[Constants.X_INDEX], DELTA3);
+            assertEquals(4.598, resultCoords[Constants.Y_INDEX], DELTA3);
         }
 
         @Test
@@ -2991,13 +3019,12 @@ class MathCalcTest {
             final double angleTheta = Math.toRadians(60);
             final double[] pivotCoords = {1, 2};
             // when
-            final double[] resultCoords = MathCalc.CoordinateGeometry
-                .rotationAroundPoint(pointCoords, pivotCoords, angleTheta);
+            final double[] resultCoords = MathCalc.Geometry.rotationAroundPoint(pointCoords, pivotCoords, angleTheta);
             // then
             assertNotNull(resultCoords);
             assertEquals(2, resultCoords.length);
-            assertEquals(0.26795, resultCoords[Constants.X_INDEX], 0.00001);
-            assertEquals(4.732, resultCoords[Constants.Y_INDEX], 0.001);
+            assertEquals(0.26795, resultCoords[Constants.X_INDEX], DELTA5);
+            assertEquals(4.732, resultCoords[Constants.Y_INDEX], DELTA3);
         }
 
         @Test
@@ -3006,22 +3033,22 @@ class MathCalcTest {
             final double[] pointACoords = {1, 5};
             final double[] pointBCoords = {7, 6};
             // when
-            final double slope = MathCalc.CoordinateGeometry.slope(pointACoords, pointBCoords);
+            final double slope = MathCalc.Geometry.slope(pointACoords, pointBCoords);
             final double angleTheta = Math.atan(slope);
-            final double distance = MathCalc.CoordinateGeometry.distance(pointACoords, pointBCoords);
-            final double deltaX = MathCalc.CoordinateGeometry.deltaDistance(
+            final double distance = MathCalc.Geometry.distance(pointACoords, pointBCoords);
+            final double deltaX = MathCalc.Geometry.deltaDistance(
                 pointBCoords[Constants.X_INDEX], pointACoords[Constants.X_INDEX]);
-            final double deltaY = MathCalc.CoordinateGeometry.deltaDistance(
+            final double deltaY = MathCalc.Geometry.deltaDistance(
                 pointBCoords[Constants.Y_INDEX], pointACoords[Constants.Y_INDEX]);
-            final double constantTerm = MathCalc.CoordinateGeometry.slopeInterceptConstantTerm(
+            final double constantTerm = MathCalc.Geometry.slopeInterceptConstantTerm(
                 pointACoords[Constants.X_INDEX], pointACoords[Constants.Y_INDEX], slope);
             // then
-            assertEquals(0.166667, slope, 0.000001);
-            assertEquals(0.16515, angleTheta, 0.00001);
-            assertEquals(6.0828, distance, 0.0001);
-            assertEquals(6, deltaX, 0.1);
-            assertEquals(1, deltaY, 0.1);
-            assertEquals(4.833, constantTerm, 0.001);
+            assertEquals(0.166667, slope, DELTA6);
+            assertEquals(0.16515, angleTheta, DELTA5);
+            assertEquals(6.0828, distance, DELTA4);
+            assertEquals(6, deltaX, DELTA1);
+            assertEquals(1, deltaY, DELTA1);
+            assertEquals(4.833, constantTerm, DELTA3);
         }
 
         @Test
@@ -3030,9 +3057,9 @@ class MathCalcTest {
             final int xIntercept = 2;
             final int yIntercept = -3;
             // when
-            final double slope = MathCalc.CoordinateGeometry.slopeFromKnownIntercepts(xIntercept, yIntercept);
+            final double slope = MathCalc.Geometry.slopeFromKnownIntercepts(xIntercept, yIntercept);
             // then
-            assertEquals(1.5, slope, 0.1);
+            assertEquals(1.5, slope, DELTA1);
         }
 
         @Test
@@ -3042,9 +3069,9 @@ class MathCalcTest {
             final int x2 = 7;
             final double slope = 0.166667;
             // when
-            final double area = MathCalc.CoordinateGeometry.areaUnderSlope(x1, x2, slope);
+            final double area = MathCalc.Geometry.areaUnderSlope(x1, x2, slope);
             // then
-            assertEquals(3.000006, area, 0.000001);
+            assertEquals(3.000006, area, DELTA6);
         }
 
         @Test
@@ -3054,15 +3081,15 @@ class MathCalcTest {
             final int b = 3;
             final int c = -2;
             // when
-            final double[] intercepts = MathCalc.CoordinateGeometry.intercept(a, b, c);
-            final double slope = MathCalc.CoordinateGeometry.slope(a, b);
+            final double[] intercepts = MathCalc.Geometry.intercept(a, b, c);
+            final double slope = MathCalc.Geometry.slope(a, b);
             // then
             assertNotNull(intercepts);
             assertEquals(2, intercepts.length);
-            assertEquals(1, intercepts[Constants.X_INDEX], 0.1);
-            assertEquals(0.6667, intercepts[Constants.Y_INDEX], 0.0001);
+            assertEquals(1, intercepts[Constants.X_INDEX], DELTA1);
+            assertEquals(0.6667, intercepts[Constants.Y_INDEX], DELTA4);
 
-            assertEquals(-0.6667, slope, 0.0001);
+            assertEquals(-0.6667, slope, DELTA4);
         }
 
         @Test
@@ -3071,12 +3098,12 @@ class MathCalcTest {
             final int slopeTerm = 2;
             final int constantTerm = -2;
             // when
-            final double[] intercepts = MathCalc.CoordinateGeometry.intercept(slopeTerm, constantTerm);
+            final double[] intercepts = MathCalc.Geometry.intercept(slopeTerm, constantTerm);
             // then
             assertNotNull(intercepts);
             assertEquals(2, intercepts.length);
-            assertEquals(1, intercepts[Constants.X_INDEX], 0.1);
-            assertEquals(-2, intercepts[Constants.Y_INDEX], 0.0001);
+            assertEquals(1, intercepts[Constants.X_INDEX], DELTA1);
+            assertEquals(-2, intercepts[Constants.Y_INDEX], DELTA4);
         }
 
         @Test
@@ -3086,15 +3113,15 @@ class MathCalcTest {
             final double[] pointBCoords = {300, 20};
             final int midpointX = 250;
             // when
-            final double midpointY = MathCalc.CoordinateGeometry
+            final double midpointY = MathCalc.Geometry
                 .linearInterpolation(pointACoords, pointBCoords, midpointX);
-            final double slope = MathCalc.CoordinateGeometry.slope(pointACoords, pointBCoords);
-            final double deltaY = MathCalc.CoordinateGeometry.deltaDistance(
+            final double slope = MathCalc.Geometry.slope(pointACoords, pointBCoords);
+            final double deltaY = MathCalc.Geometry.deltaDistance(
                 pointBCoords[Constants.Y_INDEX], pointACoords[Constants.Y_INDEX]);
             // then
-            assertEquals(17.5, midpointY, 0.1);
-            assertEquals(0.05, slope, 0.01);
-            assertEquals(5, deltaY, 0.1);
+            assertEquals(17.5, midpointY, DELTA1);
+            assertEquals(0.05, slope, DELTA1);
+            assertEquals(5, deltaY, DELTA1);
         }
 
         @Test
@@ -3103,12 +3130,12 @@ class MathCalcTest {
             final double[] pointACoords = {0, 2};
             final double[] pointBCoords = {2, 8};
             // when
-            final double[] midpointCoords = MathCalc.CoordinateGeometry.midpoint(pointACoords, pointBCoords);
+            final double[] midpointCoords = MathCalc.Geometry.midpoint(pointACoords, pointBCoords);
             // then
             assertNotNull(midpointCoords);
             assertEquals(2, midpointCoords.length);
-            assertEquals(1, midpointCoords[Constants.X_INDEX], 0.1);
-            assertEquals(5, midpointCoords[Constants.Y_INDEX], 0.1);
+            assertEquals(1, midpointCoords[Constants.X_INDEX], DELTA1);
+            assertEquals(5, midpointCoords[Constants.Y_INDEX], DELTA1);
         }
 
         @Test
@@ -3117,9 +3144,125 @@ class MathCalcTest {
             final byte point = 2;
             final byte midpoint = 5;
             // when
-            final double coordinate = MathCalc.CoordinateGeometry.endpointWithGivenMidpoint(point, midpoint);
+            final double coordinate = MathCalc.Geometry.endpointWithGivenMidpoint(point, midpoint);
             // then
-            assertEquals(8, coordinate, 0.1);
+            assertEquals(8, coordinate, DELTA1);
+        }
+
+        @Test
+        void testCrossSectionalAreaOfHollowRectangle() {
+            // given
+            final byte width = 10; // cm
+            final byte height = 25; // cm
+            final byte thickness = 3; // cm
+            // when
+            final double area = MathCalc.Geometry.crossSectionalAreaOfHollowRectangle(width, height, thickness);
+            // then
+            assertEquals(174, area, DELTA1); // cm²
+        }
+
+        @Test
+        void testCrossSectionalAreaOfRectangle() {
+            // given
+            final byte width = 10; // cm
+            final byte height = 25; // cm
+            // when
+            final double area = MathCalc.Geometry.crossSectionalAreaOfRectangle(width, height);
+            // then
+            assertEquals(250, area, DELTA1); // cm²
+        }
+
+        @Test
+        void testCrossSectionalAreaOfISection() {
+            // given
+            final byte width = 1; // m
+            final byte height = 2; // m
+            final double thickness1 = MathCalc.ONE_HALF; // m
+            final double thickness2 = 0.6; // m
+            // when
+            final double area = MathCalc.Geometry.crossSectionalAreaOfISection(width, height, thickness1, thickness2);
+            // then
+            assertEquals(1.6, area, DELTA1); // m²
+        }
+
+        @Test
+        void testCrossSectionalAreaOfCSection() {
+            // given
+            final byte width = 120; // cm
+            final short height = 170; // cm
+            final byte thickness1 = 14; // cm
+            final byte thickness2 = 10; // cm
+            // when
+            final double area = MathCalc.Geometry.crossSectionalAreaOfCSection(width, height, thickness1, thickness2);
+            // then
+            assertEquals(4780, area, DELTA1); // cm²
+        }
+
+        @Test
+        void testCrossSectionalAreaOfTSection() {
+            // given
+            final double width = 0.23; // m
+            final double height = 0.4; // m
+            final double thickness1 = 0.1; // m
+            final double thickness2 = 0.3; // m
+            // when
+            final double area = MathCalc.Geometry.crossSectionalAreaOfTSection(width, height, thickness1, thickness2);
+            // then
+            assertEquals(0.113, area, DELTA3); // m²
+        }
+
+        @Test
+        void testCrossSectionalAreaOfLSection() {
+            // given
+            final double width = 0.17; // m
+            final double height = 0.2; // m
+            final double thickness = 0.05; // m
+            // when
+            final double area = MathCalc.Geometry.crossSectionalAreaOfLSection(width, height, thickness);
+            // then
+            assertEquals(0.016, area, DELTA3); // m²
+        }
+
+        @Test
+        void testCrossSectionalAreaOfIsoscelesTriangle() {
+            // given
+            final byte base = 10; // m
+            final byte height = 26; // m
+            // when
+            final double area = MathCalc.Geometry.crossSectionalAreaOfIsoscelesTriangle(base, height);
+            // then
+            assertEquals(130, area, DELTA1); // m²
+        }
+
+        @Test
+        void testCrossSectionalAreaOfEquilateralTriangle() {
+            // given
+            final byte side = 3; // m
+            // when
+            final double area = MathCalc.Geometry.crossSectionalAreaOfEquilateralTriangle(side);
+            // then
+            assertEquals(3.897, area, DELTA3); // m²
+        }
+
+        @Test
+        void testCrossSectionalAreaOfCircle() {
+            // given
+            final byte diameter = 4; // m
+            // when
+            final double area = MathCalc.Geometry.crossSectionalAreaOfCircle(diameter);
+            // then
+            assertEquals(12.566, area, DELTA3); // m²
+        }
+
+        @Test
+        void testCrossSectionalAreaOfTube() {
+            // given
+            final byte diameter = 10; // mm
+            final byte thickness = 1; // mm
+            // when
+            final double area = MathCalc.Geometry.crossSectionalAreaOfTube(diameter, thickness);
+            // then
+            assertEquals(28.274, area, DELTA3); // mm²
         }
     }
 

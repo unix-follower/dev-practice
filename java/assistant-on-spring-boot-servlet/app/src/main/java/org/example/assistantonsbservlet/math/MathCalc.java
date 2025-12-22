@@ -24,6 +24,7 @@ public final class MathCalc {
     public static final double ONE_HALF = 0.5; // 1/2
     public static final double ONE_EIGHTH = 0.125; // 1/8
     public static final double ONE_SIXTEENTH = 0.0625;  // 1/16
+    public static final double TWO_THIRDS = 0.66666667;  // 2/3
     public static final double THREE_FOURTH = 0.75;  // 3/4
     public static final double FOUR_FIFTH = 0.8;  // 4/5
     public static final double FIVE_SIXTH = 0.83333333;  // 5/6
@@ -1017,6 +1018,27 @@ public final class MathCalc {
          */
         public static double percentTime(double hoursSpent, double totalHours) {
             return (hoursSpent / totalHours) * 100;
+        }
+
+        /**
+         * <ul>
+         *     <li>The reciprocal of x = 1/x</li>
+         *     <li>x * 1/x = 1</li>
+         * </ul>
+         */
+        public static double reciprocal(double x) {
+            return MathCalc.ONE / x;
+        }
+
+        public static long[] reciprocal(long[] fraction) {
+            Objects.requireNonNull(fraction);
+
+            if (fraction.length == 3) {
+                final long[] improperFraction = mixedNumberToImproperFraction(fraction);
+                return new long[]{improperFraction[Constants.ARR_2ND_INDEX], improperFraction[Constants.ARR_1ST_INDEX]};
+            }
+
+            return new long[]{fraction[Constants.ARR_2ND_INDEX], fraction[Constants.ARR_1ST_INDEX]};
         }
     }
 
@@ -2842,11 +2864,8 @@ public final class MathCalc {
             final double hourToMinuteAngle = Math.abs(Trigonometry.PI2 - minuteToHourAngle);
             return new double[]{hourToMinuteAngle, minuteToHourAngle};
         }
-    }
 
-    public static final class CoordinateGeometry {
-        private CoordinateGeometry() {
-        }
+        // CoordinateGeometry
 
         private static void check3dSize(double[] vector) {
             if (vector == null || vector.length != 3) {
@@ -3128,8 +3147,8 @@ public final class MathCalc {
         }
 
         /**
-         * x_c = −c/a
-         * y_c = −c/b
+         * x꜀ = −c/a
+         * y꜀ = −c/b
          */
         public static double[] intercept(double coefficientOfX, double coefficientOfY, double constantTerm) {
             final double xIntercept = -constantTerm / coefficientOfX;
@@ -3152,7 +3171,7 @@ public final class MathCalc {
         }
 
         /**
-         * x = (x₁ + x₂)/2
+         * @return x = (x₁ + x₂)/2
          */
         public static double midpoint(double pointA, double pointB) {
             return (pointA + pointB) / 2;
@@ -3173,7 +3192,93 @@ public final class MathCalc {
         public static double endpointWithGivenMidpoint(double point, double midpoint) {
             return 2 * midpoint - point;
         }
+
+        /**
+         * @return (H × W) - ((H - 2t) × (W - 2t))
+         */
+        public static double crossSectionalAreaOfHollowRectangle(double width, double height, double thickness) {
+            return (height * width) - ((height - 2 * thickness) * (width - 2 * thickness));
+        }
+
+        /**
+         * @return W × H
+         */
+        public static double crossSectionalAreaOfRectangle(double width, double height) {
+            return width * height;
+        }
+
+        /**
+         * @return 2 × W × t₁ + (H - 2 × t₁) × t₂
+         */
+        public static double crossSectionalAreaOfISection(
+            double width, double height, double thickness1, double thickness2) {
+            return 2 * width * thickness1 + (height - 2 * thickness1) * thickness2;
+        }
+
+        /**
+         *
+         * The same formula as {@link #crossSectionalAreaOfISection}
+         */
+        public static double crossSectionalAreaOfCSection(
+            double width, double height, double thickness1, double thickness2) {
+            return crossSectionalAreaOfISection(width, height, thickness1, thickness2);
+        }
+
+        /**
+         * @return W × t₁ + (H - t₁) × t₂
+         */
+        public static double crossSectionalAreaOfTSection(
+            double width, double height, double thickness1, double thickness2) {
+            return width * thickness1 + (height - thickness1) * thickness2;
+        }
+
+        /**
+         * @return W × t + (H - t) × t
+         */
+        public static double crossSectionalAreaOfLSection(double width, double height, double thickness) {
+            return width * thickness + (height - thickness) * thickness;
+        }
+
+        /**
+         * @return 0.5 × B × H
+         */
+        public static double crossSectionalAreaOfIsoscelesTriangle(double base, double height) {
+            return ONE_HALF * base * height;
+        }
+
+        /**
+         * @return 0.4330 × L²
+         */
+        public static double crossSectionalAreaOfEquilateralTriangle(double side) {
+            return 0.433 * side * side;
+        }
+
+        /**
+         * @return 0.25 × π × D²
+         */
+        public static double crossSectionalAreaOfCircle(double diameter) {
+            return ONE_FOURTH * Math.PI * diameter * diameter;
+        }
+
+        /**
+         * A_C = π×(D²−d²)/4
+         * d = D−2t
+         * A_C = π×(D²−(D−2t)²)/4
+         *
+         * @return 0.25 × π × (D² - (D - 2 × t)²)
+         */
+        public static double crossSectionalAreaOfTube(double diameter, double thickness) {
+            return ONE_FOURTH * Math.PI * (diameter * diameter - Math.pow(diameter - 2 * thickness, 2));
+        }
+
+        /**
+         * @return A = πd²/4
+         */
+        public static double crossSectionalAreaOfCircularWire(double diameter) {
+            return Math.PI * diameter * diameter / 4;
+        }
     }
+
 
     /**
      * <table>

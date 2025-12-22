@@ -469,6 +469,85 @@ class PhysicsCalcTest {
     }
 
     @Nested
+    class Electromagnetism {
+        static List<Arguments> conductivityOfArgs() {
+            return List.of(
+                Arguments.of("Ag", 62_893_082, DELTA9),
+                Arguments.of("Annealed Cu", 58_479_532, DELTA9),
+                Arguments.of("Au", 40_983_607, DELTA9),
+                Arguments.of("Al", 37_735_849, DELTA9),
+                Arguments.of("W", 17_857_143, DELTA9),
+                Arguments.of("Li", 10_775_862, DELTA9),
+                Arguments.of("Fe", 10_298_661, DELTA9),
+                Arguments.of("Pt", 9_433_962, DELTA9),
+                Arguments.of("Hg", 1_020_408, DELTA9),
+                Arguments.of("C", 1_538.5, DELTA9),
+                Arguments.of("Si", 0.0015625, DELTA9),
+                Arguments.of("SiO2", 1e-13, DELTA9),
+                Arguments.of("C2F4", 1e-24, DELTA9),
+                Arguments.of("Cu", 59_523_810, DELTA9)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("conductivityOfArgs")
+        void testConductivityOf(String chemicalSymbol, double expectedResultSiemensPerMeter, double delta) {
+            // when
+            final double resistivity = PhysicsCalc.Electromagnetism.conductivityOf(chemicalSymbol);
+            // then
+            assertEquals(expectedResultSiemensPerMeter, resistivity, delta);
+        }
+
+        static List<Arguments> resistivityOfArgs() {
+            return List.of(
+                Arguments.of("Ag", 1.59e-8, DELTA9),
+                Arguments.of("Annealed Cu", 1.71e-8, DELTA9),
+                Arguments.of("Au", 2.44e-8, DELTA9),
+                Arguments.of("Al", 2.65e-8, DELTA9),
+                Arguments.of("W", 5.6e-8, DELTA9),
+                Arguments.of("Li", 9.28e-8, DELTA9),
+                Arguments.of("Fe", 9.71e-8, DELTA9),
+                Arguments.of("Pt", 1.06e-7, DELTA9),
+                Arguments.of("Hg", 9.8e-7, DELTA9),
+                Arguments.of("C", 0.00065, DELTA9),
+                Arguments.of("Si", 640, DELTA1),
+                Arguments.of("SiO2", 10_000_000_000_000d, DELTA1),
+                Arguments.of("C2F4", 1e+24, DELTA1),
+                Arguments.of("Cu", 1.68e-8, DELTA1)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("resistivityOfArgs")
+        void testResistivityOf(String chemicalSymbol, double expectedResultOhmMeters, double delta) {
+            // when
+            final double resistivity = PhysicsCalc.Electromagnetism.resistivityOf(chemicalSymbol);
+            // then
+            assertEquals(expectedResultOhmMeters, resistivity, delta);
+        }
+
+        @Test
+        void testConductivityToResistivity() {
+            // given
+            final double conductivity = 105.2;
+            // when
+            final double resistivity = PhysicsCalc.Electromagnetism.conductivityToResistivity(conductivity);
+            // then
+            assertEquals(0.009506, resistivity, DELTA6);
+        }
+
+        @Test
+        void testResistivityToConductivity() {
+            // given
+            final double resistivity = 0.009506;
+            // when
+            final double conductivity = PhysicsCalc.Electromagnetism.resistivityToConductivity(resistivity);
+            // then
+            assertEquals(105.2, conductivity, DELTA1);
+        }
+    }
+
+    @Nested
     class Electronics {
         static List<Arguments> electricalChargeInCapacitorArgs() {
             return List.of(
@@ -1066,6 +1145,42 @@ class PhysicsCalcTest {
             final double rmsVoltage = PhysicsCalc.Electronics.rmsVoltageFullWaveRectifiedSineWaveVavg(voltage);
             // then
             assertEquals(244.36, rmsVoltage, DELTA2);
+        }
+
+        @Test
+        void testWireResistance() {
+            // given
+            final byte lengthMeters = 100;
+            final double diameter = LengthUnit.millimetersToMeters(12);
+            final double electricalResistivity = PhysicsCalc.Electromagnetism.RESISTIVITY_MAP.get("Annealed Cu");
+            // when
+            final double resistanceOhms = PhysicsCalc.Electronics
+                .wireResistance(lengthMeters, diameter, electricalResistivity);
+            // then
+            assertEquals(0.01512, resistanceOhms, DELTA5);
+        }
+
+        @Test
+        void testWireResistanceWithConductance() {
+            // given
+            final double conductance = 66.14;
+            // when
+            final double resistanceOhms = PhysicsCalc.Electronics.wireResistance(conductance);
+            // then
+            assertEquals(0.01512, resistanceOhms, DELTA5);
+        }
+
+        @Test
+        void testWireConductance() {
+            // given
+            final double electricalConductivity = PhysicsCalc.Electromagnetism.CONDUCTIVITY_MAP.get("Annealed Cu");
+            final double crossSectionalArea = 0.0001131; // m²
+            final byte lengthMeters = 100;
+            // when
+            final double conductanceSiemens = PhysicsCalc.Electronics
+                .wireConductance(electricalConductivity, crossSectionalArea, lengthMeters);
+            // then
+            assertEquals(66.14, conductanceSiemens, DELTA2);
         }
     }
 }
