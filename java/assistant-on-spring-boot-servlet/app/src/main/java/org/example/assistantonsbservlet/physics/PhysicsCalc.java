@@ -1072,5 +1072,137 @@ public final class PhysicsCalc {
             final double noiseLevelLv = 20 * Algebra.log(resistorNoise);
             return new double[]{resistorNoise, noiseLevelLu, noiseLevelLv};
         }
+
+        /**
+         * Peak voltage (Vₚ)
+         *
+         * @return Vᵣₘₛ = Vₚ/√2
+         */
+        public static double rmsVoltageSineWaveVp(double voltageVolts) {
+            return voltageVolts / Algebra.squareRoot(2);
+        }
+
+        /**
+         * Peak-to-peak voltage (Vₚₚ)
+         *
+         * @return Vᵣₘₛ = Vₚₚ/(2√2)
+         */
+        public static double rmsVoltageSineWaveVpp(double voltageVolts) {
+            return voltageVolts / (2 * Algebra.squareRoot(2));
+        }
+
+        /**
+         * Average voltage (Vₐᵥ₉)
+         *
+         * @return Vᵣₘₛ = πVₐᵥ₉/(2√2)
+         */
+        public static double rmsVoltageSineWaveVavg(double voltageVolts) {
+            return Math.PI * voltageVolts / (2 * Algebra.squareRoot(2));
+        }
+
+        /**
+         * @return Vᵣₘₛ = Vₚ
+         */
+        public static double rmsVoltageSquareWaveVp(double voltageVolts) {
+            return voltageVolts;
+        }
+
+        /**
+         * @return Vᵣₘₛ = Vₚₚ/2
+         */
+        public static double rmsVoltageSquareWaveVpp(double voltageVolts) {
+            return voltageVolts / 2;
+        }
+
+        /**
+         * @return Vᵣₘₛ = Vₐᵥ₉
+         */
+        public static double rmsVoltageSquareWaveVavg(double voltageVolts) {
+            return voltageVolts;
+        }
+
+        /**
+         * @return Vᵣₘₛ = Vₚ/√3
+         */
+        public static double rmsVoltageTriangleWaveVp(double voltageVolts) {
+            return voltageVolts / Algebra.squareRoot(3);
+        }
+
+        /**
+         * @return Vᵣₘₛ = Vₚₚ/(2√3)
+         */
+        public static double rmsVoltageTriangleWaveVpp(double voltageVolts) {
+            return voltageVolts / (2 * Algebra.squareRoot(3));
+        }
+
+        /**
+         * @return Vᵣₘₛ = πVₐᵥ₉/(2√3)
+         */
+        public static double rmsVoltageTriangleWaveVavg(double voltageVolts) {
+            return (Math.PI * voltageVolts) / (2 * Algebra.squareRoot(3));
+        }
+
+        /**
+         * @return Vᵣₘₛ = Vₚ/√3
+         */
+        public static double rmsVoltageSawtoothWaveVp(double voltageVolts) {
+            return voltageVolts / Algebra.squareRoot(3);
+        }
+
+        /**
+         * @return Vᵣₘₛ = Vₚₚ/(2√3)
+         */
+        public static double rmsVoltageSawtoothWaveVpp(double voltageVolts) {
+            return voltageVolts / (2 * Algebra.squareRoot(3));
+        }
+
+        /**
+         * @return Vᵣₘₛ = πVₐᵥ₉/(2√3)
+         */
+        public static double rmsVoltageSawtoothWaveVavg(double voltageVolts) {
+            return (Math.PI * voltageVolts) / (2 * Algebra.squareRoot(3));
+        }
+
+        /**
+         * @return Vᵣₘₛ = Vₚ/2
+         */
+        public static double rmsVoltageHalfWaveRectifiedSineWaveVp(double voltageVolts) {
+            return voltageVolts / 2;
+        }
+
+        /**
+         * @return Vᵣₘₛ = Vₚₚ/4
+         */
+        public static double rmsVoltageHalfWaveRectifiedSineWaveVpp(double voltageVolts) {
+            return voltageVolts / 4;
+        }
+
+        /**
+         * @return Vᵣₘₛ = πVₐᵥ₉/2
+         */
+        public static double rmsVoltageHalfWaveRectifiedSineWaveVavg(double voltageVolts) {
+            return Math.PI * voltageVolts / 2;
+        }
+
+        /**
+         * @return Vᵣₘₛ = Vₚ/√2
+         */
+        public static double rmsVoltageFullWaveRectifiedSineWaveVp(double voltageVolts) {
+            return voltageVolts / Algebra.squareRoot(2);
+        }
+
+        /**
+         * @return Vᵣₘₛ = Vₚₚ/(2√2)
+         */
+        public static double rmsVoltageFullWaveRectifiedSineWaveVpp(double voltageVolts) {
+            return voltageVolts / (2 * Algebra.squareRoot(2));
+        }
+
+        /**
+         * @return Vᵣₘₛ = πVₐᵥ₉/(2√2)
+         */
+        public static double rmsVoltageFullWaveRectifiedSineWaveVavg(double voltageVolts) {
+            return Math.PI * voltageVolts / (2 * Algebra.squareRoot(2));
+        }
     }
 }

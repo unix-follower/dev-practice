@@ -21,6 +21,7 @@ class PhysicsCalcTest {
     private static final double DELTA2 = 0.01;
     private static final double DELTA3 = 0.001;
     private static final double DELTA4 = 0.0001;
+    private static final double DELTA5 = 0.00001;
     private static final double DELTA6 = 0.000001;
     private static final double DELTA7 = 0.0000001;
     private static final double DELTA9 = 0.000000001;
@@ -885,6 +886,186 @@ class PhysicsCalcTest {
             final double[] noiseResults = PhysicsCalc.Electronics.resistorNoise(resistance, temperature, bandwidth);
             // then
             assertArrayEquals(new double[]{5.69e-7, -122.68, -124.9}, noiseResults, DELTA2);
+        }
+
+        @Test
+        void testRMSVoltageSineWaveVp() {
+            // given
+            final short voltage = 220;
+            // when
+            final double rmsVoltage = PhysicsCalc.Electronics.rmsVoltageSineWaveVp(voltage);
+            // then
+            assertEquals(155.56, rmsVoltage, DELTA2);
+        }
+
+        @Test
+        void testRMSVoltageSineWaveVpp() {
+            // given
+            final short voltage = 220;
+            // when
+            final double rmsVoltage = PhysicsCalc.Electronics.rmsVoltageSineWaveVpp(voltage);
+            // then
+            assertEquals(77.78, rmsVoltage, DELTA2);
+        }
+
+        @Test
+        void testRMSVoltageSineWaveVavg() {
+            // given
+            final short voltage = 220;
+            // when
+            final double rmsVoltage = PhysicsCalc.Electronics.rmsVoltageSineWaveVavg(voltage);
+            // then
+            assertEquals(244.36, rmsVoltage, DELTA2);
+        }
+
+        @Test
+        void testRMSVoltageSquareWaveVp() {
+            // given
+            final short voltage = 220;
+            // when
+            final double rmsVoltage = PhysicsCalc.Electronics.rmsVoltageSquareWaveVp(voltage);
+            // then
+            assertEquals(220, rmsVoltage, DELTA1);
+        }
+
+        @Test
+        void testRMSVoltageSquareWaveVpp() {
+            // given
+            final short voltage = 220;
+            // when
+            final double rmsVoltage = PhysicsCalc.Electronics.rmsVoltageSquareWaveVpp(voltage);
+            // then
+            assertEquals(110, rmsVoltage, DELTA1);
+        }
+
+        @Test
+        void testRMSVoltageSquareWaveVavg() {
+            // given
+            final short voltage = 220;
+            // when
+            final double rmsVoltage = PhysicsCalc.Electronics.rmsVoltageSquareWaveVavg(voltage);
+            // then
+            assertEquals(220, rmsVoltage, DELTA1);
+        }
+
+        @Test
+        void testRMSVoltageTriangleWaveVp() {
+            // given
+            final short voltage = 220;
+            // when
+            final double rmsVoltage = PhysicsCalc.Electronics.rmsVoltageTriangleWaveVp(voltage);
+            // then
+            assertEquals(127.02, rmsVoltage, DELTA2);
+        }
+
+        @Test
+        void testRMSVoltageTriangleWaveVpp() {
+            // given
+            final short voltage = 220;
+            // when
+            final double rmsVoltage = PhysicsCalc.Electronics.rmsVoltageTriangleWaveVpp(voltage);
+            // then
+            assertEquals(63.51, rmsVoltage, DELTA2);
+        }
+
+        @Test
+        void testRMSVoltageTriangleWaveVavg() {
+            // given
+            final short voltage = 220;
+            // when
+            final double rmsVoltage = PhysicsCalc.Electronics.rmsVoltageTriangleWaveVavg(voltage);
+            // then
+            assertEquals(199.51793, rmsVoltage, DELTA5);
+        }
+
+        @Test
+        void testRMSVoltageSawtoothWaveVp() {
+            // given
+            final short voltage = 220;
+            // when
+            final double rmsVoltage = PhysicsCalc.Electronics.rmsVoltageSawtoothWaveVp(voltage);
+            // then
+            assertEquals(127.02, rmsVoltage, DELTA2);
+        }
+
+        @Test
+        void testRMSVoltageSawtoothWaveVpp() {
+            // given
+            final short voltage = 220;
+            // when
+            final double rmsVoltage = PhysicsCalc.Electronics.rmsVoltageSawtoothWaveVpp(voltage);
+            // then
+            assertEquals(63.51, rmsVoltage, DELTA2);
+        }
+
+        @Test
+        void testRMSVoltageSawtoothWaveVavg() {
+            // given
+            final short voltage = 220;
+            // when
+            final double rmsVoltage = PhysicsCalc.Electronics.rmsVoltageSawtoothWaveVavg(voltage);
+            // then
+            assertEquals(199.51793, rmsVoltage, DELTA5);
+        }
+
+        @Test
+        void testRMSVoltageHalfWaveRectifiedSineWaveVp() {
+            // given
+            final short voltage = 220;
+            // when
+            final double rmsVoltage = PhysicsCalc.Electronics.rmsVoltageHalfWaveRectifiedSineWaveVp(voltage);
+            // then
+            assertEquals(110, rmsVoltage, DELTA2);
+        }
+
+        @Test
+        void testRMSVoltageHalfWaveRectifiedSineWaveVpp() {
+            // given
+            final short voltage = 220;
+            // when
+            final double rmsVoltage = PhysicsCalc.Electronics.rmsVoltageHalfWaveRectifiedSineWaveVpp(voltage);
+            // then
+            assertEquals(55, rmsVoltage, DELTA1);
+        }
+
+        @Test
+        void testRMSVoltageHalfWaveRectifiedSineWaveVavg() {
+            // given
+            final short voltage = 220;
+            // when
+            final double rmsVoltage = PhysicsCalc.Electronics.rmsVoltageHalfWaveRectifiedSineWaveVavg(voltage);
+            // then
+            assertEquals(345.6, rmsVoltage, DELTA1);
+        }
+
+        @Test
+        void testRMSVoltageFullWaveRectifiedSineWaveVp() {
+            // given
+            final short voltage = 220;
+            // when
+            final double rmsVoltage = PhysicsCalc.Electronics.rmsVoltageFullWaveRectifiedSineWaveVp(voltage);
+            // then
+            assertEquals(155.56, rmsVoltage, DELTA2);
+        }
+
+        @Test
+        void testRMSVoltageFullWaveRectifiedSineWaveVpp() {
+            // given
+            final short voltage = 220;
+            // when
+            final double rmsVoltage = PhysicsCalc.Electronics.rmsVoltageFullWaveRectifiedSineWaveVpp(voltage);
+            // then
+            assertEquals(77.78, rmsVoltage, DELTA2);
+        }
+
+        @Test
+        void testRMSVoltageFullWaveRectifiedSineWaveVavg() {
+            // given
+            final short voltage = 220;
+            // when
+            final double rmsVoltage = PhysicsCalc.Electronics.rmsVoltageFullWaveRectifiedSineWaveVavg(voltage);
+            // then
+            assertEquals(244.36, rmsVoltage, DELTA2);
         }
     }
 }
