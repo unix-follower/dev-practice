@@ -1,6 +1,6 @@
 package org.example.assistantonsbservlet.physics;
 
-public enum HenryUnit {
+public enum InductanceUnit {
     HENRIES, // H
     MILLIHENRIES, // mH
     MICROHENRIES, // μH

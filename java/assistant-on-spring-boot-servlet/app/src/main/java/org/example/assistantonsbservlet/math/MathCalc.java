@@ -2063,6 +2063,26 @@ public final class MathCalc {
                 return new double[]{(-b + sqrtDiscriminant) / doubleA, (-b - sqrtDiscriminant) / doubleA};
             }
         }
+
+        /**
+         * <ul>
+         *     <li>√(1/n ∑ⁿᵢ₌₁ x²ᵢ)</li>
+         *     <li>Weighted: √((w₁x²₁ + w₂x²₂ + ... + wₙx²ₙ) / (w₁ + w₂ + ... + wₙ))</li>
+         *     <li>Generalized (power) means: ᵖ√((xᵖ₁ + xᵖ₂ + ... + xᵖₙ); (1/n ∑ⁿᵢ₌₁ xᵖᵢ)¹/ᵖ</li>
+         *     <li>p=1 - the arithmetic mean; p=2 - the quadratic mean; p=3 - the cubic mean</li>
+         *     <li>(1/n ∑ⁿᵢ₌₁ x⁻¹ᵢ)⁻¹ = n/(∑ⁿᵢ₌₁ x⁻¹ⱼ) = n/(∑ⁿᵢ₌₁ 1/xⱼ)</li>
+         * </ul>
+         *
+         * @return √((x²₁ + x²₂ + ... + x²ₙ)/n)
+         */
+        public static double rms(double[] dataset) {
+            final int n = dataset.length;
+            double sumOfSquares = 0;
+            for (double value : dataset) {
+                sumOfSquares += value * value;
+            }
+            return squareRoot(sumOfSquares / n);
+        }
     }
 
     public static final class Geometry {
@@ -6594,7 +6614,7 @@ public final class MathCalc {
              * @return RMSE = √MSE
              */
             public static double rmse(double[] predictedValues, double[] actualValues) {
-                return Math.sqrt(mse(predictedValues, actualValues));
+                return Algebra.squareRoot(mse(predictedValues, actualValues));
             }
 
             /**
