@@ -8,5 +8,5 @@ public enum PowerUnit {
     GIGAWATTS, // GW
     TERAWATTS, // TW
     BRITISH_THERMAL_UNITS_PER_HOUR, // BTU/h
-    MECHANICAL_HORSEPOWERS // hp(I)
+    MECHANICAL_HORSEPOWER // hp(I)
 }

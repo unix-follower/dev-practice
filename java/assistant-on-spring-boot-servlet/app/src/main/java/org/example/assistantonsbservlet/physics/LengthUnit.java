@@ -7,4 +7,8 @@ public enum LengthUnit {
     public static double millimetersToMeters(double mm) {
         return mm / 1000;
     }
+
+    public static double centimetersToMeters(double centimeters) {
+        return centimeters / 100;
+    }
 }
