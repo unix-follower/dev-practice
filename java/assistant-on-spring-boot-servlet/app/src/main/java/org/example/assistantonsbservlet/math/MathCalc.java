@@ -18,6 +18,9 @@ import java.util.function.DoubleBinaryOperator;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.LongPredicate;
 
+import static org.example.assistantonsbservlet.math.NumberUtils.checkGreater;
+import static org.example.assistantonsbservlet.math.NumberUtils.checkGreater0;
+
 public final class MathCalc {
     public static final double ONE_FIFTH = 0.2; // 1/5
     public static final double ONE_FOURTH = 0.25; // 1/4
@@ -69,19 +72,6 @@ public final class MathCalc {
 
     private static void checkNotEq0(double value) {
         checkNotEqTo(value, new double[]{0});
-    }
-
-    private static void checkGreater0(double value) {
-        final int inclusiveBound = 0;
-        if (value <= inclusiveBound) {
-            checkGreater(value, inclusiveBound);
-        }
-    }
-
-    private static void checkGreater(double value, double inclusiveBound) {
-        if (value <= inclusiveBound) {
-            throw new IllegalArgumentException("This value must be greater than " + inclusiveBound);
-        }
     }
 
     private static void check2dSize(double[] vector) {
@@ -3358,6 +3348,7 @@ public final class MathCalc {
         public static final double PI7_OVER_4 = 7 * Math.PI / 4;
         public static final double PI11_OVER_6 = 11 * Math.PI / 6;
         public static final double PI2 = 2 * Math.PI;
+        public static final double PI4 = 4 * Math.PI;
 
         private Trigonometry() {
         }

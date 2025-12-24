@@ -3,7 +3,6 @@ package org.example.assistantonsbservlet.physics;
 import org.example.assistantonsbservlet.math.Constants;
 import org.example.assistantonsbservlet.math.MathCalc;
 import org.example.assistantonsbservlet.math.MathCalc.Algebra;
-import org.example.assistantonsbservlet.math.MathCalc.Arithmetic;
 import org.example.assistantonsbservlet.math.MathCalc.Geometry;
 import org.example.assistantonsbservlet.math.MathCalc.Trigonometry;
 
@@ -11,6 +10,11 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.DoubleUnaryOperator;
+
+import static org.example.assistantonsbservlet.math.MathCalc.Algebra.squareRoot;
+import static org.example.assistantonsbservlet.math.MathCalc.Arithmetic.reciprocal;
+import static org.example.assistantonsbservlet.math.MathCalc.Geometry.crossSectionalAreaOfCircularWire;
+import static org.example.assistantonsbservlet.math.NumberUtils.checkGreater0;
 
 public final class PhysicsCalc {
     public static final double GRAVITATIONAL_ACCELERATION_IN_M_PER_S2 = 9.80665;
@@ -33,6 +37,8 @@ public final class PhysicsCalc {
     public static final short HORSEPOWER = 746;
     public static final double BOLTZMANN_CONSTANT = 1.380649e-23; // J/K
     public static final double REF_VOLTAGE_FOR_0_DBU = 0.77459667;
+    public static final double VACUUM_PERMITTIVITY = 8.854187818814e-12; // ε₀≈8.8541×10⁻¹² F/m
+    public static final double VACUUM_PERMEABILITY = Trigonometry.PI4 * 1e-7; // μ₀≈4π×10⁻⁷ H/m
 
     private PhysicsCalc() {
     }
@@ -636,7 +642,7 @@ public final class PhysicsCalc {
             final double fx = resultantForce[horizontalComponentIdx];
             final double fy = resultantForce[verticalComponentIdx];
             // Magnitude (F)
-            resultantForce[Constants.ARR_3RD_INDEX] = Algebra.squareRoot(fx * fx + fy * fy);
+            resultantForce[Constants.ARR_3RD_INDEX] = squareRoot(fx * fx + fy * fy);
             // Direction (θ)
             resultantForce[Constants.ARR_4TH_INDEX] = Trigonometry.multivaluedTanInverse(fy, fx);
             return resultantForce;
@@ -701,7 +707,7 @@ public final class PhysicsCalc {
          * @return resistivity in Ω*m
          */
         public static double conductivityToResistivity(double conductivity) {
-            return Arithmetic.reciprocal(conductivity);
+            return reciprocal(conductivity);
         }
 
         /**
@@ -711,7 +717,66 @@ public final class PhysicsCalc {
          * @return conductivity in S/m
          */
         public static double resistivityToConductivity(double resistivity) {
-            return Arithmetic.reciprocal(resistivity);
+            return reciprocal(resistivity);
+        }
+
+        /**
+         * P = I × V
+         * In AC circuits: P = I × V × pf, where pf is the power factor.
+         *
+         * @return power. The units are watts
+         */
+        public static double electricalPower(double voltageVolts, double currentAmperes, double powerFactor) {
+            return currentAmperes * voltageVolts * powerFactor;
+        }
+
+        /**
+         * @param electricFieldStrength in N/C
+         * @return u = ε₀/2 * E² + 1/(2μ₀) * B². The units are J/m³
+         */
+        public static double energyDensityOfFields(double electricFieldStrength, double magneticFieldTesla) {
+            checkGreater0(electricFieldStrength);
+            checkGreater0(magneticFieldTesla);
+
+            final double eSquared = electricFieldStrength * electricFieldStrength;
+            final double bSquared = magneticFieldTesla * magneticFieldTesla;
+            return (VACUUM_PERMITTIVITY / 2) * eSquared + reciprocal(2 * VACUUM_PERMEABILITY) * bSquared;
+        }
+
+        /**
+         * @param energyDensity in J/m³
+         * @return The units are N/C
+         */
+        public static double electricFieldStrength(double energyDensity, double magneticFieldTesla) {
+            checkGreater0(energyDensity);
+            checkGreater0(magneticFieldTesla);
+
+            final double magneticFieldSquared = magneticFieldTesla * magneticFieldTesla;
+            final double term = energyDensity - reciprocal(2 * VACUUM_PERMEABILITY) * magneticFieldSquared;
+            return squareRoot(2 * term / VACUUM_PERMITTIVITY);
+        }
+
+        /**
+         * B = μ₀I/2πd
+         * where:
+         * <ul>
+         *     <li>I - Current flowing through the wire;</li>
+         *     <li>d - Distance from the wire;</li>
+         *     <li>B - Strength of the magnetic field produced at distance d</li>
+         *     <li>μ₀ is the permeability of free space</li>
+         * </ul>
+         *
+         * @return The units are tesla
+         */
+        public static double magneticField(double currentAmperes, double distanceMeters) {
+            return (VACUUM_PERMEABILITY * currentAmperes) / (Trigonometry.PI2 * distanceMeters);
+        }
+
+        /**
+         * @return I = (2πdB)/μ₀. The units are tesla
+         */
+        public static double magneticFieldInStraightWire(double distanceMeters, double magneticFieldTesla) {
+            return (Trigonometry.PI2 * distanceMeters * magneticFieldTesla) / VACUUM_PERMEABILITY;
         }
     }
 
@@ -776,7 +841,7 @@ public final class PhysicsCalc {
          * @return V = √(P*R)
          */
         public static double ohmsLawVoltageGivenPowerAndResistance(double power, double resistance) {
-            return Algebra.squareRoot(power * resistance);
+            return squareRoot(power * resistance);
         }
 
         /**
@@ -801,14 +866,14 @@ public final class PhysicsCalc {
         }
 
         /**
-         * @return P = V²/R. The units are Watts W
+         * @return P = V²/R. The units are watts
          */
         public static double ohmsLawPowerGivenVoltageAndResistance(double voltage, double resistance) {
             return (voltage * voltage) / resistance;
         }
 
         /**
-         * @return P = R*I². The units are Watts W
+         * @return P = R*I². The units are watts
          */
         public static double ohmsLawPowerGivenResistanceAndCurrent(double resistance, double current) {
             return resistance * (current * current);
@@ -819,24 +884,24 @@ public final class PhysicsCalc {
          * <br/>I = dq/dt
          * <br/>I = C * (dv/dt)
          *
-         * @return I = V/R. The units are Amperes
+         * @return I = V/R. The units are amperes
          */
         public static double ohmsLawCurrent(double voltage, double resistance) {
             return voltage / resistance;
         }
 
         /**
-         * @return I = P/V. The units are Amperes
+         * @return I = P/V. The units are amperes
          */
         public static double ohmsLawCurrentGivenPowerAndVoltage(double power, double voltage) {
             return power / voltage;
         }
 
         /**
-         * @return I = √(P/V). The units are Amperes
+         * @return I = √(P/V). The units are amperes
          */
         public static double ohmsLawCurrentGivenPowerAndResistance(double power, double resistance) {
-            return Algebra.squareRoot(power / resistance);
+            return squareRoot(power / resistance);
         }
 
         /**
@@ -954,73 +1019,74 @@ public final class PhysicsCalc {
         /**
          * @return V⋅I/1000. The units are kVA
          */
-        public static double apparentPowerACSinglePhase(double currentAmpres, double voltageVolts) {
-            return apparentPowerAC(1, currentAmpres, voltageVolts);
+        public static double apparentPowerACSinglePhase(double currentAmperes, double voltageVolts) {
+            return apparentPowerAC(1, currentAmperes, voltageVolts);
         }
 
         /**
          * @return V⋅I⋅P_F/1000. The units are kW
          */
-        public static double acPowerSinglePhase(double currentAmpres, double voltageVolts, double powerFactor) {
-            return acPower(1, currentAmpres, voltageVolts, powerFactor);
+        public static double acPowerSinglePhase(double currentAmperes, double voltageVolts, double powerFactor) {
+            return acPower(1, currentAmperes, voltageVolts, powerFactor);
         }
 
         /**
          * @return V⋅I⋅P_F⋅η/746. The units are hp
          */
         public static double motorOutputHorsepowerACSinglePhase(
-            double currentAmpres, double voltageVolts, double powerFactor, double efficiency) {
-            return motorOutputHorsepowerAC(1, currentAmpres, voltageVolts, powerFactor, efficiency);
+            double currentAmperes, double voltageVolts, double powerFactor, double efficiency) {
+            return motorOutputHorsepowerAC(1, currentAmperes, voltageVolts, powerFactor, efficiency);
         }
 
         /**
          * @return V⋅I/1000. The units are kVA
          */
-        public static double apparentPowerACThreePhase(double currentAmpres, double voltageVolts) {
-            return apparentPowerAC(THREE_PHASE_GENERATOR, currentAmpres, voltageVolts);
+        public static double apparentPowerACThreePhase(double currentAmperes, double voltageVolts) {
+            return apparentPowerAC(THREE_PHASE_GENERATOR, currentAmperes, voltageVolts);
         }
 
         /**
          * @return V⋅I⋅P_F/1000. The units are kW
          */
-        public static double acPowerThreePhase(double currentAmpres, double voltageVolts, double powerFactor) {
-            return acPower(THREE_PHASE_GENERATOR, currentAmpres, voltageVolts, powerFactor);
+        public static double acPowerThreePhase(double currentAmperes, double voltageVolts, double powerFactor) {
+            return acPower(THREE_PHASE_GENERATOR, currentAmperes, voltageVolts, powerFactor);
         }
 
         /**
          * @return V⋅I⋅P_F⋅η/746. The units are hp
          */
         public static double motorOutputHorsepowerACThreePhase(
-            double currentAmpres, double voltageVolts, double powerFactor, double efficiency) {
-            return motorOutputHorsepowerAC(THREE_PHASE_GENERATOR, currentAmpres, voltageVolts, powerFactor, efficiency);
+            double currentAmperes, double voltageVolts, double powerFactor, double efficiency) {
+            return motorOutputHorsepowerAC(
+                THREE_PHASE_GENERATOR, currentAmperes, voltageVolts, powerFactor, efficiency);
         }
 
-        public static double apparentPowerAC(double phase, double currentAmpres, double voltageVolts) {
-            return phase * voltageVolts * currentAmpres / 1000;
+        public static double apparentPowerAC(double phase, double currentAmperes, double voltageVolts) {
+            return phase * voltageVolts * currentAmperes / 1000;
         }
 
         /**
          * AC - Alternating Current
          */
-        public static double acPower(double phase, double currentAmpres, double voltageVolts, double powerFactor) {
-            return phase * voltageVolts * currentAmpres * powerFactor / 1000;
+        public static double acPower(double phase, double currentAmperes, double voltageVolts, double powerFactor) {
+            return phase * Electromagnetism.electricalPower(voltageVolts, currentAmperes, powerFactor) / 1000;
         }
 
         public static double motorOutputHorsepowerAC(
-            double phase, double currentAmpres, double voltageVolts, double powerFactorPercent, double efficiency) {
-            return phase * voltageVolts * currentAmpres * powerFactorPercent * efficiency / HORSEPOWER;
+            double phase, double currentAmperes, double voltageVolts, double powerFactorPercent, double efficiency) {
+            return phase * voltageVolts * currentAmperes * powerFactorPercent * efficiency / HORSEPOWER;
         }
 
         /**
          * @return V⋅I⋅P_F/1000. The units are kW
          */
-        public static double powerDirectCurrent(double currentAmpres, double voltageVolts) {
-            return currentAmpres * voltageVolts / 1000;
+        public static double powerDirectCurrent(double currentAmperes, double voltageVolts) {
+            return currentAmperes * voltageVolts / 1000;
         }
 
         public static double motorOutputHorsepowerDirectCurrent(
-            double currentAmpres, double voltageVolts, double efficiency) {
-            return voltageVolts * currentAmpres * efficiency / HORSEPOWER;
+            double currentAmperes, double voltageVolts, double efficiency) {
+            return voltageVolts * currentAmperes * efficiency / HORSEPOWER;
         }
 
         /**
@@ -1141,8 +1207,8 @@ public final class PhysicsCalc {
          * @return [E, Lᵤ, Lᵥ]
          */
         public static double[] resistorNoise(double resistanceOhms, double temperatureKelvins, double bandwidthHz) {
-            final double resistorNoise = Algebra
-                .squareRoot(4 * resistanceOhms * BOLTZMANN_CONSTANT * temperatureKelvins * bandwidthHz);
+            final double resistorNoise = squareRoot(
+                4 * resistanceOhms * BOLTZMANN_CONSTANT * temperatureKelvins * bandwidthHz);
             final double noiseLevelLu = 20 * Algebra.log(resistorNoise / REF_VOLTAGE_FOR_0_DBU);
             final double noiseLevelLv = 20 * Algebra.log(resistorNoise);
             return new double[]{resistorNoise, noiseLevelLu, noiseLevelLv};
@@ -1154,7 +1220,7 @@ public final class PhysicsCalc {
          * @return Vᵣₘₛ = Vₚ/√2
          */
         public static double rmsVoltageSineWaveVp(double voltageVolts) {
-            return voltageVolts / Algebra.squareRoot(2);
+            return voltageVolts / squareRoot(2);
         }
 
         /**
@@ -1163,7 +1229,7 @@ public final class PhysicsCalc {
          * @return Vᵣₘₛ = Vₚₚ/(2√2)
          */
         public static double rmsVoltageSineWaveVpp(double voltageVolts) {
-            return voltageVolts / (2 * Algebra.squareRoot(2));
+            return voltageVolts / (2 * squareRoot(2));
         }
 
         /**
@@ -1172,7 +1238,7 @@ public final class PhysicsCalc {
          * @return Vᵣₘₛ = πVₐᵥ₉/(2√2)
          */
         public static double rmsVoltageSineWaveVavg(double voltageVolts) {
-            return Math.PI * voltageVolts / (2 * Algebra.squareRoot(2));
+            return Math.PI * voltageVolts / (2 * squareRoot(2));
         }
 
         /**
@@ -1200,42 +1266,42 @@ public final class PhysicsCalc {
          * @return Vᵣₘₛ = Vₚ/√3
          */
         public static double rmsVoltageTriangleWaveVp(double voltageVolts) {
-            return voltageVolts / Algebra.squareRoot(3);
+            return voltageVolts / squareRoot(3);
         }
 
         /**
          * @return Vᵣₘₛ = Vₚₚ/(2√3)
          */
         public static double rmsVoltageTriangleWaveVpp(double voltageVolts) {
-            return voltageVolts / (2 * Algebra.squareRoot(3));
+            return voltageVolts / (2 * squareRoot(3));
         }
 
         /**
          * @return Vᵣₘₛ = πVₐᵥ₉/(2√3)
          */
         public static double rmsVoltageTriangleWaveVavg(double voltageVolts) {
-            return (Math.PI * voltageVolts) / (2 * Algebra.squareRoot(3));
+            return (Math.PI * voltageVolts) / (2 * squareRoot(3));
         }
 
         /**
          * @return Vᵣₘₛ = Vₚ/√3
          */
         public static double rmsVoltageSawtoothWaveVp(double voltageVolts) {
-            return voltageVolts / Algebra.squareRoot(3);
+            return voltageVolts / squareRoot(3);
         }
 
         /**
          * @return Vᵣₘₛ = Vₚₚ/(2√3)
          */
         public static double rmsVoltageSawtoothWaveVpp(double voltageVolts) {
-            return voltageVolts / (2 * Algebra.squareRoot(3));
+            return voltageVolts / (2 * squareRoot(3));
         }
 
         /**
          * @return Vᵣₘₛ = πVₐᵥ₉/(2√3)
          */
         public static double rmsVoltageSawtoothWaveVavg(double voltageVolts) {
-            return (Math.PI * voltageVolts) / (2 * Algebra.squareRoot(3));
+            return (Math.PI * voltageVolts) / (2 * squareRoot(3));
         }
 
         /**
@@ -1263,21 +1329,21 @@ public final class PhysicsCalc {
          * @return Vᵣₘₛ = Vₚ/√2
          */
         public static double rmsVoltageFullWaveRectifiedSineWaveVp(double voltageVolts) {
-            return voltageVolts / Algebra.squareRoot(2);
+            return voltageVolts / squareRoot(2);
         }
 
         /**
          * @return Vᵣₘₛ = Vₚₚ/(2√2)
          */
         public static double rmsVoltageFullWaveRectifiedSineWaveVpp(double voltageVolts) {
-            return voltageVolts / (2 * Algebra.squareRoot(2));
+            return voltageVolts / (2 * squareRoot(2));
         }
 
         /**
          * @return Vᵣₘₛ = πVₐᵥ₉/(2√2)
          */
         public static double rmsVoltageFullWaveRectifiedSineWaveVavg(double voltageVolts) {
-            return Math.PI * voltageVolts / (2 * Algebra.squareRoot(2));
+            return Math.PI * voltageVolts / (2 * squareRoot(2));
         }
 
         /**
@@ -1285,7 +1351,7 @@ public final class PhysicsCalc {
          */
         public static double wireResistance(
             double lengthMeters, double diameterMeters, double electricalResistivity) {
-            final double crossSectionalArea = Geometry.crossSectionalAreaOfCircularWire(diameterMeters);
+            final double crossSectionalArea = crossSectionalAreaOfCircularWire(diameterMeters);
             return electricalResistivity * lengthMeters / crossSectionalArea;
         }
 
@@ -1293,7 +1359,7 @@ public final class PhysicsCalc {
          * @return R = 1 / G. The units are ohms
          */
         public static double wireResistance(double conductanceSiemens) {
-            return Arithmetic.reciprocal(conductanceSiemens);
+            return reciprocal(conductanceSiemens);
         }
 
         /**
@@ -1304,6 +1370,150 @@ public final class PhysicsCalc {
         public static double wireConductance(
             double electricalConductivity, double crossSectionalArea, double lengthMeters) {
             return electricalConductivity * crossSectionalArea / lengthMeters;
+        }
+
+        /**
+         * @return τ = R×C. The units are seconds
+         */
+        public static double capacitorChargeTimeConstant(double resistanceOhms, double capacitanceFarads) {
+            return resistanceOhms * capacitanceFarads;
+        }
+
+        /**
+         * <table>
+         *     <tr><th>Time</th><th>Charged in percentage (%)</th></tr>
+         *     <tr><td>1τ</td><td>63.2</td></tr>
+         *     <tr><td>2τ</td><td>86.5</td></tr>
+         *     <tr><td>3τ</td><td>95.0</td></tr>
+         *     <tr><td>4τ</td><td>98.2</td></tr>
+         *     <tr><td>5τ</td><td>99.3</td></tr>
+         * </table>
+         * <h6>Discharge<h6/>
+         * <table>
+         *     <tr><th>Time</th><th>Charged in percentage (%)</th></tr>
+         *     <tr><td>1τ</td><td>36.8</td></tr>
+         *     <tr><td>2τ</td><td>13.5</td></tr>
+         *     <tr><td>3τ</td><td>5</td></tr>
+         *     <tr><td>4τ</td><td>1.8</td></tr>
+         *     <tr><td>5τ</td><td>0.7</td></tr>
+         * </table>
+         * <ul>
+         *     <li>Percentage = 1−e^(−T/τ)</li>
+         *     <li>1−e^(-5τ/τ) = 1−e⁻⁵ ≈ 99.3%</li>
+         *     <li>Percentage = 1−e−ᴹᵀᶜ</li>
+         *     <li></li>
+         * </ul>
+         * T = 5×τ = 5×R×C
+         * where:
+         * T — Charge time (seconds);
+         * τ — Time constant (seconds);
+         * R — Resistance (ohms);
+         * C — Capacitance (farads).
+         *
+         * @return τ = R×C. The units are seconds
+         */
+        public static double capacitorChargeTime(double multipleTimeConstant, double timeConstant) {
+            checkGreater0(multipleTimeConstant);
+            checkGreater0(timeConstant);
+
+            final double chargingTime = multipleTimeConstant * timeConstant;
+            final double percentage = 1 - Math.exp(-chargingTime / timeConstant);
+            checkCapacitorOvercharge(percentage);
+            return chargingTime;
+        }
+
+        private static void checkCapacitorOvercharge(double percentage) {
+            if (percentage >= 1) {
+                throw new IllegalArgumentException("You can never charge a capacitor to 100% or more");
+            }
+        }
+
+        public static double[] capacitorChargeTimeGivenPercentage(double percentage, double timeConstant) {
+            checkGreater0(percentage);
+            checkGreater0(timeConstant);
+
+            final double multipleTimeConstant = -Algebra.ln(percentage);
+            final double chargingTime = multipleTimeConstant * timeConstant;
+            checkCapacitorOvercharge(percentage);
+            return new double[]{multipleTimeConstant, chargingTime};
+        }
+
+        /**
+         * @return Vₚ = Vₛ ⋅ Nₚ/Nₛ. The units are volts
+         */
+        public static double idealTransformerPrimaryVoltage(
+            double primaryCoilWindings, double secondaryCoilWindings, double secondaryVoltageVolts) {
+            return secondaryVoltageVolts * primaryCoilWindings / secondaryCoilWindings;
+        }
+
+        /**
+         * @return Vₛ = Vₚ ⋅ Nₛ/Nₚ. The units are volts
+         */
+        public static double idealTransformerSecondaryVoltage(
+            double primaryCoilWindings, double secondaryCoilWindings, double primaryVoltageVolts) {
+            return primaryVoltageVolts * secondaryCoilWindings / primaryCoilWindings;
+        }
+
+        /**
+         * P = Iₚ ⋅ Vₚ = Iₛ ⋅ Vₛ
+         *
+         * @return Iₚ = Iₛ ⋅ Nₛ/Nₚ. The units are amperes
+         */
+        public static double idealTransformerPrimaryCurrent(
+            double primaryCoilWindings, double secondaryCoilWindings, double secondaryCurrent) {
+            return secondaryCurrent * secondaryCoilWindings / primaryCoilWindings;
+        }
+
+        /**
+         * @return Iₛ = Iₚ ⋅ Nₚ/Nₛ. The units are amperes
+         */
+        public static double idealTransformerSecondaryCurrent(
+            double primaryCoilWindings, double secondaryCoilWindings, double primaryCurrent) {
+            return primaryCurrent * primaryCoilWindings / secondaryCoilWindings;
+        }
+
+        /**
+         * @return L = µ₀ × N² × A/l. The units are henries
+         */
+        public static double solenoidInductance(double numberOfTurns, double radiusMeters, double lengthMeters) {
+            final double crossSectionalArea = crossSectionalAreaOfCircularWire(Geometry.circleDiameter(radiusMeters));
+            return VACUUM_PERMEABILITY * numberOfTurns * numberOfTurns * crossSectionalArea / lengthMeters;
+        }
+
+        /**
+         * @return The units are meters
+         */
+        public static double solenoidInductanceSolveForRadius(
+            double numberOfTurns, double lengthMeters, double inductanceHenries) {
+            return squareRoot((inductanceHenries * lengthMeters)
+                / (VACUUM_PERMEABILITY * numberOfTurns * numberOfTurns * Math.PI));
+        }
+
+        /**
+         * @return The units are meters
+         */
+        public static double solenoidInductanceSolveForLength(
+            double numberOfTurns, double radiusMeters, double inductanceHenries) {
+            return (VACUUM_PERMEABILITY * numberOfTurns * numberOfTurns
+                * Math.PI * radiusMeters * radiusMeters) / inductanceHenries;
+        }
+
+        /**
+         * @param crossSectionalArea in m²
+         * @return The units are meters
+         */
+        public static double solenoidInductanceSolveForRadiusGivenCrossSectionArea(double crossSectionalArea) {
+            return Geometry.circleRadiusOfArea(crossSectionalArea);
+        }
+
+        /**
+         * @param crossSectionalArea in m²
+         * @return The units are meters
+         */
+        public static double solenoidInductanceSolveForLengthGivenCrossSectionArea(
+            double numberOfTurns, double crossSectionalArea, double inductanceHenries) {
+            return squareRoot((inductanceHenries * Math.PI)
+                / (VACUUM_PERMEABILITY * numberOfTurns * numberOfTurns * crossSectionalArea));
         }
     }
 }

@@ -15,6 +15,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class PhysicsCalcTest {
     private static final double DELTA1 = 0.1;
@@ -544,6 +545,73 @@ class PhysicsCalcTest {
             final double conductivity = PhysicsCalc.Electromagnetism.resistivityToConductivity(resistivity);
             // then
             assertEquals(105.2, conductivity, DELTA1);
+        }
+
+        static List<Arguments> electricalPowerArgs() {
+            return List.of(
+                // Electric oven (with resistive heating element): pf=1
+                Arguments.of(120, 10, 1, 1200, DELTA1), // Lamps with a standard bulb: pf=1
+                Arguments.of(120, 10, 0.93, 1116, DELTA1), // Fluorescent lamps: pf=0.93
+                // Common induction motor at half load: pf=0.73, at full load: pf=0.85
+                Arguments.of(120, 10, 0.73, 876, DELTA1),
+                Arguments.of(120, 10, 0.85, 1020, DELTA1) // Inductive oven: pf=0.85
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("electricalPowerArgs")
+        void testElectricalPower(
+            double voltage, double current, double powerFactor, double expectedPowerWatts, double delta) {
+            // when
+            final double powerWatts = PhysicsCalc.Electromagnetism.electricalPower(voltage, current, powerFactor);
+            // then
+            assertEquals(expectedPowerWatts, powerWatts, delta);
+        }
+
+        @Test
+        void testEnergyDensityOfFields() {
+            // given
+            final double electricFieldStrength = ElectricFieldStrengthUnit.kiloNCToNC(2000);
+            final double magneticField = 0.03;
+            // when
+            final double energyDensity = PhysicsCalc.Electromagnetism
+                .energyDensityOfFields(electricFieldStrength, magneticField);
+            // then
+            assertEquals(375.8, energyDensity, DELTA1);
+        }
+
+        @Test
+        void testElectricFieldStrength() {
+            // given
+            final double energyDensity = 375.8;
+            final double magneticField = 0.03;
+            // when
+            final double strength = PhysicsCalc.Electromagnetism.electricFieldStrength(energyDensity, magneticField);
+            // then
+            assertEquals(1_999_605, strength, 1);
+        }
+
+        @Test
+        void testMagneticField() {
+            // given
+            final double currentInWire = 2.5;
+            final double distanceFromWire = LengthUnit.centimetersToMeters(1);
+            // when
+            final double magneticField = PhysicsCalc.Electromagnetism.magneticField(currentInWire, distanceFromWire);
+            // then
+            assertEquals(0.00005, magneticField, DELTA5);
+        }
+
+        @Test
+        void testMagneticFieldInStraightWire() {
+            // given
+            final double distanceFromWire = LengthUnit.centimetersToMeters(1);
+            final double magneticField = 0.00005;
+            // when
+            final double currentInWire = PhysicsCalc.Electromagnetism
+                .magneticFieldInStraightWire(distanceFromWire, magneticField);
+            // then
+            assertEquals(2.5, currentInWire, DELTA1);
         }
     }
 
@@ -1181,6 +1249,178 @@ class PhysicsCalcTest {
                 .wireConductance(electricalConductivity, crossSectionalArea, lengthMeters);
             // then
             assertEquals(66.14, conductanceSiemens, DELTA2);
+        }
+
+        @Test
+        void testCapacitorChargeTimeConstant() {
+            // given
+            final short resistance = 3000; // Ω
+            final double capacitance = CapacityUnit.microFaradsToFarads(1000);
+            // when
+            final double timeConstant = PhysicsCalc.Electronics.capacitorChargeTimeConstant(resistance, capacitance);
+            // then
+            assertEquals(3, timeConstant, DELTA1);
+        }
+
+        static List<Arguments> capacitorChargeTimeArgs() {
+            return List.of(
+                Arguments.of(3, 5, 15, DELTA1),
+                Arguments.of(3, 9, 27, DELTA1)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("capacitorChargeTimeArgs")
+        void testCapacitorChargeTime(
+            double timeConstant, double multipleTimeConstant, double expectedChargeTimeSeconds, double delta) {
+            // when
+            final double chargingTime = PhysicsCalc.Electronics.capacitorChargeTime(multipleTimeConstant, timeConstant);
+            // then
+            assertEquals(expectedChargeTimeSeconds, chargingTime, delta);
+        }
+
+        @Test
+        void testCapacitorChargeTimeWithInvalidMultiple() {
+            // given
+            final byte timeConstant = 3;
+            final byte multipleTimeConstant = 90;
+            // then
+            assertThrows(IllegalArgumentException.class, () ->
+                // when
+                PhysicsCalc.Electronics.capacitorChargeTime(multipleTimeConstant, timeConstant)
+            );
+        }
+
+        @Test
+        void testCapacitorChargeTimeGivenPercentage() {
+            // given
+            final byte timeConstant = 3;
+            final double percentage = 0.5;
+            // when
+            final double[] results = PhysicsCalc.Electronics
+                .capacitorChargeTimeGivenPercentage(percentage, timeConstant);
+            // then
+            assertNotNull(results);
+            assertEquals(2, results.length);
+
+            final double multipleTimeConstant = results[Constants.ARR_1ST_INDEX];
+            assertEquals(0.693, multipleTimeConstant, DELTA3);
+            final double chargeTime = results[Constants.ARR_2ND_INDEX];
+            assertEquals(2.0794, chargeTime, DELTA4);
+        }
+
+        @Test
+        void testIdealTransformerSecondaryVoltage() {
+            // given
+            final byte primaryWindings = 5;
+            final byte secondaryWindings = 2;
+            final short primaryVoltage = 220;
+            // when
+            final double secondaryVoltage = PhysicsCalc.Electronics
+                .idealTransformerSecondaryVoltage(primaryWindings, secondaryWindings, primaryVoltage);
+            // then
+            assertEquals(88, secondaryVoltage, DELTA1);
+        }
+
+        @Test
+        void testIdealTransformerPrimaryVoltage() {
+            // given
+            final byte primaryWindings = 5;
+            final byte secondaryWindings = 2;
+            final short secondaryVoltage = 88;
+            // when
+            final double primaryVoltage = PhysicsCalc.Electronics
+                .idealTransformerPrimaryVoltage(primaryWindings, secondaryWindings, secondaryVoltage);
+            // then
+            assertEquals(220, primaryVoltage, DELTA1);
+        }
+
+        @Test
+        void testIdealTransformerPrimaryCurrent() {
+            // given
+            final byte primaryWindings = 5;
+            final byte secondaryWindings = 2;
+            final short secondaryCurrent = 125;
+            // when
+            final double primaryVoltage = PhysicsCalc.Electronics
+                .idealTransformerPrimaryCurrent(primaryWindings, secondaryWindings, secondaryCurrent);
+            // then
+            assertEquals(50, primaryVoltage, DELTA1);
+        }
+
+        @Test
+        void testIdealTransformerSecondaryCurrent() {
+            // given
+            final byte primaryWindings = 5;
+            final byte secondaryWindings = 2;
+            final short primaryCurrent = 50;
+            // when
+            final double primaryVoltage = PhysicsCalc.Electronics
+                .idealTransformerSecondaryCurrent(primaryWindings, secondaryWindings, primaryCurrent);
+            // then
+            assertEquals(125, primaryVoltage, DELTA1);
+        }
+
+        @Test
+        void testSolenoidInductance() {
+            // given
+            final byte numberOfTurns = 10;
+            final byte radius = 6;
+            final double length = 1.5;
+            // when
+            final double inductance = PhysicsCalc.Electronics.solenoidInductance(numberOfTurns, radius, length);
+            // then
+            assertEquals(0.009475, inductance, DELTA6);
+        }
+
+        @Test
+        void testSolenoidInductanceSolveForRadius() {
+            // given
+            final byte numberOfTurns = 10;
+            final double inductance = 0.009475;
+            final double length = 1.5;
+            // when
+            final double radius = PhysicsCalc.Electronics
+                .solenoidInductanceSolveForRadius(numberOfTurns, length, inductance);
+            // then
+            assertEquals(6, radius, DELTA1);
+        }
+
+        @Test
+        void testSolenoidInductanceSolveForRadiusGivenCrossSectionArea() {
+            // given
+            final double crossSectionalArea = 113.1;
+            // when
+            final double radius = PhysicsCalc.Electronics
+                .solenoidInductanceSolveForRadiusGivenCrossSectionArea(crossSectionalArea);
+            // then
+            assertEquals(6, radius, DELTA1);
+        }
+
+        @Test
+        void testSolenoidInductanceSolveForLength() {
+            // given
+            final byte numberOfTurns = 10;
+            final double inductance = 0.009475;
+            final double radius = 6;
+            // when
+            final double length = PhysicsCalc.Electronics
+                .solenoidInductanceSolveForLength(numberOfTurns, radius, inductance);
+            // then
+            assertEquals(1.5, length, DELTA1);
+        }
+
+        @Test
+        void testSolenoidInductanceSolveForLengthGivenCrossSectionArea() {
+            // given
+            final byte numberOfTurns = 10;
+            final double inductance = 0.009475;
+            final double crossSectionalArea = 113.1;
+            // when
+            final double length = PhysicsCalc.Electronics
+                .solenoidInductanceSolveForLengthGivenCrossSectionArea(numberOfTurns, crossSectionalArea, inductance);
+            // then
+            assertEquals(1.5, length, DELTA1);
         }
     }
 }
