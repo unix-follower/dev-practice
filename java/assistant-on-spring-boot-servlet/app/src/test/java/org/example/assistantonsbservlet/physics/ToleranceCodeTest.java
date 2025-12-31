@@ -47,7 +47,7 @@ class ToleranceCodeTest {
     @MethodSource("convertCapacityToCodeArgs")
     void testConvertCapacityToCode(double capacityMicroFarads, double expectedResult) {
         // given
-        final double capacity = CapacityUnit.microFaradsToPicofarads(capacityMicroFarads);
+        final double capacity = CapacitanceUnit.microFaradsToPicofarads(capacityMicroFarads);
         // when
         final double code = ToleranceCode.convertCapacityToCode(capacity);
         // then

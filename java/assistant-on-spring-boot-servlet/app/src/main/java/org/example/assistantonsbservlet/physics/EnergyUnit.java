@@ -1,12 +1,18 @@
 package org.example.assistantonsbservlet.physics;
 
 public enum EnergyUnit {
-    NANOJOULES, // nJ
-    MICROJOULES, // μJ
-    MILLIJOULES, // mJ
-    JOULES, // J
-    KILOJOULES, // kJ
-    FOOT_POUNDS; // FT-LB
+    NANOJOULE, // nJ
+    MICROJOULE, // μJ
+    MILLIJOULE, // mJ
+    JOULE, // J
+    KILOJOULE, // kJ
+    MEGAJOULE, // MJ
+    WATT_HOUR, // Wh
+    KILOWATT_HOUR, // kWh
+    FOOT_POUND, // ft-lb
+    KILOCALORIE, // kcal
+    ELECTRONVOLT, // eV
+    TON_OF_TNT; // t TNT
 
     public static final double ONE_JOULE_IN_NANOJOULES = 1e+9;
 

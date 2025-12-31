@@ -25,6 +25,7 @@ class PhysicsCalcTest {
     private static final double DELTA5 = 0.00001;
     private static final double DELTA6 = 0.000001;
     private static final double DELTA7 = 0.0000001;
+    private static final double DELTA8 = 0.00000001;
     private static final double DELTA9 = 0.000000001;
 
     private static void assertMatrixEquals(double[][] expectedResult, double[][] result, double delta) {
@@ -363,6 +364,244 @@ class PhysicsCalcTest {
     }
 
     @Nested
+    class Mechanics {
+        @Test
+        void testPotentialEnergy() {
+            // given
+            final double mass = 0.1;
+            final double height = 2.5;
+            final double gravityAcc = AccelerationUnit.GRAVITATIONAL_ACCELERATION_ON_EARTH;
+            // when
+            final double energy = PhysicsCalc.Mechanics.potentialEnergy(mass, height, gravityAcc);
+            // then
+            assertEquals(2.451663, energy, DELTA6);
+        }
+
+        @Test
+        void testElasticPotentialEnergy() {
+            // given
+            final byte springForceConstant = 80;
+            final double springStretchLength = 0.15;
+            // when
+            final double springPotentialEnergy = PhysicsCalc.Mechanics
+                .elasticPotentialEnergy(springForceConstant, springStretchLength);
+            // then
+            assertEquals(0.9, springPotentialEnergy, DELTA1);
+        }
+
+        @Test
+        void testElongationOfString() {
+            // given
+            final byte springForceConstant = 15;
+            final byte springPotentialEnergy = 98;
+            // when
+            final double springStretchLength = PhysicsCalc.Mechanics
+                .elongationOfString(springForceConstant, springPotentialEnergy);
+            // then
+            assertEquals(3.614784, springStretchLength, DELTA6);
+        }
+
+        @Test
+        void testKineticEnergy() {
+            // given
+            final double massKg = 0.45;
+            final double velocity = 38.4;
+            // when
+            final double energy = PhysicsCalc.Mechanics.kineticEnergy(massKg, velocity);
+            // then
+            assertEquals(331.776, energy, DELTA3);
+        }
+
+        @Test
+        void testImpactEnergyDistance() {
+            // given
+            final double golfBallMass = MassUnit.gToKg(45.9);
+            final byte velocity = 5;
+            final double collisionDistance = 0.5;
+            // when
+            final double[] energy = PhysicsCalc.Mechanics
+                .impactEnergyDistance(golfBallMass, velocity, collisionDistance);
+            // then
+            assertArrayEquals(new double[]{1.148, 2.295, 0.574}, energy, DELTA3);
+        }
+
+        @Test
+        void testImpactEnergyTime() {
+            // given
+            final double golfBallMass = MassUnit.gToKg(45.9);
+            final byte velocity = 5;
+            final byte collisionTimeSeconds = 2;
+            // when
+            final double[] energy = PhysicsCalc.Mechanics
+                .impactEnergyTime(golfBallMass, velocity, collisionTimeSeconds);
+            // then
+            assertArrayEquals(new double[]{0.1148, 0.2295, 0.574}, energy, DELTA3);
+        }
+
+        static List<Arguments> recoilEnergyArgs() {
+            return List.of(
+                // AK-74 w/ 5.45x39mm
+                Arguments.of(3.4, 880, 1.5, 1303.8, 3.6, new double[]{1.3744, 3.4, 4.948}, DELTA3),
+                // Barrett M82 w/ .50BMG
+                Arguments.of(41.9, 902, 15.2, 1436.7, 14, new double[]{4.259, 126.99, 59.63}, DELTA2),
+                // Glock 17 w/ 9mm Luger
+                Arguments.of(8, 374, 0.39, 1900.6, 0.905, new double[]{4.125, 7.7, 3.733}, DELTA3),
+                // Glock 20 w/ 10mm Auto
+                Arguments.of(11.7, 338, 0.5, 1654.5, 1.11, new double[]{4.308, 10.3, 4.782}, DELTA3),
+                // M14 w/ 7.62x51mm
+                Arguments.of(10.1, 845, 3.1, 1574.8, 4.5, new double[]{2.9814, 20, 13.416}, DELTA3),
+                // M16A2 w/ 5.56x45mm
+                Arguments.of(3.6, 985, 1.68, 2156.4, 3.99, new double[]{1.7967, 6.44, 7.169}, DELTA3),
+                // Mauser 4.1 w/ 6.5x55mm
+                Arguments.of(9.1, 800, 3, 1611.8, 4.1, new double[]{2.955, 17.9, 12.115}, DELTA3),
+                // Remington Model 700 w/ 9.3x62mm
+                Arguments.of(18.5, 710, 1.6, 5049, 4.5, new double[]{4.714, 50, 21.213}, DELTA3),
+                // Springfield 1911A w/ .45ACP
+                Arguments.of(14.9, 259, 0.47, 1713.3, 1.11, new double[]{4.202, 9.8, 4.664}, DELTA3)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("recoilEnergyArgs")
+        void testRecoilEnergy(double bulletMass, double bulletVelocity, double powderChargeMass,
+                              double velocityOfCharge, double firearmMass, double[] expectedResult, double delta) {
+            // when
+            final double[] recoil = PhysicsCalc.Mechanics
+                .recoilEnergy(bulletMass, bulletVelocity, powderChargeMass, velocityOfCharge, firearmMass);
+            // then
+            assertArrayEquals(expectedResult, recoil, delta);
+        }
+
+        @Test
+        void testFootPoundsOfEnergy() {
+            // given
+            final short velocity = 2800;
+            final short weight = 150;
+            // when
+            final double fpe = PhysicsCalc.Mechanics.footPoundsOfEnergy(velocity, weight);
+            // then
+            assertEquals(2612, fpe, DELTA1);
+        }
+
+        @Test
+        void testPwr() {
+            // given
+            final int powerWatts = 216_253;
+            final short weightKg = 1858;
+            // when
+            final double ratio = PhysicsCalc.Mechanics.pwr(powerWatts, weightKg);
+            // then
+            assertEquals(116.4, ratio, DELTA1); // W/kg
+        }
+
+        @Test
+        void testSNR() {
+            // given
+            final short signal = 20;
+            final short noise = 5;
+            // when
+            final double ratio = PhysicsCalc.Mechanics.snr(signal, noise);
+            // then
+            assertEquals(4, ratio, DELTA1);
+        }
+
+        @Test
+        void testSnrDifference() {
+            // given
+            final short signal = 450;
+            final short noise = 350;
+            // when
+            final double difference = PhysicsCalc.Mechanics.snrDifference(signal, noise);
+            // then
+            assertEquals(100, difference, DELTA1);
+        }
+
+        @Test
+        void testPowerSNR() {
+            // given
+            final short signal = 450;
+            final short noise = 350;
+            // when
+            final double ratio = PhysicsCalc.Mechanics.powerSNR(signal, noise);
+            // then
+            assertEquals(1.0914, ratio, DELTA4);
+        }
+
+        @Test
+        void testVoltageSNR() {
+            // given
+            final short signal = 450;
+            final short noise = 350;
+            // when
+            final double ratio = PhysicsCalc.Mechanics.voltageSNR(signal, noise);
+            // then
+            assertEquals(2.183, ratio, DELTA3);
+        }
+
+        @Test
+        void testSnrFromCoefficientOfVariation() {
+            // given
+            final short signalMean = 150;
+            final byte noiseStd = 25;
+            // when
+            final double[] ratios = PhysicsCalc.Mechanics.snrFromCoefficientOfVariation(signalMean, noiseStd);
+            // then
+            assertArrayEquals(new double[]{6, 36}, ratios, DELTA1);
+        }
+
+        static List<Arguments> tntEquivalentArgs() {
+            return List.of(
+                Arguments.of(4_184_000, 4_184_000, 6.5, new double[]{1, 6.5}, DELTA1), // TNT
+                Arguments.of(2_208_812, 4_184_000, 6.5, new double[]{0.5279, 3.4315}, DELTA4), // Baratole
+                Arguments.of(4_566_294, 4_184_000, 6.5, new double[]{1.0914, 7.094}, DELTA4), // Composition B
+                Arguments.of(4_714_964, 4_184_000, 6.5, new double[]{1.127, 7.325}, DELTA3), // C4
+                Arguments.of(4_821_157, 4_184_000, 6.5, new double[]{1.1523, 7.49}, DELTA3), // HMX
+                Arguments.of(4_545_056, 4_184_000, 6.5, new double[]{1.0863, 7.061}, DELTA4), // Pentolit 50/50
+                Arguments.of(4_757_442, 4_184_000, 6.5, new double[]{1.137, 7.391}, DELTA3), // PBX 9407
+                Arguments.of(4_906_112, 4_184_000, 6.5, new double[]{1.1726, 7.622}, DELTA3), // PETN
+                Arguments.of(4_821_157, 4_184_000, 6.5, new double[]{1.1523, 7.49}, DELTA3), // RDX
+                Arguments.of(4_481_340, 4_184_000, 6.5, new double[]{1.071, 6.962}, DELTA3), // Tetryl
+                Arguments.of(3_164_548, 4_184_000, 6.5, new double[]{0.7563, 4.916}, DELTA3), // NQ
+                Arguments.of(4_714_964, 4_184_000, 6.5, new double[]{1.127, 7.325}, DELTA3), // NG
+                Arguments.of(1_757_280, 4_184_000, 6.5, new double[]{0.42, 2.73}, DELTA2), // Ammonium nitrate
+                Arguments.of(3_681_920, 4_184_000, 6.5, new double[]{0.88, 5.72}, DELTA2), // ANFO
+                Arguments.of(669_440, 4_184_000, 6.5, new double[]{0.16, 1.04}, DELTA2), // Natural gas
+                Arguments.of(4_058_480, 4_184_000, 6.5, new double[]{0.97, 6.305}, DELTA3), // Ammonium picrate
+                Arguments.of(4_267_680, 4_184_000, 6.5, new double[]{1.02, 6.63}, DELTA2), // HBX-3
+                Arguments.of(5_020_800, 4_184_000, 6.5, new double[]{1.2, 7.8}, DELTA1), // Torpex
+                Arguments.of(3_891_120, 4_184_000, 6.5, new double[]{0.93, 6.045}, DELTA3), // Tritonal
+                Arguments.of(4_895_280, 4_184_000, 6.5, new double[]{1.17, 7.605}, DELTA3), // Amatol 80/20
+                Arguments.of(5_020_800, 4_184_000, 6.5, new double[]{1.2, 7.8}, DELTA1) // Tetrytol 75/25
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("tntEquivalentArgs")
+        void testTntEquivalent(double explosiveDetonationHeat, double tntDetonationHeat, double explosiveWeight,
+                               double[] expectedResult, double delta) {
+            // when
+            final double[] equivalent = PhysicsCalc.Mechanics
+                .tntEquivalent(explosiveDetonationHeat, tntDetonationHeat, explosiveWeight);
+            // then
+            assertArrayEquals(expectedResult, equivalent, delta);
+        }
+    }
+
+    @Nested
+    class Statics {
+        @Test
+        void testPressure() {
+            // given
+            final int force = 815_210;
+            final byte area = 8;
+            // when
+            final double pressure = PhysicsCalc.Statics.pressure(force, area);
+            // then
+            assertEquals(101_901.25, pressure, DELTA2);
+        }
+    }
+
+    @Nested
     class Dynamics {
         @Test
         void calculateAccelerationWithSpeedDifference() {
@@ -466,6 +705,26 @@ class PhysicsCalcTest {
             final double[] resultantForce = PhysicsCalc.Dynamics.netForce(forces);
             // then
             assertArrayEquals(expectedResult, resultantForce, delta);
+        }
+
+        static List<Arguments> bulletEnergyArgs() {
+            return List.of(
+                // a 9 mm pistol: HST 124 grain and HST 147 grain
+                Arguments.of(124, 350.5, 493.6, DELTA1),
+                Arguments.of(147, 304.8, 442.5, DELTA1),
+                Arguments.of(250, 914.4, 6773, 1) // a .338 Lapua Magnum
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("bulletEnergyArgs")
+        void testBulletEnergy(double bulletMass, double bulletVelocity, double expectedResult, double delta) {
+            // given
+            final double massKg = MassUnit.grToKg(bulletMass);
+            // when
+            final double energy = PhysicsCalc.Dynamics.bulletEnergy(massKg, bulletVelocity);
+            // then
+            assertEquals(expectedResult, energy, delta);
         }
     }
 
@@ -613,6 +872,125 @@ class PhysicsCalcTest {
             // then
             assertEquals(2.5, currentInWire, DELTA1);
         }
+
+        @Test
+        void testAccelerationInElectricField() {
+            // given
+            final byte massGrams = 100;
+            final double chargeCoulombs = 8.011e-22;
+            final byte electricField = 7;
+            // when
+            final double acceleration = PhysicsCalc.Electromagnetism
+                .accelerationInElectricField(massGrams, chargeCoulombs, electricField);
+            // then
+            assertEquals(5.608e-20, acceleration, DELTA9);
+        }
+
+        @Test
+        void testCapacitance() {
+            // given
+            final byte area = 120; // mm²
+            final double permittivity = PhysicsCalc.VACUUM_PERMITTIVITY; // ε
+            final byte separationDistance = 5; // mm
+            // when
+            final double capacitance = PhysicsCalc.Electromagnetism.capacitance(area, permittivity, separationDistance);
+            // then
+            assertEquals(2.12496e-13, capacitance, DELTA6);
+        }
+
+        @Test
+        void testCapacitiveReactance() {
+            // given
+            final double capacitance = 3e-8;
+            final byte frequency = 60;
+            // when
+            final double reactance = PhysicsCalc.Electromagnetism.capacitiveReactance(capacitance, frequency);
+            // then
+            assertEquals(88_419.41, reactance, DELTA2);
+        }
+
+        @Test
+        void testCoulombsLaw() {
+            // given
+            final double charge = -1.602176634e-19;
+            final double distance = 120e-12;
+            // when
+            final double force = PhysicsCalc.Electromagnetism.coulombsLaw(charge, charge, distance);
+            // the
+            assertEquals(1.602137e-8, force, DELTA8);
+        }
+
+        @Test
+        void testCutoffFrequencyRCFilter() {
+            // given
+            final double resistance = ElectricalResistanceUnit.kiloOhmsToOhms(10);
+            final double capacitance = CapacitanceUnit.nanoFaradsToFarads(25);
+            // when
+            final double fc = PhysicsCalc.Electromagnetism.cutoffFrequencyRCFilter(resistance, capacitance);
+            // the
+            assertEquals(636.6, fc, DELTA1);
+        }
+
+        @Test
+        void testCutoffFrequencyRLFilter() {
+            // given
+            final double resistance = ElectricalResistanceUnit.kiloOhmsToOhms(10);
+            final double inductance = InductanceUnit.microHenriesToHenries(25);
+            // when
+            final double fc = PhysicsCalc.Electromagnetism.cutoffFrequencyRLFilter(resistance, inductance);
+            // the
+            assertEquals(63_661_977, Math.round(fc), DELTA1);
+        }
+
+        @Test
+        void testCyclotronFrequency() {
+            // given
+            final double charge = 1.602e-19;
+            final byte magneticFieldStrength = 1;
+            final double massKg = 1.672e-27;
+            // when
+            final double frequency = PhysicsCalc.Electromagnetism
+                .cyclotronFrequency(charge, magneticFieldStrength, massKg);
+            // then
+            final double frequencyKHz = Math.round(FrequencyUnit.hzToKHz(frequency));
+            assertEquals(15_249, frequencyKHz, DELTA1);
+        }
+
+        @Test
+        void testAcWattageSinglePhase() {
+            // given
+            final byte voltage = 24;
+            final double current = 3.75;
+            final double powerFactor = MathCalc.ONE_HALF;
+            // when
+            final double wattage = PhysicsCalc.Electromagnetism.acWattageSinglePhase(voltage, current, powerFactor);
+            // then
+            assertEquals(45, wattage, DELTA1);
+        }
+
+        @Test
+        void testAcWattage3PhaseL2L() {
+            // given
+            final byte voltage = 120;
+            final byte current = 5;
+            final double powerFactor = 0.8;
+            // when
+            final double wattage = PhysicsCalc.Electromagnetism.acWattage3PhaseL2L(voltage, current, powerFactor);
+            // then
+            assertEquals(831.4, wattage, DELTA1);
+        }
+
+        @Test
+        void testAcWattage3PhaseL2N() {
+            // given
+            final byte voltage = 120;
+            final byte current = 5;
+            final double powerFactor = 0.8;
+            // when
+            final double wattage = PhysicsCalc.Electromagnetism.acWattage3PhaseL2N(voltage, current, powerFactor);
+            // then
+            assertEquals(1440, wattage, DELTA1);
+        }
     }
 
     @Nested
@@ -646,7 +1024,7 @@ class PhysicsCalcTest {
         void testEnergyStoredInCapacitor(
             double capacityMicroFarads, double voltageVolts, double expectedResult, double delta) {
             // given
-            final double farads = CapacityUnit.microFaradsToFarads(capacityMicroFarads);
+            final double farads = CapacitanceUnit.microFaradsToFarads(capacityMicroFarads);
             // when
             final double storedEnergyInJ = PhysicsCalc.Electronics.energyStoredInCapacitor(farads, voltageVolts);
             // then
@@ -703,15 +1081,15 @@ class PhysicsCalcTest {
         void testCapacitorInParallel() {
             // given
             final double[] capacitors = new double[]{
-                CapacityUnit.milliFaradsToFarads(30),
-                CapacityUnit.milliFaradsToFarads(0.5),
-                CapacityUnit.milliFaradsToFarads(6),
-                CapacityUnit.milliFaradsToFarads(0.75)
+                CapacitanceUnit.milliFaradsToFarads(30),
+                CapacitanceUnit.milliFaradsToFarads(0.5),
+                CapacitanceUnit.milliFaradsToFarads(6),
+                CapacitanceUnit.milliFaradsToFarads(0.75)
             };
             // when
             final double capacitance = PhysicsCalc.Electronics.capacitorInParallel(capacitors);
             // then
-            assertEquals(37.25, CapacityUnit.faradsToMilliFarads(capacitance), DELTA2);
+            assertEquals(37.25, CapacitanceUnit.faradsToMilliFarads(capacitance), DELTA2);
         }
 
         static List<Arguments> resistorBand4ValueArgs() {
@@ -986,7 +1364,7 @@ class PhysicsCalcTest {
             // given
             final short inputVoltage = 1210;
             final double[] capacitors = new double[]{
-                CapacityUnit.microFaradsToFarads(100), CapacityUnit.microFaradsToFarads(200)
+                CapacitanceUnit.microFaradsToFarads(100), CapacitanceUnit.microFaradsToFarads(200)
             };
             // when
             final double outputVoltage = PhysicsCalc.Electronics.voltageDividerCC(capacitors, inputVoltage);
@@ -1255,7 +1633,7 @@ class PhysicsCalcTest {
         void testCapacitorChargeTimeConstant() {
             // given
             final short resistance = 3000; // Ω
-            final double capacitance = CapacityUnit.microFaradsToFarads(1000);
+            final double capacitance = CapacitanceUnit.microFaradsToFarads(1000);
             // when
             final double timeConstant = PhysicsCalc.Electronics.capacitorChargeTimeConstant(resistance, capacitance);
             // then
