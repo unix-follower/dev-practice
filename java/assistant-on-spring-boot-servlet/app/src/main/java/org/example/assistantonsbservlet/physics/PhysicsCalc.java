@@ -15,9 +15,9 @@ import static org.example.assistantonsbservlet.math.MathCalc.Algebra.squareRoot;
 import static org.example.assistantonsbservlet.math.MathCalc.Arithmetic.reciprocal;
 import static org.example.assistantonsbservlet.math.MathCalc.Geometry.crossSectionalAreaOfCircularWire;
 import static org.example.assistantonsbservlet.math.NumberUtils.checkGreater0;
+import static org.example.assistantonsbservlet.physics.AccelerationUnit.GRAVITATIONAL_ACCELERATION_ON_EARTH;
 
 public final class PhysicsCalc {
-    public static final double GRAVITATIONAL_ACCELERATION_IN_M_PER_S2 = 9.80665;
     public static final double AVOGADRO_NUMBER = 6.02214082e23;
     /**
      * ~3.00 * 10⁸ m/s. Also, 300 * 10^⁶ m/s
@@ -34,11 +34,15 @@ public final class PhysicsCalc {
      * The number of electron charges
      */
     public static final double ONE_COULOMB = 6.241509343e18;
+    public static final double COULOMB_CONSTANT = 8.98755e9; // (N⋅m²)/C²
+
     public static final short HORSEPOWER = 746;
     public static final double BOLTZMANN_CONSTANT = 1.380649e-23; // J/K
     public static final double REF_VOLTAGE_FOR_0_DBU = 0.77459667;
     public static final double VACUUM_PERMITTIVITY = 8.854187818814e-12; // ε₀≈8.8541×10⁻¹² F/m
     public static final double VACUUM_PERMEABILITY = Trigonometry.PI4 * 1e-7; // μ₀≈4π×10⁻⁷ H/m
+    public static final double SOUND_SPEED = 343; // m/s or 1130 ft/s
+    public static final int FPE_CONSTANT = 450_240; // foot-pounds of energy
 
     private PhysicsCalc() {
     }
@@ -393,14 +397,14 @@ public final class PhysicsCalc {
          * @return v = v₀ + g * t. The units are m/s
          */
         public static double freeFallVelocity(double initialVelocity, long fallTime) {
-            return initialVelocity + GRAVITATIONAL_ACCELERATION_IN_M_PER_S2 * fallTime;
+            return initialVelocity + GRAVITATIONAL_ACCELERATION_ON_EARTH * fallTime;
         }
 
         /**
          * @return s = (1 / 2) * g * t². The units are meters
          */
         public static double freeFallDistance(long fallTimeInSec) {
-            return 0.5 * GRAVITATIONAL_ACCELERATION_IN_M_PER_S2 * fallTimeInSec * fallTimeInSec;
+            return 0.5 * GRAVITATIONAL_ACCELERATION_ON_EARTH * fallTimeInSec * fallTimeInSec;
         }
 
         /**
@@ -416,7 +420,7 @@ public final class PhysicsCalc {
          * @return W = mg. The units are Newtons
          */
         public static double weightOfFreeFallingBody(double mass) {
-            return mass * GRAVITATIONAL_ACCELERATION_IN_M_PER_S2;
+            return mass * GRAVITATIONAL_ACCELERATION_ON_EARTH;
         }
 
         /**
@@ -558,6 +562,225 @@ public final class PhysicsCalc {
         }
     }
 
+    public static final class Mechanics {
+        private Mechanics() {
+        }
+
+        /**
+         * @return PE grav. = m×h×g. The units are joules
+         */
+        public static double potentialEnergy(double massKg, double heightMeters, double gravitationalAcceleration) {
+            return massKg * heightMeters * gravitationalAcceleration;
+        }
+
+        /**
+         * Elastic potential energy per unit volume:
+         * u = (1/2) × (F/A) × (Δx/x)
+         * (F/A) is stress, and (Δx/x) is the strain.
+         * u = (1/2) × stress × strain
+         *
+         * @param springForceConstant in N/m
+         * @param springStretchLength Δx in meters
+         * @return U = 1/2 kΔx². The units are joules
+         */
+        public static double elasticPotentialEnergy(double springForceConstant, double springStretchLength) {
+            return MathCalc.ONE_HALF * springForceConstant * springStretchLength * springStretchLength;
+        }
+
+        /**
+         * @param springForceConstant   in N/m
+         * @param springPotentialEnergy Δx in J
+         * @return Δx = √(2 × U / k). The units are meters
+         */
+        public static double elongationOfString(double springForceConstant, double springPotentialEnergy) {
+            return squareRoot(2 * springPotentialEnergy / springForceConstant);
+        }
+
+        /**
+         * W = ΔKE = KE₂ – KE₁
+         *
+         * @param velocity in m/s
+         * @return KE = 0.5 × m × v². The units are J
+         */
+        public static double kineticEnergy(double massKg, double velocity) {
+            return MathCalc.ONE_HALF * massKg * velocity * velocity;
+        }
+
+        /**
+         * Fₐ = 1/(2d) * mv²
+         * Fₘₐₓ = mv²/d
+         * E = 1/2 * mv²
+         * <br/>
+         * Impact loads:
+         * <table>
+         *     <tr><th>Category</th><th>Velocity</th></tr>
+         *     <tr><th>Low-velocity impact</th><th>&lt;10 m/s</th></tr>
+         *     <tr><th>Intermediate velocity impact</th><th>10-50 m/s</th></tr>
+         *     <tr><th>High-velocity impact</th><th>50-1000 m/s</th></tr>
+         *     <tr><th>Hypervelocity impact</th><th>&gt;2.5 km/s</th></tr>
+         * </table>
+         *
+         * @param velocity in m/s
+         */
+        public static double[] impactEnergyDistance(double massKg, double velocity, double collisionDistanceMeters) {
+            final double mvSquared = massKg * velocity * velocity;
+            final double avgForceN = reciprocal(2 * collisionDistanceMeters) * mvSquared;
+            final double maximumForceN = mvSquared / collisionDistanceMeters;
+            final double energyJoules = MathCalc.ONE_HALF * mvSquared;
+            return new double[]{avgForceN, maximumForceN, energyJoules};
+        }
+
+        /**
+         * Fₐ = (mv)/t
+         * Fₘₐₓ = 2Fₐ
+         * E = 1/2 * mv²
+         *
+         * @param velocity in m/s
+         */
+        public static double[] impactEnergyTime(double massKg, double velocity, double collisionTimeSeconds) {
+            final double avgForceN = (massKg * velocity) / collisionTimeSeconds;
+            final double maximumForceN = 2 * avgForceN;
+            final double energyJoules = MathCalc.ONE_HALF * massKg * velocity * velocity;
+            return new double[]{avgForceN, maximumForceN, energyJoules};
+        }
+
+        /**
+         * V_f = (M_b × V_b + M꜀ × V꜀) / (1000*M_f)
+         * Eᵣ = 0.5 * M_f × V_f²
+         * Iᵣ = M_f × V_f
+         * Velocities are in m/s.
+         */
+        public static double[] recoilEnergy(double bulletMassGrams, double bulletVelocity, double powderChargeMassGrams,
+                                            double velocityOfCharge, double firearmMassKg) {
+            final double firearmVelocity = (bulletMassGrams * bulletVelocity + powderChargeMassGrams * velocityOfCharge)
+                / (1000 * firearmMassKg);
+            final double recoilEnergyJoules = MathCalc.ONE_HALF * firearmMassKg * firearmVelocity * firearmVelocity;
+            final double recoilImpulse = firearmMassKg * firearmVelocity; // N⋅s
+            return new double[]{firearmVelocity, recoilEnergyJoules, recoilImpulse};
+        }
+
+        /**
+         * FPE = (w×v²)/450240
+         *
+         * @param velocity     projectile speed in ft/s
+         * @param weightGrains projectile mass
+         */
+        public static double footPoundsOfEnergy(double velocity, double weightGrains) {
+            return (weightGrains * velocity * velocity) / FPE_CONSTANT;
+        }
+
+        /**
+         * @return power-to-weight ratio = power/weight
+         */
+        public static double pwr(double power, double weight) {
+            return power / weight;
+        }
+
+        /**
+         * Signal to Noise Ratio
+         * <table>
+         *     <tr><th>SNR values</th><th>Requirements</th></tr>
+         *     <tr><td>5-10 dB</td><td>Cannot establish a connection</td></tr>
+         *     <tr><td>10-15 dB</td><td>Can establish an unreliable connection</td></tr>
+         *     <tr><td>15-25 dB</td><td>Acceptable level to establish a poor connection</td></tr>
+         *     <tr><td>25-40 dB</td><td>Considered a good connection</td></tr>
+         *     <tr><td>41+ dB</td><td>Considered to be an excellent connection</td></tr>
+         * </table>
+         *
+         * @return SNR = signal / noise
+         */
+        public static double snr(double signal, double noise) {
+            return signal / noise;
+        }
+
+        /**
+         * @param signal in dB(s)
+         * @param noise  in dB(s)
+         * @return SNR(dB) = signal − noise. The units are dB(s)
+         */
+        public static double snrDifference(double signal, double noise) {
+            return signal - noise;
+        }
+
+        /**
+         * @return pSNR = 10×log(signal/noise). The units are dB(s)
+         */
+        public static double powerSNR(double signalWatts, double noiseWatts) {
+            return 10 * Algebra.log(signalWatts / noiseWatts);
+        }
+
+        /**
+         * @return vSNR = 20×log(signal/noise). The units are dB(s)
+         */
+        public static double voltageSNR(double signalVolts, double noiseVolts) {
+            return 20 * Algebra.log(signalVolts / noiseVolts);
+        }
+
+        /**
+         * SNR = μ/σ
+         * SNR = μ²/σ²
+         *
+         * @param signalMean μ
+         * @param noiseStd   noise's standard deviation (σ)
+         */
+        public static double[] snrFromCoefficientOfVariation(double signalMean, double noiseStd) {
+            return new double[]{signalMean / noiseStd, (signalMean * signalMean) / (noiseStd * noiseStd)};
+        }
+
+        /**
+         * 2,4,6-trinitrotoluene. One kg of TNT releases 4.184 MJ of energy upon detonation.
+         * <br/>
+         * TNT factor = Hₑₓₚ/Hₜₙₜ
+         * W_eq = Wₑₓₚ * (Hₑₓₚ/Hₜₙₜ)
+         */
+        public static double[] tntEquivalent(
+            double explosiveDetonationHeat, double tntDetonationHeat, double explosiveWeight) {
+            final double tntFactor = explosiveDetonationHeat / tntDetonationHeat;
+            final double equivalentWeight = explosiveWeight * tntFactor;
+            return new double[]{tntFactor, equivalentWeight};
+        }
+
+        // Rotational and periodic motion
+
+        /**
+         * where:
+         * <ul>
+         *     <li>m — The mass of the particle;</li>
+         *     <li>v — Cyclotron speed;</li>
+         *     <li>r — The radius of the revolution.</li>
+         * </ul>
+         *
+         * @return Fc = m × v²/r
+         */
+        public static double centripetalForce() {
+            throw new UnsupportedOperationException();
+        }
+    }
+
+    public static final class FluidMechanics {
+        private FluidMechanics() {
+        }
+
+        /**
+         * @return p = ρ × v² / 2. The units are pascals
+         */
+        public static double dynamicPressure(double forceNewtons, double areaSquareMeters) {
+            return forceNewtons / areaSquareMeters;
+        }
+    }
+
+    public static final class Statics {
+        private Statics() {
+        }
+
+        /**
+         * @return p = F / A. The units are pascals
+         */
+        public static double pressure(double forceNewtons, double areaSquareMeters) {
+            return forceNewtons / areaSquareMeters;
+        }
+    }
+
     public static final class Dynamics {
         private Dynamics() {
         }
@@ -589,7 +812,7 @@ public final class PhysicsCalc {
          */
         public static double normalForceWithHorizontalSurfaceAndDownwardExternalForce(
             double massInKg, double outsideForce, double outsideForceAngleRad) {
-            return massInKg * GRAVITATIONAL_ACCELERATION_IN_M_PER_S2 + outsideForce
+            return massInKg * GRAVITATIONAL_ACCELERATION_ON_EARTH + outsideForce
                 * Trigonometry.sin(outsideForceAngleRad);
         }
 
@@ -598,7 +821,7 @@ public final class PhysicsCalc {
          */
         public static double normalForceWithHorizontalSurfaceAndUpwardExternalForce(
             double massInKg, double outsideForce, double outsideForceAngleRad) {
-            return massInKg * GRAVITATIONAL_ACCELERATION_IN_M_PER_S2 - outsideForce
+            return massInKg * GRAVITATIONAL_ACCELERATION_ON_EARTH - outsideForce
                 * Trigonometry.sin(outsideForceAngleRad);
         }
 
@@ -606,14 +829,14 @@ public final class PhysicsCalc {
          * @return Fₙ = m ⋅ g. The units are Newtons
          */
         public static double normalForceWithHorizontalSurface(double massInKg) {
-            return massInKg * GRAVITATIONAL_ACCELERATION_IN_M_PER_S2;
+            return massInKg * GRAVITATIONAL_ACCELERATION_ON_EARTH;
         }
 
         /**
          * @return Fₙ = m ⋅ g ⋅ cos(α). The units are Newtons
          */
         public static double normalForceWithInclinedSurface(double massInKg, double inclinationAngleRad) {
-            return massInKg * GRAVITATIONAL_ACCELERATION_IN_M_PER_S2 * Trigonometry.cos(inclinationAngleRad);
+            return massInKg * GRAVITATIONAL_ACCELERATION_ON_EARTH * Trigonometry.cos(inclinationAngleRad);
         }
 
         /**
@@ -646,6 +869,21 @@ public final class PhysicsCalc {
             // Direction (θ)
             resultantForce[Constants.ARR_4TH_INDEX] = Trigonometry.multivaluedTanInverse(fy, fx);
             return resultantForce;
+        }
+
+        /**
+         * where:
+         * <ul>
+         *     <li>E — Bullet's kinetic energy;</li>
+         *     <li>m — Mass of the bullet;</li>
+         *     <li>v — Velocity of the bullet.</li>
+         * </ul>
+         *
+         * @param bulletVelocity in m/s
+         * @return E = 1/2⋅m⋅v². The units are joules
+         */
+        public static double bulletEnergy(double bulletMassKg, double bulletVelocity) {
+            return MathCalc.ONE_HALF * bulletMassKg * bulletVelocity * bulletVelocity;
         }
     }
 
@@ -777,6 +1015,156 @@ public final class PhysicsCalc {
          */
         public static double magneticFieldInStraightWire(double distanceMeters, double magneticFieldTesla) {
             return (Trigonometry.PI2 * distanceMeters * magneticFieldTesla) / VACUUM_PERMEABILITY;
+        }
+
+        /**
+         * where:
+         * <ul>
+         *     <li>ε — Dielectric permittivity (a measure of resistance) in farads per meter;</li>
+         *     <li>A — Area where the plates overlap;</li>
+         *     <li>s — Separation distance between the plates.</li>
+         * </ul>
+         *
+         * @return C = (εA)/s. The units are farads
+         */
+        public static double capacitance(double area, double permittivity, double separationDistance) {
+            return (permittivity * area) / separationDistance;
+        }
+
+        /**
+         * where:
+         * <ul>
+         *     <li>ε — absolute permittivity;</li>
+         *     <li>A — area of the plates which have identical sizes;</li>
+         *     <li>d — distance between the plates.</li>
+         * </ul>
+         *
+         * @return C = ε · A/d. The units are farads
+         */
+        public static double capacitanceInParallelPlateCapacitor(double area, double permittivity, double distance) {
+            return permittivity * (area / distance);
+        }
+
+        /**
+         * where:
+         * <ul>
+         *     <li>a – Acceleration of the particle;</li>
+         *     <li>q – Charge of the particle;</li>
+         *     <li>m – Mass of the particle;</li>
+         *     <li>E – Electric field.</li>
+         * </ul>
+         *
+         * @param charge        in coulombs
+         * @param electricField in N/C
+         * @return a = (qE)/m. The units are m/s²
+         */
+        public static double accelerationInElectricField(double massGrams, double charge, double electricField) {
+            return (charge * electricField) / massGrams;
+        }
+
+        /**
+         * Z = R ± j × X
+         * where:
+         * <ul>
+         *     <li>X - the reactance</li>
+         *     <li>R - the resistance</li>
+         *     <li>Z - an impedance</li>
+         *     <li>j = √-1</li>
+         * </ul>
+         * <p/>
+         * X = 1 / (2 × π × f × C)
+         * ω = 2 × π × f
+         *
+         * @return X = 1 / (ω × C). The units are ohms
+         */
+        public static double capacitiveReactance(double capacitanceFarads, double frequencyHz) {
+            final double angularFrequency = Trigonometry.PI2 * frequencyHz;
+            return reciprocal(angularFrequency * capacitanceFarads);
+        }
+
+        /**
+         * where:
+         * <ul>
+         *     <li>F is the electrostatic force between charges (in Newtons)</li>
+         *     <li>q₁ is the magnitude of the first charge (in Coulombs)</li>
+         *     <li>q₂ is the magnitude of the second charge (in Coulombs)</li>
+         *     <li>r is the shortest distance between the charges (in m)</li>
+         *     <li>kₑ is the Coulomb's constant</li>
+         * </ul>
+         *
+         * @return F = (kₑq₁q₂)/r². The units are newtons
+         */
+        public static double coulombsLaw(double charge1, double charge2, double distanceMeters) {
+            return (COULOMB_CONSTANT * charge1 * charge2) / (distanceMeters * distanceMeters);
+        }
+
+        /**
+         * Gain (dB) = 20 log₁₀(Output voltage/Input voltage)
+         * Gain (dB) = 20 log₁₀(1) = 0
+         * 1√2 = 0.707
+         * Gain (dB) = 20 log₁₀(0.707) = -3 dB
+         *
+         * @return f꜀ = 1/(2πRC). The units are Hz
+         */
+        public static double cutoffFrequencyRCFilter(double resistanceOhms, double capacitanceFarads) {
+            return reciprocal(Trigonometry.PI2 * resistanceOhms * capacitanceFarads);
+        }
+
+        /**
+         * @return f꜀ = R/(2πL). The units are Hz
+         */
+        public static double cutoffFrequencyRLFilter(double resistanceOhms, double inductanceHenries) {
+            return resistanceOhms / (Trigonometry.PI2 * inductanceHenries);
+        }
+
+        /**
+         * where:
+         * <ul>
+         *     <li>f – Cyclotron frequency;</li>
+         *     <li>q – Charge of the particle;</li>
+         *     <li>B – Strength of the magnetic field;</li>
+         *     <li>m – Mass of the particle.</li>
+         * </ul>
+         *
+         * @return f = (qB)/(2m). The units are Hz
+         */
+        public static double cyclotronFrequency(
+            double chargeCoulombs, double magneticFieldStrengthTesla, double massKg) {
+            return (chargeCoulombs * magneticFieldStrengthTesla) / (Trigonometry.PI2 * massKg);
+        }
+
+        /**
+         * where:
+         * <ul>
+         *     <li>q — The charge of the particle;</li>
+         *     <li>B — The intensity of the magnetic field.</li>
+         * </ul>
+         *
+         * @return Fm = q × B × v
+         */
+        public static double lorentzForce() {
+            throw new UnsupportedOperationException();
+        }
+
+        /**
+         * @return P = PF × I × U. The units are watts
+         */
+        public static double acWattageSinglePhase(double voltageVolts, double currentAmp, double powerFactor) {
+            return powerFactor * currentAmp * voltageVolts;
+        }
+
+        /**
+         * @return P = √3 × PF × I × V. The units are watts
+         */
+        public static double acWattage3PhaseL2L(double voltageVolts, double currentAmp, double powerFactor) {
+            return squareRoot(3) * acWattageSinglePhase(voltageVolts, currentAmp, powerFactor);
+        }
+
+        /**
+         * @return P = 3 × PF × I × V. The units are watts
+         */
+        public static double acWattage3PhaseL2N(double voltageVolts, double currentAmp, double powerFactor) {
+            return 3 * acWattageSinglePhase(voltageVolts, currentAmp, powerFactor);
         }
     }
 

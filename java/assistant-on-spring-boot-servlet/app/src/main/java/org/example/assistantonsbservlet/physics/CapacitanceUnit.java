@@ -1,6 +1,6 @@
 package org.example.assistantonsbservlet.physics;
 
-public enum CapacityUnit {
+public enum CapacitanceUnit {
     FARADS, // F
     MILLIFARADS, // mF
     MICROFARADS, // μF
@@ -27,6 +27,13 @@ public enum CapacityUnit {
 
     public static double microFaradsToFarads(double microFarads) {
         return microFarads / ONE_FARAD_IN_MICROFARADS;
+    }
+
+    /**
+     * 1 nF = 0.000000001 F or 1 * 10⁻⁹ F
+     */
+    public static double nanoFaradsToFarads(double nanoFarads) {
+        return nanoFarads / 1_000_000_000;
     }
 
     public static double microFaradsToNanofarads(double microFarads) {
