@@ -585,6 +585,287 @@ class PhysicsCalcTest {
             // then
             assertArrayEquals(expectedResult, equivalent, delta);
         }
+
+        @Test
+        void testWork() {
+            // given
+            final byte force = 50; // N
+            final double angleOfForceRad = 0.5236; // 30°
+            final byte displacement = 100; // m
+            // when
+            final double work = PhysicsCalc.Mechanics.work(force, angleOfForceRad, displacement);
+            // then
+            assertEquals(4330.1, work, DELTA1);
+        }
+
+        @Test
+        void testWorkFromVelocityChange() {
+            // given
+            final byte massKg = 2;
+            final byte initialSpeed = 10; // m/s
+            final byte finalSpeed = 35; // m/s
+            // when
+            final double work = PhysicsCalc.Mechanics.workFromVelocityChange(massKg, initialSpeed, finalSpeed);
+            // then
+            assertEquals(1125, work, DELTA1);
+        }
+
+        @Test
+        void testPower() {
+            // given
+            final short workJ = 9000;
+            final byte timeSeconds = 60;
+            // when
+            final double power = PhysicsCalc.Mechanics.power(workJ, timeSeconds);
+            // then
+            assertEquals(150, power, DELTA1);
+        }
+
+        @Test
+        void testEirpWithKnownTotalCableLoss() {
+            // given
+            final byte totalCableLoss = 3;
+            final byte transmitterOutputPower = 21;
+            final byte antennaGain = 11;
+            final byte numberOfConnectors = 2;
+            final double connectorLoss = MathCalc.ONE_HALF;
+            // when
+            final double eirp = PhysicsCalc.Mechanics.eirpWithKnownTotalCableLoss(totalCableLoss,
+                transmitterOutputPower, antennaGain, numberOfConnectors, connectorLoss);
+            // then
+            assertEquals(28, eirp, DELTA1);
+        }
+
+        @Test
+        void testEirpWithKnownCableLossPerUnitOfLength() {
+            // given
+            final double cableLoss = 0.3;
+            final byte cableLength = 2;
+            final byte transmitterOutputPower = 21;
+            final byte antennaGain = 11;
+            final byte numberOfConnectors = 2;
+            final double connectorLoss = MathCalc.ONE_HALF;
+            // when
+            final double eirp = PhysicsCalc.Mechanics.eirpWithKnownCableLossPerUnitOfLength(cableLoss, cableLength,
+                transmitterOutputPower, antennaGain, numberOfConnectors, connectorLoss);
+            // then
+            assertEquals(30.4, eirp, DELTA1);
+        }
+
+        static List<Arguments> eirpWithKnownCableTypeAndFrequencyForCableType9914Args() {
+            // Cable length = 1
+            return List.of(
+                // Frequency = 150 MHz
+                Arguments.of(0.05577, 21, 11, 2, MathCalc.ONE_HALF, 30.944, DELTA3),
+                // Frequency = 450 MHz
+                Arguments.of(0.09514, 21, 11, 2, MathCalc.ONE_HALF, 30.905, DELTA3),
+                // Frequency = 900 MHz
+                Arguments.of(0.13451, 21, 11, 2, MathCalc.ONE_HALF, 30.865, DELTA3),
+                // Frequency = 1800 MHz
+                Arguments.of(0.20013, 21, 11, 2, MathCalc.ONE_HALF, 30.8, DELTA1),
+                // Frequency = 2400 MHz
+                Arguments.of(0.2395, 21, 11, 2, MathCalc.ONE_HALF, 30.76, DELTA2)
+            );
+        }
+
+        static List<Arguments> eirpWithKnownCableTypeAndFrequencyForCableTypeRG58Args() {
+            // Cable length = 1
+            return List.of(
+                // Frequency = 150 MHz
+                Arguments.of(1.739, 21, 11, 2, MathCalc.ONE_HALF, 29.26, DELTA2),
+                // Frequency = 450 MHz
+                Arguments.of(0.3445, 21, 11, 2, MathCalc.ONE_HALF, 30.656, DELTA3),
+                // Frequency = 900 MHz
+                Arguments.of(0.5249, 21, 11, 2, MathCalc.ONE_HALF, 30.475, DELTA3),
+                // Frequency = 1800 MHz
+                Arguments.of(0.6923, 21, 11, 2, MathCalc.ONE_HALF, 30.31, DELTA2),
+                // Frequency = 2400 MHz
+                Arguments.of(0.8136, 21, 11, 2, MathCalc.ONE_HALF, 30.186, DELTA3)
+            );
+        }
+
+        static List<Arguments> eirpWithKnownCableTypeAndFrequencyForCableTypeRG142Args() {
+            // Cable length = 1
+            return List.of(
+                // Frequency = 150 MHz
+                Arguments.of(0.10499, 21, 11, 2, MathCalc.ONE_HALF, 30.895, DELTA3),
+                // Frequency = 450 MHz
+                Arguments.of(0.2067, 21, 11, 2, MathCalc.ONE_HALF, 30.793, DELTA3),
+                // Frequency = 900 MHz
+                Arguments.of(0.30184, 21, 11, 2, MathCalc.ONE_HALF, 30.7, DELTA1),
+                // Frequency = 1800 MHz
+                Arguments.of(0.4265, 21, 11, 2, MathCalc.ONE_HALF, 30.573, DELTA1),
+                // Frequency = 2400 MHz
+                Arguments.of(0.6857, 21, 11, 2, MathCalc.ONE_HALF, 30.314, DELTA3)
+            );
+        }
+
+        static List<Arguments> eirpWithKnownCableTypeAndFrequencyForCableTypeRG174Args() {
+            // Cable length = 1
+            return List.of(
+                // Frequency = 150 MHz
+                Arguments.of(0.3379, 21, 11, 2, MathCalc.ONE_HALF, 30.66, DELTA2),
+                // Frequency = 450 MHz
+                Arguments.of(0.05938, 21, 11, 2, MathCalc.ONE_HALF, 30.94, DELTA2),
+                // Frequency = 900 MHz
+                Arguments.of(0.8497, 21, 11, 2, MathCalc.ONE_HALF, 30.15, DELTA2),
+                // Frequency = 1800 MHz
+                Arguments.of(1.2303, 21, 11, 2, MathCalc.ONE_HALF, 29.77, DELTA2),
+                // Frequency = 2400 MHz
+                Arguments.of(1.4272, 21, 11, 2, MathCalc.ONE_HALF, 29.57, DELTA2)
+            );
+        }
+
+        static List<Arguments> eirpWithKnownCableTypeAndFrequencyForCableTypeRG213UArgs() {
+            // Cable length = 1
+            return List.of(
+                // Frequency = 150 MHz
+                Arguments.of(0.08202, 21, 11, 2, MathCalc.ONE_HALF, 30.92, DELTA2),
+                // Frequency = 450 MHz
+                Arguments.of(0.16404, 21, 11, 2, MathCalc.ONE_HALF, 30.836, DELTA3),
+                // Frequency = 900 MHz
+                Arguments.of(0.24934, 21, 11, 2, MathCalc.ONE_HALF, 30.75, DELTA2),
+                // Frequency = 1800 MHz
+                Arguments.of(0.33465, 21, 11, 2, MathCalc.ONE_HALF, 30.665, DELTA3),
+                // Frequency = 2400 MHz
+                Arguments.of(0.4068, 21, 11, 2, MathCalc.ONE_HALF, 30.593, DELTA3)
+            );
+        }
+
+        static List<Arguments> eirpWithKnownCableTypeAndFrequencyForCableTypeLMR195Args() {
+            // Cable length = 1
+            return List.of(
+                // Frequency = 150 MHz
+                Arguments.of(0.14436, 21, 11, 2, MathCalc.ONE_HALF, 30.856, DELTA3),
+                // Frequency = 450 MHz
+                Arguments.of(0.2559, 21, 11, 2, MathCalc.ONE_HALF, 30.744, DELTA3),
+                // Frequency = 900 MHz
+                Arguments.of(0.3642, 21, 11, 2, MathCalc.ONE_HALF, 30.636, DELTA3),
+                // Frequency = 1800 MHz
+                Arguments.of(0.5249, 21, 11, 2, MathCalc.ONE_HALF, 30.475, DELTA3),
+                // Frequency = 2400 MHz
+                Arguments.of(0.5545, 21, 11, 2, MathCalc.ONE_HALF, 30.446, DELTA3)
+            );
+        }
+
+        static List<Arguments> eirpWithKnownCableTypeAndFrequencyForCableTypeLMR240Args() {
+            // Cable length = 1
+            return List.of(
+                // Frequency = 150 MHz
+                Arguments.of(0.09843, 21, 11, 2, MathCalc.ONE_HALF, 30.9, DELTA1),
+                // Frequency = 450 MHz
+                Arguments.of(0.1739, 21, 11, 2, MathCalc.ONE_HALF, 30.826, DELTA3),
+                // Frequency = 900 MHz
+                Arguments.of(0.24934, 21, 11, 2, MathCalc.ONE_HALF, 30.75, DELTA2),
+                // Frequency = 1800 MHz
+                Arguments.of(0.3576, 21, 11, 2, MathCalc.ONE_HALF, 30.64, DELTA2),
+                // Frequency = 2400 MHz
+                Arguments.of(0.4134, 21, 11, 2, MathCalc.ONE_HALF, 30.587, DELTA3)
+            );
+        }
+
+        static List<Arguments> eirpWithKnownCableTypeAndFrequencyForCableTypeLMR400Args() {
+            // Cable length = 1
+            return List.of(
+                // Frequency = 150 MHz
+                Arguments.of(0.04921, 21, 11, 2, MathCalc.ONE_HALF, 30.95, DELTA2),
+                // Frequency = 450 MHz
+                Arguments.of(0.08858, 21, 11, 2, MathCalc.ONE_HALF, 30.91, DELTA2),
+                // Frequency = 900 MHz
+                Arguments.of(0.12795, 21, 11, 2, MathCalc.ONE_HALF, 30.87, DELTA2),
+                // Frequency = 1800 MHz
+                Arguments.of(0.187, 21, 11, 2, MathCalc.ONE_HALF, 30.81, DELTA2),
+                // Frequency = 2400 MHz
+                Arguments.of(0.21654, 21, 11, 2, MathCalc.ONE_HALF, 30.783, DELTA3)
+            );
+        }
+
+        static List<Arguments> eirpWithKnownCableTypeAndFrequencyForCableTypeLMR600Args() {
+            // Cable length = 1
+            return List.of(
+                // Frequency = 150 MHz
+                Arguments.of(0.03281, 21, 11, 2, MathCalc.ONE_HALF, 30.97, DELTA2),
+                // Frequency = 450 MHz
+                Arguments.of(0.05577, 21, 11, 2, MathCalc.ONE_HALF, 30.944, DELTA3),
+                // Frequency = 900 MHz
+                Arguments.of(0.08202, 21, 11, 2, MathCalc.ONE_HALF, 30.92, DELTA2),
+                // Frequency = 1800 MHz
+                Arguments.of(0.1214, 21, 11, 2, MathCalc.ONE_HALF, 30.88, DELTA2),
+                // Frequency = 2400 MHz
+                Arguments.of(0.14108, 21, 11, 2, MathCalc.ONE_HALF, 30.86, DELTA2)
+            );
+        }
+
+        static List<Arguments> eirpWithKnownCableTypeAndFrequencyForCableTypeLMR900Args() {
+            // Cable length = 1
+            return List.of(
+                // Frequency = 150 MHz
+                Arguments.of(0.022966, 21, 11, 2, MathCalc.ONE_HALF, 30.98, DELTA2),
+                // Frequency = 450 MHz
+                Arguments.of(0.03937, 21, 11, 2, MathCalc.ONE_HALF, 30.96, DELTA2),
+                // Frequency = 900 MHz
+                Arguments.of(0.05577, 21, 11, 2, MathCalc.ONE_HALF, 30.944, DELTA3),
+                // Frequency = 1800 MHz
+                Arguments.of(0.08202, 21, 11, 2, MathCalc.ONE_HALF, 30.92, DELTA2),
+                // Frequency = 2400 MHz
+                Arguments.of(0.09514, 21, 11, 2, MathCalc.ONE_HALF, 30.905, DELTA3)
+            );
+        }
+
+        static List<Arguments> eirpWithKnownCableTypeAndFrequencyForCableTypeUltraFlex400Args() {
+            // Cable length = 1
+            return List.of(
+                // Frequency = 150 MHz
+                Arguments.of(0.05906, 21, 11, 2, MathCalc.ONE_HALF, 30.94, DELTA2),
+                // Frequency = 450 MHz
+                Arguments.of(0.10499, 21, 11, 2, MathCalc.ONE_HALF, 30.895, DELTA3),
+                // Frequency = 900 MHz
+                Arguments.of(0.1542, 21, 11, 2, MathCalc.ONE_HALF, 30.846, DELTA3),
+                // Frequency = 1800 MHz
+                Arguments.of(0.2264, 21, 11, 2, MathCalc.ONE_HALF, 30.774, DELTA3),
+                // Frequency = 2400 MHz
+                Arguments.of(0.2592, 21, 11, 2, MathCalc.ONE_HALF, 30.74, DELTA2)
+            );
+        }
+
+        static List<Arguments> eirpWithKnownCableTypeAndFrequencyForCableTypeUltraFlex600Args() {
+            // Cable length = 1
+            return List.of(
+                // Frequency = 150 MHz
+                Arguments.of(0.03937, 21, 11, 2, MathCalc.ONE_HALF, 30.96, DELTA2),
+                // Frequency = 450 MHz
+                Arguments.of(0.0689, 21, 11, 2, MathCalc.ONE_HALF, 30.93, DELTA2),
+                // Frequency = 900 MHz
+                Arguments.of(0.09843, 21, 11, 2, MathCalc.ONE_HALF, 30.9, DELTA1),
+                // Frequency = 1800 MHz
+                Arguments.of(0.14764, 21, 11, 2, MathCalc.ONE_HALF, 30.85, DELTA2),
+                // Frequency = 2400 MHz
+                Arguments.of(0.16732, 21, 11, 2, MathCalc.ONE_HALF, 30.83, DELTA2)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("eirpWithKnownCableTypeAndFrequencyForCableType9914Args")
+        @MethodSource("eirpWithKnownCableTypeAndFrequencyForCableTypeRG58Args")
+        @MethodSource("eirpWithKnownCableTypeAndFrequencyForCableTypeRG142Args")
+        @MethodSource("eirpWithKnownCableTypeAndFrequencyForCableTypeRG174Args")
+        @MethodSource("eirpWithKnownCableTypeAndFrequencyForCableTypeRG213UArgs")
+        @MethodSource("eirpWithKnownCableTypeAndFrequencyForCableTypeLMR195Args")
+        @MethodSource("eirpWithKnownCableTypeAndFrequencyForCableTypeLMR240Args")
+        @MethodSource("eirpWithKnownCableTypeAndFrequencyForCableTypeLMR400Args")
+        @MethodSource("eirpWithKnownCableTypeAndFrequencyForCableTypeLMR600Args")
+        @MethodSource("eirpWithKnownCableTypeAndFrequencyForCableTypeLMR900Args")
+        @MethodSource("eirpWithKnownCableTypeAndFrequencyForCableTypeUltraFlex400Args")
+        @MethodSource("eirpWithKnownCableTypeAndFrequencyForCableTypeUltraFlex600Args")
+        void testEirpWithKnownCableTypeAndFrequency(
+            double totalCableLoss, double transmitterOutputPower, double antennaGain, double numberOfConnectors,
+            double connectorLoss, double expectedResult, double delta) {
+            // when
+            final double eirp = PhysicsCalc.Mechanics.eirpWithKnownTotalCableLoss(totalCableLoss,
+                transmitterOutputPower, antennaGain, numberOfConnectors, connectorLoss);
+            // then
+            assertEquals(expectedResult, eirp, delta);
+        }
     }
 
     @Nested
@@ -725,6 +1006,17 @@ class PhysicsCalcTest {
             final double energy = PhysicsCalc.Dynamics.bulletEnergy(massKg, bulletVelocity);
             // then
             assertEquals(expectedResult, energy, delta);
+        }
+
+        @Test
+        void testForce() {
+            // given
+            final byte massInKg = 2;
+            final byte acceleration = 25;
+            // when
+            final double force = PhysicsCalc.Dynamics.force(massInKg, acceleration);
+            // then
+            assertEquals(50, force, DELTA1);
         }
     }
 
@@ -1799,6 +2091,30 @@ class PhysicsCalcTest {
                 .solenoidInductanceSolveForLengthGivenCrossSectionArea(numberOfTurns, crossSectionalArea, inductance);
             // then
             assertEquals(1.5, length, DELTA1);
+        }
+
+        @Test
+        void testStepUpVoltageRegulation() {
+            // given
+            final short voltageNoLoad = 140;
+            final byte voltageFullLoad = 120;
+            // when
+            final double[] stepUpVoltage = PhysicsCalc.Electronics
+                .stepUpVoltageRegulation(voltageNoLoad, voltageFullLoad);
+            // then
+            assertArrayEquals(new double[]{0.1667, 16.67}, stepUpVoltage, DELTA2);
+        }
+
+        @Test
+        void testStepDownVoltageRegulation() {
+            // given
+            final short voltageNoLoad = 140;
+            final byte voltageFullLoad = 120;
+            // when
+            final double[] stepDownVoltage = PhysicsCalc.Electronics
+                .stepDownVoltageRegulation(voltageNoLoad, voltageFullLoad);
+            // then
+            assertArrayEquals(new double[]{0.143, 14.28}, stepDownVoltage, DELTA2);
         }
     }
 }

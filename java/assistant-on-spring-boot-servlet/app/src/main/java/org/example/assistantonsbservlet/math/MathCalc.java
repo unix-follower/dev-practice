@@ -1588,7 +1588,7 @@ public final class MathCalc {
          * x = bʸ = b^(log_bˣ)
          * y = log_b(x) = log_b(bʸ)
          *
-         * @return x = log_b^⁻¹(y) = bʸ
+         * @return x = log_b⁻¹(y) = bʸ
          */
         public static double antilog(double logarithm, double base) {
             return Math.pow(base, logarithm);
@@ -1696,7 +1696,7 @@ public final class MathCalc {
         public static double negativeLog(double x, double base) {
             checkGreater0(x);
             checkGreater(base, ONE);
-            return logChangeOfBase(1 / x, base);
+            return logChangeOfBase(Arithmetic.reciprocal(x), base);
         }
 
         /**

@@ -755,6 +755,58 @@ public final class PhysicsCalc {
         public static double centripetalForce() {
             throw new UnsupportedOperationException();
         }
+
+        /**
+         * @return W = F⋅cos(θ)⋅s. The units are joules
+         */
+        public static double work(double forceNewtons, double angleOfForceRad, double displacementMeters) {
+            return forceNewtons * Trigonometry.cos(angleOfForceRad) * displacementMeters;
+        }
+
+        /**
+         * W = m×a×d
+         * <br/>
+         * d = t × ((v₀+v₁)/2)
+         * W = F×d =(m × ((v₁-v₀)/t)) × (t × ((v₀+v₁)/2)) = m/2 × (v²₁-v²₀)
+         *
+         * @return W = 1/2 m(v²₁-v²₀). The units are joules
+         */
+        public static double workFromVelocityChange(double massKg, double initialSpeed, double finalSpeed) {
+            return MathCalc.ONE_HALF * massKg * (finalSpeed * finalSpeed - initialSpeed * initialSpeed);
+        }
+
+        /**
+         * @return P = W/t = (F⋅s)/t. The units are watts
+         */
+        public static double power(double workJoules, double timeSeconds) {
+            return workJoules / timeSeconds;
+        }
+
+        /**
+         * EIRP - Effective Isotropic Radiated Power
+         * EIRP = Tₓ−L꜀+Gₐ
+         * where:
+         * <ul>
+         *     <li>Tₓ — Output power of the transmitter (dBmW);</li>
+         *     <li>L꜀ — Sum of cable and connectors losses (if present) (dB);</li>
+         *     <li>Gₐ — Antenna gain (dBi).</li>
+         * </ul>
+         *
+         * @return EIRP = Tx power(dBmW) − Cable loss(dB) − Connectors loss(dB) + Antenna gain(dBi). The units are dBmW
+         */
+        public static double eirpWithKnownTotalCableLoss(double totalCableLoss, double transmitterOutputPower,
+                                                         double antennaGain, double numberOfConnectors,
+                                                         double connectorLoss) {
+            return transmitterOutputPower - totalCableLoss - numberOfConnectors * connectorLoss + antennaGain;
+        }
+
+        public static double eirpWithKnownCableLossPerUnitOfLength(
+            double cableLoss, double cableLength, double transmitterOutputPower,
+            double antennaGain, double numberOfConnectors, double connectorLoss) {
+            final double totalCableLoss = cableLoss * cableLength;
+            return eirpWithKnownTotalCableLoss(totalCableLoss, transmitterOutputPower, antennaGain, numberOfConnectors,
+                connectorLoss);
+        }
     }
 
     public static final class FluidMechanics {
@@ -884,6 +936,16 @@ public final class PhysicsCalc {
          */
         public static double bulletEnergy(double bulletMassKg, double bulletVelocity) {
             return MathCalc.ONE_HALF * bulletMassKg * bulletVelocity * bulletVelocity;
+        }
+
+        /**
+         * F = m×(v₁−v₀)/t
+         *
+         * @param acceleration in m/s²
+         * @return F = m⋅a or F = m⋅g at a constant speed
+         */
+        public static double force(double massInKg, double acceleration) {
+            return massInKg * acceleration;
         }
     }
 
@@ -1902,6 +1964,33 @@ public final class PhysicsCalc {
             double numberOfTurns, double crossSectionalArea, double inductanceHenries) {
             return squareRoot((inductanceHenries * Math.PI)
                 / (VACUUM_PERMEABILITY * numberOfTurns * numberOfTurns * crossSectionalArea));
+        }
+
+        /**
+         * VR = (V no-load - V full-load) / V full-load
+         * PC = VR×100
+         */
+        public static double[] stepUpVoltageRegulation(double noLoadVolts, double fullLoadVolts) {
+            final double voltageRegulation = (noLoadVolts - fullLoadVolts) / fullLoadVolts;
+            final double percentChange = voltageRegulation * 100;
+            return new double[]{voltageRegulation, percentChange};
+        }
+
+        /**
+         * VR = (V no-load - V full-load) / V no-load
+         * PC = VR×100
+         */
+        public static double[] stepDownVoltageRegulation(double noLoadVolts, double fullLoadVolts) {
+            final double voltageRegulation = (noLoadVolts - fullLoadVolts) / noLoadVolts;
+            final double percentChange = voltageRegulation * 100;
+            return new double[]{voltageRegulation, percentChange};
+        }
+
+        /**
+         * @return PD = (V input − V output) × I output
+         */
+        public static double powerDissipationInVoltageRegulator(double inputVolts, double outputVolts, double current) {
+            return (inputVolts - outputVolts) * current;
         }
     }
 }
