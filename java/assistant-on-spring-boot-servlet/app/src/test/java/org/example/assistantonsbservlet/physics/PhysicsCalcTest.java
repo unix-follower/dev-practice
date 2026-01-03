@@ -80,7 +80,53 @@ class PhysicsCalcTest {
         }
 
         @Test
-        void calculateVelocityMagnitude2d() {
+        void testVelocity() {
+            // given
+            final short distance = 500;
+            final short timeSeconds = 180;
+            // when
+            final double velocity = PhysicsCalc.Kinematics.velocity(distance, timeSeconds);
+            // then
+            assertEquals(2.77778, velocity, DELTA5);
+        }
+
+        @Test
+        void testInitialVelocity() {
+            // given
+            final double finalVelocity = 28.8;
+            final double acceleration = 6.95;
+            final byte timeSeconds = 4;
+            // when
+            final double initialVelocity = PhysicsCalc.Kinematics
+                .initialVelocity(finalVelocity, acceleration, timeSeconds);
+            // then
+            assertEquals(1, initialVelocity, DELTA1);
+        }
+
+        @Test
+        void testFinalVelocity() {
+            // given
+            final byte initialVelocity = 1;
+            final double acceleration = 6.95;
+            final byte timeSeconds = 4;
+            // when
+            final double velocity = PhysicsCalc.Kinematics.finalVelocity(initialVelocity, acceleration, timeSeconds);
+            // then
+            assertEquals(28.8, velocity, DELTA1);
+        }
+
+        @Test
+        void testAvgVelocity() {
+            // given
+            final double[][] velocities = new double[][]{{1, MathCalc.ONE_HALF}, {5, 1}, {10, 3}};
+            // when
+            final double velocity = PhysicsCalc.Kinematics.avgVelocity(velocities);
+            // then
+            assertEquals(7.8889, velocity, DELTA4);
+        }
+
+        @Test
+        void testVelocityMagnitude2d() {
             // given
             final double velocityXDirection = 2;
             final double velocityYDirection = 3;
@@ -88,7 +134,7 @@ class PhysicsCalcTest {
             // when
             final double magnitude = PhysicsCalc.Kinematics.velocityMagnitude(velocity2d);
             // then
-            assertEquals(3.6056, magnitude, 0.1);
+            assertEquals(3.6056, magnitude, DELTA1);
         }
 
         @Test
@@ -266,7 +312,7 @@ class PhysicsCalcTest {
         }
 
         @Test
-        void calculateTerminalVelocityOfHumanSkydiver() {
+        void testTerminalVelocityOfHumanSkydiver() {
             // given
             final int massInKg = 75;
             final double gravitationalAcceleration = 9.81; // m/s²
@@ -277,11 +323,11 @@ class PhysicsCalcTest {
             final double terminalVelocity = PhysicsCalc.Kinematics.terminalVelocity(
                 massInKg, gravitationalAcceleration, densityOfFluid, dragCoef, crossSectionalArea);
             // then
-            assertEquals(98.48, terminalVelocity, 0.01);
+            assertEquals(98.48, terminalVelocity, DELTA2);
         }
 
         @Test
-        void calculateTerminalVelocityOfBaseball() {
+        void testTerminalVelocityOfBaseball() {
             // given
             final double massInKg = 0.14883;
             final double gravitationalAcceleration = 9.81; // m/s²
@@ -292,11 +338,11 @@ class PhysicsCalcTest {
             final double terminalVelocity = PhysicsCalc.Kinematics.terminalVelocity(
                 massInKg, gravitationalAcceleration, densityOfFluid, dragCoef, crossSectionalArea);
             // then
-            assertEquals(41.056, terminalVelocity, 0.001);
+            assertEquals(41.056, terminalVelocity, DELTA3);
         }
 
         @Test
-        void calculateTerminalVelocityOfGolfBall() {
+        void testTerminalVelocityOfGolfBall() {
             // given
             final double massInKg = 0.03544;
             final double gravitationalAcceleration = 9.81; // m/s²
@@ -307,7 +353,7 @@ class PhysicsCalcTest {
             final double terminalVelocity = PhysicsCalc.Kinematics.terminalVelocity(
                 massInKg, gravitationalAcceleration, densityOfFluid, dragCoef, crossSectionalArea);
             // then
-            assertEquals(32.734, terminalVelocity, 0.001);
+            assertEquals(32.734, terminalVelocity, DELTA3);
         }
 
         @Test
@@ -415,7 +461,7 @@ class PhysicsCalcTest {
         @Test
         void testImpactEnergyDistance() {
             // given
-            final double golfBallMass = MassUnit.gToKg(45.9);
+            final double golfBallMass = MassUnit.gramsToKg(45.9);
             final byte velocity = 5;
             final double collisionDistance = 0.5;
             // when
@@ -428,7 +474,7 @@ class PhysicsCalcTest {
         @Test
         void testImpactEnergyTime() {
             // given
-            final double golfBallMass = MassUnit.gToKg(45.9);
+            final double golfBallMass = MassUnit.gramsToKg(45.9);
             final byte velocity = 5;
             final byte collisionTimeSeconds = 2;
             // when
@@ -885,7 +931,7 @@ class PhysicsCalcTest {
     @Nested
     class Dynamics {
         @Test
-        void calculateAccelerationWithSpeedDifference() {
+        void testAccelerationWithSpeedDifference() {
             // given
             final int deltaTimeInSec = 6;
             final int initialVelocity = 100; // m/s
@@ -898,7 +944,7 @@ class PhysicsCalcTest {
         }
 
         @Test
-        void calculateAccelerationWithMassAndForce() {
+        void testAccelerationWithMassAndForce() {
             // given
             final int massInKg = 60;
             final int netForceInNewtons = 1000;
@@ -909,7 +955,7 @@ class PhysicsCalcTest {
         }
 
         @Test
-        void calculateAccelerationWithDistanceTraveled() {
+        void testAccelerationWithDistanceTraveled() {
             // given
             final int initialVelocity = 100; // m/s
             final int distanceInM = 200;
@@ -1017,6 +1063,46 @@ class PhysicsCalcTest {
             final double force = PhysicsCalc.Dynamics.force(massInKg, acceleration);
             // then
             assertEquals(50, force, DELTA1);
+        }
+
+        @Test
+        void testDeceleratingForce() {
+            // given
+            final byte massKg = 50;
+            final double initialVelocity = 13.89;
+            final int finalVelocity = 0;
+            final int changeInTime = 8;
+            final double acceleration = PhysicsCalc.Dynamics.acceleration(initialVelocity, finalVelocity, changeInTime);
+            // when
+            final double deceleratingForce = PhysicsCalc.Dynamics.force(massKg, acceleration);
+            // then
+            assertEquals(-86.8, deceleratingForce, DELTA1);
+        }
+
+        @Test
+        void testGravitationalForceBetweenEarthAndSun() {
+            // given
+            final double earthMassKg = 5.972e24;
+            final double sunMassKg = 1.989e30;
+            final double distanceFromEarthToSun = LengthUnit.kilometersToMeters(149_600_000);
+            // when
+            final double force = PhysicsCalc.Dynamics
+                .gravitationalForce(earthMassKg, sunMassKg, distanceFromEarthToSun);
+            // then
+            assertEquals(3.5423960813684978123481e+22, force, 1e22);
+        }
+
+        @Test
+        void testGravitationalForceBetweenEarthAndMoon() {
+            // given
+            final double earthMassKg = 5.972e24;
+            final double moonMassKg = 7.348e22;
+            final double distanceFromEarthToSun = 3.844e8;
+            // when
+            final double force = PhysicsCalc.Dynamics
+                .gravitationalForce(earthMassKg, moonMassKg, distanceFromEarthToSun);
+            // then
+            assertEquals(198_211_072_907_925_212_312d, force, 1e21);
         }
     }
 
@@ -1282,6 +1368,19 @@ class PhysicsCalcTest {
             final double wattage = PhysicsCalc.Electromagnetism.acWattage3PhaseL2N(voltage, current, powerFactor);
             // then
             assertEquals(1440, wattage, DELTA1);
+        }
+
+        @Test
+        void testLorentzForce() {
+            // given
+            final double magneticField = MathCalc.ONE_HALF;
+            final double charge = 1.602e-19;
+            final double velocity = 2.998e7;
+            final double angle = MathCalc.Trigonometry.PI_OVER_2;
+            // when
+            final double force = PhysicsCalc.Electromagnetism.lorentzForce(magneticField, charge, velocity, angle);
+            // then
+            assertEquals(2.4e-12, force, DELTA1);
         }
     }
 
@@ -2115,6 +2214,94 @@ class PhysicsCalcTest {
                 .stepDownVoltageRegulation(voltageNoLoad, voltageFullLoad);
             // then
             assertArrayEquals(new double[]{0.143, 14.28}, stepDownVoltage, DELTA2);
+        }
+    }
+
+    @Nested
+    class Acoustics {
+        @Test
+        void testSoundSpeed() {
+            // given
+            final byte temperature = 20;
+            // when
+            final double speed = PhysicsCalc.Acoustics.soundSpeed(temperature);
+            // then
+            assertEquals(343.21, speed, DELTA2);
+        }
+
+        @Test
+        void testSoundSpeedInWater() {
+            // given
+            final byte temperature = 20;
+            // when
+            final double speed = PhysicsCalc.Acoustics.soundSpeedInWater(temperature);
+            // then
+            assertEquals(1482, speed, 1);
+        }
+    }
+
+    @Nested
+    class Optics {
+        @Test
+        void testLightSpeed() {
+            // given
+            final byte timeSeconds = 60;
+            // when
+            final double distance = PhysicsCalc.Optics.lightSpeed(timeSeconds);
+            // then
+            assertEquals(17_987_547_480.0, distance, DELTA1);
+        }
+
+        @Test
+        void testAngularResolution() {
+            // given
+            final double wavelength = 5.5e-8;
+            final double apertureDiameter = 0.002;
+            // when
+            final double resolution = PhysicsCalc.Optics.angularResolution(wavelength, apertureDiameter);
+            // then
+            assertEquals(0.00003355, resolution, DELTA8);
+        }
+
+        @Test
+        void testBinocularsRange() {
+            // given
+            final double objectHeight = 6;
+            final double objectAngularHeight = 1;
+            // when
+            final double distanceToObject = PhysicsCalc.Optics.binocularsRange(objectHeight, objectAngularHeight);
+            // then
+            assertEquals(6000, distanceToObject, DELTA1);
+        }
+    }
+
+    @Nested
+    class Thermodynamics {
+        @Test
+        void testThermalConductivity() {
+            // given
+            final double brickWallThermalConductivity = 0.8;
+            final byte temperatureDifference = 20;
+            final double distance = 0.35;
+            // when
+            final double heatFlux = PhysicsCalc.Thermodynamics
+                .thermalConductivity(brickWallThermalConductivity, temperatureDifference, distance);
+            // then
+            assertEquals(-45.71, heatFlux, DELTA2);
+        }
+
+        @Test
+        void testThermalEnergy() {
+            // given
+            final byte degreesOfFreedom = PhysicsCalc.MONOATOMIC_GAS_DEGREES_OF_FREEDOM;
+            final double molarMass = MassUnit.kgToGrams(10);
+            final byte temperature = 20;
+            final byte molesOfGas = 4;
+            // when
+            final double[] energyData = PhysicsCalc.Thermodynamics
+                .thermalEnergy(degreesOfFreedom, molarMass, temperature, molesOfGas);
+            // then
+            assertArrayEquals(new double[]{4.142e-22, 223.35, 997.73}, energyData, DELTA2);
         }
     }
 }

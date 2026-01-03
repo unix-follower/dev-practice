@@ -23,7 +23,11 @@ public enum MassUnit {
         return grains * 0.00006479891;
     }
 
-    public static double gToKg(double grams) {
-        return grams * 0.001;
+    public static double gramsToKg(double grams) {
+        return grams / 1000;
+    }
+
+    public static double kgToGrams(double kg) {
+        return kg * 1000;
     }
 }

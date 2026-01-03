@@ -10,5 +10,5 @@ public enum AreaUnit {
     SQUARE_FEET, // ft²
     SQUARE_YARD, // yd²
     SQUARE_MILE, // mi²
-    ARES; // a
+    ARES // a
 }

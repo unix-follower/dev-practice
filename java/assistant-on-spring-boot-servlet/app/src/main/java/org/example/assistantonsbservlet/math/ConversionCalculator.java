@@ -69,7 +69,6 @@ public final class ConversionCalculator {
         public static final double ONE_SQUARE_METER_IN_SQUARE_YARD = 1.19599;
         public static final double ONE_SQUARE_MILLIMETER_IN_SQUARE_INCH = 0.00155;
         public static final double ONE_ARE_IN_HECTARE = 100;
-        public static final double ONE_KILOMETER_IN_METERS = 1000;
         public static final double ONE_ASTRONOMICAL_UNIT_IN_METERS = 149_597_870_700.0;
         public static final double ONE_ASTRONOMICAL_UNIT_IN_KILOMETERS = 149_597_870.7;
         public static final double ONE_ASTRONOMICAL_UNIT_IN_MILES = 92_955_807;
@@ -121,10 +120,6 @@ public final class ConversionCalculator {
          */
         public static double hectaresToAres(double areaInHectares) {
             return areaInHectares * ONE_ARE_IN_HECTARE;
-        }
-
-        public static double metersToKilometers(double meters) {
-            return meters / ONE_KILOMETER_IN_METERS;
         }
 
         public static double metersToAstronomicalUnits(double meters) {
