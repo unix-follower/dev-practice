@@ -3,7 +3,9 @@ package org.example.assistantonsbservlet.physics;
 import org.example.assistantonsbservlet.math.Constants;
 import org.example.assistantonsbservlet.math.MathCalc;
 import org.example.assistantonsbservlet.math.MathCalc.Algebra;
+import org.example.assistantonsbservlet.math.MathCalc.Arithmetic;
 import org.example.assistantonsbservlet.math.MathCalc.Geometry;
+import org.example.assistantonsbservlet.math.MathCalc.LinearAlgebra;
 import org.example.assistantonsbservlet.math.MathCalc.Trigonometry;
 
 import java.util.Arrays;
@@ -18,7 +20,7 @@ import static org.example.assistantonsbservlet.math.NumberUtils.checkGreater0;
 import static org.example.assistantonsbservlet.physics.AccelerationUnit.GRAVITATIONAL_ACCELERATION_ON_EARTH;
 
 public final class PhysicsCalc {
-    public static final double AVOGADRO_NUMBER = 6.02214082e23;
+    public static final double AVOGADRO_NUMBER = 6.02214076e23;
     /**
      * ~3.00 * 10⁸ m/s. Also, 300 * 10^⁶ m/s
      */
@@ -41,8 +43,13 @@ public final class PhysicsCalc {
     public static final double REF_VOLTAGE_FOR_0_DBU = 0.77459667;
     public static final double VACUUM_PERMITTIVITY = 8.854187818814e-12; // ε₀≈8.8541×10⁻¹² F/m
     public static final double VACUUM_PERMEABILITY = Trigonometry.PI4 * 1e-7; // μ₀≈4π×10⁻⁷ H/m
-    public static final double SOUND_SPEED = 343; // m/s or 1130 ft/s
+    public static final short NORMAL_ROOM_TEMP_SOUND_SPEED = 343; // at 20°C; m/s or 1130 ft/s
+    public static final double SOUND_SPEED_IN_DRY_AIR = 331.3; // at 0°C; m/s
+    public static final double SOUND_SPEED_IN_AIR_KELVIN_REF_POINT = 273.15; // at 0°C
     public static final int FPE_CONSTANT = 450_240; // foot-pounds of energy
+    public static final double GRAVITATIONAL_CONSTANT = 6.6743e-11; // 6.6743 × 10⁻¹¹ m³ kg⁻¹ s⁻²
+    public static final int SPEED_OF_LIGHT = 29_9792_458; // m/s
+    public static final byte MONOATOMIC_GAS_DEGREES_OF_FREEDOM = 3;
 
     private PhysicsCalc() {
     }
@@ -132,18 +139,21 @@ public final class PhysicsCalc {
         }
 
         /**
-         * @return velocity = distance / time
+         * @return velocity = distance / time. The units are m/s
          */
-        public static double velocity(double distance, long time) {
-            checkTimeInput(time);
-            return distance / time;
+        public static double velocity(double distanceMeters, long timeSeconds) {
+            checkGreater0(distanceMeters);
+            checkTimeInput(timeSeconds);
+            return distanceMeters / timeSeconds;
         }
 
         /**
-         * @return u = v − a * t
+         * @param finalVelocity in m/s
+         * @param acceleration  in m/s²
+         * @return u = v − a * t. The units are m/s
          */
-        public static double initialVelocity(double finalVelocity, double acceleration, long time) {
-            return finalVelocity - acceleration * time;
+        public static double initialVelocity(double finalVelocity, double acceleration, long timeSeconds) {
+            return finalVelocity - velocityChange(acceleration, timeSeconds);
         }
 
         /**
@@ -163,7 +173,7 @@ public final class PhysicsCalc {
             if (value < 0) {
                 throw new IllegalArgumentException("Invalid input: Resulting value inside square root is negative.");
             }
-            return Math.sqrt(value);
+            return squareRoot(value);
         }
 
         /**
@@ -182,10 +192,32 @@ public final class PhysicsCalc {
         }
 
         /**
-         * @return v = u + at
+         * @param initialVelocity in m/s
+         * @param acceleration    in m/s²
+         * @return v = u + at. The units are m/s
          */
-        public static double finalVelocity(double initialVelocity, double acceleration, long time) {
-            return initialVelocity + acceleration * time;
+        public static double finalVelocity(double initialVelocity, double acceleration, long timeSeconds) {
+            return initialVelocity + velocityChange(acceleration, timeSeconds);
+        }
+
+        /**
+         * @return average velocity = (velocity₁ × time₁ + velocity₂ × time₂ + …) / total time. The units are m/s
+         */
+        public static double avgVelocity(double[][] velocities) {
+            final double[][] timeVelocityArray = Arrays.stream(velocities)
+                .map(velocityData -> new double[]{
+                    velocityData[Constants.ARR_2ND_INDEX], velocityData[Constants.ARR_1ST_INDEX]
+                })
+                .toList()
+                .toArray(new double[0][]);
+            return Arithmetic.weightedAverage(timeVelocityArray);
+        }
+
+        /**
+         * @return The units are m/s
+         */
+        public static double velocityChange(double acceleration, long timeSeconds) {
+            return acceleration * timeSeconds;
         }
 
         /**
@@ -209,7 +241,7 @@ public final class PhysicsCalc {
         }
 
         /**
-         * @return t = (v_t/g) * tanh^(-1)(h/v_t)
+         * @return t = (v_t/g) * tanh⁻¹(h/v_t)
          */
         public static double timeOfFall(double terminalVelocity, double gravitationalAcceleration, double altitudeInM) {
             if (terminalVelocity <= 0) {
@@ -313,7 +345,7 @@ public final class PhysicsCalc {
          * @return ||p|| = m * √(vₓ² + vᵧ² + v_z²) ⇒ ||p|| = m * ||v||
          */
         public static double velocityMagnitude(double[] velocityVector) {
-            return MathCalc.LinearAlgebra.vectorMagnitude(velocityVector);
+            return LinearAlgebra.vectorMagnitude(velocityVector);
         }
 
         /**
@@ -382,7 +414,7 @@ public final class PhysicsCalc {
          * @return d = (1 / 2) * a * t² + v₀ * t. The units are meters
          */
         public static double displacement(double acceleration, double initialVelocity, long timeInSeconds) {
-            return 0.5 * acceleration * timeInSeconds * timeInSeconds + initialVelocity * timeInSeconds;
+            return MathCalc.ONE_HALF * acceleration * timeInSeconds * timeInSeconds + initialVelocity * timeInSeconds;
         }
 
         /**
@@ -390,7 +422,7 @@ public final class PhysicsCalc {
          */
         public static double displacementOfVelocities(
             double initialVelocity, double finalVelocity, long timeInSeconds) {
-            return 0.5 * (finalVelocity + initialVelocity) * timeInSeconds;
+            return MathCalc.ONE_HALF * (finalVelocity + initialVelocity) * timeInSeconds;
         }
 
         /**
@@ -404,7 +436,7 @@ public final class PhysicsCalc {
          * @return s = (1 / 2) * g * t². The units are meters
          */
         public static double freeFallDistance(long fallTimeInSec) {
-            return 0.5 * GRAVITATIONAL_ACCELERATION_ON_EARTH * fallTimeInSec * fallTimeInSec;
+            return MathCalc.ONE_HALF * GRAVITATIONAL_ACCELERATION_ON_EARTH * fallTimeInSec * fallTimeInSec;
         }
 
         /**
@@ -446,7 +478,7 @@ public final class PhysicsCalc {
         }
 
         /**
-         * @return α = sin^(-1)[(v_w / v_a) * sin(ω - δ)]. The units are radians
+         * @return α = sin⁻¹[(v_w / v_a) * sin(ω - δ)]. The units are radians
          */
         public static double windCorrectionAngle(
             double trueAirspeed, double windSpeed, double course, double windDirection) {
@@ -947,6 +979,23 @@ public final class PhysicsCalc {
         public static double force(double massInKg, double acceleration) {
             return massInKg * acceleration;
         }
+
+        /**
+         * where:
+         * <ul>
+         *     <li>F — Gravitational force, measured in newtons (N) (our force converter can convert it
+         *     to other units). It is always positive, which means that two objects of a certain mass always
+         *     attract (and never repel) each other;</li>
+         *     <li>M and m — Masses of two objects in question, in kilograms (kg);</li>
+         *     <li>R — Distance between the centers of these two objects, in meters (m);</li>
+         *     <li>G — Gravitational constant. It is equal to 6.674×10⁻¹¹ N·m²/kg².</li>
+         * </ul>
+         *
+         * @return F = GMm/R². The units are newtons
+         */
+        public static double gravitationalForce(double massKg1, double massKg2, double distanceMeters) {
+            return (GRAVITATIONAL_CONSTANT * massKg1 * massKg2) / (distanceMeters * distanceMeters);
+        }
     }
 
     public static final class Electromagnetism {
@@ -1196,16 +1245,12 @@ public final class PhysicsCalc {
         }
 
         /**
-         * where:
-         * <ul>
-         *     <li>q — The charge of the particle;</li>
-         *     <li>B — The intensity of the magnetic field.</li>
-         * </ul>
-         *
-         * @return Fm = q × B × v
+         * @param velocity in m/s
+         * @return F = qvBsin(α). The units are newtons
          */
-        public static double lorentzForce() {
-            throw new UnsupportedOperationException();
+        public static double lorentzForce(
+            double magneticFieldTesla, double chargeCoulombs, double velocity, double angleRad) {
+            return chargeCoulombs * velocity * magneticFieldTesla * Trigonometry.sin(angleRad);
         }
 
         /**
@@ -1851,7 +1896,6 @@ public final class PhysicsCalc {
          *     <li>Percentage = 1−e^(−T/τ)</li>
          *     <li>1−e^(-5τ/τ) = 1−e⁻⁵ ≈ 99.3%</li>
          *     <li>Percentage = 1−e−ᴹᵀᶜ</li>
-         *     <li></li>
          * </ul>
          * T = 5×τ = 5×R×C
          * where:
@@ -1991,6 +2035,104 @@ public final class PhysicsCalc {
          */
         public static double powerDissipationInVoltageRegulator(double inputVolts, double outputVolts, double current) {
             return (inputVolts - outputVolts) * current;
+        }
+    }
+
+    public static final class Acoustics {
+        private Acoustics() {
+        }
+
+        /**
+         * c = √((γRT)/M)
+         * where:
+         * <ul>
+         *     <li>c — Speed of sound in an ideal gas;</li>
+         *     <li>R — Molar gas constant, approximately 8.3145 J·mol⁻¹·K⁻¹;</li>
+         *     <li>γ — Adiabatic index, approximately 1.4 for air;</li>
+         *     <li>T — Absolute temperature (in kelvins);</li>
+         *     <li>M — The molar mass of the gas. For dry air, it is about 0.0289645 kg/mol.</li>
+         * </ul>
+         *
+         * @return c_air = 331.3 × √(1 + T/273.15). The units are m/s
+         */
+        public static double soundSpeed(double temperatureCelsius) {
+            return SOUND_SPEED_IN_DRY_AIR * squareRoot(1 + temperatureCelsius / SOUND_SPEED_IN_AIR_KELVIN_REF_POINT);
+        }
+
+        /**
+         * The formula for oceanography.
+         *
+         * @return 1404.3 + 4.7T - 0.04T². The units are m/s
+         */
+        public static double soundSpeedInWater(double temperature) {
+            return 1404.3 + 4.7 * temperature - 0.04 * temperature * temperature;
+        }
+    }
+
+    public static final class Optics {
+        private Optics() {
+        }
+
+        /**
+         * @return distance = speed of light × time. The units are m
+         */
+        public static double lightSpeed(double timeSeconds) {
+            return SPEED_OF_LIGHT * timeSeconds;
+        }
+
+        /**
+         * 1.22 - a constant derived from the physics of diffraction, specifically the first zero of
+         * the Bessel function for a circular aperture.
+         *
+         * @return θ = 1.22 × λ / d. The units are radians
+         */
+        public static double angularResolution(double wavelengthMeters, double apertureDiameterMeters) {
+            return 1.22 * wavelengthMeters / apertureDiameterMeters;
+        }
+
+        /**
+         * @return d = h × 1000 / Mil
+         */
+        public static double binocularsRange(double objectHeightMeters, double objectAngularHeightMRad) {
+            return objectHeightMeters * 1000 / objectAngularHeightMRad;
+        }
+    }
+
+    public static final class Thermodynamics {
+        private Thermodynamics() {
+        }
+
+        /**
+         * @param tempDiffKelvins ΔT is the temperature difference across the object.
+         * @param distanceMeters  Δx is the distance of heat transfer (the thickness of the object).
+         * @return q = −λ(ΔT/Δx). The units are W/m²
+         */
+        public static double thermalConductivity(
+            double materialThermalConductivity, double tempDiffKelvins, double distanceMeters) {
+            return -materialThermalConductivity * (tempDiffKelvins / distanceMeters);
+        }
+
+        /**
+         * where:
+         * KE is the average kinetic energy of molecules,
+         * v is the average velocity of molecules,
+         * U is the total thermal energy of a gas,
+         * f is the number of degrees of freedom,
+         * T is the temperature,
+         * M is the molar mass of the gas,
+         * n is the number of moles),
+         * k is the Boltzmann constant,
+         * Na is the Avogadro constant.
+         */
+        public static double[] thermalEnergy(double degreesOfFreedom, double molarMassKg,
+                                             double temperatureKelvins, double molesOfGas) {
+            // KE = f × k × T / 2 in J
+            final double avgKineticEnergy = degreesOfFreedom * BOLTZMANN_CONSTANT * temperatureKelvins / 2;
+            // v = √(2 × KE × Na / M) in m/s
+            final double avgSpeed = squareRoot(2 * avgKineticEnergy * AVOGADRO_NUMBER / molarMassKg);
+            // U = n × Na × KE in J
+            final double totalThermalEnergy = molesOfGas * AVOGADRO_NUMBER * avgKineticEnergy;
+            return new double[]{avgKineticEnergy, avgSpeed, totalThermalEnergy};
         }
     }
 }

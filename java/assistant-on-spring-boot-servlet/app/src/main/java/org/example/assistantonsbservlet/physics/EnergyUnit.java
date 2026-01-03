@@ -7,11 +7,14 @@ public enum EnergyUnit {
     JOULE, // J
     KILOJOULE, // kJ
     MEGAJOULE, // MJ
+    MICROELECTRON_VOLT, // μeV
+    MILLIELECTRON_VOLT, // meV
+    ELECTRON_VOLT, // eV
+    KILOELECTRON_VOLT, // keV
     WATT_HOUR, // Wh
     KILOWATT_HOUR, // kWh
     FOOT_POUND, // ft-lb
     KILOCALORIE, // kcal
-    ELECTRONVOLT, // eV
     TON_OF_TNT; // t TNT
 
     public static final double ONE_JOULE_IN_NANOJOULES = 1e+9;
