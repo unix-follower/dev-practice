@@ -2294,7 +2294,7 @@ class PhysicsCalcTest {
         void testThermalEnergy() {
             // given
             final byte degreesOfFreedom = PhysicsCalc.MONOATOMIC_GAS_DEGREES_OF_FREEDOM;
-            final double molarMass = MassUnit.kgToGrams(10);
+            final double molarMass = MassUnit.gramsToKg(10);
             final byte temperature = 20;
             final byte molesOfGas = 4;
             // when
