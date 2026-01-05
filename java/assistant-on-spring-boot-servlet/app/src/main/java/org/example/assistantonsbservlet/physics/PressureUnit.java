@@ -2,8 +2,9 @@ package org.example.assistantonsbservlet.physics;
 
 public enum PressureUnit {
     PASCAL, // Pa
+    MILLIBAR, // mb
     BAR, // bar
-    POUND_SQUARE_INCH, // psi
+    POUNDS_PER_SQUARE_INCH, // psi
     TECHNICAL_ATMOSPHERE, // at
     STANDARD_ATMOSPHERE, // atm
     TORR, // Torr
@@ -15,7 +16,7 @@ public enum PressureUnit {
     MILLIMETER_OF_MERCURY; // mmHg
 
     public static double hpaToPa(double hectopascals) {
-        return hectopascals / 100;
+        return hectopascals * 100;
     }
 
     public static double kpaToPa(double kilopascals) {
