@@ -15,6 +15,7 @@ public enum PhysicsTimeUnit {
     MINUTES_PER_SECONDS, // min/sec
     HOURS_PER_MINUTES, // hrs/min
     HOURS_PER_MINUTES_PER_SECONDS, // hrs/min/sec
+    DAYS_PER_HOURS, // days/hrs
     MILLION_YEARS, // myrs
     BILLION_YEARS, // byrs
     AGES_OF_UNIVERSE // Univ.
