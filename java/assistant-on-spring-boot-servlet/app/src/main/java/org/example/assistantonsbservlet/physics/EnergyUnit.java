@@ -14,6 +14,7 @@ public enum EnergyUnit {
     WATT_HOUR, // Wh
     KILOWATT_HOUR, // kWh
     FOOT_POUND, // ft-lb
+    CALORIE, // cal
     KILOCALORIE, // kcal
     TON_OF_TNT; // t TNT
 

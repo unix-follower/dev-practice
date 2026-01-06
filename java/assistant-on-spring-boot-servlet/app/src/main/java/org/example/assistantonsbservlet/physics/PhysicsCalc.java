@@ -13,6 +13,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.DoubleUnaryOperator;
 
+import static org.example.assistantonsbservlet.math.MathCalc.Algebra.ln;
+import static org.example.assistantonsbservlet.math.MathCalc.Algebra.log;
 import static org.example.assistantonsbservlet.math.MathCalc.Algebra.squareRoot;
 import static org.example.assistantonsbservlet.math.MathCalc.Arithmetic.reciprocal;
 import static org.example.assistantonsbservlet.math.MathCalc.Geometry.crossSectionalAreaOfCircularWire;
@@ -738,14 +740,14 @@ public final class PhysicsCalc {
          * @return pSNR = 10×log(signal/noise). The units are dB(s)
          */
         public static double powerSNR(double signalWatts, double noiseWatts) {
-            return 10 * Algebra.log(signalWatts / noiseWatts);
+            return 10 * log(signalWatts / noiseWatts);
         }
 
         /**
          * @return vSNR = 20×log(signal/noise). The units are dB(s)
          */
         public static double voltageSNR(double signalVolts, double noiseVolts) {
-            return 20 * Algebra.log(signalVolts / noiseVolts);
+            return 20 * log(signalVolts / noiseVolts);
         }
 
         /**
@@ -1704,8 +1706,8 @@ public final class PhysicsCalc {
         public static double[] resistorNoise(double resistanceOhms, double temperatureKelvins, double bandwidthHz) {
             final double resistorNoise = squareRoot(
                 4 * resistanceOhms * BOLTZMANN_CONSTANT * temperatureKelvins * bandwidthHz);
-            final double noiseLevelLu = 20 * Algebra.log(resistorNoise / REF_VOLTAGE_FOR_0_DBU);
-            final double noiseLevelLv = 20 * Algebra.log(resistorNoise);
+            final double noiseLevelLu = 20 * log(resistorNoise / REF_VOLTAGE_FOR_0_DBU);
+            final double noiseLevelLv = 20 * log(resistorNoise);
             return new double[]{resistorNoise, noiseLevelLu, noiseLevelLv};
         }
 
@@ -2070,6 +2072,8 @@ public final class PhysicsCalc {
     }
 
     public static final class Optics {
+        public static final byte TELESCOPE_STD_FOV = 52; // in degrees
+
         private Optics() {
         }
 
@@ -2095,6 +2099,103 @@ public final class PhysicsCalc {
          */
         public static double binocularsRange(double objectHeightMeters, double objectAngularHeightMRad) {
             return objectHeightMeters * 1000 / objectAngularHeightMRad;
+        }
+
+        /**
+         * M = fₒ/fₑ
+         *
+         * @param objectiveFocalPoint the focal length of the telescope (fₒ)
+         * @return eyepiece focal length (fₑ)
+         */
+        public static double telescopeEyepieceFocalLength(double objectiveFocalPoint, double magnification) {
+            return objectiveFocalPoint / magnification;
+        }
+
+        /**
+         * Most eyepieces come with an apparent field of view between 30° and 110°.
+         * where:
+         * fₜ - the focal length of the telescope.
+         * fₑ - the eyepiece.
+         * m - magnification
+         *
+         * @return fov꜀ = fovₐ/(fₜ/fₑ) = fovₐ/m. The units are degrees
+         */
+        public static double telescopeFOV(double apparentFOVDeg, double magnification) {
+            final double fovDeg = apparentFOVDeg / magnification;
+            return AngleUnit.degToArcseconds(fovDeg);
+        }
+
+        /**
+         * @param fov field of view in arcsec
+         * @return The units are deg²
+         */
+        public static double telescopeAreaFOV(double fov) {
+            return 2 * Math.PI * (1 - Trigonometry.cos(fov / 2));
+        }
+
+        /**
+         * fᵣ = fₒ / Dₒ
+         *
+         * @param objectiveDiameter in mm
+         * @return telescope focal length. The units are mm
+         */
+        public static double telescopeObjectiveFocalPoint(double objectiveDiameter, double fRatio) {
+            return fRatio * objectiveDiameter;
+        }
+
+        /**
+         * @param telescopeFocalLength in mm
+         * @param eyepieceFocalLength  in mm
+         * @return M = fₒ/fₑ
+         */
+        public static double telescopeMagnification(double telescopeFocalLength, double eyepieceFocalLength) {
+            return telescopeFocalLength / eyepieceFocalLength;
+        }
+
+        /**
+         * @param objectiveDiameter in mm
+         * @return Mₘᵢₙ = Dₒ / 7
+         */
+        public static double telescopeMinMagnification(double objectiveDiameter) {
+            return objectiveDiameter / 7;
+        }
+
+        /**
+         * @param objectiveDiameter in mm
+         * @return Pᵣ = 115.8" / Dₒ. The units are arcsec
+         */
+        public static double telescopeResolvingPower(double objectiveDiameter) {
+            return 115.8 / objectiveDiameter;
+        }
+
+        /**
+         * @param objectiveDiameter in mm
+         * @return Lₘ = 2 + 5×log(Dₒ)
+         */
+        public static double telescopeStarMagnitudeLimit(double objectiveDiameter) {
+            return 2 + 5 * log(objectiveDiameter);
+        }
+
+        /**
+         * @return FOVₛ = FOVₑ / M
+         */
+        public static double telescopeScopeFOV(double magnification, double eyepieceFOV) {
+            return eyepieceFOV / magnification;
+        }
+
+        /**
+         * @param objectiveDiameter in mm
+         * @return Dₑₚ = Dₒ / M
+         */
+        public static double telescopeExitPupilDiameter(double objectiveDiameter, double magnification) {
+            return objectiveDiameter / magnification;
+        }
+
+        /**
+         * @return SB = 2 × Dₑₚ²
+         */
+        public static double telescopeSurfaceBrightness(double exitPupilDiameter) {
+            return 2 * (exitPupilDiameter * exitPupilDiameter);
         }
     }
 
@@ -2133,6 +2234,193 @@ public final class PhysicsCalc {
             // U = n × Na × KE in J
             final double totalThermalEnergy = molesOfGas * AVOGADRO_NUMBER * avgKineticEnergy;
             return new double[]{avgKineticEnergy, avgSpeed, totalThermalEnergy};
+        }
+
+        /**
+         * where:
+         * T₁ – Initial temperature, and T₂ is the final temperature;
+         * ΔL – Change in object's length;
+         * L₁ – Initial length;
+         * a – Linear expansion coefficient.
+         *
+         * @param linearExpansionCoeff in Kelvins
+         * @param initialLength        in meters
+         * @param initialTemperature   in Kelvins
+         * @param finalTemperature     in Kelvins
+         * @return ΔL = aL₁(T₂ - T₁). The units are m
+         */
+        public static double thermalLinearExpansionChangeInLength(
+            double linearExpansionCoeff, double initialLength, double initialTemperature, double finalTemperature) {
+            return linearExpansionCoeff * initialLength * (finalTemperature - initialTemperature);
+        }
+
+        public static double thermalLinearExpansionFinalLength(double initialLengthMeters, double changeInLength) {
+            return initialLengthMeters + changeInLength;
+        }
+
+        /**
+         * where:
+         * T₁ – Initial temperature, and T₂ is the final temperature;
+         * ΔV – Change in object's volume;
+         * V₁ – Initial volume; and
+         * b – Volumetric expansion coefficient.
+         *
+         * @param initialTemperature in Kelvins
+         * @param finalTemperature   in Kelvins
+         * @return ΔV = bV₁(T₂ − T₁). The units are m³
+         */
+        public static double thermalVolumetricExpansionChangeInVolume(
+            double volumetricExpansionCoeff, double initialVolume, double initialTemperature, double finalTemperature) {
+            return volumetricExpansionCoeff * initialVolume * (finalTemperature - initialTemperature);
+        }
+
+        public static double thermalVolumetricExpansionFinalVolume(double initialVolume, double changeInVolume) {
+            return initialVolume + changeInVolume;
+        }
+
+        /**
+         * R = (T₂−T₁)/Q₁−₂
+         * <p>
+         * where:
+         * k — Thermal conductivity of the material W/m⋅K;
+         * t — Length of the plate in m;
+         * A — Cross-sectional area, A = l×w in m².
+         *
+         * @return R_plate = t/(kA). The units are K/W
+         */
+        public static double thermalResistanceOfPlate(
+            double thermalConductivity, double thicknessMeters, double crossSectionalAreaMeters) {
+            return thicknessMeters / (thermalConductivity * crossSectionalAreaMeters);
+        }
+
+        /**
+         * @param thermalConductivity in W/(m⋅K)
+         * @return R_cylinder = ln(r₂/r₁)/(2πLk). The units are K/W
+         */
+        public static double thermalResistanceOfHollowCylinder(
+            double thermalConductivity, double lengthMeters, double innerRadiusMeters, double outerRadiusMeters) {
+            return ln(outerRadiusMeters / innerRadiusMeters)
+                / (Trigonometry.PI2 * lengthMeters * thermalConductivity);
+        }
+
+        /**
+         * @param thermalConductivity in W/(m⋅K)
+         * @return R_sphere = (r₂-r₁)/(4πr₁r₂k). The units are K/W
+         */
+        public static double thermalResistanceOfHollowSphere(
+            double thermalConductivity, double innerRadiusMeters, double outerRadiusMeters) {
+            return (outerRadiusMeters - innerRadiusMeters)
+                / (Trigonometry.PI4 * innerRadiusMeters * outerRadiusMeters * thermalConductivity);
+        }
+
+        /**
+         * @param heatTransferCoeff in W/(m²⋅K)
+         * @return r_cr-cylinder = (2k)/h
+         */
+        public static double thermalResistanceOfHollowCylinderCriticalRadius(
+            double thermalConductivity, double heatTransferCoeff) {
+            return (2 * thermalConductivity) / heatTransferCoeff;
+        }
+
+        /**
+         * @param heatTransferCoeff in W/(m²⋅K)
+         * @return r_cr-sphere = k/h
+         */
+        public static double thermalResistanceOfHollowSphereCriticalRadius(
+            double thermalConductivity, double heatTransferCoeff) {
+            return thermalConductivity / heatTransferCoeff;
+        }
+
+        /**
+         * @return c = Q/(m×ΔT). The units are J/(kg⋅K)
+         */
+        public static double specificHeat(double energyJoules, double massKg, double changeInTempCelsius) {
+            return energyJoules / (massKg * changeInTempCelsius);
+        }
+
+        /**
+         * where:
+         * c is the specific heat capacity;
+         * m is the mass;
+         * T_f is the final temperature;
+         * Tᵢ is the initial temperature.
+         *
+         * @return Qₜ = cm(T_f−Tᵢ). The units are J
+         */
+        public static double waterHeating(
+            double massOrVolume, double initialTempCelsius, double finalTempCelsius, double specificHeat) {
+            return specificHeat * massOrVolume * (finalTempCelsius - initialTempCelsius);
+        }
+
+        /**
+         * @param efficiency in the percent scale 0-1
+         * @return time = Q_total/(efficiency×power). The units are sec
+         */
+        public static double waterHeatingTime(double totalEnergyJoules, double heatingPowerWatts, double efficiency) {
+            return totalEnergyJoules / (efficiency * heatingPowerWatts);
+        }
+    }
+
+    public static final class Atmospheric {
+        public static final double DRY_AIR_GAS_CONSTANT = 287.052874; // J/(kg·K)
+        public static final double WATER_VAPOR_GAS_CONSTANT = 461.495; // J/(kg·K)
+
+        private Atmospheric() {
+        }
+
+        /**
+         * @return ρ = P/(R×T). The units are kg/m³
+         */
+        public static double dryAirDensity(double airPressurePascals, double airTempKelvins) {
+            return airPressurePascals / (DRY_AIR_GAS_CONSTANT * airTempKelvins);
+        }
+
+        /**
+         * <ul>
+         *     <li>ρ = volume/mass of air</li>
+         *     <li>p_total = p_N2 + p_O2 + p_Ar + p_H2O + ...</li>
+         * </ul>
+         * where:
+         * p_d is the pressure of dry air in hPa or mb;
+         * pᵥ is the water vapor pressure in hPa or mb;
+         * T is the air temperature in Kelvins;
+         * R_d is the specific gas constant for dry air equal to 287.058 J/(kg·K);
+         * Rᵥ is the specific gas constant for water vapor equal to 461.495 J/(kg·K).
+         *
+         * @return ρ = (p_d/(R_dT)) + (pᵥ/(RᵥT)). The units are kg/m³
+         */
+        public static double moistAirDensity(double airPressurePascals, double airTempKelvins,
+                                             double relativeHumidityPercent) {
+            final double airTempCelsius = TemperatureUnit.kelvinToCelsius(airTempKelvins);
+            final double vaporPressureHPa = waterVaporPressure(airTempCelsius, relativeHumidityPercent);
+            final double vaporPressurePa = PressureUnit.hpaToPa(vaporPressureHPa);
+            final double dryAirPressurePa = airPressurePascals - vaporPressurePa;
+            return (dryAirPressurePa / (DRY_AIR_GAS_CONSTANT * airTempKelvins))
+                + (vaporPressurePa / (WATER_VAPOR_GAS_CONSTANT * airTempKelvins));
+        }
+
+        /**
+         * α = ln(RH/100) + ((17.62T)/(243.12+T))
+         *
+         * @return DP = (243.12α)/(17.62−α). The units are Celsius
+         */
+        public static double moistAirDensityDewPoint(double airTemperatureCelsius, double relativeHumidityPercent) {
+            final double waterVaporCoeff = 17.62;
+            final double waterVaporCoeff2 = 243.12;
+            final double alpha = Algebra.ln(relativeHumidityPercent / 100)
+                + ((waterVaporCoeff * airTemperatureCelsius) / (waterVaporCoeff2 + airTemperatureCelsius));
+            return (waterVaporCoeff2 * alpha) / (waterVaporCoeff - alpha);
+        }
+
+        /**
+         * p₁ = 6.1078⋅10^(7.5T)/(T+237.3)
+         *
+         * @return pᵥ = p₁⋅RH. The units are hPa
+         */
+        public static double waterVaporPressure(double airTemperatureCelsius, double relativeHumidityPercent) {
+            final double saturationVaporPressure = 6.1078 * Math.pow(10,
+                (7.5 * airTemperatureCelsius) / (airTemperatureCelsius + 237.3));
+            return saturationVaporPressure * (relativeHumidityPercent / 100);
         }
     }
 }

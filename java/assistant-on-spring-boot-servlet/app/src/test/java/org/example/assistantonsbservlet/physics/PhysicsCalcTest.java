@@ -2273,6 +2273,126 @@ class PhysicsCalcTest {
             // then
             assertEquals(6000, distanceToObject, DELTA1);
         }
+
+        @Test
+        void testTelescopeEyepieceFocalLength() {
+            // given
+            final short objectiveFocalPoint = 675;
+            final byte magnification = 27;
+            // when
+            final double eyepieceFocalLength = PhysicsCalc.Optics
+                .telescopeEyepieceFocalLength(objectiveFocalPoint, magnification);
+            // then
+            assertEquals(25, eyepieceFocalLength, DELTA1);
+        }
+
+        @Test
+        void testTelescopeObjectiveFocalPoint() {
+            // given
+            final short objectiveDiameter = 135;
+            final byte fRatio = 5;
+            // when
+            final double telescopeFocalLength = PhysicsCalc.Optics
+                .telescopeObjectiveFocalPoint(objectiveDiameter, fRatio);
+            // then
+            assertEquals(675, telescopeFocalLength, DELTA1);
+        }
+
+        @Test
+        void testTelescopeMagnification() {
+            // given
+            final byte eyepieceFocalLength = 4;
+            final short telescopeFocalLength = 400;
+            // when
+            final double magnification = PhysicsCalc.Optics
+                .telescopeMagnification(telescopeFocalLength, eyepieceFocalLength);
+            // then
+            assertEquals(100, magnification, DELTA1);
+        }
+
+        @Test
+        void testTelescopeFOV() {
+            // given
+            final byte apparentFOV = PhysicsCalc.Optics.TELESCOPE_STD_FOV;
+            final byte magnification = 100;
+            // when
+            final double fov = PhysicsCalc.Optics.telescopeFOV(apparentFOV, magnification);
+            // then
+            assertEquals(1872, fov, DELTA1);
+        }
+
+        @Test
+        void testTelescopeAreaFOV() {
+            // given
+            final short fov = 1872;
+            // when
+            final double areaFOV = PhysicsCalc.Optics.telescopeAreaFOV(fov);
+            // then
+            assertEquals(0.21237, areaFOV, DELTA1);
+        }
+
+        @Test
+        void testTelescopeScopeFOV() {
+            // given
+            final short magnification = 27;
+            final byte eyepieceFOV = PhysicsCalc.Optics.TELESCOPE_STD_FOV;
+            // when
+            final double scopeFOV = PhysicsCalc.Optics.telescopeScopeFOV(magnification, eyepieceFOV);
+            // then
+            assertEquals(1.93, scopeFOV, DELTA2);
+        }
+
+        @Test
+        void testTelescopeMinMagnification() {
+            // given
+            final short objectiveDiameter = 135; // mm
+            // when
+            final double minMagnification = PhysicsCalc.Optics.telescopeMinMagnification(objectiveDiameter);
+            // then
+            assertEquals(19.286, minMagnification, DELTA3);
+        }
+
+        @Test
+        void testTelescopeResolvingPower() {
+            // given
+            final short objectiveDiameter = 135; // mm
+            // when
+            final double resolvingPower = PhysicsCalc.Optics.telescopeResolvingPower(objectiveDiameter);
+            // then
+            assertEquals(0.86, resolvingPower, DELTA2);
+        }
+
+        @Test
+        void testTelescopeExitPupilDiameter() {
+            // given
+            final short objectiveDiameter = 135; // mm
+            final byte magnification = 27;
+            // when
+            final double exitPupilDiameter = PhysicsCalc.Optics
+                .telescopeExitPupilDiameter(objectiveDiameter, magnification);
+            // then
+            assertEquals(5, exitPupilDiameter, DELTA1);
+        }
+
+        @Test
+        void testTelescopeSurfaceBrightness() {
+            // given
+            final byte exitPupilDiameter = 5;
+            // when
+            final double surfaceBrightness = PhysicsCalc.Optics.telescopeSurfaceBrightness(exitPupilDiameter);
+            // then
+            assertEquals(50, surfaceBrightness, DELTA1);
+        }
+
+        @Test
+        void testTelescopeStarMagnitudeLimit() {
+            // given
+            final short objectiveDiameter = 135; // mm
+            // when
+            final double magnitudeLimit = PhysicsCalc.Optics.telescopeStarMagnitudeLimit(objectiveDiameter);
+            // then
+            assertEquals(12.7, magnitudeLimit, DELTA1);
+        }
     }
 
     @Nested
@@ -2302,6 +2422,211 @@ class PhysicsCalcTest {
                 .thermalEnergy(degreesOfFreedom, molarMass, temperature, molesOfGas);
             // then
             assertArrayEquals(new double[]{4.142e-22, 223.35, 997.73}, energyData, DELTA2);
+        }
+
+        @Test
+        void testThermalLinearExpansionChangeInLength() {
+            // given
+            final double copperLinearExpansionCoeff = 16.6e-6;
+            final byte initialLength = 12;
+            final byte initialTemperature = 1;
+            final byte finalTemperature = 60;
+            // when
+            final double changeInLength = PhysicsCalc.Thermodynamics.thermalLinearExpansionChangeInLength(
+                copperLinearExpansionCoeff, initialLength, initialTemperature, finalTemperature);
+            // then
+            assertEquals(0.0117528, changeInLength, DELTA7);
+        }
+
+        @Test
+        void testThermalLinearExpansionFinalLength() {
+            // given
+            final byte initialLength = 12;
+            final double changeInLength = 0.0117528;
+            // when
+            final double finalLength = PhysicsCalc.Thermodynamics
+                .thermalLinearExpansionFinalLength(initialLength, changeInLength);
+            // then
+            assertEquals(12.0117528, finalLength, DELTA7);
+        }
+
+        @Test
+        void testThermalVolumetricExpansionChangeInLength() {
+            // given
+            final double copperVolumetricExpansionCoeff = 3 * 16.6e-6;
+            final byte initialVolume = 10;
+            final byte initialTemperature = 1;
+            final byte finalTemperature = 60;
+            // when
+            final double changeInVolume = PhysicsCalc.Thermodynamics.thermalVolumetricExpansionChangeInVolume(
+                copperVolumetricExpansionCoeff, initialVolume, initialTemperature, finalTemperature);
+            // then
+            assertEquals(0.029382, changeInVolume, DELTA6);
+        }
+
+        @Test
+        void testThermalVolumetricExpansionFinalLength() {
+            // given
+            final byte initialVolume = 10;
+            final double changeInVolume = 0.029382;
+            // when
+            final double finalVolume = PhysicsCalc.Thermodynamics
+                .thermalVolumetricExpansionFinalVolume(initialVolume, changeInVolume);
+            // then
+            assertEquals(10.02938, finalVolume, DELTA5);
+        }
+
+        @Test
+        void testThermalResistanceOfPlate() {
+            // given
+            final short copperThermalConductivity = 401;
+            final double thickness = 0.05;
+            final double crossSectionalArea = 0.0025;
+            // when
+            final double finalVolume = PhysicsCalc.Thermodynamics
+                .thermalResistanceOfPlate(copperThermalConductivity, thickness, crossSectionalArea);
+            // then
+            assertEquals(0.04988, finalVolume, DELTA5);
+        }
+
+        @Test
+        void testThermalResistanceOfHollowCylinder() {
+            // given
+            final short copperThermalConductivity = 401;
+            final double length = MathCalc.ONE_HALF;
+            final double innerRadius = 0.1;
+            final double outerRadius = 0.2;
+            // when
+            final double resistance = PhysicsCalc.Thermodynamics
+                .thermalResistanceOfHollowCylinder(copperThermalConductivity, length, innerRadius, outerRadius);
+            // then
+            assertEquals(0.0005502, resistance, DELTA7);
+        }
+
+        @Test
+        void testThermalResistanceOfHollowSphere() {
+            // given
+            final short copperThermalConductivity = 401;
+            final double innerRadius = 0.1;
+            final double outerRadius = 0.2;
+            // when
+            final double resistance = PhysicsCalc.Thermodynamics
+                .thermalResistanceOfHollowSphere(copperThermalConductivity, innerRadius, outerRadius);
+            // then
+            assertEquals(0.0009922, resistance, DELTA7);
+        }
+
+        @Test
+        void testThermalResistanceOfHollowCylinderCriticalRadius() {
+            // given
+            final short copperThermalConductivity = 401;
+            final double heatTransferCoeff = 0.6;
+            // when
+            final double criticalRadius = PhysicsCalc.Thermodynamics
+                .thermalResistanceOfHollowCylinderCriticalRadius(copperThermalConductivity, heatTransferCoeff);
+            // then
+            assertEquals(1336.6, criticalRadius, DELTA1);
+        }
+
+        @Test
+        void testThermalResistanceOfHollowSphereCriticalRadius() {
+            // given
+            final short copperThermalConductivity = 401;
+            final double heatTransferCoeff = 0.6;
+            // when
+            final double criticalRadius = PhysicsCalc.Thermodynamics
+                .thermalResistanceOfHollowSphereCriticalRadius(copperThermalConductivity, heatTransferCoeff);
+            // then
+            assertEquals(668.3, criticalRadius, DELTA1);
+        }
+
+        @Test
+        void testSpecificHeat() {
+            // given
+            final short energy = 20_500;
+            final byte iceBlockMassKg = 1;
+            final byte changeInTemperature = 10;
+            // when
+            final double totalEnergy = PhysicsCalc.Thermodynamics
+                .specificHeat(energy, iceBlockMassKg, changeInTemperature);
+            // then
+            assertEquals(2050, totalEnergy, DELTA1);
+        }
+
+        @Test
+        void testWaterHeating() {
+            // given
+            final byte iceBlockMassKg = 1;
+            final short initialTempCelsius = -10;
+            final byte finalTempCelsius = 0;
+            final short specificHeat = 2108;
+            // when
+            final double totalEnergy = PhysicsCalc.Thermodynamics
+                .waterHeating(iceBlockMassKg, initialTempCelsius, finalTempCelsius, specificHeat);
+            // then
+            assertEquals(21_080, totalEnergy, DELTA1);
+        }
+
+        @Test
+        void testWaterHeatingTime() {
+            // given
+            final int totalEnergy = 757_320;
+            final short heatingPower = 1800;
+            final double efficiency = 0.9; // 90%
+            // when
+            final double timeSeconds = PhysicsCalc.Thermodynamics
+                .waterHeatingTime(totalEnergy, heatingPower, efficiency);
+            // then
+            assertEquals(467.48, timeSeconds, DELTA2);
+        }
+    }
+
+    @Nested
+    class Atmospheric {
+        @Test
+        void testDryAirDensity() {
+            // given
+            final double airPressure = PressureUnit.hpaToPa(1013.25);
+            final double airTemperature = TemperatureUnit.celsiusToKelvin(15);
+            // when
+            final double airDensity = PhysicsCalc.Atmospheric.dryAirDensity(airPressure, airTemperature);
+            // then
+            assertEquals(1.225, airDensity, DELTA3);
+        }
+
+        @Test
+        void testMoistAirDensity() {
+            // given
+            final double airPressure = PressureUnit.hpaToPa(1013.25);
+            final double airTemperature = TemperatureUnit.celsiusToKelvin(15);
+            final byte relativeHumidity = 70;
+            // when
+            final double airDensity = PhysicsCalc.Atmospheric
+                .moistAirDensity(airPressure, airTemperature, relativeHumidity);
+            // then
+            assertEquals(1.21955, airDensity, DELTA5);
+        }
+
+        @Test
+        void testMoistAirDensityDewPoint() {
+            // given
+            final double airTemperature = 15;
+            final byte relativeHumidity = 70;
+            // when
+            final double dewPoint = PhysicsCalc.Atmospheric.moistAirDensityDewPoint(airTemperature, relativeHumidity);
+            // then
+            assertEquals(9.57, dewPoint, DELTA2);
+        }
+
+        @Test
+        void testWaterVaporPressure() {
+            // given
+            final double airTemperature = 15;
+            final byte relativeHumidity = 70;
+            // when
+            final double pressure = PhysicsCalc.Atmospheric.waterVaporPressure(airTemperature, relativeHumidity);
+            // then
+            assertEquals(11.923, pressure, DELTA1);
         }
     }
 }
