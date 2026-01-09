@@ -16,7 +16,8 @@ public enum EnergyUnit {
     FOOT_POUND, // ft-lb
     CALORIE, // cal
     KILOCALORIE, // kcal
-    TON_OF_TNT; // t TNT
+    TON_OF_TNT, // t TNT
+    BETHE_FOE; // bethe/foe (10⁴⁴ of joules)
 
     public static final double ONE_JOULE_IN_NANOJOULES = 1e+9;
 

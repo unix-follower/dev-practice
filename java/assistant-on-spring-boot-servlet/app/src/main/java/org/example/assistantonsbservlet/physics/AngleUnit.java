@@ -1,5 +1,7 @@
 package org.example.assistantonsbservlet.physics;
 
+import org.example.assistantonsbservlet.math.MathCalc;
+
 public enum AngleUnit {
     DEGREE, // deg
     RADIAN, // rad
@@ -20,5 +22,13 @@ public enum AngleUnit {
 
     public static double degToArcminutes(double degrees) {
         return degrees * 60;
+    }
+
+    public static double turnsToRadians(double turns) {
+        return MathCalc.Trigonometry.PI2 * turns;
+    }
+
+    public static double turnsToDegrees(double turns) {
+        return turns * 360;
     }
 }

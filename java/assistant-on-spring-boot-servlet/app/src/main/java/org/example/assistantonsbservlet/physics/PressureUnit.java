@@ -1,6 +1,8 @@
 package org.example.assistantonsbservlet.physics;
 
 public enum PressureUnit {
+    MICROPASCAL, // µPa
+    MILLIPASCAL, // mPa
     PASCAL, // Pa
     MILLIBAR, // mb
     BAR, // bar
@@ -29,5 +31,9 @@ public enum PressureUnit {
 
     public static double gpaToPa(double gigapascals) {
         return gigapascals / 1_000_000_000;
+    }
+
+    public static double pascalsToInchesOfWater(double pascals) {
+        return pascals * 0.00401463;
     }
 }

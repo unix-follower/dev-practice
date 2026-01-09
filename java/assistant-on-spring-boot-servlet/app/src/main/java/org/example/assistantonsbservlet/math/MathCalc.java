@@ -3349,6 +3349,7 @@ public final class MathCalc {
         public static final double PI11_OVER_6 = 11 * Math.PI / 6;
         public static final double PI2 = 2 * Math.PI;
         public static final double PI4 = 4 * Math.PI;
+        public static final double PI8 = 8 * Math.PI;
 
         private Trigonometry() {
         }

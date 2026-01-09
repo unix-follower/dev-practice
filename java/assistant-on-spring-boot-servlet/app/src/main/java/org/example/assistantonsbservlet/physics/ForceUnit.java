@@ -6,7 +6,9 @@ public enum ForceUnit {
     MEGANEWTON, // MN
     GIGANEWTON, // GN
     TERANEWTON, // TN
-    POUND_FORCE; // lbf
+    POUND_FORCE, // lbf
+    KIP,
+    DYNE; // dyn
 
     public static final short ONE_KILONEWTONS_PER_COULOMB_IN_NC = 1000;
 

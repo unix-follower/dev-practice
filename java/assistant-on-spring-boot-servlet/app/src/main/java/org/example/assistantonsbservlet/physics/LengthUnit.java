@@ -38,4 +38,8 @@ public enum LengthUnit {
     public static double kilometersToMeters(double km) {
         return km * 1000;
     }
+
+    public static double squareMeterToSquareFeet(double sqMeters) {
+        return sqMeters * 10.7639;
+    }
 }
