@@ -11,4 +11,8 @@ public enum FrequencyUnit {
     public static double hzToKHz(double hertz) {
         return hertz / 1000;
     }
+
+    public static double hzToMHz(double hertz) {
+        return hertz / 1_000_000;
+    }
 }

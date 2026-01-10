@@ -24,13 +24,13 @@ import static org.example.assistantonsbservlet.physics.AccelerationUnit.GRAVITAT
 public final class PhysicsCalc {
     public static final double AVOGADRO_NUMBER = 6.02214076e23;
     /**
-     * ~3.00 * 10⁸ m/s. Also, 300 * 10^⁶ m/s
+     * ~3.00 * 10⁸ m/s. Also, 300 * 10⁶ m/s
      */
-    public static final double SPEED_OF_LIGHT_IN_M_PER_SEC = 2.99792458e8;
+    public static final int SPEED_OF_LIGHT = 299_792_458;
     public static final double ELECTRON_CHARGE_IN_COULOMBS = 1.6021766208e-19;
     public static final double BLINK_OF_AN_EYE_SEC = 0.350; // 350e-3
     /**
-     * (6.02214 * 10^23 electrons/mole) / (6.24151 * 10^18 electrons/coulomb) = 96485 coulombs/mole
+     * (6.02214 * 10²³ electrons/mole) / (6.24151 * 10¹⁸ electrons/coulomb) = 96485 coulombs/mole
      * {@link #AVOGADRO_NUMBER} {@link #ONE_COULOMB}
      */
     public static final double FARADAY_CONSTANT = 96_485;
@@ -45,13 +45,14 @@ public final class PhysicsCalc {
     public static final double REF_VOLTAGE_FOR_0_DBU = 0.77459667;
     public static final double VACUUM_PERMITTIVITY = 8.854187818814e-12; // ε₀≈8.8541×10⁻¹² F/m
     public static final double VACUUM_PERMEABILITY = Trigonometry.PI4 * 1e-7; // μ₀≈4π×10⁻⁷ H/m
-    public static final short NORMAL_ROOM_TEMP_SOUND_SPEED = 343; // at 20°C; m/s or 1130 ft/s
+    public static final short SOUND_SPEED = 343; // Normal room temperature at 20°C; m/s or 1130 ft/s
     public static final double SOUND_SPEED_IN_DRY_AIR = 331.3; // at 0°C; m/s
     public static final double SOUND_SPEED_IN_AIR_KELVIN_REF_POINT = 273.15; // at 0°C
     public static final int FPE_CONSTANT = 450_240; // foot-pounds of energy
     public static final double GRAVITATIONAL_CONSTANT = 6.6743e-11; // 6.6743 × 10⁻¹¹ m³ kg⁻¹ s⁻²
-    public static final int SPEED_OF_LIGHT = 29_9792_458; // m/s
     public static final byte MONOATOMIC_GAS_DEGREES_OF_FREEDOM = 3;
+    public static final double SUN_POTENTIAL_ENERGY_ERGS = 1.788e54;
+    public static final double REDUCED_PLANCK_CONSTANT = 1.0545718001e-34; // h/2π; 1.0545718001×10⁻³⁴ J·s
 
     private PhysicsCalc() {
     }
@@ -330,10 +331,11 @@ public final class PhysicsCalc {
         }
 
         /**
+         * @param velocity in m/s
          * @return p = mv. The units are kg*m/s
          */
-        public static double momentum(double mass, double velocity) {
-            return mass * velocity;
+        public static double momentum(double massKg, double velocity) {
+            return massKg * velocity;
         }
 
         /**
@@ -344,17 +346,25 @@ public final class PhysicsCalc {
         }
 
         /**
-         * @return ||p|| = m * √(vₓ² + vᵧ² + v_z²) ⇒ ||p|| = m * ||v||
+         * @return ||p|| = m * √(vₓ² + vᵧ² + v_z²) ⇒ ||p|| = m * ||v||. The units are m/s
          */
         public static double velocityMagnitude(double[] velocityVector) {
             return LinearAlgebra.vectorMagnitude(velocityVector);
         }
 
         /**
-         * @return ||p|| = m * ||v||
+         * <ul>
+         *     <li>p = [pₓ, pᵧ, p_z] = mv = m[vₓ, vᵧ, v_z]</li>
+         *     <li>pₓ = mvₓ</li>
+         *     <li>pᵧ = mvᵧ</li>
+         *     <li>p_z = mv_z</li>
+         *     <li>∥p∥ = √(pₓ²+pᵧ²+p_z²) = m√(vₓ²+vᵧ²+v_z²) ⟹ ∥p∥ = m∥v∥</li>
+         * </ul>
+         *
+         * @return ||p|| = m * ||v||. The units are kg*m/s
          */
-        public static double momentumMagnitude(double mass, double[] velocityVector) {
-            return mass * velocityMagnitude(velocityVector);
+        public static double momentumMagnitude(double massKg, double[] velocityVector) {
+            return massKg * velocityMagnitude(velocityVector);
         }
 
         /**
@@ -499,17 +509,44 @@ public final class PhysicsCalc {
         }
 
         /**
-         * @return J = Δp = p₂ - p₁
+         * @return J = Δp = p₂ − p₁ = m * V₂ - m * V₁ = m * ΔV. The units are N·s
          */
-        public static double impulse(double initialMomentum, double finalMomentum) {
-            return initialMomentum - finalMomentum;
+        public static double impulse(double massKg, double initialVelocity, double finalVelocity) {
+            return massKg * (finalVelocity - initialVelocity);
         }
 
         /**
-         * @return J = Δp = p₂ − p₁ = m * V₂ - m * V₁ = m * ΔV
+         * @param impulse in N·s
+         * @return J = F⋅t. The units are N
          */
-        public static double impulse(double mass, double initialVelocity, double finalVelocity) {
-            return mass * initialVelocity - mass * finalVelocity;
+        public static double forceFromImpulse(double impulse, double timeIntervalSeconds) {
+            return impulse / timeIntervalSeconds;
+        }
+
+        /**
+         * @param impulse in N·s
+         * @return J = F⋅t. The units are seconds
+         */
+        public static double timeIntervalOfImpulse(double impulse, double forceNewtons) {
+            return impulse / forceNewtons;
+        }
+
+        /**
+         * @param impulse       in N·s
+         * @param finalMomentum in N·s
+         * @return p₁ = p₂ - J. The units are N·s
+         */
+        public static double initialMomentumFromImpulse(double impulse, double finalMomentum) {
+            return finalMomentum - impulse;
+        }
+
+        /**
+         * @param impulse         in N·s
+         * @param initialMomentum in N·s
+         * @return p₂ = J + p₁. The units are N·s
+         */
+        public static double finalMomentumFromImpulse(double impulse, double initialMomentum) {
+            return impulse + initialMomentum;
         }
 
         /**
@@ -841,6 +878,71 @@ public final class PhysicsCalc {
             return eirpWithKnownTotalCableLoss(totalCableLoss, transmitterOutputPower, antennaGain, numberOfConnectors,
                 connectorLoss);
         }
+
+        /**
+         * where:
+         * v — Poisson's ratio (dimensionless);
+         * ε_trans — Transverse (lateral) strain - the relative change in the dimension
+         * perpendicular to the direction of force;
+         * ε_axial — Axial strain - the relative change in a dimension parallel to the direction of the force.
+         *
+         * @return v = ε_trans/ε_axial
+         */
+        public static double poissonsRatio(double transverseStrain, double axialStrain) {
+            return transverseStrain / axialStrain;
+        }
+
+        /**
+         * @param area Area over which the force acts in m²
+         * @return 𝜏 = F/A. The units are pascals
+         */
+        public static double shearStress(double forceNewtons, double area) {
+            return forceNewtons / area;
+        }
+
+        /**
+         * @return γ ≈ Δx/L
+         */
+        public static double shearStrain(double displacementMeters, double transverseLengthMeters) {
+            return displacementMeters / transverseLengthMeters;
+        }
+
+        /**
+         * @param area Area over which the force acts in m²
+         * @return G = (FL)/(AΔx). The units are pascals
+         */
+        public static double shearModulus(
+            double forceNewtons, double area, double displacementMeters, double transverseLengthMeters) {
+            return (forceNewtons * transverseLengthMeters) / (area * displacementMeters);
+        }
+
+        /**
+         * τ = Gγ
+         *
+         * @return G = τ/γ. The units are pascals
+         */
+        public static double shearModulusFromShearStressAndStrain(double shearStressPascals, double shearStrain) {
+            return shearStressPascals / shearStrain;
+        }
+
+        /**
+         * @return G = E / (2(1 + ν)). The units are pascals
+         */
+        public static double shearModulusFromYoungsModulus(double youngsModulus, double poissonsRatio) {
+            return youngsModulus / (2 * (1 + poissonsRatio));
+        }
+
+        /**
+         * where:
+         * E — Young's modulus, in gigapascals (GPa);
+         * G — Shear modulus, in GPa;
+         * v — Poisson's ratio.
+         *
+         * @return E = 2×G(1+v)
+         */
+        public static double youngsModulus() {
+            throw new UnsupportedOperationException();
+        }
     }
 
     public static final class FluidMechanics {
@@ -852,6 +954,13 @@ public final class PhysicsCalc {
          */
         public static double dynamicPressure(double forceNewtons, double areaSquareMeters) {
             return forceNewtons / areaSquareMeters;
+        }
+
+        /**
+         * @return CFM = (P_hp × efficiency * 6356) / ΔP. The units are cu ft/min
+         */
+        public static double fanMassAirflowInCFM(double powerOutputHp, double pressureInH2O, double efficiency) {
+            return (powerOutputHp * efficiency * 6356) / pressureInH2O;
         }
     }
 
@@ -1275,6 +1384,118 @@ public final class PhysicsCalc {
         public static double acWattage3PhaseL2N(double voltageVolts, double currentAmp, double powerFactor) {
             return 3 * acWattageSinglePhase(voltageVolts, currentAmp, powerFactor);
         }
+
+        /**
+         * @return E = (kQ)/r². The units are newton/coulomb
+         */
+        public static double electricField(double chargeCoulombs, double distanceMeters) {
+            return (COULOMB_CONSTANT * chargeCoulombs) / (distanceMeters * distanceMeters);
+        }
+
+        /**
+         * {@link #COULOMB_CONSTANT}
+         *
+         * @return 1/(4πε₀)
+         */
+        private static double permittivity(double relativePermittivity) {
+            return reciprocal(Trigonometry.PI4 * VACUUM_PERMITTIVITY * relativePermittivity);
+        }
+
+        /**
+         * @return E = (kQ)/r². The units are newton/coulomb
+         */
+        public static double electricField(
+            double chargeCoulombs, double distanceMeters, double relativePermittivity) {
+            return (permittivity(relativePermittivity) * chargeCoulombs) / (distanceMeters * distanceMeters);
+        }
+
+        /**
+         * @return V = k * q/r. The units are volts
+         */
+        public static double electricPotential(double chargeCoulombs, double distanceMeters) {
+            return COULOMB_CONSTANT * chargeCoulombs / distanceMeters;
+        }
+
+        public static double electricPotential(
+            double chargeCoulombs, double distanceMeters, double relativePermittivity) {
+            return permittivity(relativePermittivity) * chargeCoulombs / distanceMeters;
+        }
+
+        /**
+         * where:
+         * W_AB - two arbitrary points, A and B, then the work done;
+         * ΔU - the change in the potential energy when the charge q moves from A to B.
+         *
+         * @return W_AB = ΔU = (V_A − V_B)q. The units are volts
+         */
+        public static double electricPotentialDifference(double chargeCoulombs, double electricPotentialEnergyJoules) {
+            return electricPotentialEnergyJoules / chargeCoulombs;
+        }
+
+        /**
+         * @param crossSectionalArea in m²
+         * @return Φ = B * A * cos(θ). The units are weber
+         */
+        public static double faradayLawMagneticFlux(
+            double crossSectionalArea, double turns, double magneticFieldTesla) {
+            return magneticFieldTesla * crossSectionalArea * Trigonometry.cos(AngleUnit.turnsToRadians(turns));
+        }
+
+        /**
+         * @return ε = −N * dΦ/dt. The units are volts
+         */
+        public static double faradayLawInducedVoltage(double magneticFluxWeber, double turns, double timeSeconds) {
+            return -turns * (magneticFluxWeber / timeSeconds);
+        }
+
+        /**
+         * f₀ = √(fᵤ⋅fₗ)
+         * where:
+         * fᵤ — Upper cutoff frequency;
+         * fₗ — Lower cutoff frequency.
+         * <br/>
+         * f_BW = fᵤ-fₗ
+         *
+         * @return f_BW = f₀/Q. The units are Hz
+         */
+        public static double frequencyBandwidth(double centerFrequencyHz, double qualityFactor) {
+            return centerFrequencyHz / qualityFactor;
+        }
+
+        /**
+         * @return fₗ = f₀(√(1 + 1/(4Q²)) − 1/(2Q)). The units are Hz
+         */
+        public static double lowerCutoffFrequency(double centerFrequencyHz, double qualityFactor) {
+            return centerFrequencyHz * (squareRoot(1 + reciprocal(4 * qualityFactor * qualityFactor))
+                - reciprocal(2 * qualityFactor));
+        }
+
+        /**
+         * @return fᵤ = f₀(√(1 + 1/(4Q²)) + 1/(2Q)). The units are Hz
+         */
+        public static double upperCutoffFrequency(double centerFrequencyHz, double qualityFactor) {
+            return centerFrequencyHz * (squareRoot(1 + reciprocal(4 * qualityFactor * qualityFactor))
+                + reciprocal(2 * qualityFactor));
+        }
+
+        /**
+         * @return P = I²R₁ + I²R₂ + ... + I²Rₙ. The units are watts
+         */
+        public static double powerDissipationInSeries(double voltageVolts, double[] resistors) {
+            final double totalResistance = Electronics.equivalentResistanceInSeries(resistors);
+            final double totalCurrent = Electronics.ohmsLawCurrent(voltageVolts, totalResistance);
+            return Electronics.ohmsLawPowerGivenResistanceAndCurrent(totalResistance, totalCurrent);
+        }
+
+        /**
+         * R_eq = 1/R₁ + 1/R₂ + ... + 1/Rₙ
+         *
+         * @return P = V²R_eq. The units are watts
+         */
+        public static double powerDissipationInParallel(double voltageVolts, double[] resistors) {
+            final double totalResistance = Electronics.equivalentResistanceInParallel(resistors);
+            return Electronics.ohmsLawPowerGivenVoltageAndResistance(voltageVolts, totalResistance);
+        }
     }
 
     public static final class Electronics {
@@ -1614,10 +1835,18 @@ public final class PhysicsCalc {
 
         /**
          * @param resistors in Ohms (Ω)
-         * @return R = R₁ + R₂ + ... + Rₙ. The units are Ω
+         * @return R_eq = R₁ + R₂ + ... + Rₙ. The units are Ω
+         */
+        public static double equivalentResistanceInSeries(double[] resistors) {
+            return Arrays.stream(resistors).sum();
+        }
+
+        /**
+         * @param resistors in Ohms (Ω)
+         * @return R = 1/R₁ + 1/R₂ + ... + 1/Rₙ. The units are Ω
          */
         public static double equivalentResistanceInParallel(double[] resistors) {
-            return 1 / Arrays.stream(resistors).map(resistor -> 1 / resistor).sum();
+            return reciprocal(Arrays.stream(resistors).map(Arithmetic::reciprocal).sum());
         }
 
         public static double missingResistorInParallel(double[] resistors, double desiredTotalResistance) {
@@ -2038,6 +2267,82 @@ public final class PhysicsCalc {
         public static double powerDissipationInVoltageRegulator(double inputVolts, double outputVolts, double current) {
             return (inputVolts - outputVolts) * current;
         }
+
+        /**
+         * @return f꜀ = 1/(2πRC). The units are Hz
+         */
+        public static double rcLowPassFilter(double resistanceOhms, double capacitanceFarads) {
+            return reciprocal(Trigonometry.PI2 * resistanceOhms * capacitanceFarads);
+        }
+
+        /**
+         * @return f꜀ = R/(2πL). The units are Hz
+         */
+        public static double rlLowPassFilter(double resistanceOhms, double inductanceHenries) {
+            return resistanceOhms / (Trigonometry.PI2 * inductanceHenries);
+        }
+
+        /**
+         * @return f꜀ = 1/(2πR_fC). The units are Hz
+         */
+        public static double invertingOpAmpLowPassFilter(double feedbackResistanceOhms, double capacitanceFarads) {
+            return reciprocal(Trigonometry.PI2 * feedbackResistanceOhms * capacitanceFarads);
+        }
+
+        /**
+         * @return G = -(R_f/Rᵢ)
+         */
+        public static double invertingOpAmpLowPassFilterGain(double inputResistanceOhms,
+                                                             double feedbackResistanceOhms) {
+            return -(feedbackResistanceOhms / inputResistanceOhms);
+        }
+
+        /**
+         * @return f꜀ = 1/(2πRᵢC). The units are Hz
+         */
+        public static double nonInvertingOpAmpLowPassFilter(double inputResistanceOhms, double capacitanceFarads) {
+            return reciprocal(Trigonometry.PI2 * inputResistanceOhms * capacitanceFarads);
+        }
+
+        /**
+         * @return G = 1+(R_f/R_g)
+         */
+        public static double nonInvertingOpAmpLowPassFilterGain(double feedbackResistanceOhms,
+                                                                double positiveToGroundResistance) {
+            return 1 + feedbackResistanceOhms / positiveToGroundResistance;
+        }
+
+        /**
+         * I = (1000 ⋅ kVA)/V
+         * <br/>
+         * For a single-phase transformer.
+         *
+         * @return kVA = I × V / 1000. The units are kVA
+         */
+        public static double transformerSize(double loadCurrentAmps, double loadVoltageVolts) {
+            return (loadCurrentAmps * loadVoltageVolts) / 1000;
+        }
+
+        public static double transformerSize(
+            double loadCurrentAmps, double loadVoltageVolts, double spareCapacityPercent) {
+            final double minKVA = transformerSize(loadCurrentAmps, loadVoltageVolts);
+            final double spareCapacity = minKVA * (spareCapacityPercent / 100);
+            return minKVA + spareCapacity;
+        }
+
+        /**
+         * @return kVA = I × V × √3 / 1000. The units are kVA
+         */
+        public static double threePhaseTransformerSize(double loadCurrentAmps, double loadVoltageVolts) {
+            return loadCurrentAmps * loadVoltageVolts * squareRoot(3) / 1000;
+        }
+
+        public static double threePhaseTransformerSize(
+            double loadCurrentAmps, double loadVoltageVolts, double spareCapacityPercent) {
+            final double minKVA = threePhaseTransformerSize(loadCurrentAmps, loadVoltageVolts);
+            final double spareCapacity = minKVA * (spareCapacityPercent / 100);
+            return minKVA + spareCapacity;
+        }
     }
 
     public static final class Acoustics {
@@ -2068,6 +2373,101 @@ public final class PhysicsCalc {
          */
         public static double soundSpeedInWater(double temperature) {
             return 1404.3 + 4.7 * temperature - 0.04 * temperature * temperature;
+        }
+
+        /**
+         * @return v = λf. The units are m/s
+         */
+        public static double soundSpeed(double wavelengthMeters, double frequencyHz) {
+            return wavelengthMeters * frequencyHz;
+        }
+
+        /**
+         * In fluids: v = √(B/ρ); B is bulk modulus.
+         * In solids: v = √(E/ρ); E is Young's modulus.
+         *
+         * @return . The units are m/s
+         */
+        public static double soundSpeedInMedium(double modulus, double density) {
+            return squareRoot(modulus / density);
+        }
+
+        /**
+         * @param referencePressurePascals Pref — Reference value of sound pressure. Typically, it is assumed to be
+         *                                 equal to 0.00002 Pa (human hearing threshold).
+         * @return SPL = 20 × log(P/Pref). The units are dB
+         */
+        public static double soundPressureLevel(double referencePressurePascals, double soundWavePressurePascals) {
+            return 20 * log(soundWavePressurePascals / referencePressurePascals);
+        }
+
+        /**
+         * @param referenceIntensity Iref — Reference value if sound intensity. Typically, it is assumed to be
+         *                           equal to 1×10⁻¹² W/m² (human hearing threshold).
+         * @param soundIntensity     in W/m²
+         * @return SIL = 10 × log(I/Iref). The units are dB
+         */
+        public static double soundIntensityLevel(double referenceIntensity, double soundIntensity) {
+            return 10 * log(soundIntensity / referenceIntensity);
+        }
+
+        /**
+         * where:
+         * R — Radius of the sphere, i.e., the distance from the sound source.
+         *
+         * @return I = P/(4πR²). The units are W/m²
+         */
+        public static double soundIntensityAtDistance(double soundSourcePower, double distanceMeters) {
+            return soundSourcePower / (Trigonometry.PI4 * distanceMeters * distanceMeters);
+        }
+
+        /**
+         * @return f_b = ∣f₂−f₁∣. The units are Hz
+         */
+        public static double beatFrequency(double firstWaveFrequencyHz, double secondWaveFrequencyHz) {
+            return Math.abs(secondWaveFrequencyHz - firstWaveFrequencyHz);
+        }
+
+        /**
+         * @param speedOfSound in m/s
+         * @return λ = v/f. The units are meters
+         */
+        public static double soundWavelength(double speedOfSound, double frequencyHz) {
+            return speedOfSound / frequencyHz;
+        }
+
+        /**
+         * @param speedOfSound in m/s
+         * @return f = v/λ. The units are Hz
+         */
+        public static double soundFrequency(double speedOfSound, double wavelengthMeters) {
+            return speedOfSound / wavelengthMeters;
+        }
+
+        /**
+         * @param incidentSoundIntensity in W/m²
+         * @param absorbedSoundIntensity in W/m²
+         * @return α = Iₐ/Iᵢ
+         */
+        public static double soundAbsorptionCoefficient(double incidentSoundIntensity, double absorbedSoundIntensity) {
+            return absorbedSoundIntensity / incidentSoundIntensity;
+        }
+
+        /**
+         * @param surfaceAreas in m²
+         * @return A = ∑Sᵢαᵢ. The units are m² sabins
+         */
+        public static double totalRoomSoundAbsorption(double[] surfaceAreas, double[] absorptionCoefficients) {
+            return LinearAlgebra.dotProduct(surfaceAreas, absorptionCoefficients);
+        }
+
+        /**
+         * @param absorptionOfRoom   in m² sabins
+         * @param totalSurfaceInRoom in m²
+         * @return αₘ = A/S. The units are m² sabins
+         */
+        public static double avgSoundAbsorptionCoefficient(double absorptionOfRoom, double totalSurfaceInRoom) {
+            return absorptionOfRoom / totalSurfaceInRoom;
         }
     }
 
@@ -2421,6 +2821,59 @@ public final class PhysicsCalc {
             final double saturationVaporPressure = 6.1078 * Math.pow(10,
                 (7.5 * airTemperatureCelsius) / (airTemperatureCelsius + 237.3));
             return saturationVaporPressure * (relativeHumidityPercent / 100);
+        }
+    }
+
+    public static final class Astrophysics {
+        private Astrophysics() {
+        }
+
+        /**
+         * The energy lost to the gravitational waves in merging ≈ 0.02625 2.625% (0.21/8)
+         * 1 - energy lost = 0.97375
+         *
+         * @param blackHoleMass     in Suns
+         * @param fallingObjectMass in Suns
+         * @return The units are Suns
+         */
+        public static double finalBlackHoleMass(double blackHoleMass, double fallingObjectMass) {
+            return (blackHoleMass + fallingObjectMass) * 0.97375;
+        }
+
+        public static double finalBlackHoleEventHorizonRadius(double eventHorizonRadiusKm, double eventHorizonGrowth) {
+            return eventHorizonRadiusKm + (eventHorizonRadiusKm * eventHorizonGrowth);
+        }
+
+        /**
+         * @param fallingObjectMass in Suns
+         * @return The units are bethe (foe)
+         */
+        public static double blackHoleEnergyRelease(double fallingObjectMass) {
+            return MassUnit.ergsToBethe(fallingObjectMass * SUN_POTENTIAL_ENERGY_ERGS);
+        }
+
+        /**
+         * @param radiusMeters event horizon radius
+         * @return (G*M)/r². The units are m/s²
+         */
+        public static double blackHoleGravitationalField(double massKg, double radiusMeters) {
+            return (GRAVITATIONAL_CONSTANT * massKg) / (radiusMeters * radiusMeters);
+        }
+
+        /**
+         * @return GPE = -G*M*m/r. The units are joules
+         */
+        public static double gravitationalPotentialEnergy(
+            double largeObjectMassKg, double smallObjectMassKg, double distanceMeters) {
+            return -GRAVITATIONAL_CONSTANT * largeObjectMassKg * smallObjectMassKg / distanceMeters;
+        }
+
+        /**
+         * @return T = (ℏc³)/(8πGMk_B). The units are kelvins
+         */
+        public static double blackHoleTemperature(double massKg) {
+            return (REDUCED_PLANCK_CONSTANT * Math.pow(SPEED_OF_LIGHT, 3))
+                / (Trigonometry.PI8 * GRAVITATIONAL_CONSTANT * massKg * BOLTZMANN_CONSTANT);
         }
     }
 }

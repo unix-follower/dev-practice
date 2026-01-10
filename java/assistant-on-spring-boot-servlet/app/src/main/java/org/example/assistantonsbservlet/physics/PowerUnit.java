@@ -35,6 +35,10 @@ public enum PowerUnit {
         return hp * 745.7;
     }
 
+    public static double wattsToMechanicalHorsepower(double watts) {
+        return watts / 745.699872;
+    }
+
     public static double btuhToWatts(double btuh) {
         return btuh / 3.412;
     }

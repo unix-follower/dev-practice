@@ -15,9 +15,12 @@ public enum MassUnit {
     US_SHORT_TON, // US ton
     IMPERIAL_TON, // long ton
     MASSES_OF_EARTH, // Earths
+    SOLAR, // masses of the Sun, Suns
     ELECTRON_REST_MASS, // me
     ATOMIC_MASS_UNITS, // amu, u
     TROY_OUNCE; // oz t
+
+    public static final double ONE_SOLAR = 1.989e30;
 
     public static double grToKg(double grains) {
         return grains * 0.00006479891;
@@ -29,5 +32,13 @@ public enum MassUnit {
 
     public static double kgToGrams(double kg) {
         return kg * 1000;
+    }
+
+    public static double ergsToBethe(double ergs) {
+        return ergs / 1e51;
+    }
+
+    public static double sunsToKg(double suns) {
+        return suns * ONE_SOLAR;
     }
 }

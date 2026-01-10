@@ -69,14 +69,14 @@ class PhysicsCalcTest {
         }
 
         @Test
-        void calculateMomentum() {
+        void testMomentum() {
             // given
-            final double mass = 65; // kg
-            final double velocity = 2;
+            final byte massKg = 65;
+            final byte velocity = 2;
             // when
-            final double result = PhysicsCalc.Kinematics.momentum(mass, velocity);
+            final double momentum = PhysicsCalc.Kinematics.momentum(massKg, velocity);
             // then
-            assertEquals(130, result, 0.1);
+            assertEquals(130, momentum, DELTA1);
         }
 
         @Test
@@ -138,7 +138,7 @@ class PhysicsCalcTest {
         }
 
         @Test
-        void calculateMomentumMagnitude2d() {
+        void testMomentumMagnitude2d() {
             // given
             final double mass = 65; // kg
             final double velocityXDirection = 2;
@@ -151,7 +151,7 @@ class PhysicsCalcTest {
         }
 
         @Test
-        void calculateVelocityMagnitude3d() {
+        void testVelocityMagnitude3d() {
             // given
             final double velocityXDirection = 2;
             final double velocityYDirection = 3;
@@ -164,7 +164,7 @@ class PhysicsCalcTest {
         }
 
         @Test
-        void calculateMomentumMagnitude3d() {
+        void testMomentumMagnitude3d() {
             // given
             final double mass = 65; // kg
             final double velocityXDirection = 2;
@@ -406,6 +406,62 @@ class PhysicsCalcTest {
                 courseInRadians, windCorrectionAngle);
             // then
             assertEquals(0.252, headingInRadians, 0.001);
+        }
+
+        @Test
+        void testImpulse() {
+            // given
+            final double massKg = 0.16;
+            final double initialVelocity = 2.5;
+            final byte finalVelocity = 0;
+            // when
+            final double impulse = PhysicsCalc.Kinematics.impulse(massKg, initialVelocity, finalVelocity);
+            // then
+            assertEquals(-0.4, impulse, DELTA1);
+        }
+
+        @Test
+        void testForceFromImpulse() {
+            // given
+            final double impulse = -0.4;
+            final byte timeIntervalSeconds = 8;
+            // when
+            final double force = PhysicsCalc.Kinematics.forceFromImpulse(impulse, timeIntervalSeconds);
+            // then
+            assertEquals(-0.05, force, DELTA2);
+        }
+
+        @Test
+        void testTimeIntervalOfImpulse() {
+            // given
+            final double impulse = -0.4;
+            final double force = -0.05;
+            // when
+            final double timeIntervalSeconds = PhysicsCalc.Kinematics.timeIntervalOfImpulse(impulse, force);
+            // then
+            assertEquals(8, timeIntervalSeconds, DELTA1);
+        }
+
+        @Test
+        void testInitialMomentumFromImpulse() {
+            // given
+            final double impulse = -0.4;
+            final byte finalMomentum = 0;
+            // when
+            final double initialMomentum = PhysicsCalc.Kinematics.initialMomentumFromImpulse(impulse, finalMomentum);
+            // then
+            assertEquals(0.4, initialMomentum, DELTA1);
+        }
+
+        @Test
+        void testFinalMomentumFromImpulse() {
+            // given
+            final double impulse = -0.4;
+            final double initialMomentum = 0.4;
+            // when
+            final double finalMomentum = PhysicsCalc.Kinematics.finalMomentumFromImpulse(impulse, initialMomentum);
+            // then
+            assertEquals(0, finalMomentum, DELTA1);
         }
     }
 
@@ -912,6 +968,80 @@ class PhysicsCalcTest {
             // then
             assertEquals(expectedResult, eirp, delta);
         }
+
+        @Test
+        void testPoissonsRatio() {
+            // given
+            final double transverseStrain = 0.4;
+            final double axialStrain = 0.9;
+            // when
+            final double ratio = PhysicsCalc.Mechanics.poissonsRatio(transverseStrain, axialStrain);
+            // then
+            assertEquals(0.444444, ratio, DELTA6);
+        }
+
+        @Test
+        void testShearStress() {
+            // given
+            final byte forceMagnitude = 10;
+            final byte area = 5;
+            // when
+            final double stress = PhysicsCalc.Mechanics.shearStress(forceMagnitude, area);
+            // then
+            assertEquals(2, stress, DELTA1);
+        }
+
+        @Test
+        void testShearStrain() {
+            // given
+            final byte displacement = 1;
+            final byte transverseLength = 2;
+            // when
+            final double strain = PhysicsCalc.Mechanics.shearStrain(displacement, transverseLength);
+            // then
+            assertEquals(0.5, strain, DELTA1);
+        }
+
+        @Test
+        void testShearModulus() {
+            // given
+            final byte forceMagnitude = 10;
+            final byte transverseLength = 2;
+            final byte area = 5;
+            final byte displacement = 1;
+            // when
+            final double modulus = PhysicsCalc.Mechanics
+                .shearModulus(forceMagnitude, area, displacement, transverseLength);
+            // then
+            assertEquals(4, modulus, DELTA1);
+        }
+
+        @Test
+        void testShearModulusFromShearStressAndStrain() {
+            // given
+            final byte stress = 2;
+            final double strain = 0.5;
+            // when
+            final double modulus = PhysicsCalc.Mechanics
+                .shearModulusFromShearStressAndStrain(stress, strain);
+            // then
+            assertEquals(4, modulus, DELTA1);
+        }
+    }
+
+    @Nested
+    class FluidMechanics {
+        @Test
+        void testFanMassAirflowInCFM() {
+            // given
+            final double powerOutput = PowerUnit.wattsToMechanicalHorsepower(25);
+            final double pressure = PressureUnit.pascalsToInchesOfWater(350);
+            final byte efficiency = 1;
+            // when
+            final double mass = PhysicsCalc.FluidMechanics.fanMassAirflowInCFM(powerOutput, pressure, efficiency);
+            // then
+            assertEquals(151.65, mass, DELTA2);
+        }
     }
 
     @Nested
@@ -1381,6 +1511,180 @@ class PhysicsCalcTest {
             final double force = PhysicsCalc.Electromagnetism.lorentzForce(magneticField, charge, velocity, angle);
             // then
             assertEquals(2.4e-12, force, DELTA1);
+        }
+
+        @Test
+        void testElectricField() {
+            // given
+            final double charge = ElectricalChargeUnit.elementaryChargeToCoulomb(10);
+            final double distance = 0.00023;
+            // when
+            final double electricField = PhysicsCalc.Electromagnetism.electricField(charge, distance);
+            // then
+            assertEquals(0.0002722, ElectricalChargeUnit.newtonPerCoulombToKiloNC(electricField), DELTA7);
+        }
+
+        @Test
+        void testElectricFieldOfPointCharges() {
+            // given
+            final double charge = 0.3;
+            final double charge2 = 0.2;
+            final double distance = 0.000001;
+            final double distance2 = 0.00001;
+            // when
+            final double electricField1 = PhysicsCalc.Electromagnetism.electricField(charge, distance);
+            final double electricField2 = PhysicsCalc.Electromagnetism.electricField(charge2, distance2);
+            final double electricField = electricField1 + electricField2;
+            // then
+            assertEquals(2.714240639976e+21, electricField, 1e15);
+        }
+
+        @Test
+        void testElectricFieldWithRelativePermittivity() {
+            // given
+            final double charge = ElectricalChargeUnit.elementaryChargeToCoulomb(10);
+            final double distance = 0.00023;
+            final byte relativePermittivity = 2;
+            // when
+            final double electricField = PhysicsCalc.Electromagnetism
+                .electricField(charge, distance, relativePermittivity);
+            // then
+            assertEquals(0.0001361, ElectricalChargeUnit.newtonPerCoulombToKiloNC(electricField), DELTA7);
+        }
+
+        @Test
+        void testElectricPotential() {
+            // given
+            final byte charge = 10;
+            final double distance = 0.00023;
+            // when
+            final double electricPotential = PhysicsCalc.Electromagnetism.electricPotential(charge, distance);
+            // then
+            assertEquals(390_763_121_217_391d, electricPotential, 1e14);
+        }
+
+        @Test
+        void testElectricPotentialWithRelativePermittivity() {
+            // given
+            final byte charge = 10;
+            final double distance = 0.00023;
+            final byte relativePermittivity = 2;
+            // when
+            final double electricPotential = PhysicsCalc.Electromagnetism
+                .electricPotential(charge, distance, relativePermittivity);
+            // then
+            assertEquals(19_538_156_060_8696d, electricPotential, 1e14);
+        }
+
+        @Test
+        void testElectricPotentialOfPointCharges() {
+            // given
+            final double charge = 0.3;
+            final double charge2 = 0.2;
+            final double distance = 0.000001;
+            final double distance2 = 0.00001;
+            final byte relativePermittivity = 2;
+            // when
+            final double electricPotential1 = PhysicsCalc.Electromagnetism
+                .electricPotential(charge, distance, relativePermittivity);
+            final double electricPotential2 = PhysicsCalc.Electromagnetism
+                .electricPotential(charge2, distance2, relativePermittivity);
+            final double electricPotential = electricPotential1 + electricPotential2;
+            // then
+            assertEquals(1_438_008_286_080_000d, electricPotential, 1e21);
+        }
+
+        @Test
+        void testElectricPotentialDifference() {
+            // given
+            final byte charge = 10;
+            final byte electricPotentialEnergy = 15;
+            // when
+            final double difference = PhysicsCalc.Electromagnetism
+                .electricPotentialDifference(charge, electricPotentialEnergy);
+            // then
+            assertEquals(1.5, difference, DELTA1);
+        }
+
+        @Test
+        void testFaradayLawMagneticFlux() {
+            // given
+            final double coilCrossSectionalArea = 0.003;
+            final byte turns = 10;
+            final double magneticField = 0.4;
+            // when
+            final double magneticFlux = PhysicsCalc.Electromagnetism
+                .faradayLawMagneticFlux(coilCrossSectionalArea, turns, magneticField);
+            // then
+            assertEquals(0.0012, magneticFlux, DELTA4);
+        }
+
+        @Test
+        void testFaradayLawInducedVoltage() {
+            // given
+            final byte turns = 10;
+            final double magneticFlux = 0.0012;
+            final byte timeSeconds = 8;
+            // when
+            final double inducedVoltage = PhysicsCalc.Electromagnetism
+                .faradayLawInducedVoltage(magneticFlux, turns, timeSeconds);
+            // then
+            assertEquals(-0.0015, inducedVoltage, DELTA4);
+        }
+
+        @Test
+        void testFrequencyBandwidth() {
+            // given
+            final int centerFrequencyHz = 93_700_000;
+            final short qualityFactor = 500;
+            // when
+            final double bandwidth = PhysicsCalc.Electromagnetism.frequencyBandwidth(centerFrequencyHz, qualityFactor);
+            // then
+            assertEquals(187_400, bandwidth, DELTA1);
+        }
+
+        @Test
+        void testLowerCutoffFrequency() {
+            // given
+            final int centerFrequencyHz = 93_700_000;
+            final short qualityFactor = 500;
+            // when
+            final double lower = PhysicsCalc.Electromagnetism.lowerCutoffFrequency(centerFrequencyHz, qualityFactor);
+            // then
+            assertEquals(93_606_347.0, lower, 1e1);
+        }
+
+        @Test
+        void testUpperCutoffFrequency() {
+            // given
+            final int centerFrequencyHz = 93_700_000;
+            final short qualityFactor = 500;
+            // when
+            final double upper = PhysicsCalc.Electromagnetism.upperCutoffFrequency(centerFrequencyHz, qualityFactor);
+            // then
+            assertEquals(93793747.0, upper, 1e1);
+        }
+
+        @Test
+        void testPowerDissipationInSeries() {
+            // given
+            final byte voltage = 12;
+            final double[] resistors = {2, 6, 1};
+            // when
+            final double dissipatedPower = PhysicsCalc.Electromagnetism.powerDissipationInSeries(voltage, resistors);
+            // then
+            assertEquals(16, dissipatedPower, DELTA1);
+        }
+
+        @Test
+        void testPowerDissipationInParallel() {
+            // given
+            final byte voltage = 12;
+            final double[] resistors = {2, 6, 1};
+            // when
+            final double dissipatedPower = PhysicsCalc.Electromagnetism.powerDissipationInParallel(voltage, resistors);
+            // then
+            assertEquals(240, dissipatedPower, DELTA1);
         }
     }
 
@@ -2215,12 +2519,131 @@ class PhysicsCalcTest {
             // then
             assertArrayEquals(new double[]{0.143, 14.28}, stepDownVoltage, DELTA2);
         }
+
+        @Test
+        void testRcLowPassFilter() {
+            // given
+            final double resistance = ElectricalResistanceUnit.kiloOhmsToOhms(3.3);
+            final double capacitance = CapacitanceUnit.nanoFaradsToFarads(47);
+            // when
+            final double cutoffFrequency = PhysicsCalc.Electronics.rcLowPassFilter(resistance, capacitance);
+            // then
+            assertEquals(1026.1, cutoffFrequency, DELTA1);
+        }
+
+        @Test
+        void testRlLowPassFilter() {
+            // given
+            final short resistance = 3300;
+            final double inductance = 20;
+            // when
+            final double cutoffFrequency = PhysicsCalc.Electronics.rlLowPassFilter(resistance, inductance);
+            // then
+            assertEquals(26.26, cutoffFrequency, DELTA2);
+        }
+
+        @Test
+        void testInvertingOpAmpLowPassFilter() {
+            // given
+            final byte feedbackResistance = 12;
+            final short capacitance = 345;
+            // when
+            final double cutoffFrequency = PhysicsCalc.Electronics
+                .invertingOpAmpLowPassFilter(feedbackResistance, capacitance);
+            // then
+            assertEquals(0.00003844, cutoffFrequency, DELTA8);
+        }
+
+        @Test
+        void testInvertingOpAmpLowPassFilterGain() {
+            // given
+            final byte inputResistance = 16;
+            final byte feedbackResistance = 12;
+            // when
+            final double gain = PhysicsCalc.Electronics
+                .invertingOpAmpLowPassFilterGain(inputResistance, feedbackResistance);
+            // then
+            assertEquals(-0.75, gain, DELTA2);
+        }
+
+        @Test
+        void testNonInvertingOpAmpLowPassFilter() {
+            // given
+            final byte inputResistance = 16;
+            final short capacitance = 345;
+            // when
+            final double cutoffFrequency = PhysicsCalc.Electronics
+                .nonInvertingOpAmpLowPassFilter(inputResistance, capacitance);
+            // then
+            assertEquals(0.00002883, cutoffFrequency, DELTA8);
+        }
+
+        @Test
+        void testNonInvertingOpAmpLowPassFilterGain() {
+            // given
+            final byte feedbackResistance = 12;
+            final byte positiveToGroundResistance = 17;
+            // when
+            final double gain = PhysicsCalc.Electronics
+                .nonInvertingOpAmpLowPassFilterGain(feedbackResistance, positiveToGroundResistance);
+            // then
+            assertEquals(1.706, gain, DELTA3);
+        }
+
+        @Test
+        void testTransformerSize() {
+            // given
+            final byte loadCurrentAmps = 80;
+            final short loadVoltage = 1500;
+            // when
+            final double minKVARequired = PhysicsCalc.Electronics.transformerSize(loadCurrentAmps, loadVoltage);
+            // then
+            assertEquals(120, minKVARequired, DELTA1);
+        }
+
+        @Test
+        void testTransformerSizeWithSpareCapacity() {
+            // given
+            final byte loadCurrentAmps = 80;
+            final short loadVoltage = 1500;
+            final byte spareCapacityPercent = 20;
+            // when
+            final double kVA = PhysicsCalc.Electronics
+                .transformerSize(loadCurrentAmps, loadVoltage, spareCapacityPercent);
+            // then
+            assertEquals(144, kVA, DELTA1);
+        }
+
+        @Test
+        void testThreePhaseTransformerSize() {
+            // given
+            final short loadCurrentAmps = 250;
+            final short loadVoltage = 2000;
+            // when
+            final double minKVARequired = PhysicsCalc.Electronics
+                .threePhaseTransformerSize(loadCurrentAmps, loadVoltage);
+            // then
+            assertEquals(866, minKVARequired, DELTA1);
+        }
+
+        @Test
+        void testThreePhaseTransformerSizeWithSpareCapacity() {
+            // given
+            final short loadCurrentAmps = 250;
+            final short loadVoltage = 2000;
+            final byte spareCapacityPercent = 20;
+            // when
+            final double minKVARequired = PhysicsCalc.Electronics
+                .threePhaseTransformerSize(loadCurrentAmps, loadVoltage, spareCapacityPercent);
+            // then
+            assertEquals(1039.2, minKVARequired, DELTA1);
+        }
     }
 
     @Nested
     class Acoustics {
         @Test
-        void testSoundSpeed() {
+        void testSoundSpeedFromTemperature() {
             // given
             final byte temperature = 20;
             // when
@@ -2237,6 +2660,120 @@ class PhysicsCalcTest {
             final double speed = PhysicsCalc.Acoustics.soundSpeedInWater(temperature);
             // then
             assertEquals(1482, speed, 1);
+        }
+
+        @Test
+        void testSoundSpeed() {
+            // given
+            final double wavelength = 1.6333;
+            final double frequency = 210;
+            // when
+            final double speedSound = PhysicsCalc.Acoustics.soundSpeed(wavelength, frequency);
+            // then
+            assertEquals(PhysicsCalc.SOUND_SPEED, speedSound, DELTA1);
+        }
+
+        @Test
+        void testSoundPressureLevel() {
+            // given
+            final double referencePressure = 0.00002;
+            final double chainsawSoundWavePressure = 6.4;
+            // when
+            final double spl = PhysicsCalc.Acoustics.soundPressureLevel(referencePressure, chainsawSoundWavePressure);
+            // then
+            assertEquals(110.103, spl, DELTA3);
+        }
+
+        @Test
+        void testSoundIntensityLevel() {
+            // given
+            final double referenceIntensity = 0.000000000001;
+            final double chainsawSoundIntensity = 0.1;
+            // when
+            final double sil = PhysicsCalc.Acoustics.soundIntensityLevel(referenceIntensity, chainsawSoundIntensity);
+            // then
+            assertEquals(110, sil, DELTA1);
+        }
+
+        @Test
+        void testSoundIntensityAtDistance() {
+            // given
+            final double chainsawSoundIntensity = 0.1;
+            final double distance = 2.23906;
+            final double power = chainsawSoundIntensity * MathCalc.Trigonometry.PI4 * distance * distance;
+            // when
+            final double soundIntensity = PhysicsCalc.Acoustics.soundIntensityAtDistance(power, distance);
+            // then
+            assertEquals(0.1, soundIntensity, DELTA1);
+        }
+
+        @Test
+        void testBeatFrequency() {
+            // given
+            final double firstWaveFrequency = 1400;
+            final double secondWaveFrequency = 1560;
+            // when
+            final double beatFrequency = PhysicsCalc.Acoustics.beatFrequency(firstWaveFrequency, secondWaveFrequency);
+            // then
+            assertEquals(160, beatFrequency, DELTA1);
+        }
+
+        @Test
+        void testSoundWavelength() {
+            // given
+            final short speedOfSound = PhysicsCalc.SOUND_SPEED;
+            final short frequency = 210;
+            // when
+            final double wavelength = PhysicsCalc.Acoustics.soundWavelength(speedOfSound, frequency);
+            // then
+            assertEquals(1.6333, wavelength, DELTA4);
+        }
+
+        @Test
+        void testSoundFrequency() {
+            // given
+            final short speedOfSound = PhysicsCalc.SOUND_SPEED;
+            final double wavelength = 1.6333;
+            // when
+            final double frequency = PhysicsCalc.Acoustics.soundFrequency(speedOfSound, wavelength);
+            // then
+            assertEquals(210, frequency, DELTA1);
+        }
+
+        @Test
+        void testSoundAbsorptionCoefficient() {
+            // given
+            final double incidentSoundIntensity = 0.9;
+            final double absorbedSoundIntensity = 0.3;
+            // when
+            final double coeff = PhysicsCalc.Acoustics
+                .soundAbsorptionCoefficient(incidentSoundIntensity, absorbedSoundIntensity);
+            // then
+            assertEquals(0.3333, coeff, DELTA4);
+        }
+
+        @Test
+        void testTotalRoomSoundAbsorption() {
+            // given
+            final double[] surfaceAreas = {15, 2};
+            final double[] absorptionCoefficients = {0.3, 0.2};
+            // when
+            final double totalAbsorption = PhysicsCalc.Acoustics
+                .totalRoomSoundAbsorption(surfaceAreas, absorptionCoefficients);
+            // then
+            assertEquals(52.74, LengthUnit.squareMeterToSquareFeet(totalAbsorption), DELTA2);
+        }
+
+        @Test
+        void testAvgSoundAbsorptionCoefficient() {
+            // given
+            final double absorptionOfRoom = 4.9;
+            final byte totalSurfaceInRoom = 17;
+            // when
+            final double averageCoeff = PhysicsCalc.Acoustics
+                .avgSoundAbsorptionCoefficient(absorptionOfRoom, totalSurfaceInRoom);
+            // then
+            assertEquals(0.28824, averageCoeff, DELTA5);
         }
     }
 
@@ -2627,6 +3164,89 @@ class PhysicsCalcTest {
             final double pressure = PhysicsCalc.Atmospheric.waterVaporPressure(airTemperature, relativeHumidity);
             // then
             assertEquals(11.923, pressure, DELTA1);
+        }
+    }
+
+    @Nested
+    class Astrophysics {
+        @Test
+        void testFinalBlackHoleMass() {
+            // given
+            final byte blackHoleMass = 5; // Suns
+            final byte fallingObjectMass = 3; // Suns
+            // when
+            final double finalMass = PhysicsCalc.Astrophysics.finalBlackHoleMass(blackHoleMass, fallingObjectMass);
+            // then
+            assertEquals(7.79, finalMass, DELTA2);
+        }
+
+        @Test
+        void testFinalBlackHoleEventHorizonRadius() {
+            // given
+            final double eventHorizonRadius = 14.77;
+            final double eventHorizonGrowth = 0.558; // 55.8%
+            // when
+            final double finalRadius = PhysicsCalc.Astrophysics
+                .finalBlackHoleEventHorizonRadius(eventHorizonRadius, eventHorizonGrowth);
+            // then
+            assertEquals(23.01, finalRadius, DELTA2);
+        }
+
+        @Test
+        void testBlackHoleEnergyRelease() {
+            // given
+            final double fallingObjectMass = 3 * 0.07; // 7% of the mass
+            // when
+            final double energy = PhysicsCalc.Astrophysics.blackHoleEnergyRelease(fallingObjectMass);
+            // then
+            assertEquals(375.4, energy, DELTA1);
+        }
+
+        @Test
+        void testBlackHoleGravitationalField() {
+            // given
+            final double blackHoleMass = MassUnit.sunsToKg(5);
+            final double eventHorizonRadius = LengthUnit.kilometersToMeters(14.77);
+            // when
+            final double gravitationalField = PhysicsCalc.Astrophysics
+                .blackHoleGravitationalField(blackHoleMass, eventHorizonRadius);
+            // then
+            assertEquals(3.0426326443517363e12, gravitationalField, 1e12);
+        }
+
+        @Test
+        void testBlackHoleGravitationalFieldAfterMerge() {
+            // given
+            final double finalBlackHoleMass = MassUnit.sunsToKg(7.79);
+            final double eventHorizonRadius = LengthUnit.kilometersToMeters(23.01);
+            // when
+            final double gravitationalField = PhysicsCalc.Astrophysics
+                .blackHoleGravitationalField(finalBlackHoleMass, eventHorizonRadius);
+            // then
+            assertEquals(1_952_806_317_948.0, gravitationalField, 1e12);
+        }
+
+        @Test
+        void testGravitationalPotentialEnergy() {
+            // given
+            final double blackHoleMass = MassUnit.sunsToKg(5);
+            final double fallingObjectMass = MassUnit.sunsToKg(3);
+            final short distanceToBlackHoleMeters = 8000;
+            // when
+            final double potentialEnergyJoules = PhysicsCalc.Astrophysics.gravitationalPotentialEnergy(blackHoleMass,
+                fallingObjectMass, distanceToBlackHoleMeters);
+            // then
+            assertEquals(-4.95065025819e+47, potentialEnergyJoules, 1e47);
+        }
+
+        @Test
+        void testBlackHoleTemperature() {
+            // given
+            final double mass = MassUnit.sunsToKg(5);
+            // when
+            final double temperature = PhysicsCalc.Astrophysics.blackHoleTemperature(mass);
+            // then
+            assertEquals(1.2344e-8, temperature, 1e-8);
         }
     }
 }

@@ -1,10 +1,10 @@
 package org.example.assistantonsbservlet.physics;
 
 public enum VoltageUnit {
-    MILLIVOLTS, // mV
-    VOLTS, // V
-    KILOVOLTS, // kV
-    MEGAVOLTS; // MV
+    MILLIVOLT, // mV
+    VOLT, // V
+    KILOVOLT, // kV
+    MEGAVOLT; // MV
 
     public static final int ONE_KILOVOLT_IN_VOLTS = 1000;
 
