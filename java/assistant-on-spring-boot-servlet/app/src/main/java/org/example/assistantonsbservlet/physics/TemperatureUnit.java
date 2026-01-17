@@ -5,7 +5,7 @@ public enum TemperatureUnit {
     FAHRENHEIT, // °F
     KELVIN, // K
     RANKINE, // °R
-    DELISLE, // °D
+    DELISLE, // °D or °De
     NEWTON, // °N
     REAUMUR, // °Ré
     ROMER; // °Rø

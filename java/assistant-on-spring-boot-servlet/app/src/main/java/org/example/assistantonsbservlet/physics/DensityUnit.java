@@ -8,7 +8,14 @@ package org.example.assistantonsbservlet.physics;
  */
 public enum DensityUnit {
     KILOGRAMS_PER_CUBIC_METER, // kg/m³; 1 kg/L = 1000 kg/m³
+    KILOGRAMS_PER_CUBIC_CENTIMETER, // kg/cm³
+    KILOGRAMS_PER_LITER, // kg/L
+    GRAMS_PER_LITER, // g/L
+    MILLIGRAMS_PER_LITER, // mg/L
     GRAMS_PER_CUBIC_CENTIMETER, // g/cm³; 1 g/cm³ = 0.001 kg/m³
+    MILLIGRAMS_PER_CUBIC_CENTIMETER, // mg/cm³
+    GRAMS_PER_CUBIC_DECIMETER, // g/dm³
+    GRAMS_PER_CUBIC_METER, // g/m³
     OUNCES_PER_CUBIC_INCH, // oz/cu in
     POUNDS_PER_CUBIC_INCH, // lb/cu in
     POUNDS_PER_CUBIC_FEET, // lb/cu ft

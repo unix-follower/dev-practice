@@ -14,6 +14,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -462,6 +463,21 @@ class PhysicsCalcTest {
             final double finalMomentum = PhysicsCalc.Kinematics.finalMomentumFromImpulse(impulse, initialMomentum);
             // then
             assertEquals(0, finalMomentum, DELTA1);
+        }
+
+        @Test
+        @Disabled
+        void testGroundSpeed() {
+            // given
+            final double trueAirspeed = 10.5;
+            final byte windSpeed = 12;
+            final double courseRad = 0.52;
+            final double windDirectionRad = 0.79;
+            // when
+            final double groundSpeed = PhysicsCalc.Kinematics
+                .groundSpeed(trueAirspeed, windSpeed, courseRad, windDirectionRad);
+            // then
+            assertEquals(1.56, groundSpeed, DELTA2);
         }
     }
 
@@ -1041,6 +1057,124 @@ class PhysicsCalcTest {
             final double mass = PhysicsCalc.FluidMechanics.fanMassAirflowInCFM(powerOutput, pressure, efficiency);
             // then
             assertEquals(151.65, mass, DELTA2);
+        }
+
+        @Test
+        void testHydraulicGradient() {
+            // given
+            final byte headAtPoint1 = 5;
+            final byte headAtPoint2 = 14;
+            final byte distance = 9;
+            // when
+            final double gradient = PhysicsCalc.FluidMechanics.hydraulicGradient(headAtPoint1, headAtPoint2, distance);
+            // then
+            assertEquals(-1, gradient, DELTA1);
+        }
+
+        @Test
+        void testStokesLaw() {
+            // given
+            final double accelerationOfGravity = AccelerationUnit.GRAVITATIONAL_ACCELERATION_ON_EARTH;
+            final double mediumViscosity = 0.38;
+            final short mediumDensity = 850;
+            final short particleDensity = 2710;
+            final double particleDiameter = 0.01;
+            // when
+            final double terminalVelocity = PhysicsCalc.FluidMechanics
+                .stokesLaw(accelerationOfGravity, mediumViscosity, mediumDensity, particleDensity, particleDiameter);
+            // then
+            assertEquals(0.266672, terminalVelocity, DELTA6);
+        }
+
+        @Test
+        void testHydraulicPressure() {
+            // given
+            final double pistonForce = 980.7;
+            final double pistonArea = 0.0007069;
+            // when
+            final double pressure = PhysicsCalc.FluidMechanics.hydraulicPressure(pistonForce, pistonArea);
+            // then
+            assertEquals(1387325, pressure, DELTA1);
+        }
+
+        @Test
+        void testHydraulicPressurePistonForce() {
+            // given
+            final double pistonArea = 0.0007069;
+            final double pistonArea2 = 0.07069;
+            final double pistonForce2 = 98066.5;
+            // when
+            final double pistonForce = PhysicsCalc.FluidMechanics
+                .hydraulicPressurePistonForce(pistonArea, pistonArea2, pistonForce2);
+            // then
+            assertEquals(980.7, pistonForce, DELTA1);
+        }
+
+        @Test
+        void testHydraulicPressureSecondPistonForce() {
+            // given
+            final double pistonArea = 0.0007069;
+            final double pistonArea2 = 0.07069;
+            final double pistonForce = 980.7;
+            // when
+            final double pistonForce2 = PhysicsCalc.FluidMechanics
+                .hydraulicPressureSecondPistonForce(pistonArea, pistonArea2, pistonForce);
+            // then
+            assertEquals(98070, pistonForce2, DELTA1);
+        }
+
+        @Test
+        void testHydraulicLiftingDistanceWorkDone() {
+            // given
+            final double pistonForce = 980.7;
+            final double liftingDistanceOfPiston = 1.4;
+            // when
+            final double workDone = PhysicsCalc.FluidMechanics
+                .hydraulicPressureLiftingDistanceWorkDone(pistonForce, liftingDistanceOfPiston);
+            // then
+            assertEquals(1373, workDone, DELTA1);
+        }
+
+        @Test
+        void testWaterDensity() {
+            // given
+            final byte temperature = 20;
+            final byte salinity = 35;
+            // when
+            final double density = PhysicsCalc.FluidMechanics.waterDensity(temperature, salinity);
+            // then
+            assertEquals(1024.7, density, DELTA1);
+        }
+
+        @Test
+        void testMassOfWater() {
+            // given
+            final byte massOfSalt = 1;
+            // when
+            final double massOfWater = PhysicsCalc.FluidMechanics.massOfWater(massOfSalt);
+            // then
+            assertEquals(27.57, massOfWater, DELTA2);
+        }
+
+        @Test
+        void testMassOfSalt() {
+            // given
+            final double massOfWater = 27.57;
+            // when
+            final double massOfSalt = PhysicsCalc.FluidMechanics.massOfSalt(massOfWater);
+            // then
+            assertEquals(1, massOfSalt, DELTA1);
+        }
+
+        @Test
+        void testSinkInWater() {
+            // given
+            final double waterDensity = 1024.9;
+            final short appleDensity = 808;
+            // when
+            final boolean result = PhysicsCalc.FluidMechanics.sinkInWater(waterDensity, appleDensity);
+            // then
+            assertFalse(result);
         }
     }
 
@@ -1685,6 +1819,35 @@ class PhysicsCalcTest {
             final double dissipatedPower = PhysicsCalc.Electromagnetism.powerDissipationInParallel(voltage, resistors);
             // then
             assertEquals(240, dissipatedPower, DELTA1);
+        }
+
+        @Test
+        void testDipoleMoment() {
+            // given
+            final double distanceBetweenCharges = 0.2;
+            final double charge = 0.5;
+            // when
+            final double electricDipoleMoment = PhysicsCalc.Electromagnetism
+                .dipoleMoment(distanceBetweenCharges, charge);
+            // then
+            assertEquals(0.1, electricDipoleMoment, DELTA1);
+        }
+
+        @Test
+        void testDipoleMomentSystemOfCharges() {
+            // given
+            final double[] referencePoint = {-1.5, 2.5, 2};
+            final double[] charges = new double[]{0.25, -0.14, 0.17};
+            final double[][] chargeCoordinates = new double[][]{
+                {2, 3, 3},
+                {1, -1, 1.5},
+                {-1, -0.5, 2}
+            };
+            // when
+            final double[] dipoleMoment = PhysicsCalc.Electromagnetism
+                .dipoleMomentSystemOfCharges(referencePoint, charges, chargeCoordinates);
+            // then
+            assertArrayEquals(new double[]{0.61, 0.105, 0.32}, dipoleMoment, DELTA3);
         }
     }
 
@@ -3116,17 +3279,669 @@ class PhysicsCalcTest {
             // then
             assertEquals(467.48, timeSeconds, DELTA2);
         }
+
+        @Test
+        void testEfficiency() {
+            // given
+            final short energyInput = 240;
+            final short energyOutput = 210;
+            // when
+            final double efficiency = PhysicsCalc.Thermodynamics.efficiency(energyInput, energyOutput);
+            // then
+            assertEquals(87.5, efficiency, DELTA1);
+        }
+
+        @Test
+        void testThermalEfficiency() {
+            // given
+            final short hotReservoirTemperature = 909;
+            final short coldReservoirTemperature = 500;
+            // when
+            final double thermalEfficiency = PhysicsCalc.Thermodynamics
+                .thermalEfficiency(hotReservoirTemperature, coldReservoirTemperature);
+            // then
+            assertEquals(0.4499, thermalEfficiency, DELTA4);
+        }
+
+        @Test
+        void testThermalEfficiencyHotReservoirTemp() {
+            // given
+            final short coldReservoirTemperature = 500;
+            final double thermalEfficiency = 44.99; // %
+            // when
+            final double hotReservoirTemperature = PhysicsCalc.Thermodynamics
+                .thermalEfficiencyHotReservoirTemp(coldReservoirTemperature, thermalEfficiency);
+            // then
+            assertEquals(909, hotReservoirTemperature, DELTA1);
+        }
+
+        @Test
+        void testIrreversibleThermalEfficiencyHotReservoirTemp() {
+            // given
+            final int heatReceived = 1_000_000_000;
+            final byte thermalEfficiency = 45; // %
+            // when
+            final double netWorkOutput = PhysicsCalc.Thermodynamics
+                .irreversibleThermalEfficiencyNetWorkOutput(heatReceived, thermalEfficiency);
+            // then
+            assertEquals(450_000_000, netWorkOutput, DELTA1);
+        }
+
+        @Test
+        void testIrreversibleThermalEfficiencyHeatRejected() {
+            // given
+            final int heatReceived = 1_000_000_000;
+            final int netWorkOutput = 450_000_000;
+            // when
+            final double heatRejected = PhysicsCalc.Thermodynamics
+                .irreversibleThermalEfficiencyHeatRejected(heatReceived, netWorkOutput);
+            // then
+            assertEquals(550_000_000, heatRejected, DELTA1);
+        }
+
+        @Test
+        void testHeatCapacity() {
+            // given
+            final short mass = 236;
+            final short specificHeat = 4184;
+            // when
+            final double heatRejected = PhysicsCalc.Thermodynamics.heatCapacity(mass, specificHeat);
+            // then
+            assertEquals(987_424, heatRejected, DELTA1);
+        }
+
+        @Test
+        void testBasicHeatTransfer() {
+            // given
+            final byte mass = 3;
+            final byte specificHeat = 10;
+            final byte initialTemperature = 12;
+            final byte finalTemperature = 17;
+            // when
+            final double heatTransfer = PhysicsCalc.Thermodynamics
+                .basicHeatTransfer(mass, specificHeat, initialTemperature, finalTemperature);
+            // then
+            assertEquals(150, heatTransfer, DELTA1);
+        }
+
+        @Test
+        void testConductionHeatTransfer() {
+            // given
+            final byte thermalConductivity = 37;
+            final byte crossSectionalArea = 49;
+            final byte coldTemperature = 2;
+            final byte hotTemperature = 32;
+            final byte timeTaken = 58;
+            final double thicknessOfMaterial = 0.98;
+            // when
+            final double heatTransfer = PhysicsCalc.Thermodynamics.conductionHeatTransfer(thermalConductivity,
+                crossSectionalArea, coldTemperature, hotTemperature, timeTaken, thicknessOfMaterial);
+            // then
+            assertEquals(3_219_000, heatTransfer, DELTA1);
+        }
+
+        @Test
+        void testHeatTransferThroughConvection() {
+            // given
+            final short convectiveHeatTransferCoeff = 2000;
+            final byte surfaceArea = 1;
+            final byte bulkTemperature = 20;
+            final byte surfaceTemperature = 50;
+            // when
+            final double heatTransferredPerUnitTime = PhysicsCalc.Thermodynamics.heatTransferThroughConvection(
+                convectiveHeatTransferCoeff, surfaceArea, bulkTemperature, surfaceTemperature);
+            // then
+            assertEquals(60_000, heatTransferredPerUnitTime, DELTA1);
+        }
+
+        @Test
+        void testHeatTransferByRadiation() {
+            // given
+            final short areaOfHotObject = 1;
+            final double emissivity = 0.67;
+            final double objectTemperature = 373.15;
+            final double envTemperature = 273.15;
+            // when
+            final double heatTransferredPerUnitTime = PhysicsCalc.Thermodynamics.heatTransferByRadiation(
+                areaOfHotObject, emissivity, objectTemperature, envTemperature);
+            // then
+            assertEquals(-525.09, heatTransferredPerUnitTime, DELTA2);
+        }
+
+        @Test
+        void testIdealGasLawPressure() {
+            // given
+            final double amountOfSubstance = 0.1;
+            final double temperature = 323.15;
+            // when
+            final double pressure = PhysicsCalc.Thermodynamics
+                .idealGasLawPressure(amountOfSubstance, temperature);
+            // then
+            assertEquals(268.68, pressure, DELTA2);
+        }
+
+        @Test
+        void testIdealGasLawTemperature() {
+            // given
+            final double pressure = 268.68;
+            final byte volume = 1;
+            final double amountOfSubstance = 0.1;
+            // when
+            final double temperature = PhysicsCalc.Thermodynamics
+                .idealGasLawTemperature(pressure, volume, amountOfSubstance);
+            // then
+            assertEquals(323.15, temperature, DELTA2);
+        }
+
+        @Test
+        void testBoylesLawFinalVolume() {
+            // given
+            final int initialPressure = 101_325;
+            final double initialVolume = 0.001;
+            final int finalPressure = 81_060;
+            // when
+            final double finalVolume = PhysicsCalc.Thermodynamics
+                .boylesLawFinalVolume(initialPressure, initialVolume, finalPressure);
+            // then
+            assertEquals(0.00125, finalVolume, DELTA5);
+        }
+
+        @Test
+        void testBoylesLawFinalPressure() {
+            // given
+            final int initialPressure = 101_325;
+            final double initialVolume = 0.001;
+            final double finalVolume = 0.00125;
+            // when
+            final double finalPressure = PhysicsCalc.Thermodynamics
+                .boylesLawFinalPressure(initialPressure, initialVolume, finalVolume);
+            // then
+            assertEquals(81_060, finalPressure, DELTA1);
+        }
+
+        @Test
+        void testBoylesLawFinalPressureFromVolumeRatio() {
+            // given
+            final int initialPressure = 101_325;
+            final double initialVolume = 0.001;
+            final double finalVolume = 0.00125;
+            final double volumeRatio = initialVolume / finalVolume;
+            // when
+            final double finalPressure = PhysicsCalc.Thermodynamics
+                .boylesLawFinalPressure(initialPressure, volumeRatio);
+            // then
+            assertEquals(81_060, finalPressure, DELTA1);
+        }
+
+        @Test
+        void testCharlesLawInitialVolume() {
+            // given
+            final double initialTemperature = 543.2;
+            final double finalTemperature = 615.2;
+            final double finalVolume = 0.00075;
+            // when
+            final double initialVolume = PhysicsCalc.Thermodynamics
+                .charlesLawInitialVolume(initialTemperature, finalTemperature, finalVolume);
+            // then
+            assertEquals(0.0006622, initialVolume, DELTA7);
+        }
+
+        @Test
+        void testCharlesLawFinalVolume() {
+            // given
+            final double initialVolume = 0.002;
+            final double initialTemperature = 308.15;
+            final double finalTemperature = 288.15;
+            // when
+            final double finalVolume = PhysicsCalc.Thermodynamics
+                .charlesLawFinalVolume(initialVolume, initialTemperature, finalTemperature);
+            // then
+            assertEquals(0.0018702, finalVolume, DELTA7);
+        }
+
+        @Test
+        void testCharlesLawFinalTemperature() {
+            // given
+            final double initialVolume = 0.0008495;
+            final double finalVolume = 0.0017556;
+            final short initialTemperature = 295;
+            // when
+            final double finalTemperature = PhysicsCalc.Thermodynamics
+                .charlesLawFinalTemperature(initialVolume, finalVolume, initialTemperature);
+            // then
+            assertEquals(609.7, finalTemperature, DELTA1);
+        }
+
+        @Test
+        void testGayLussacsLawFinalPressure() {
+            // given
+            final int initialPressure = 100_000;
+            final double initialTemperature = 293.15;
+            final double finalTemperature = 673.15;
+            // when
+            final double finalPressure = PhysicsCalc.Thermodynamics
+                .gayLussacsLawFinalPressure(initialPressure, initialTemperature, finalTemperature);
+            // then
+            assertEquals(229_626.4, finalPressure, DELTA1);
+        }
+
+        @Test
+        void testGayLussacsLawFinalTemperature() {
+            // given
+            final int initialPressure = 162_120;
+            final double finalPressure = 101_325;
+            final short initialTemperature = 460;
+            // when
+            final double finalTemperature = PhysicsCalc.Thermodynamics
+                .gayLussacsLawFinalTemperature(initialPressure, finalPressure, initialTemperature);
+            // then
+            assertEquals(287.5, finalTemperature, DELTA1);
+        }
+
+        @Test
+        void testAmountOfGas() {
+            // given
+            final int initialPressure = 100_000;
+            final double initialTemperature = 293.15;
+            final double volume = 0.0003;
+            // when
+            final double finalPressure = PhysicsCalc.Thermodynamics
+                .amountOfGas(initialPressure, initialTemperature, volume);
+            // then
+            assertEquals(0.012308, finalPressure, DELTA6);
+        }
+
+        @Test
+        void testJouleHeating() {
+            // given
+            final short current = 150;
+            final byte resistance = 20;
+            final byte timeSeconds = 45;
+            // when
+            final double generatedHeat = PhysicsCalc.Thermodynamics.jouleHeating(current, resistance, timeSeconds);
+            // then
+            assertEquals(20_250_000, generatedHeat, DELTA1);
+        }
+
+        @Test
+        void testEvaporationRate() {
+            // given
+            final double surfaceAreaOfWater = 1.86;
+            final double airSpeed = 2.222;
+            final byte relativeHumidity = 70;
+            final double airTemperature = 20.14;
+            // when
+            final double evaporationRate = PhysicsCalc.Thermodynamics
+                .evaporationRate(surfaceAreaOfWater, airSpeed, airTemperature, relativeHumidity);
+            // then
+            assertEquals(0.55, evaporationRate, DELTA2);
+        }
+
+        @Test
+        void testCarnotEfficiency() {
+            // given
+            final double coldReservoirTemperature = TemperatureUnit.celsiusToKelvin(25);
+            final double hotReservoirTemperature = TemperatureUnit.celsiusToKelvin(135);
+            // when
+            final double carnotEfficiency = PhysicsCalc.Thermodynamics
+                .carnotEfficiency(coldReservoirTemperature, hotReservoirTemperature);
+            // then
+            assertEquals(26.95, carnotEfficiency, DELTA2);
+        }
+
+        @Test
+        void testCarnotReversibleRefrigeratorCOP() {
+            // given
+            final double hotMediumTemperature = 408.15;
+            final double coldMediumTemperature = 298.15;
+            // when
+            final double refrigeratorCOP = PhysicsCalc.Thermodynamics
+                .carnotReversibleRefrigeratorCOP(hotMediumTemperature, coldMediumTemperature);
+            // then
+            assertEquals(2.7105, refrigeratorCOP, DELTA4);
+        }
+
+        @Test
+        void testCarnotReversibleHeatPumpCOP() {
+            // given
+            final double hotMediumTemperature = 408.15;
+            final double coldMediumTemperature = 298.15;
+            // when
+            final double heatPumpCOP = PhysicsCalc.Thermodynamics
+                .carnotReversibleHeatPumpCOP(hotMediumTemperature, coldMediumTemperature);
+            // then
+            assertEquals(3.7105, heatPumpCOP, DELTA4);
+        }
+
+        @Test
+        void testRefrigeratorCOP() {
+            // given
+            final byte hotMediumRejected = 20;
+            final byte coldMediumTaken = 12;
+            // when
+            final double cop = PhysicsCalc.Thermodynamics.refrigeratorCOP(hotMediumRejected, coldMediumTaken);
+            // then
+            assertEquals(1.5, cop, DELTA1);
+        }
+
+        @Test
+        void testHeatPumpCOP() {
+            // given
+            final byte hotMediumRejected = 20;
+            final byte coldMediumTaken = 12;
+            // when
+            final double cop = PhysicsCalc.Thermodynamics.heatPumpCOP(hotMediumRejected, coldMediumTaken);
+            // then
+            assertEquals(2.5, cop, DELTA1);
+        }
+
+        @Test
+        void testWorkDoneOnRefrigeratorOrPump() {
+            // given
+            final byte hotMediumRejected = 20;
+            final byte coldMediumTaken = 12;
+            // when
+            final double workDone = PhysicsCalc.Thermodynamics
+                .workDoneOnRefrigeratorOrPump(hotMediumRejected, coldMediumTaken);
+            // then
+            assertEquals(8, workDone, DELTA1);
+        }
+
+        @Test
+        void testSpecificGasConstant() {
+            // given
+            final double molarMass = 31.99;
+            // when
+            final double constant = PhysicsCalc.Thermodynamics.specificGasConstant(molarMass);
+            // then
+            assertEquals(0.2599, constant, DELTA4);
+        }
+
+        @Test
+        void testSpecificGasConstantWithSpecificHeatCapacity() {
+            // given
+            final double constantPressure = 0.461;
+            final double specificGasConstant = 0.2599;
+            // when
+            final double constant = PhysicsCalc.Thermodynamics
+                .specificGasConstantWithSpecificHeatCapacity(constantPressure, specificGasConstant);
+            // then
+            assertEquals(0.2011, constant, DELTA4);
+        }
+
+        @Test
+        void testLatentHeat() {
+            // given
+            final byte mass = 20;
+            final double waterVaporizationSpecificLatentHeat = 2264.7;
+            // when
+            final double latentHeat = PhysicsCalc.Thermodynamics.latentHeat(mass, waterVaporizationSpecificLatentHeat);
+            // then
+            assertEquals(45_294, latentHeat, DELTA1);
+        }
+
+        @Test
+        void testCuriesLaw() {
+            // given
+            final double curieConstant = 1.3;
+            final byte magneticField = 1;
+            final double temperature = 293.15;
+            // when
+            final double magnetization = PhysicsCalc.Thermodynamics
+                .curiesLaw(curieConstant, magneticField, temperature);
+            // then
+            assertEquals(0.004435, magnetization, DELTA6);
+        }
+
+        @Test
+        void testSensibleHeat() {
+            // given
+            final double mass = 0.075;
+            final double airSpecificHeat = 1006.1;
+            final byte initialTemperature = 25;
+            final byte finalTemperature = -5;
+            // when
+            final double sensibleHeat = PhysicsCalc.Thermodynamics
+                .sensibleHeat(mass, airSpecificHeat, initialTemperature, finalTemperature);
+            // then
+            assertEquals(-2263.7, sensibleHeat, DELTA1);
+        }
+
+        @Test
+        void testThermalDiffusivity() {
+            // given
+            final double thermalConductivity = 0.607;
+            final short density = 997;
+            final short specificHeatCapacity = 4182;
+            // when
+            final double thermalDiffusivity = PhysicsCalc.Thermodynamics
+                .thermalDiffusivity(thermalConductivity, density, specificHeatCapacity);
+            // then
+            assertEquals(1.4558e-7, thermalDiffusivity, DELTA5);
+        }
+
+        @Test
+        void testIdealGasDensity() {
+            // given
+            final short specificGasConstant = 287;
+            final int absolutePressure = 101_325;
+            final double temperature = 288.15;
+            // when
+            final double density = PhysicsCalc.Thermodynamics
+                .idealGasDensity(specificGasConstant, absolutePressure, temperature);
+            // then
+            assertEquals(1.2252, density, DELTA4);
+        }
+
+        @Test
+        void testThermalEquilibrium() {
+            // given
+            final double massObj1 = 0.1;
+            final short specificHeatCapacityObj1 = 4181;
+            final double initialTemperatureObj1 = 13.3;
+
+            final double massObj2 = 0.1;
+            final short specificHeatCapacityObj2 = 4181;
+            final double initialTemperatureObj2 = 20;
+            // when
+            final double finalTemperature = PhysicsCalc.Thermodynamics.thermalEquilibrium(massObj1,
+                specificHeatCapacityObj1, initialTemperatureObj1, massObj2, specificHeatCapacityObj2,
+                initialTemperatureObj2);
+            // then
+            assertEquals(16.65, finalTemperature, DELTA2);
+        }
+
+        @Test
+        void testBoltzmannFactor() {
+            // given
+            final double energy1 = 1.6022e-20;
+            final double energy2 = 3.2044e-20;
+            final double temperature = 273.15;
+            // when
+            final double factor = PhysicsCalc.Thermodynamics.boltzmannFactor(energy1, energy2, temperature);
+            // then
+            assertEquals(70, factor, DELTA1);
+        }
+
+        @Test
+        void testCompressibility() {
+            // given
+            final int pressure = 100_000;
+            final byte volume = 1;
+            final double numberOfMoles = 44.6;
+            final short temperature = 293;
+            // when
+            final double factor = PhysicsCalc.Thermodynamics
+                .compressibility(pressure, volume, numberOfMoles, temperature);
+            // then
+            assertEquals(0.9204, factor, DELTA4);
+        }
+
+        @Test
+        void testAvgParticleVelocity() {
+            // given
+            final double carbonAtomMass = MassUnit.amuToKg(12);
+            final short temperature = 300;
+            // when
+            final double velocity = PhysicsCalc.Thermodynamics.avgParticleVelocity(carbonAtomMass, temperature);
+            // then
+            assertEquals(727.5, velocity, DELTA1);
+        }
+
+        @Test
+        void testRmsVelocity() {
+            // given
+            final double temperature = 300.15;
+            final double molarMass = 0.032;
+            // when
+            final double velocity = PhysicsCalc.Thermodynamics.rmsVelocity(temperature, molarMass);
+            // then
+            assertEquals(483.69, velocity, DELTA2);
+        }
+
+        @Test
+        void testMedianVelocity() {
+            // given
+            final double temperature = 300.15;
+            final double molarMass = 0.032;
+            // when
+            final double velocity = PhysicsCalc.Thermodynamics.medianVelocity(temperature, molarMass);
+            // then
+            assertEquals(394.935, velocity, DELTA3);
+        }
+
+        @Test
+        void testNewtonsLawOfCooling() {
+            // given
+            final byte ambientTemperature = 22;
+            final byte initialTemperature = 100;
+            final double coolingCoefficient = 0.015;
+            final byte temperatureAfterSeconds = 120;
+            // when
+            final double finalTemperature = PhysicsCalc.Thermodynamics.newtonsLawOfCooling(ambientTemperature,
+                initialTemperature, coolingCoefficient, temperatureAfterSeconds);
+            // then
+            assertEquals(34.89, finalTemperature, DELTA2);
+        }
+
+        @Test
+        void testNewtonsLawOfCoolingCoeff() {
+            // given
+            final byte area = 20;
+            final byte heatCapacity = 19;
+            final double heatTransferCoefficient = 0.01425;
+            // when
+            final double coeff = PhysicsCalc.Thermodynamics
+                .newtonsLawOfCoolingCoeff(area, heatCapacity, heatTransferCoefficient);
+            // then
+            assertEquals(0.015, coeff, DELTA3);
+        }
+
+        @Test
+        void testBiotNumber() {
+            // given
+            final byte surfaceArea = 20;
+            final byte volume = 4;
+            final double heatTransferCoefficient = 1.6;
+            final byte thermalConductivity = 3;
+            // when
+            final double number = PhysicsCalc.Thermodynamics
+                .biotNumber(surfaceArea, volume, heatTransferCoefficient, thermalConductivity);
+            // then
+            assertEquals(0.10667, number, DELTA5);
+        }
+
+        @Test
+        void testVanDerWaalsEquation() {
+            // given
+            final byte amountOfSubstance = 1;
+            final double volume = 0.00009;
+            final double pressure = 21_850_000;
+            final double constantA = 0.547;
+            final double constantB = 0.00003052;
+            // when
+            final double temperature = PhysicsCalc.Thermodynamics
+                .vanDerWaalsEquation(amountOfSubstance, volume, pressure, constantA, constantB);
+            // then
+            assertEquals(639.4, temperature, DELTA1);
+        }
+
+        @Test
+        void testHeatTransferCoeffConductionOnly() {
+            // given
+            final double area = 1.2;
+            final double[][] layers = new double[][]{{0.78, 0.002}, {0.026, 0.005}, {0.78, 0.002}};
+            // when
+            final double coeff = PhysicsCalc.Thermodynamics.heatTransferCoeffConductionOnly(area, layers);
+            // then
+            assertEquals(6.0779, coeff, DELTA4);
+        }
+
+        @Test
+        void testHeatTransferCoeffWithConductionAndConvectionOnBothSides() {
+            // given
+            final double area = 1.2;
+            final double convectionCoeffInner = 10;
+            final double convectionCoeffOuter = 40;
+            final double[][] layers = new double[][]{{0.78, 0.002}, {0.026, 0.005}, {0.78, 0.002}};
+            // when
+            final double coeff = PhysicsCalc.Thermodynamics.heatTransferCoeffWithConductionAndConvectionOnBothSides(
+                area, convectionCoeffInner, convectionCoeffOuter, layers);
+            // then
+            assertEquals(3.7217, coeff, DELTA4);
+        }
+
+        @Test
+        void testNusseltNumber() {
+            // given
+            final double characteristicLength = 1.2;
+            final byte convectionCoeff = 12;
+            final byte fluidThermalConductivity = 4;
+            // when
+            final double number = PhysicsCalc.Thermodynamics
+                .nusseltNumber(characteristicLength, convectionCoeff, fluidThermalConductivity);
+            // then
+            assertEquals(3.6, number, DELTA1);
+        }
+
+        @Test
+        void testNusseltNumberEmpiricalNaturalConvection() {
+            // given
+            final byte naturalConvectionCoeff = 3;
+            final double rayleighNumber = 1.9;
+            final double rayleighlCoeff = 2.1;
+            // when
+            final double number = PhysicsCalc.Thermodynamics
+                .nusseltNumberEmpiricalNaturalConvection(naturalConvectionCoeff, rayleighNumber, rayleighlCoeff);
+            // then
+            assertEquals(11.55, number, DELTA2);
+        }
+
+        @Test
+        void testNusseltNumberEmpiricalForcedConvection() {
+            // given
+            final double forcedConvectionCoeff = 0.037;
+            final double reynoldsNumber = 1.9;
+            final double reynoldsExponent = 0.8;
+            final int prandtlNumber = 438_984;
+            final double prandtlExponent = 0.33;
+            // when
+            final double number = PhysicsCalc.Thermodynamics.nusseltNumberEmpiricalForcedConvection(
+                forcedConvectionCoeff, reynoldsNumber, reynoldsExponent, prandtlNumber, prandtlExponent);
+            // then
+            assertEquals(4.5, number, DELTA1);
+        }
     }
 
     @Nested
     class Atmospheric {
         @Test
-        void testDryAirDensity() {
+        void testAirDensity() {
             // given
             final double airPressure = PressureUnit.hpaToPa(1013.25);
             final double airTemperature = TemperatureUnit.celsiusToKelvin(15);
             // when
-            final double airDensity = PhysicsCalc.Atmospheric.dryAirDensity(airPressure, airTemperature);
+            final double airDensity = PhysicsCalc.Atmospheric.airDensity(airPressure, airTemperature);
             // then
             assertEquals(1.225, airDensity, DELTA3);
         }
@@ -3136,7 +3951,7 @@ class PhysicsCalcTest {
             // given
             final double airPressure = PressureUnit.hpaToPa(1013.25);
             final double airTemperature = TemperatureUnit.celsiusToKelvin(15);
-            final byte relativeHumidity = 70;
+            final byte relativeHumidity = 70; // %
             // when
             final double airDensity = PhysicsCalc.Atmospheric
                 .moistAirDensity(airPressure, airTemperature, relativeHumidity);
@@ -3145,12 +3960,12 @@ class PhysicsCalcTest {
         }
 
         @Test
-        void testMoistAirDensityDewPoint() {
+        void testDewPoint() {
             // given
             final double airTemperature = 15;
-            final byte relativeHumidity = 70;
+            final byte relativeHumidity = 70; // %
             // when
-            final double dewPoint = PhysicsCalc.Atmospheric.moistAirDensityDewPoint(airTemperature, relativeHumidity);
+            final double dewPoint = PhysicsCalc.Atmospheric.dewPoint(airTemperature, relativeHumidity);
             // then
             assertEquals(9.57, dewPoint, DELTA2);
         }
@@ -3159,11 +3974,165 @@ class PhysicsCalcTest {
         void testWaterVaporPressure() {
             // given
             final double airTemperature = 15;
-            final byte relativeHumidity = 70;
+            final byte relativeHumidity = 70; // %
             // when
             final double pressure = PhysicsCalc.Atmospheric.waterVaporPressure(airTemperature, relativeHumidity);
             // then
             assertEquals(11.923, pressure, DELTA1);
+        }
+
+        @Test
+        void testRelativeHumidity() {
+            // given
+            final byte temperature = 35;
+            final double dewPoint = 21.1;
+            // when
+            final double relativeHumidity = PhysicsCalc.Atmospheric.relativeHumidity(temperature, dewPoint);
+            // then
+            assertEquals(44.45, relativeHumidity, DELTA2);
+        }
+
+        @Test
+        void testAbsoluteHumidity() {
+            // given
+            final byte relativeHumidity = 60; // %
+            final double airTemperature = TemperatureUnit.celsiusToKelvin(32);
+            final short vaporPressure = 2856;
+            // when
+            final double absHumidity = PhysicsCalc.Atmospheric
+                .absoluteHumidity(relativeHumidity, airTemperature, vaporPressure);
+            // then
+            assertEquals(0.02028, absHumidity, DELTA2);
+        }
+
+        @Test
+        void testAirDensityWithAltimeter() {
+            // given
+            final byte airTemperature = 33;
+            final byte relativeHumidity = 40; // %
+            final short altimeterSetting = 990;
+            final short stationElevation = 1500;
+            // when
+            final double airDensity = PhysicsCalc.Atmospheric.airDensity(airTemperature, relativeHumidity,
+                altimeterSetting, stationElevation);
+            // then
+            assertEquals(0.9304, airDensity, DELTA3);
+        }
+
+        @Test
+        void testDensityAltitude() {
+            // given
+            final double airDensity = 0.9304;
+            // when
+            final double densityAltitude = PhysicsCalc.Atmospheric.densityAltitude(airDensity);
+            // then
+            assertEquals(2.7744, densityAltitude, DELTA3);
+        }
+
+        @Test
+        void testAirPressureAtAltitude() {
+            // given
+            final byte pressureAtSeaLevel = 1;
+            final short summitOfMountEverest = 8949;
+            final double temperature = TemperatureUnit.celsiusToKelvin(-30);
+            // when
+            final double pressure = PhysicsCalc.Atmospheric
+                .airPressureAtAltitude(pressureAtSeaLevel, summitOfMountEverest, temperature);
+            // then
+            assertEquals(0.2844107, pressure, DELTA7);
+        }
+
+        @Test
+        void testTemperatureAtAltitude() {
+            // given
+            final byte tempAtSeaLevelCelsius = 15;
+            final short altitude = 5000;
+            // when
+            final double temp = PhysicsCalc.Atmospheric.temperatureAtAltitude(tempAtSeaLevelCelsius, altitude);
+            // then
+            assertEquals(-17.5, temp, DELTA1);
+        }
+
+        @Test
+        void testTrueAirSpeedOATCorrection() {
+            // given
+            final short meanSeaLevelAltitude = 3000;
+            final byte indicatedAirSpeed = 24;
+            final byte oatEstimationCorrection = 2;
+            // when
+            final double trueAirSpeed = PhysicsCalc.Atmospheric
+                .trueAirSpeedOATCorrection(meanSeaLevelAltitude, indicatedAirSpeed, oatEstimationCorrection);
+            // then
+            assertEquals(28.724, trueAirSpeed, 3.5);
+        }
+
+        @Test
+        void testTrueAirSpeedFromWindAndGroundSpeed() {
+            // given
+            final short groundSpeed = 320;
+            final byte windSpeed = 24;
+            final double windAngleRad = 0.2618;
+            // when
+            final double trueAirSpeed = PhysicsCalc.Atmospheric
+                .trueAirSpeedFromWindAndGroundSpeed(groundSpeed, windSpeed, windAngleRad);
+            // then
+            assertEquals(306.44, trueAirSpeed, 10);
+        }
+
+        @Test
+        void testHeatIndex() {
+            // given
+            final byte temperature = 95;
+            final byte relativeHumidity = 75;
+            // when
+            final double index = PhysicsCalc.Atmospheric.heatIndex(temperature, relativeHumidity);
+            // then
+            assertEquals(128, index, DELTA1);
+        }
+
+        @Test
+        void testAirDynamicViscosity() {
+            // given
+            final double temperature = 323.15;
+            // when
+            final double dynamicViscosity = PhysicsCalc.Atmospheric.airDynamicViscosity(temperature);
+            // then
+            assertEquals(0.0195355, dynamicViscosity, DELTA7);
+        }
+
+        @Test
+        void testAirKinematicViscosity() {
+            // given
+            final short pressure = 10_000;
+            final double temperature = 323.15;
+            // when
+            final double kinematicViscosity = PhysicsCalc.Atmospheric.airKinematicViscosity(pressure, temperature);
+            // then
+            assertEquals(0.18121, kinematicViscosity, DELTA5);
+        }
+
+        @Test
+        void testCloudBaseAltitude() {
+            // given
+            final byte temperature = 9;
+            final byte dewPoint = 6;
+            final byte elevation = 0;
+            // when
+            final double altitude = PhysicsCalc.Atmospheric.cloudBaseAltitude(temperature, dewPoint, elevation);
+            // then
+            assertEquals(374.1, altitude, DELTA1);
+        }
+
+        @Test
+        void testCloudBase() {
+            // given
+            final byte temperature = 9;
+            final double cloudAltitude = 374.1;
+            final byte elevation = 0;
+            // when
+            final double cloudTemperature = PhysicsCalc.Atmospheric.cloudBase(temperature, cloudAltitude, elevation);
+            // then
+            assertEquals(5.318, cloudTemperature, DELTA3);
         }
     }
 

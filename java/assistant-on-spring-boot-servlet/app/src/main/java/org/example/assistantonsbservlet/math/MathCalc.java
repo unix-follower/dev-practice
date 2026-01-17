@@ -5757,6 +5757,18 @@ public final class MathCalc {
             }
             return result;
         }
+
+        public static double[] vectorSubtract(double[] vector1, double[] vector2) {
+            Objects.requireNonNull(vector1);
+            Objects.requireNonNull(vector2);
+            checkSameDimensions(vector1, vector2);
+
+            final double[] result = new double[vector1.length];
+            for (int i = 0; i < vector1.length; i++) {
+                result[i] = vector1[i] - vector2[i];
+            }
+            return result;
+        }
     }
 
     /**

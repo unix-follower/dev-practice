@@ -17,7 +17,11 @@ public enum EnergyUnit {
     CALORIE, // cal
     KILOCALORIE, // kcal
     TON_OF_TNT, // t TNT
-    BETHE_FOE; // bethe/foe (10⁴⁴ of joules)
+    BETHE_FOE, // bethe/foe (10⁴⁴ of joules)
+    BRITISH_THERMAL_UNITS, // BTU
+    THOUSAND_BRITISH_THERMAL_UNITS, // kBTU
+    MILLION_BRITISH_THERMAL_UNITS, // MMBTU
+    THERM; //thm
 
     public static final double ONE_JOULE_IN_NANOJOULES = 1e+9;
 

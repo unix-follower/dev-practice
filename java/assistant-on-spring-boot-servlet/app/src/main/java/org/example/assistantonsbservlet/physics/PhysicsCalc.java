@@ -42,6 +42,7 @@ public final class PhysicsCalc {
 
     public static final short HORSEPOWER = 746;
     public static final double BOLTZMANN_CONSTANT = 1.380649e-23; // J/K
+    public static final double STEFAN_BOLTZMANN_CONSTANT = 5.67037442e-8; // 5.67037442×10⁻⁸ J/(s⋅m²⋅k⁴)
     public static final double REF_VOLTAGE_FOR_0_DBU = 0.77459667;
     public static final double VACUUM_PERMITTIVITY = 8.854187818814e-12; // ε₀≈8.8541×10⁻¹² F/m
     public static final double VACUUM_PERMEABILITY = Trigonometry.PI4 * 1e-7; // μ₀≈4π×10⁻⁷ H/m
@@ -53,6 +54,7 @@ public final class PhysicsCalc {
     public static final byte MONOATOMIC_GAS_DEGREES_OF_FREEDOM = 3;
     public static final double SUN_POTENTIAL_ENERGY_ERGS = 1.788e54;
     public static final double REDUCED_PLANCK_CONSTANT = 1.0545718001e-34; // h/2π; 1.0545718001×10⁻³⁴ J·s
+    public static final double UNIVERSAL_GAS_CONSTANT = 8.31446261815324; // J/(mol·K)
 
     private PhysicsCalc() {
     }
@@ -498,13 +500,17 @@ public final class PhysicsCalc {
         }
 
         /**
-         * @return v_g = √(v_a² + v_w² - (2 * v_a * v_w * cos(δ) - ω + α)). The units are knots (kn)
+         * @param trueAirspeed in m/s
+         * @param windSpeed    in m/s
+         * @return v_g = √(vₐ² + v_w² - (2 * vₐ * v_w * cos(δ) - ω + α)). The units are m/s
          */
-        public static double groundSpeed(double trueAirspeed, double windSpeed, double course, double windDirection) {
-            final double windCorAngle = windCorrectionAngle(trueAirspeed, windSpeed, course, windDirection);
-            return Math.sqrt(
-                trueAirspeed * trueAirspeed + windSpeed * windSpeed
-                    - (2 * trueAirspeed * windSpeed * Math.cos(course) - windDirection + windCorAngle)
+        public static double groundSpeed(
+            double trueAirspeed, double windSpeed, double courseRadians, double windDirectionRadians) {
+            final double windCorAngle = windCorrectionAngle(
+                trueAirspeed, windSpeed, courseRadians, windDirectionRadians);
+            final double heading = courseRadians + windDirectionRadians;
+            return squareRoot(trueAirspeed * trueAirspeed + windSpeed * windSpeed
+                - (2 * trueAirspeed * windSpeed * Trigonometry.cos(heading)) - windDirectionRadians + windCorAngle
             );
         }
 
@@ -946,6 +952,8 @@ public final class PhysicsCalc {
     }
 
     public static final class FluidMechanics {
+        public static final double STD_SEAWATER_SALINITY = 0.035; // 35‰
+
         private FluidMechanics() {
         }
 
@@ -961,6 +969,112 @@ public final class PhysicsCalc {
          */
         public static double fanMassAirflowInCFM(double powerOutputHp, double pressureInH2O, double efficiency) {
             return (powerOutputHp * efficiency * 6356) / pressureInH2O;
+        }
+
+        /**
+         * @return h_g = (h₁-h₂)/L = Δh/L
+         */
+        public static double hydraulicGradient(
+            double headAtPoint1Meters, double headAtPoint2Meters, double distanceMeters) {
+            return (headAtPoint1Meters - headAtPoint2Meters) / distanceMeters;
+        }
+
+        /**
+         * where:
+         * v — The terminal velocity;
+         * g — The acceleration due to gravity;
+         * d — The diameter of the sphere;
+         * μ — The dynamic viscosity of the fluid;
+         * ρp and ρm — Respectively the particle and the medium density.
+         *
+         * @return v = g × d² × (ρp - ρm)/(18 × μ). The units are m/s
+         */
+        public static double stokesLaw(
+            double accelerationOfGravity, double mediumViscosity, double mediumDensity,
+            double particleDensity, double particleDiameter) {
+            return accelerationOfGravity * (particleDiameter * particleDiameter)
+                * (particleDensity - mediumDensity) / (18 * mediumViscosity);
+        }
+
+        /**
+         * @return F₂ = (A₂/A₁)*F₁. The units are Pa
+         */
+        public static double hydraulicPressure(double pistonForceNewtons, double pistonAreaMeters) {
+            return pistonForceNewtons / pistonAreaMeters;
+        }
+
+        /**
+         * @return F₁ = (A₁/A₂)*F₂. The units are N
+         */
+        public static double hydraulicPressurePistonForce(
+            double pistonAreaMeters, double pistonArea2Meters, double secondPistonForceNewtons) {
+            return (pistonAreaMeters / pistonArea2Meters) * secondPistonForceNewtons;
+        }
+
+        /**
+         * @return F₂ = (A₂/A₁)*F₁. The units are N
+         */
+        public static double hydraulicPressureSecondPistonForce(
+            double pistonAreaMeters, double pistonArea2Meters, double pistonForceNewtons) {
+            return (pistonArea2Meters / pistonAreaMeters) * pistonForceNewtons;
+        }
+
+        /**
+         * d₁ = F₂/(F₁d₂)
+         * d₁ = A₂/(A₁d₂)
+         *
+         * @return W = F₁d₁ = F₂d₂. The units are J
+         */
+        public static double hydraulicPressureLiftingDistanceWorkDone(
+            double pistonForceNewtons, double liftingDistanceMeters) {
+            return pistonForceNewtons * liftingDistanceMeters;
+        }
+
+        /**
+         * @return The units are kg/m³
+         */
+        public static double waterDensity(double tempCelsius, double salinityPerMille) {
+            // Pure water density at t (kg/m³)
+            final double t = tempCelsius;
+            final double s = salinityPerMille;
+            final double tSquared = t * t;
+            final double tCubed = t * t * t;
+            final double tQuadruple = t * t * t * t;
+            final double rhoW = 999.842594 + 6.793952e-2 * t - 9.095290e-3 * tSquared
+                + 1.001685e-4 * tCubed - 1.120083e-6 * tQuadruple + 6.536332e-9 * tQuadruple * t;
+            // Seawater density at atmospheric pressure (UNESCO 1983)
+            return rhoW + (0.824493 - 0.0040899 * t + 0.000076438 * tSquared
+                - 0.00000082467 * tCubed + 0.0000000053875 * tQuadruple) * s
+                + (-0.00572466 + 0.00010227 * t - 0.0000016546 * tSquared) * Math.pow(s, 1.5)
+                + 0.00048314 * s * s;
+        }
+
+        /**
+         * S = m₁ / (m₁ + m₀)
+         * where m₀ is the mass of pure water and m₁ is the mass of salt.
+         *
+         * @return The units are kg
+         */
+        public static double massOfWater(double massOfSaltKg) {
+            return (massOfSaltKg / STD_SEAWATER_SALINITY) - massOfSaltKg;
+        }
+
+        /**
+         * @return The units are kg
+         */
+        public static double massOfSalt(double massOfWaterKg) {
+            return massOfWaterKg * STD_SEAWATER_SALINITY;
+        }
+
+        public static boolean sinkInWater(double waterDensity, double objectDensity) {
+            return objectDensity > waterDensity;
+        }
+
+        /**
+         * @return Pr = Momentum transport/Thermal (or heat) transport = ν/α
+         */
+        public static double prandtlNumber() {
+            throw new UnsupportedOperationException();
         }
     }
 
@@ -1495,6 +1609,28 @@ public final class PhysicsCalc {
         public static double powerDissipationInParallel(double voltageVolts, double[] resistors) {
             final double totalResistance = Electronics.equivalentResistanceInParallel(resistors);
             return Electronics.ohmsLawPowerGivenVoltageAndResistance(voltageVolts, totalResistance);
+        }
+
+        /**
+         * @return p = q × d. The units are C·m
+         */
+        public static double dipoleMoment(double distanceBetweenCharges, double chargeCoulombs) {
+            return chargeCoulombs * distanceBetweenCharges;
+        }
+
+        /**
+         * @return p(r) = ∑ⁿᵢ₌₁ qᵢ(rᵢ−r) = q₁(r₁−r) + q₂(r₂−r) + q₃(r₃−r)
+         */
+        public static double[] dipoleMomentSystemOfCharges(
+            double[] referencePoint, double[] charges, double[][] chargeCoordinates) {
+            final double[] results = new double[charges.length];
+            for (int i = 0; i < charges.length; i++) {
+                final double[] refDiff = LinearAlgebra.vectorSubtract(chargeCoordinates[i], referencePoint);
+                for (int j = 0; j < charges.length; j++) {
+                    results[j] += charges[i] * refDiff[j];
+                }
+            }
+            return results;
         }
     }
 
@@ -2376,6 +2512,13 @@ public final class PhysicsCalc {
         }
 
         /**
+         * @return c = √(γ × p / ρ)
+         */
+        public static double soundSpeedInWater(double adiabaticIndex, double pressure, double airDensity) {
+            return squareRoot(adiabaticIndex * pressure / airDensity);
+        }
+
+        /**
          * @return v = λf. The units are m/s
          */
         public static double soundSpeed(double wavelengthMeters, double frequencyHz) {
@@ -2759,11 +2902,560 @@ public final class PhysicsCalc {
         public static double waterHeatingTime(double totalEnergyJoules, double heatingPowerWatts, double efficiency) {
             return totalEnergyJoules / (efficiency * heatingPowerWatts);
         }
+
+        /**
+         * @return η = Eₒᵤₜ/Eᵢₙ ⋅ 100%. The units are %
+         */
+        public static double efficiency(double energyInputJoules, double energyOutputJoules) {
+            return energyOutputJoules / energyInputJoules * 100;
+        }
+
+        /**
+         * @return ηₜₕ,ᵣₑᵥ = 1 − T꜀/Tₕ. The units are %
+         */
+        public static double thermalEfficiency(double hotReservoirTempKelvins, double coldReservoirTempKelvins) {
+            return 1 - coldReservoirTempKelvins / hotReservoirTempKelvins;
+        }
+
+        /**
+         * @return qₕ = q꜀/(1 − ηₜₕ). The units are K
+         */
+        public static double thermalEfficiencyHotReservoirTemp(
+            double coldReservoirTempKelvins, double thermalEfficiencyPercent) {
+            return coldReservoirTempKelvins / (1 - thermalEfficiencyPercent / 100);
+        }
+
+        /**
+         * @return Ẇₙₑₜ,ₒᵤₜ = ηₜₕQ̇ᵢₙ. The units are J
+         */
+        public static double irreversibleThermalEfficiencyNetWorkOutput(
+            double heatReceivedJoules, double thermalEfficiencyPercent) {
+            return thermalEfficiencyPercent / 100 * heatReceivedJoules;
+        }
+
+        /**
+         * @return Qₒᵤₜ = Q̇ᵢₙ-Ẇₙₑₜ,ₒᵤₜ. The units are J
+         */
+        public static double irreversibleThermalEfficiencyHeatRejected(double heatReceived, double netWorkOutput) {
+            return heatReceived - netWorkOutput;
+        }
+
+        /**
+         * ∆Q = c⋅m⋅∆T
+         *
+         * @param specificHeat in J/(kg⋅K)
+         * @return S = ∆Q/∆T = c⋅m. The units are J/K
+         */
+        public static double heatCapacity(double massKg, double specificHeat) {
+            return specificHeat * massKg;
+        }
+
+        /**
+         * @param specificHeat       in J/(kg⋅K)
+         * @param initialTempCelsius T₁
+         * @param finalTempCelsius   T₂
+         * @return Q = m⋅c⋅ΔT. The units are J
+         */
+        public static double basicHeatTransfer(double massKg, double specificHeat,
+                                               double initialTempCelsius, double finalTempCelsius) {
+            return massKg * specificHeat * (finalTempCelsius - initialTempCelsius);
+        }
+
+        /**
+         * @param thermalConductivity in W/(m⋅K)
+         * @param crossSectionalArea  in m²
+         * @param coldTempCelsius     T꜀
+         * @param hotTempCelsius      Tₕ
+         * @return Q = (k⋅A⋅t⋅ΔT)/l. The units are J
+         */
+        public static double conductionHeatTransfer(
+            double thermalConductivity, double crossSectionalArea, double coldTempCelsius, double hotTempCelsius,
+            double timeTakenSeconds, double materialThicknessMeters) {
+            return (thermalConductivity * crossSectionalArea * timeTakenSeconds * (hotTempCelsius - coldTempCelsius))
+                / materialThicknessMeters;
+        }
+
+        /**
+         * @param heatTransferCoeff  in W/m²⋅K
+         * @param surfaceArea        in m²
+         * @param bulkTempCelsius    T₁
+         * @param surfaceTempCelsius T₂
+         * @return Q = H꜀⋅A⋅ΔT. The units are W
+         */
+        public static double heatTransferThroughConvection(
+            double heatTransferCoeff, double surfaceArea, double bulkTempCelsius, double surfaceTempCelsius) {
+            return heatTransferCoeff * surfaceArea * (surfaceTempCelsius - bulkTempCelsius);
+        }
+
+        /**
+         * @param hotObjectArea     in m²
+         * @param emissivity        The emissivity depends on the type of material and the temperature of the surface.
+         *                          It ranges from 0 (perfect reflector) to 1 (black body).
+         * @param objectTempKelvins T₁
+         * @param envTempKelvins    T₂
+         * @return Q = σ⋅e⋅A⋅(T₂⁴−T₁⁴). The units are W
+         */
+        public static double heatTransferByRadiation(
+            double hotObjectArea, double emissivity, double objectTempKelvins, double envTempKelvins) {
+            return STEFAN_BOLTZMANN_CONSTANT * emissivity * hotObjectArea
+                * (Math.pow(envTempKelvins, 4) - Math.pow(objectTempKelvins, 4));
+        }
+
+        /**
+         * PV = nRT
+         * <br/>
+         * The isothermal transformation (Boyle's law): PV = k.
+         * The isochoric transformation (Charles's law): P/T = k.
+         * The isobaric transformation (Gay-Lussac's law): V/T = k.
+         *
+         * @return P = nRT. The units are Pa
+         */
+        public static double idealGasLawPressure(double amountOfSubstance, double tempKelvins) {
+            return amountOfSubstance * UNIVERSAL_GAS_CONSTANT * tempKelvins;
+        }
+
+        /**
+         * PV = nRT
+         *
+         * @param volume            in m³
+         * @param amountOfSubstance in mol
+         * @return T = PV/nR. The units are Kelvins
+         */
+        public static double idealGasLawTemperature(double pressurePascals, double volume, double amountOfSubstance) {
+            return (pressurePascals * volume) / (amountOfSubstance * UNIVERSAL_GAS_CONSTANT);
+        }
+
+        /**
+         * p₁ × V₁ = p₂ × V₂
+         *
+         * @param initialVolume in m³
+         * @return Vf = Pᵢ · Vᵢ/Pf. The units are m³
+         */
+        public static double boylesLawFinalVolume(
+            double initialPressurePa, double initialVolume, double finalPressurePa) {
+            return initialPressurePa * initialVolume / finalPressurePa;
+        }
+
+        /**
+         * @param initialVolume in m³
+         * @param finalVolume   in m³
+         * @return Pf = (Vᵢ · Pᵢ)/Vf. The units are Pa
+         */
+        public static double boylesLawFinalPressure(double initialPressurePa, double initialVolume,
+                                                    double finalVolume) {
+            return (initialVolume * initialPressurePa) / finalVolume;
+        }
+
+        /**
+         * @return The units are Pa
+         */
+        public static double boylesLawFinalPressure(double initialPressurePa, double volumeRatio) {
+            return initialPressurePa * volumeRatio;
+        }
+
+        /**
+         * V₁ / T₁ = V₂ / T₂
+         *
+         * @param finalVolume m³
+         * @return V₁ = (T₁×V₂)/T₂. The units are m³
+         */
+        public static double charlesLawInitialVolume(
+            double initialTempKelvins, double finalTempKelvins, double finalVolume) {
+            return (initialTempKelvins * finalVolume) / finalTempKelvins;
+        }
+
+        /**
+         * @param initialVolume m³
+         * @return V₂ = V₁ / T₁ × T₂. The units are m³
+         */
+        public static double charlesLawFinalVolume(
+            double initialVolume, double initialTempKelvins, double finalTempKelvins) {
+            return initialVolume / initialTempKelvins * finalTempKelvins;
+        }
+
+        /**
+         * @param initialVolume m³
+         * @return T₂ = T₁ / V₁ × V₂. The units are K
+         */
+        public static double charlesLawFinalTemperature(
+            double initialVolume, double finalVolume, double initialTempKelvins) {
+            return initialTempKelvins / initialVolume * finalVolume;
+        }
+
+        /**
+         * @return p₂ = p₁ / T₁ × T₂. The units are Pa
+         */
+        public static double gayLussacsLawFinalPressure(
+            double initialPressurePa, double initialTempKelvins, double finalTempKelvins) {
+            return initialPressurePa / initialTempKelvins * finalTempKelvins;
+        }
+
+        /**
+         * @return T₂ = T₁ × p₂ / p₁. The units are K
+         */
+        public static double gayLussacsLawFinalTemperature(
+            double initialPressurePa, double finalPressurePa, double initialTempKelvins) {
+            return initialTempKelvins * finalPressurePa / initialPressurePa;
+        }
+
+        /**
+         * @param volume m³
+         * @return n = p₁ × V / (R × T₁). The units are mol
+         */
+        public static double amountOfGas(double initialPressurePa, double initialTempKelvins, double volume) {
+            return initialPressurePa * volume / (UNIVERSAL_GAS_CONSTANT * initialTempKelvins);
+        }
+
+        /**
+         * @return Q = I² × R × t. The units are J
+         */
+        public static double jouleHeating(double currentAmps, double resistanceOhms, double timeSeconds) {
+            return currentAmps * currentAmps * resistanceOhms * timeSeconds;
+        }
+
+        /**
+         * Daily evaporation rate: g_d = 24×(25+19×v_d)×A×(X_sd − X_d).
+         * <br/>
+         * Xₛ = 3.733×10⁻³ + 3.2×10⁻⁴×T + 3×10⁻⁶×T² + 4×10⁻⁷×T³
+         *
+         * @param surfaceAreaOfWater in m²
+         * @param airSpeed           in m/s
+         * @return gₕ = (25+19×v)×A×(Xₛ−X). The units are kg/hr
+         */
+        public static double evaporationRate(
+            double surfaceAreaOfWater, double airSpeed, double airTempCelsius, double relativeHumidityPercent) {
+            final double maxHumidity = 0.003733 + 0.00032 * airTempCelsius
+                + 0.000003 * airTempCelsius * airTempCelsius
+                + 0.0000004 * airTempCelsius * airTempCelsius * airTempCelsius;
+            final double actualHumidity = maxHumidity * (relativeHumidityPercent / 100);
+            return (25 + 19 * airSpeed) * surfaceAreaOfWater * (maxHumidity - actualHumidity);
+        }
+
+        /**
+         * @return η = (Tₕ−T꜀)/Tₕ⋅100%. The units are %
+         */
+        public static double carnotEfficiency(double coldReservoirTempKelvins, double hotReservoirTempKelvins) {
+            return (hotReservoirTempKelvins - coldReservoirTempKelvins) / hotReservoirTempKelvins * 100;
+        }
+
+        /**
+         * @return COPᵣ, ᵣₑᵥ = 1/(Tₕ/T꜀−1)
+         */
+        public static double carnotReversibleRefrigeratorCOP(
+            double hotMediumTempKelvins, double coldMediumTempKelvins) {
+            return reciprocal(hotMediumTempKelvins / coldMediumTempKelvins - 1);
+        }
+
+        /**
+         * @return COPₕₚ, ᵣₑᵥ = 1/(1-T꜀/Tₕ)
+         */
+        public static double carnotReversibleHeatPumpCOP(double hotMediumTempKelvins, double coldMediumTempKelvins) {
+            return reciprocal(1 - coldMediumTempKelvins / hotMediumTempKelvins);
+        }
+
+        /**
+         * COPᵣ = Q꜀/W
+         * Qₕ = Q꜀ + W
+         *
+         * @return COPᵣ = 1/(Qₕ/Q꜀−1)
+         */
+        public static double refrigeratorCOP(double hotMediumRejectedJoules, double coldMediumTakenJoules) {
+            return reciprocal(hotMediumRejectedJoules / coldMediumTakenJoules - 1);
+        }
+
+        /**
+         * @return COPₕₚ = 1/(1-Q꜀/Qₕ)
+         */
+        public static double heatPumpCOP(double hotMediumRejectedJoules, double coldMediumTakenJoules) {
+            return reciprocal(1 - coldMediumTakenJoules / hotMediumRejectedJoules);
+        }
+
+        /**
+         * @return W = Qₕ-Q꜀. The units are J
+         */
+        public static double workDoneOnRefrigeratorOrPump(
+            double hotMediumRejectedJoules, double coldMediumTakenJoules) {
+            return hotMediumRejectedJoules - coldMediumTakenJoules;
+        }
+
+        /**
+         * @param molarMass in g/mol
+         * @return Rₛ = R/M. The units are J/(g·K)
+         */
+        public static double specificGasConstant(double molarMass) {
+            return UNIVERSAL_GAS_CONSTANT / molarMass;
+        }
+
+        /**
+         * Rₛ = Cₚ - Cᵥ
+         *
+         * @param constantPressure    Cₚ in J/(g·K)
+         * @param specificGasConstant in J/(g·K)
+         * @return Cᵥ = Cₚ - Rₛ. The units are J/(g·K)
+         */
+        public static double specificGasConstantWithSpecificHeatCapacity(
+            double constantPressure, double specificGasConstant) {
+            return constantPressure - specificGasConstant;
+        }
+
+        /**
+         * @param specificLatentHeat in J/g
+         * @return Q = mL. The units are J
+         */
+        public static double latentHeat(double massGrams, double specificLatentHeat) {
+            return massGrams * specificLatentHeat;
+        }
+
+        /**
+         * @param curieConstant in K·A/(T·m)
+         * @return M = C/T × B. The units are A/m
+         */
+        public static double curiesLaw(double curieConstant, double magneticFieldTesla, double tempKelvins) {
+            return curieConstant / tempKelvins * magneticFieldTesla;
+        }
+
+        /**
+         * @param specificHeat in J/(kg·K)
+         * @return Q = mcₚ(T_f−Tᵢ). The units are J
+         */
+        public static double sensibleHeat(
+            double massKg, double specificHeat, double initialTempCelsius, double finalTempCelsius) {
+            return massKg * specificHeat * (finalTempCelsius - initialTempCelsius);
+        }
+
+        /**
+         * @param thermalConductivity  in W/(m·K)
+         * @param density              in kg/m³
+         * @param specificHeatCapacity in J/(kg·K)
+         * @return α = k/(ρCₚ). The units are m²/sec
+         */
+        public static double thermalDiffusivity(
+            double thermalConductivity, double density, double specificHeatCapacity) {
+            return thermalConductivity / (density * specificHeatCapacity);
+        }
+
+        /**
+         * Pν = RT
+         * where:
+         * P — Absolute pressure of the gas;
+         * ν — Specific volume of the gas;
+         * R — Gas constant, different for every gas;
+         * T — Absolute gas temperature, in kelvin (K).
+         * <br/>
+         * ν = 1/ρ
+         * P/ρ = RT
+         * ρ = Mp/RT
+         * where:
+         * M — Molar mass, in kg/mol or g/mol;
+         * R — Universal gas constant.
+         *
+         * @param specificGasConstant in J/(kg·K)
+         * @return ρ = P/RT. The units are kg/m³
+         */
+        public static double idealGasDensity(double specificGasConstant, double pressurePa, double tempKelvins) {
+            return pressurePa / (specificGasConstant * tempKelvins);
+        }
+
+        /**
+         * @param specificHeatCapacityObj1 in J/(kg·K)
+         * @param specificHeatCapacityObj2 in J/(kg·K)
+         * @return T_f = (m₁c₁t₁ᵢ + m₂c₂t₂ᵢ)/(m₁c₁+m₂c₂). The units are °C
+         */
+        public static double thermalEquilibrium(
+            double massKgObj1, double specificHeatCapacityObj1, double initialTempKelvinsObj1,
+            double massKgObj2, double specificHeatCapacityObj2, double initialTempKelvinsObj2) {
+            final double obj1Prod = massKgObj1 * specificHeatCapacityObj1 * initialTempKelvinsObj1;
+            final double obj2Prod = massKgObj2 * specificHeatCapacityObj2 * initialTempKelvinsObj2;
+            return (obj1Prod + obj2Prod)
+                / (massKgObj1 * specificHeatCapacityObj1 + massKgObj2 * specificHeatCapacityObj2);
+        }
+
+        /**
+         * Boltzmann distribution (Gibbs distribution): P = 1/Z * e^(−E/k_B*T).
+         * where:
+         * Z – Normalization constant;
+         * E – Energy of the state (in joules);
+         * k_B - the Boltzmann constant;
+         * T – Temperature (in kelvins);
+         * P – Probability that this state occurs.
+         *
+         * @return P₂/P₁ = e^(E₂−E₁)/(k_B*T)
+         */
+        public static double boltzmannFactor(double energy1Joules, double energy2Joules, double tempKelvins) {
+            return Math.exp((energy2Joules - energy1Joules) / (BOLTZMANN_CONSTANT * tempKelvins));
+        }
+
+        /**
+         * @param volume m³
+         * @return Z = P × V / n × R × T = V_actual/V_ideal
+         */
+        public static double compressibility(double pressurePa, double volume, double numOfMoles, double tempKelvins) {
+            return (pressurePa * volume) / (numOfMoles * UNIVERSAL_GAS_CONSTANT * tempKelvins);
+        }
+
+        /**
+         * @return f(v) = 4/√π * (m/(2kT))^3/2 * v²e^(−mv²/2kT). The units are m/s
+         */
+        public static double particlesVelocity(double particleMassKg, double tempKelvins, double velocity) {
+            final double vSquared = velocity * velocity;
+            return 4 / squareRoot(Math.PI) * Math.pow(particleMassKg / (2 * BOLTZMANN_CONSTANT * tempKelvins), 3. / 2)
+                * vSquared * Math.exp(-particleMassKg * vSquared / 2 * BOLTZMANN_CONSTANT * tempKelvins);
+        }
+
+        /**
+         * @return √(8RT/(πm)). The units are m/s
+         */
+        public static double avgParticleVelocity(double particleMassKg, double tempKelvins) {
+            return squareRoot(8 * BOLTZMANN_CONSTANT * tempKelvins / (Math.PI * particleMassKg));
+        }
+
+        /**
+         * @return vᵣₘₛ = √((3RT)/M). The units are m/s
+         */
+        public static double rmsVelocity(double tempKelvins, double molarMassKg) {
+            return squareRoot(3 * UNIVERSAL_GAS_CONSTANT * tempKelvins / molarMassKg);
+        }
+
+        /**
+         * @return vₘ = √((2RT)/M). The units are m/s
+         */
+        public static double medianVelocity(double tempKelvins, double molarMassKg) {
+            return squareRoot(2 * UNIVERSAL_GAS_CONSTANT * tempKelvins / molarMassKg);
+        }
+
+        /**
+         * @param coolingCoeff The larger the number, the faster the cooling.
+         * @param timeSeconds  Time of the cooling. What's the temperature after x seconds?
+         * @return T = T_amb + (T_initial - T_amb) × e⁻ᵏᵗ. The units are °C
+         */
+        public static double newtonsLawOfCooling(
+            double ambientTempCelsius, double initialTempCelsius, double coolingCoeff, double timeSeconds) {
+            return ambientTempCelsius + (initialTempCelsius - ambientTempCelsius)
+                * Math.exp(-coolingCoeff * timeSeconds);
+        }
+
+        /**
+         * @param area              in m²
+         * @param heatCapacity      in J/K
+         * @param heatTransferCoeff in W/(m²·K)
+         * @return k = (hA)/C. The units are per second
+         */
+        public static double newtonsLawOfCoolingCoeff(double area, double heatCapacity, double heatTransferCoeff) {
+            return (heatTransferCoeff * area) / heatCapacity;
+        }
+
+        /**
+         * L꜀ = V/A
+         *
+         * @param surfaceArea         in m²
+         * @param volume              in m³
+         * @param heatTransferCoeff   in W/(m²·K)
+         * @param thermalConductivity in W/(m·K)
+         * @return Bi = h/k *L꜀. The units are
+         */
+        public static double biotNumber(
+            double surfaceArea, double volume, double heatTransferCoeff, double thermalConductivity) {
+            final double characteristicLength = volume / surfaceArea;
+            return heatTransferCoeff / thermalConductivity * characteristicLength;
+        }
+
+        /**
+         * 8P꜀V꜀ = 3RT꜀
+         * where:
+         * critical point: pressure P꜀, temperature T꜀, and the molar volume V꜀.
+         * <br/>
+         * (P+a*(n²/V²))(V−nb) = nRT
+         * where:
+         * P — Pressure of the gas;
+         * V — Volume of the gas;
+         * T — Temperature of the gas;
+         * n — Number of moles of gas;
+         * a and b — Van der Waals parameters.
+         * a = 3P꜀V꜀² b = V꜀/3
+         *
+         * @param volume    in m³
+         * @param constantB in m³
+         * @return The units are K
+         */
+        public static double vanDerWaalsEquation(
+            double amountOfSubstance, double volume, double pressurePa, double constantAPa, double constantB) {
+            final double numerator = (pressurePa + constantAPa * Math.pow(amountOfSubstance, 2) / Math.pow(volume, 2)) *
+                (volume - amountOfSubstance * constantB);
+            final double denominator = amountOfSubstance * UNIVERSAL_GAS_CONSTANT;
+            return numerator / denominator;
+        }
+
+        /**
+         * @param area   m²
+         * @param layers [Thermal conductivity (k) in W/(m⋅K), Thickness (L) in m]
+         * @return R = 1/U = 1/A * (1/hᵢ + ∑ⁿᵢ₌₁ Lᵢ/kᵢ + 1/hₒ)
+         */
+        public static double heatTransferCoeffConductionOnly(double area, double[][] layers) {
+            final double thermalResistance = reciprocal(area) * Arrays.stream(layers)
+                .mapToDouble(layer -> layer[Constants.ARR_2ND_INDEX] / layer[Constants.ARR_1ST_INDEX])
+                .sum();
+            return reciprocal(thermalResistance);
+        }
+
+        /**
+         * R = 1/A * (1/hᵢ + ∑ⁿᵢ₌₁ Lᵢ/kᵢ + 1/hₒ)
+         *
+         * @param area                     m²
+         * @param convectionHeatCoeffInner W/(m²⋅K)
+         * @param convectionHeatCoeffOuter W/(m²⋅K)
+         * @param layers                   [Thermal conductivity (k) in W/(m⋅K), Thickness (L) in m]
+         * @return U = 1/R
+         */
+        public static double heatTransferCoeffWithConductionAndConvectionOnBothSides(
+            double area, double convectionHeatCoeffInner, double convectionHeatCoeffOuter, double[][] layers) {
+            final double thermalResistance = reciprocal(area) * (reciprocal(convectionHeatCoeffInner)
+                + Arrays.stream(layers)
+                .mapToDouble(layer -> layer[Constants.ARR_2ND_INDEX] / layer[Constants.ARR_1ST_INDEX])
+                .sum() + reciprocal(convectionHeatCoeffOuter));
+            return reciprocal(thermalResistance);
+        }
+
+        /**
+         * Nu = q_conv/q_cond
+         * where:
+         * Nu – Nussel number, dimensionless;
+         * q_conv – Heat transfer due to convection;
+         * q_cond – Heat transfer due to conduction.
+         *
+         * @param convectionCoeff          W/(m²⋅K)
+         * @param fluidThermalConductivity W/(m⋅K)
+         * @return Nu = (h꜀×L)/k_f
+         */
+        public static double nusseltNumber(
+            double characteristicLengthMeters, double convectionCoeff, double fluidThermalConductivity) {
+            return (convectionCoeff * characteristicLengthMeters) / fluidThermalConductivity;
+        }
+
+        /**
+         * @return Nu = C×Raⁿ
+         */
+        public static double nusseltNumberEmpiricalNaturalConvection(
+            double naturalConvectionCoeff, double rayleighNumber, double rayleighlCoeff) {
+            return naturalConvectionCoeff * Math.pow(rayleighNumber, rayleighlCoeff);
+        }
+
+        /**
+         * @return Nu = C×Reᵐ×Prⁿ
+         */
+        public static double nusseltNumberEmpiricalForcedConvection(
+            double forcedConvectionCoeff, double reynoldsNumber, double reynoldsExponent,
+            double prandtlNumber, double prandtlExponent) {
+            return forcedConvectionCoeff * Math.pow(reynoldsNumber, reynoldsExponent)
+                * Math.pow(prandtlNumber, prandtlExponent);
+        }
     }
 
     public static final class Atmospheric {
         public static final double DRY_AIR_GAS_CONSTANT = 287.052874; // J/(kg·K)
+        public static final double AIR_MOLAR_MASS = 0.0289644; // kg/mol
         public static final double WATER_VAPOR_GAS_CONSTANT = 461.495; // J/(kg·K)
+        public static final double CRITICAL_WATER_PRESSURE = 22.064; // MPa
+        public static final double CRITICAL_WATER_TEMPERATURE = 647.096; // K
 
         private Atmospheric() {
         }
@@ -2771,7 +3463,7 @@ public final class PhysicsCalc {
         /**
          * @return ρ = P/(R×T). The units are kg/m³
          */
-        public static double dryAirDensity(double airPressurePascals, double airTempKelvins) {
+        public static double airDensity(double airPressurePascals, double airTempKelvins) {
             return airPressurePascals / (DRY_AIR_GAS_CONSTANT * airTempKelvins);
         }
 
@@ -2800,16 +3492,16 @@ public final class PhysicsCalc {
         }
 
         /**
-         * α = ln(RH/100) + ((17.62T)/(243.12+T))
+         * Magnus water vapor coefficients: β = 17.625 λ = 243.04°C or β = 17.62T λ = 243.12°C.
          *
-         * @return DP = (243.12α)/(17.62−α). The units are Celsius
+         * @return Dₚ = (λ×(ln(RH/100) + (βT)/(λ+T))) / (β−(ln(RH/100) + (βT)/(λ+T)). The units are °C
          */
-        public static double moistAirDensityDewPoint(double airTemperatureCelsius, double relativeHumidityPercent) {
-            final double waterVaporCoeff = 17.62;
-            final double waterVaporCoeff2 = 243.12;
-            final double alpha = Algebra.ln(relativeHumidityPercent / 100)
-                + ((waterVaporCoeff * airTemperatureCelsius) / (waterVaporCoeff2 + airTemperatureCelsius));
-            return (waterVaporCoeff2 * alpha) / (waterVaporCoeff - alpha);
+        public static double dewPoint(double airTemperatureCelsius, double relativeHumidityPercent) {
+            final double beta = 17.625;
+            final double lambda = 243.04;
+            final double tmp = ln(relativeHumidityPercent / 100)
+                + ((beta * airTemperatureCelsius) / (lambda + airTemperatureCelsius));
+            return (lambda * tmp) / (beta - tmp);
         }
 
         /**
@@ -2821,6 +3513,197 @@ public final class PhysicsCalc {
             final double saturationVaporPressure = 6.1078 * Math.pow(10,
                 (7.5 * airTemperatureCelsius) / (airTemperatureCelsius + 237.3));
             return saturationVaporPressure * (relativeHumidityPercent / 100);
+        }
+
+        /**
+         * @return RH = 100 × (e^(17.625×T)/(243.04+T) / e^(17.625×Dₚ)/(243.04+Dₚ)). The units are %
+         */
+        public static double relativeHumidity(double tempCelsius, double dewPointCelsius) {
+            return 100 * (Math.exp((17.625 * dewPointCelsius) / (243.04 + dewPointCelsius))
+                / Math.exp((17.625 * tempCelsius) / (243.04 + tempCelsius)));
+        }
+
+        /**
+         * @return RH = 100 × P_w / P_ws. The units are %
+         */
+        public static double relativeHumidityFromVaporPressure(double vaporPressure, double saturationVaporPressure) {
+            return 100 * (vaporPressure / saturationVaporPressure);
+        }
+
+        /**
+         * @return AH = (RH × P)/(R_w × T × 100). The units are kg/m³
+         */
+        public static double absoluteHumidity(
+            double relativeHumidityPercent, double airTempKelvin, double saturationVaporPressurePa) {
+            return (relativeHumidityPercent * saturationVaporPressurePa)
+                / (WATER_VAPOR_GAS_CONSTANT * airTempKelvin * 100);
+        }
+
+        /**
+         * where V – Volume of air and water vapor mixture.
+         *
+         * @return H = m/V. The units are g/m³
+         */
+        public static double absoluteHumidity(double massOfWaterVapor, double mixtureVolume) {
+            return massOfWaterVapor / mixtureVolume;
+        }
+
+        /**
+         * where:
+         * a₁, a₂,..,a₆ – Empirical constants;
+         * τ = 1 − T/T꜀.
+         *
+         * @return Pₛ = P꜀*e^((T꜀/T) * (a₁τ + a₂τ^1.5 + a₃τ³ + a₄τ^3.5 + a₅τ⁴ + a₆τ^7.5)). The units are Pa
+         */
+        public static double saturationVaporPressureOfWaterAtTemperature(double temperature) {
+            final double tau = 1 - temperature / CRITICAL_WATER_TEMPERATURE;
+            final double a1 = -7.85951783;
+            final double a4 = 22.6807411;
+            final double a2 = 1.84408259;
+            final double a5 = -15.9618719;
+            final double a3 = -11.7866497;
+            final double a6 = 1.80122502;
+            return CRITICAL_WATER_PRESSURE * Math.exp((CRITICAL_WATER_TEMPERATURE / temperature)
+                * (a1 * tau + a2 * Math.pow(tau, 1.5) + a3 * Math.pow(tau, 3) + a4 * Math.pow(tau, 3.5)
+                + a5 * Math.pow(tau, 4) + a6 * Math.pow(tau, 7.5)));
+        }
+
+        /**
+         * P = (Aₛ^0.190263 − (8.417286×10⁻⁵×h))^1/0.190263
+         * where:
+         * P is the air pressure, in millibars (mbar);
+         * Aₛ is the altimeter setting (mbar);
+         * h is the weather station elevation (m).
+         * <br/>
+         * Pᵥ = R_H × 6.1078 × 10^(7.5×T)/(T+273.3)
+         * P = P_d + Pᵥ
+         *
+         * @return ρ = P_d/(R_d×T) + Pᵥ/(Rᵥ×T). The units are kg/m³
+         */
+        public static double airDensity(double airTemperatureCelsius, double relativeHumidityPercent,
+                                        double altimeterSetting, double stationElevation) {
+            final double airPressure = Math.pow(
+                Math.pow(altimeterSetting, 0.190263) - (8.417286 * 0.00001 * stationElevation),
+                reciprocal(0.190263));
+            final double waterVaporPressure = waterVaporPressure(airTemperatureCelsius, relativeHumidityPercent);
+            final double dryAirPressure = airPressure - waterVaporPressure;
+            final double airTempK = TemperatureUnit.celsiusToKelvin(airTemperatureCelsius);
+            return PressureUnit.hpaToPa(dryAirPressure) / (DRY_AIR_GAS_CONSTANT * airTempK)
+                + PressureUnit.hpaToPa(waterVaporPressure) / (WATER_VAPOR_GAS_CONSTANT * airTempK);
+        }
+
+        /**
+         * @return H = 44.3308−42.2665×ρ^0.234969. The units are meters
+         */
+        public static double densityAltitude(double airDensity) {
+            return 44.3308 - 42.2665 * Math.pow(airDensity, 0.234969);
+        }
+
+        /**
+         * @return P = P₀ × e^(-g × M × (h - h₀)/(R × T). The units are Pa
+         */
+        public static double airPressureAtAltitude(
+            double pressureAtSeaLevel, double altitudeMeters, double tempKelvins) {
+            // The reference level is located at sea level, h₀ = 0.
+            return pressureAtSeaLevel * Math.exp((-GRAVITATIONAL_ACCELERATION_ON_EARTH * AIR_MOLAR_MASS
+                * altitudeMeters) / (UNIVERSAL_GAS_CONSTANT * tempKelvins));
+        }
+
+        /**
+         * The lapse rate = 0.0065°C per meter. For imperial or US customary system: 0.00356.
+         *
+         * @return The units are °C
+         */
+        public static double temperatureAtAltitude(double tempAtSeaLevelCelsius, double altitudeMeters) {
+            return tempAtSeaLevelCelsius - 0.0065 * altitudeMeters;
+        }
+
+        /**
+         * where:
+         * OAT - Outside Air Temperature correction term. We use it to take into account the temperature conditions
+         * prevalent in the air the airplane is in;
+         * A - Altitude of the airplane; and
+         * TAS & IAS - True airspeed and indicated airspeed, respectively.
+         *
+         * @return TAS = (IAS * OAT * A / 1000) + IAS. The units are m/s
+         */
+        public static double trueAirSpeedOATCorrection(
+            double meanSeaLevelAltitudeMeters, double indicatedAirSpeed, double oatEstimationCorrectionPercent) {
+            return (indicatedAirSpeed * oatEstimationCorrectionPercent / 100 * meanSeaLevelAltitudeMeters / 1000)
+                + indicatedAirSpeed;
+        }
+
+        /**
+         * GS = TAS + W * cos θ
+         * where:
+         * GS - Ground speed;
+         * W - Wind speed;
+         * θ - Angle between the wind direction and aircraft's motion.
+         *
+         * @return The units are m/s
+         */
+        public static double trueAirSpeedFromWindAndGroundSpeed(
+            double groundSpeedMeters, double windSpeedMeters, double windAngleRadians) {
+            final double headwind = windSpeedMeters * Trigonometry.cos(windAngleRadians);
+            final double crosswind = windSpeedMeters * Trigonometry.sin(windAngleRadians);
+            return squareRoot(Math.pow(groundSpeedMeters - headwind, 2) + Math.pow(crosswind, 2));
+        }
+
+        /**
+         * @return result according to Rothfusz regression formula. The units are °F
+         */
+        public static double heatIndex(double temperatureFahrenheit, double relativeHumidityPercent) {
+            final double t = temperatureFahrenheit;
+            final double rh = relativeHumidityPercent;
+            final double tSquared = t * t;
+            final double rhSquared = rh * rh;
+            return -42.379
+                + 2.04901523 * t
+                + 10.14333127 * rh
+                - 0.22475541 * t * rh
+                - 0.00683783 * tSquared
+                - 0.05481717 * rhSquared
+                + 0.00122874 * tSquared * rh
+                + 0.00085282 * t * rhSquared
+                - 0.00000199 * tSquared * rhSquared;
+        }
+
+        /**
+         * where:
+         * 1.458×10⁻⁶ — Constant;
+         * 110.4 — Another empirical constant.
+         *
+         * @return μ = (1.458×10⁻⁶ × T^3/2) / (T+110.4). The units are mPa·s
+         */
+        public static double airDynamicViscosity(double tempKelvins) {
+            return (0.001458 * Math.pow(tempKelvins, 3. / 2)) / (tempKelvins + 110.4);
+        }
+
+        /**
+         * @return ν = μ/ρ. The units are St
+         */
+        public static double airKinematicViscosity(double pressurePascals, double tempKelvins) {
+            final double airDensity = airDensity(pressurePascals, tempKelvins);
+            final double dynamicViscosity = airDynamicViscosity(tempKelvins);
+            return dynamicViscosity / airDensity;
+        }
+
+        /**
+         * For °F, cloud base = (temperature - dew point) / 4.4 × 1000 + elevation
+         *
+         * @return cloud base = (temperature - dew point) / 10 × 1247 + elevation. The units are °C
+         */
+        public static double cloudBaseAltitude(double tempCelsius, double dewPointCelsius, double elevationMeters) {
+            return (tempCelsius - dewPointCelsius) / 10 * 1247 + elevationMeters;
+        }
+
+        /**
+         * For °F, cloud temperature = temperature - 5.4 × (cloud base - elevation) / 1000
+         *
+         * @return cloud temperature = temperature - 0.984 × (cloud base - elevation) / 100. The units are °C
+         */
+        public static double cloudBase(double tempCelsius, double cloudBaseAltitude, double elevationMeters) {
+            return tempCelsius - 0.984 * (cloudBaseAltitude - elevationMeters) / 100;
         }
     }
 
