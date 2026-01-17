@@ -20,6 +20,13 @@ public enum MassUnit {
     ATOMIC_MASS_UNITS, // amu, u
     TROY_OUNCE; // oz t
 
+    public enum Molar {
+        GRAMS_PER_MOLE, // g/mol
+        KILOGRAMS_PER_MOLE, // kg/mol
+        KILOGRAMS_PER_KILOMOLE, // kg/kmol
+        POUNDS_PER_POUND_MOLE // lb/lbmol
+    }
+
     public static final double ONE_SOLAR = 1.989e30;
 
     public static double grToKg(double grains) {
@@ -36,6 +43,10 @@ public enum MassUnit {
 
     public static double ergsToBethe(double ergs) {
         return ergs / 1e51;
+    }
+
+    public static double amuToKg(double atomicMassUnits) {
+        return atomicMassUnits * 1.66053906660e-27;
     }
 
     public static double sunsToKg(double suns) {
