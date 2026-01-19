@@ -11,4 +11,8 @@ public enum InductanceUnit {
     public static double microHenriesToHenries(double microHenries) {
         return microHenries * ONE_MICROHENRY_IN_HENRIES;
     }
+
+    public static double milliHenriesToHenries(double milliHenries) {
+        return milliHenries / 1000;
+    }
 }

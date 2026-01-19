@@ -45,7 +45,11 @@ public final class PhysicsCalc {
     public static final double STEFAN_BOLTZMANN_CONSTANT = 5.67037442e-8; // 5.67037442×10⁻⁸ J/(s⋅m²⋅k⁴)
     public static final double REF_VOLTAGE_FOR_0_DBU = 0.77459667;
     public static final double VACUUM_PERMITTIVITY = 8.854187818814e-12; // ε₀≈8.8541×10⁻¹² F/m
-    public static final double VACUUM_PERMEABILITY = Trigonometry.PI4 * 1e-7; // μ₀≈4π×10⁻⁷ H/m
+    /**
+     * Permeability of free space
+     * μ₀≈4π×10⁻⁷ H/m; 1.25664×10⁻⁶ T⋅m/A
+     */
+    public static final double VACUUM_PERMEABILITY = Trigonometry.PI4 * 1e-7;
     public static final short SOUND_SPEED = 343; // Normal room temperature at 20°C; m/s or 1130 ft/s
     public static final double SOUND_SPEED_IN_DRY_AIR = 331.3; // at 0°C; m/s
     public static final double SOUND_SPEED_IN_AIR_KELVIN_REF_POINT = 273.15; // at 0°C
@@ -636,6 +640,97 @@ public final class PhysicsCalc {
          */
         public static double[] haleQuarterMile(double weight, double power) {
             return calculateQuarterMile(5.825, 234, weight, power);
+        }
+
+        /**
+         * For rotating objects
+         *
+         * @return ω = Δθ/Δt. The units are rad/s
+         */
+        public static double angularFrequency(double angularDisplacementRad, double timeTakenSeconds) {
+            return angularDisplacementRad / timeTakenSeconds;
+        }
+
+        /**
+         * @return Δθ = ωΔt. The units are rad/s
+         */
+        public static double angularDisplacementFromAngularFrequency(double angularFrequency, double timeTakenSeconds) {
+            return angularFrequency * timeTakenSeconds;
+        }
+
+        /**
+         * @return Δt = Δθ/ω. The units are sec
+         */
+        public static double timeTakenFromAngularFrequency(double angularFrequency, double angularDisplacement) {
+            return angularDisplacement / angularFrequency;
+        }
+
+        /**
+         * @return ω = 2πf = 2π/T. The units are rad/s
+         */
+        public static double angularFrequencyOfOscillatingObject(double timePeriodSeconds) {
+            return Trigonometry.PI2 / timePeriodSeconds;
+        }
+
+        /**
+         * @param angularFrequency in rad/s
+         * @return f = ω/2π. The units are Hz
+         */
+        public static double frequencyFromAngularFrequencyOfOscillatingObject(double angularFrequency) {
+            return angularFrequency / Trigonometry.PI2;
+        }
+
+        /**
+         * @return τ = r F sin(θ). The units are N⋅m
+         */
+        public static double torque(double distanceMeters, double forceNewtons, double angleRad) {
+            return distanceMeters * forceNewtons * Trigonometry.sin(angleRad);
+        }
+
+        /**
+         * Angular frequency is a scalar, whereas angular velocity is a (pseudo)vector.
+         *
+         * @param initialAngularVelocity in rad
+         * @param angularAcceleration    in rad
+         * @return ω = ω₀ + αt. The units are rad/s
+         */
+        public static double angularVelocityForConstantAngularAcceleration(
+            double initialAngularVelocity, double angularAcceleration, double timeSeconds) {
+            return initialAngularVelocity + angularAcceleration * timeSeconds;
+        }
+
+        /**
+         * Angular frequency is a scalar, whereas angular velocity is a (pseudo)vector.
+         * Angular velocity difference.
+         *
+         * @param initialAngle in rad
+         * @param finalAngle   in rad
+         * @return α = (ω₂−ω₁)/t. The units are rad/s
+         */
+        public static double angularVelocity(double initialAngle, double finalAngle, double timeSeconds) {
+            return (finalAngle - initialAngle) / timeSeconds;
+        }
+
+        /**
+         * Angular acceleration — Describes how the angular velocity changes with time.
+         *
+         * @param initialAngularVelocity in rad/s
+         * @param finalAngularVelocity   in rad/s
+         * @return α = (ω₂−ω₁)/t. The units are rad/s²
+         */
+        public static double angularAcceleration(
+            double initialAngularVelocity, double finalAngularVelocity, double timeSeconds) {
+            return angularVelocity(initialAngularVelocity, finalAngularVelocity, timeSeconds);
+        }
+
+        /**
+         * Radial velocity
+         *
+         * @param tangentialAcceleration in m/s²
+         * @return α = a/R. The units are rad/s²
+         */
+        public static double angularAcceleration(double tangentialAcceleration, double radiusMeters) {
+            return tangentialAcceleration / radiusMeters;
         }
     }
 
@@ -1632,6 +1727,88 @@ public final class PhysicsCalc {
             }
             return results;
         }
+
+        /**
+         * @return ϕ = Q/ε₀. The units are V·m
+         */
+        public static double gaussLaw(double electricChargeCoulombs) {
+            return electricChargeCoulombs / VACUUM_PERMITTIVITY;
+        }
+
+        /**
+         * @param electricFlux in V·m
+         * @return Q = ϕ⋅ε₀. The units are C
+         */
+        public static double gaussLawCharge(double electricFlux) {
+            return electricFlux * VACUUM_PERMITTIVITY;
+        }
+
+        /**
+         * χ = μ/μ₀ − 1 = μᵣ−1
+         * μ₀ = 4π10⁻⁷ H/m is the magnetic permeability of free space.
+         *
+         * @return The units are H/m
+         */
+        public static double magneticPermeability(double relativePermeability) {
+            return VACUUM_PERMEABILITY * relativePermeability;
+        }
+
+        public static double magneticRelativePermeability(double susceptibility) {
+            return 1 + susceptibility;
+        }
+
+        public static double magneticSusceptibility(double relativePermeability) {
+            return relativePermeability - 1;
+        }
+
+        /**
+         * RH = - 1/(n × q)
+         * where:
+         * n [1/m³] — Concentration of the carriers;
+         * q [C] — Charge of a single carrier.
+         *
+         * @return RH = V × t / (I × B). The units are m³/C
+         */
+        public static double hallCoefficient(
+            double voltageVolts, double thicknessMeters, double currentAmps, double magneticFieldTesla) {
+            return voltageVolts * thicknessMeters / (currentAmps * magneticFieldTesla);
+        }
+
+        /**
+         * @param area          Cross-sectional area (A) of a wire in m²
+         * @param numberDensity n – Charge carrier number density in x10²⁸ carriers/m³
+         * @return u = I/(nAq). The units are m/s
+         */
+        public static double driftVelocity(
+            double currentAmps, double area, double numberDensity, double chargeCoulombs) {
+            return currentAmps / (numberDensity * area * chargeCoulombs);
+        }
+
+        /**
+         * τ = μ×B
+         *
+         * @return μ = I⋅A. The units are A⋅m²
+         */
+        public static double magneticDipoleMoment(double currentAmps, double loopLengthMeters) {
+            final double area = Geometry.circleAreaOfCircumference(loopLengthMeters);
+            return currentAmps * area;
+        }
+
+        /**
+         * @return μ_solenoid = N⋅I⋅A. The units are A⋅m²
+         */
+        public static double solenoidMagneticDipoleMoment(
+            double currentAmps, double solenoidRadiusMeters, double numberOfTurns) {
+            final double interiorArea = Geometry.circleArea(solenoidRadiusMeters);
+            return numberOfTurns * currentAmps * interiorArea;
+        }
+
+        /**
+         * @return I = |μ|/(N⋅A). The units are A
+         */
+        public static double currentFromMagneticDipoleMoment(double moment, double areaMeters, double numberOfTurns) {
+            return Math.abs(moment) / (numberOfTurns * areaMeters);
+        }
     }
 
     public static final class Electronics {
@@ -1975,6 +2152,10 @@ public final class PhysicsCalc {
          */
         public static double equivalentResistanceInSeries(double[] resistors) {
             return Arrays.stream(resistors).sum();
+        }
+
+        public static double missingResistorInSeries(double[] resistors, double desiredTotalResistance) {
+            return desiredTotalResistance - equivalentResistanceInSeries(resistors);
         }
 
         /**
@@ -2337,8 +2518,15 @@ public final class PhysicsCalc {
          * @return L = µ₀ × N² × A/l. The units are henries
          */
         public static double solenoidInductance(double numberOfTurns, double radiusMeters, double lengthMeters) {
-            final double crossSectionalArea = crossSectionalAreaOfCircularWire(Geometry.circleDiameter(radiusMeters));
+            final double crossSectionalArea = Geometry.circleArea(radiusMeters);
             return VACUUM_PERMEABILITY * numberOfTurns * numberOfTurns * crossSectionalArea / lengthMeters;
+        }
+
+        /**
+         * @return B = (µ₀NI)/L. The units are T
+         */
+        public static double solenoidMagneticField(double currentAmps, double lengthMeters, double numberOfTurns) {
+            return (VACUUM_PERMEABILITY * numberOfTurns * currentAmps) / lengthMeters;
         }
 
         /**
@@ -2478,6 +2666,142 @@ public final class PhysicsCalc {
             final double minKVA = threePhaseTransformerSize(loadCurrentAmps, loadVoltageVolts);
             final double spareCapacity = minKVA * (spareCapacityPercent / 100);
             return minKVA + spareCapacity;
+        }
+
+        /**
+         * @return Q = 1/R × √(L/C)
+         */
+        public static double rlcCircuitQFactor(
+            double capacitanceFarads, double inductanceHenries, double resistanceOhms) {
+            return reciprocal(resistanceOhms) * squareRoot(inductanceHenries / capacitanceFarads);
+        }
+
+        public static double rlcCircuitFrequency(double capacitanceFarads, double inductanceHenries) {
+            return resonantFrequencyLC(capacitanceFarads, inductanceHenries);
+        }
+
+        /**
+         * @return f = 1 / (2π × √(L × C)). The units are Hz
+         */
+        public static double resonantFrequencyLC(double capacitanceFarads, double inductanceHenries) {
+            return reciprocal(Trigonometry.PI2 * squareRoot(inductanceHenries * capacitanceFarads));
+        }
+
+        /**
+         * @return xC = 1/(2π⋅f⋅C). The units are Ω
+         */
+        public static double resonantFrequencyLCCapacitiveReactance(double frequencyHz, double capacitanceFarads) {
+            return reciprocal(Trigonometry.PI2 * frequencyHz * capacitanceFarads);
+        }
+
+        /**
+         * @return xL = 2π⋅f⋅L. The units are Ω
+         */
+        public static double resonantFrequencyLCInductiveReactance(double frequencyHz, double inductanceHenries) {
+            return Trigonometry.PI2 * frequencyHz * inductanceHenries;
+        }
+
+        /**
+         * @return f = 1/(2πRC). The units are Hz
+         */
+        public static double rcCircuitFrequency(double capacitanceFarads, double resistanceOhms) {
+            return reciprocal(Trigonometry.PI2 * resistanceOhms * capacitanceFarads);
+        }
+
+        /**
+         * @return t = RC. The units are sec
+         */
+        public static double rcCircuitChargingTime(double capacitanceFarads, double resistanceOhms) {
+            return resistanceOhms * capacitanceFarads;
+        }
+
+        /**
+         * @return F = BIl * sin(α). The units are N
+         */
+        public static double magneticForceOnCurrentCarryingWire(
+            double magneticFieldTesla, double currentAmps, double lengthMeters, double angleRad) {
+            return magneticFieldTesla * currentAmps * lengthMeters * Trigonometry.sin(angleRad);
+        }
+
+        /**
+         * @return F / L = μ₀ × Ia × Ib / (2π × d). The units are N
+         */
+        public static double magneticForceBetweenWires(double current1Amps, double current2Amps,
+                                                       double distanceMeters) {
+            return VACUUM_PERMEABILITY * current1Amps * current2Amps / (Trigonometry.PI2 * distanceMeters);
+        }
+
+        /**
+         * <table>
+         *     <tr><th>LED color</th><th>Voltage drop across LED</th></tr>
+         *     <tr><td>Red</td><td>2</td></tr>
+         *     <tr><td>Green</td><td>2.1</td></tr>
+         *     <tr><td>Blue</td><td>3.6</td></tr>
+         *     <tr><td>White</td><td>3.6</td></tr>
+         *     <tr><td>Yellow</td><td>2.1</td></tr>
+         *     <tr><td>Orange</td><td>2.2</td></tr>
+         *     <tr><td>Amber</td><td>2.1</td></tr>
+         *     <tr><td>Infrared</td><td>1.7</td></tr>
+         * </table>
+         *
+         * @return R = (V - n × Vₒ) / Iₒ. The units are Ω
+         */
+        public static double ledSeriesResistance(
+            long numberOfLEDs, double supplyVoltage, double currentAmps, double ledForwardVoltage) {
+            final double voltageDropAcrossLED = numberOfLEDs * ledForwardVoltage;
+            return (supplyVoltage - voltageDropAcrossLED) / currentAmps;
+        }
+
+        /**
+         * For series or parallel LEDs.
+         *
+         * @return Pₒ = Vₒ × Iₒ. The units are W
+         */
+        public static double ledDissipatedPowerInSingleLED(double currentAmps, double voltageDropVolts) {
+            return voltageDropVolts * currentAmps;
+        }
+
+        /**
+         * For series or parallel LEDs.
+         *
+         * @return P = n × Vₒ × Iₒ. The units are W
+         */
+        public static double ledsTotalDissipatedPower(
+            double numberOfLEDs, double currentAmps, double voltageDropVolts) {
+            return numberOfLEDs * voltageDropVolts * currentAmps;
+        }
+
+        /**
+         * @return Pr = (Iₒ)² × R. The units are W
+         */
+        public static double ledSeriesDissipatedPowerInResistor(double currentAmps, double resistanceOhms) {
+            return currentAmps * currentAmps * resistanceOhms;
+        }
+
+        /**
+         * @return R = (V - Vₒ) / (n × Iₒ). The units are Ω
+         */
+        public static double ledParallelResistance(
+            long numberOfLEDs, double supplyVoltage, double currentAmps, double ledForwardVoltage) {
+            return (supplyVoltage - ledForwardVoltage) / (numberOfLEDs * currentAmps);
+        }
+
+        /**
+         * @return Pr = (n × Iₒ)² × R. The units are W
+         */
+        public static double ledParallelDissipatedPowerInResistor(
+            long numberOfLEDs, double currentAmps, double resistanceOhms) {
+            return Math.pow(numberOfLEDs * currentAmps, 2) * resistanceOhms;
+        }
+
+        /**
+         * @param emissionCoeff aka quality factor. It accounts for imperfect junctions as observed
+         *                      in real transistors. Its value typically ranges from 1 to 2.
+         * @return I = Iₛ(e^(V_D/(nV_T)) − 1). The units are A
+         */
+        public static double shockleyDiode(
+            double emissionCoeff, double saturationCurrentAmps, double thermalVoltageVolts, double voltageDropVolts) {
+            return saturationCurrentAmps * (Math.exp(voltageDropVolts / (emissionCoeff * thermalVoltageVolts)) - 1);
         }
     }
 

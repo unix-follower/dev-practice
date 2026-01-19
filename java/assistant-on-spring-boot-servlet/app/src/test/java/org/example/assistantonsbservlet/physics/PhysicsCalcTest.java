@@ -479,6 +479,113 @@ class PhysicsCalcTest {
             // then
             assertEquals(1.56, groundSpeed, DELTA2);
         }
+
+        @Test
+        void testAngularFrequency() {
+            // given
+            final byte angularDisplacement = 15;
+            final byte timeTakenSeconds = 5;
+            // when
+            final double frequency = PhysicsCalc.Kinematics.angularFrequency(angularDisplacement, timeTakenSeconds);
+            // then
+            assertEquals(3, frequency, DELTA1);
+        }
+
+        @Test
+        void testAngularDisplacementFromAngularFrequency() {
+            // given
+            final byte angularFrequency = 3;
+            final byte timeTakenSeconds = 5;
+            // when
+            final double displacement = PhysicsCalc.Kinematics
+                .angularDisplacementFromAngularFrequency(angularFrequency, timeTakenSeconds);
+            // then
+            assertEquals(15, displacement, DELTA1);
+        }
+
+        @Test
+        void testTimeTakenFromAngularFrequency() {
+            // given
+            final byte angularFrequency = 3;
+            final byte angularDisplacement = 15;
+            // when
+            final double timeTaken = PhysicsCalc.Kinematics
+                .timeTakenFromAngularFrequency(angularFrequency, angularDisplacement);
+            // then
+            assertEquals(5, timeTaken, DELTA1);
+        }
+
+        @Test
+        void testAngularFrequencyOfOscillatingObject() {
+            // given
+            final byte timePeriodSeconds = 5;
+            // when
+            final double angularFrequency = PhysicsCalc.Kinematics
+                .angularFrequencyOfOscillatingObject(timePeriodSeconds);
+            // then
+            assertEquals(1.25664, angularFrequency, DELTA5);
+        }
+
+        @Test
+        void testFrequencyFromAngularFrequencyOfOscillatingObject() {
+            // given
+            final double angularFrequency = 1.25664;
+            // when
+            final double frequency = PhysicsCalc.Kinematics
+                .frequencyFromAngularFrequencyOfOscillatingObject(angularFrequency);
+            // then
+            assertEquals(0.2, frequency, DELTA1);
+        }
+
+        @Test
+        void testTorque() {
+            // given
+            final double distance = 0.5;
+            final byte force = 120;
+            final double angle = 1.570796;
+            // when
+            final double torque = PhysicsCalc.Kinematics.torque(distance, force, angle);
+            // then
+            assertEquals(60, torque, DELTA1);
+        }
+
+        @Test
+        void testAngularVelocityForConstantAngularAcceleration() {
+            // given
+            final double initialAngularVelocity = 27.5;
+            final byte angularAcceleration = -10;
+            final byte time = 2;
+            // when
+            final double angularVelocity = PhysicsCalc.Kinematics
+                .angularVelocityForConstantAngularAcceleration(initialAngularVelocity, angularAcceleration, time);
+            // then
+            assertEquals(7.5, angularVelocity, DELTA1);
+        }
+
+        @Test
+        void testAngularAcceleration() {
+            // given
+            final byte initialAngularVelocity = 0;
+            final byte finalAngularVelocity = 24;
+            final byte time = 8;
+            // when
+            final double angularAcceleration = PhysicsCalc.Kinematics
+                .angularAcceleration(initialAngularVelocity, finalAngularVelocity, time);
+            // then
+            assertEquals(3, angularAcceleration, DELTA1);
+        }
+
+        @Test
+        void testAngularAccelerationFromTangentialAcceleration() {
+            // given
+            final double radius = 2.5;
+            final double tangentialAcceleration = 7.5;
+            // when
+            final double angularAcceleration = PhysicsCalc.Kinematics
+                .angularAcceleration(tangentialAcceleration, radius);
+            // then
+            assertEquals(3, angularAcceleration, DELTA1);
+        }
     }
 
     @Nested
@@ -1849,6 +1956,119 @@ class PhysicsCalcTest {
             // then
             assertArrayEquals(new double[]{0.61, 0.105, 0.32}, dipoleMoment, DELTA3);
         }
+
+        @Test
+        void testGaussLaw() {
+            // given
+            final double charge = 1e-8;
+            // when
+            final double electricFlux = PhysicsCalc.Electromagnetism.gaussLaw(charge);
+            // then
+            assertEquals(1129.4, electricFlux, DELTA1);
+        }
+
+        @Test
+        void testGaussLawCharge() {
+            // given
+            final double electricFlux = 1129.4;
+            // when
+            final double charge = PhysicsCalc.Electromagnetism.gaussLawCharge(electricFlux);
+            // then
+            assertEquals(1e-8, charge, DELTA1);
+        }
+
+        @Test
+        void testMagneticPermeability() {
+            // given iron (99.95% pure)
+            final int relativePermeability = 200_000;
+            // when
+            final double permeability = PhysicsCalc.Electromagnetism.magneticPermeability(relativePermeability);
+            // then
+            assertEquals(0.25133, permeability, DELTA5);
+        }
+
+        @Test
+        void testMagneticRelativePermeability() {
+            // given iron (99.95% pure)
+            final int susceptibility = 199_999;
+            // when
+            final double relativePerm = PhysicsCalc.Electromagnetism.magneticRelativePermeability(susceptibility);
+            // then
+            assertEquals(200_000, relativePerm, DELTA1);
+        }
+
+        @Test
+        void testMagneticSusceptibility() {
+            // given iron (99.95% pure)
+            final int relativePermeability = 200_000;
+            // when
+            final double susceptibility = PhysicsCalc.Electromagnetism.magneticSusceptibility(relativePermeability);
+            // then
+            assertEquals(199_999, susceptibility, DELTA1);
+        }
+
+        @Test
+        void testHallCoefficient() {
+            // given
+            final double voltage = 0.00005;
+            final double thickness = 0.00002;
+            final byte current = 10;
+            final double magneticField = 0.7519;
+            // when
+            final double hallCoefficient = PhysicsCalc.Electromagnetism
+                .hallCoefficient(voltage, thickness, current, magneticField);
+            // then
+            assertEquals(LengthUnit.millimetersToMeters(0.133), hallCoefficient, DELTA3);
+        }
+
+        @Test
+        void testDriftVelocity() {
+            // given
+            final byte current = 10;
+            final double area = 0.000001;
+            final double numberDensity = 8.94e28;
+            final double charge = 1.6022e-19;
+            // when
+            final double velocity = PhysicsCalc.Electromagnetism.driftVelocity(current, area, numberDensity, charge);
+            // then
+            assertEquals(0.0006982, velocity, DELTA7);
+        }
+
+        @Test
+        void testMagneticDipoleMoment() {
+            // given
+            final byte current = 2;
+            final byte loopLength = 2;
+            // when
+            final double moment = PhysicsCalc.Electromagnetism.magneticDipoleMoment(current, loopLength);
+            // then
+            assertEquals(0.6366, moment, DELTA4);
+        }
+
+        @Test
+        void testSolenoidMagneticDipoleMoment() {
+            // given
+            final double current = 0.127;
+            final double solenoidRadius = 0.5;
+            final short turns = 150;
+            // when
+            final double moment = PhysicsCalc.Electromagnetism
+                .solenoidMagneticDipoleMoment(current, solenoidRadius, turns);
+            // then
+            assertEquals(14.962, moment, DELTA3);
+        }
+
+        @Test
+        void testCurrentFromMagneticDipoleMoment() {
+            // given
+            final double moment = 14.962;
+            final double area = 0.7854;
+            final short turns = 150;
+            // when
+            final double current = PhysicsCalc.Electromagnetism.currentFromMagneticDipoleMoment(moment, area, turns);
+            // then
+            assertEquals(0.127, current, DELTA3);
+        }
     }
 
     @Nested
@@ -2166,6 +2386,27 @@ class PhysicsCalcTest {
             final double inductor = PhysicsCalc.Electronics.missingInductorInSeries(inductors, desiredTotalInductance);
             // then
             assertEquals(15, inductor, DELTA1);
+        }
+
+        @Test
+        void testEquivalentResistanceInSeries() {
+            // given
+            final double[] resistors = new double[]{1500, 300, 700};
+            // when
+            final double resistance = PhysicsCalc.Electronics.equivalentResistanceInSeries(resistors);
+            // then
+            assertEquals(2500, resistance, DELTA1);
+        }
+
+        @Test
+        void testMissingResistorInSeries() {
+            // given
+            final double desiredTotalResistance = 2500;
+            final double[] resistors = new double[]{1500, 300};
+            // when
+            final double resistor = PhysicsCalc.Electronics.missingResistorInSeries(resistors, desiredTotalResistance);
+            // then
+            assertEquals(700, resistor, DELTA1);
         }
 
         @Test
@@ -2800,6 +3041,221 @@ class PhysicsCalcTest {
                 .threePhaseTransformerSize(loadCurrentAmps, loadVoltage, spareCapacityPercent);
             // then
             assertEquals(1039.2, minKVARequired, DELTA1);
+        }
+
+        @Test
+        void testSolenoidMagneticField() {
+            // given
+            final double current = 0.1;
+            final double length = 0.1;
+            final byte turns = 100;
+            // when
+            final double magneticField = PhysicsCalc.Electronics.solenoidMagneticField(current, length, turns);
+            // then
+            assertEquals(0.00012566, magneticField, DELTA8);
+        }
+
+        @Test
+        void testRlcCircuitQFactor() {
+            // given
+            final double capacitance = CapacitanceUnit.microFaradsToFarads(50);
+            final double inductance = InductanceUnit.milliHenriesToHenries(25);
+            final byte resistance = 30;
+            // when
+            final double qFactor = PhysicsCalc.Electronics.rlcCircuitQFactor(capacitance, inductance, resistance);
+            // then
+            assertEquals(0.7454, qFactor, DELTA4);
+        }
+
+        @Test
+        void testRlcCircuitFrequency() {
+            // given
+            final double capacitance = CapacitanceUnit.microFaradsToFarads(50);
+            final double inductance = InductanceUnit.milliHenriesToHenries(25);
+            // when
+            final double frequency = PhysicsCalc.Electronics.rlcCircuitFrequency(capacitance, inductance);
+            // then
+            assertEquals(142.35, frequency, DELTA2);
+        }
+
+        @Test
+        void testResonantFrequencyLC() {
+            // given
+            final double capacitance = 2.2e-10;
+            final double inductance = InductanceUnit.milliHenriesToHenries(1);
+            // when
+            final double frequency = PhysicsCalc.Electronics.resonantFrequencyLC(capacitance, inductance);
+            // then
+            assertEquals(339_319.4, frequency, DELTA1);
+        }
+
+        @Test
+        void testResonantFrequencyLCCapacitiveReactance() {
+            // given
+            final double frequency = 339_319.4;
+            final double capacitance = 2.2e-10;
+            // when
+            final double capacitiveReactance = PhysicsCalc.Electronics
+                .resonantFrequencyLCCapacitiveReactance(frequency, capacitance);
+            // then
+            assertEquals(2132, capacitiveReactance, DELTA1);
+        }
+
+        @Test
+        void testResonantFrequencyLCInductiveReactance() {
+            // given
+            final double frequency = 339_319.4;
+            final double inductance = InductanceUnit.milliHenriesToHenries(1);
+            // when
+            final double inductiveReactance = PhysicsCalc.Electronics
+                .resonantFrequencyLCInductiveReactance(frequency, inductance);
+            // then
+            assertEquals(2132, inductiveReactance, DELTA1);
+        }
+
+        @Test
+        void testRCCircuitFrequency() {
+            // given
+            final double capacitance = 0.00005;
+            final byte resistance = 30;
+            // when
+            final double frequency = PhysicsCalc.Electronics.rcCircuitFrequency(capacitance, resistance);
+            // then
+            assertEquals(106.1, frequency, DELTA1);
+        }
+
+        @Test
+        void testRCCircuitChargingTime() {
+            // given
+            final double capacitance = 0.00005;
+            final byte resistance = 30;
+            // when
+            final double time = PhysicsCalc.Electronics.rcCircuitChargingTime(capacitance, resistance);
+            // then
+            assertEquals(0.0015, time, DELTA4);
+        }
+
+        @Test
+        void testMagneticForceOnCurrentCarryingWire() {
+            // given
+            final double magneticField = 0.00005;
+            final double current = 2.5;
+            final double length = 0.01;
+            final double angleRad = 1.5708;
+            // when
+            final double force = PhysicsCalc.Electronics
+                .magneticForceOnCurrentCarryingWire(magneticField, current, length, angleRad);
+            // then
+            assertEquals(0.00000125, force, DELTA8);
+        }
+
+        @Test
+        void testMagneticForceBetweenWires() {
+            // given
+            final double current1 = 1000;
+            final double current2 = 500;
+            final double distance = 0.5;
+            // when
+            final double force = PhysicsCalc.Electronics.magneticForceBetweenWires(current1, current2, distance);
+            // then
+            assertEquals(0.2, force, DELTA1);
+        }
+
+        @Test
+        void testLedSeriesResistance() {
+            // given
+            final byte numberOfLEDs = 2;
+            final short supplyVoltage = 5;
+            final double current = ElectricCurrentUnit.milliAmperesToAmperes(20);
+            final byte ledRedColor = 2;
+            // when
+            final double resistance = PhysicsCalc.Electronics
+                .ledSeriesResistance(numberOfLEDs, supplyVoltage, current, ledRedColor);
+            // then
+            assertEquals(50, resistance, DELTA1);
+        }
+
+        @Test
+        void testLedDissipatedPowerInSingleLED() {
+            // given
+            final double current = ElectricCurrentUnit.milliAmperesToAmperes(20);
+            final double voltageDropAcrossLED = 2; // LED red color
+            // when
+            final double power = PhysicsCalc.Electronics.ledDissipatedPowerInSingleLED(current, voltageDropAcrossLED);
+            // then
+            assertEquals(0.04, power, DELTA2);
+        }
+
+        @Test
+        void testLedsTotalDissipatedPower() {
+            // given
+            final double current = ElectricCurrentUnit.milliAmperesToAmperes(20);
+            final byte numberOfLEDs = 2;
+            final double voltageDropAcrossLED = 2; // LED red color
+            // when
+            final double totalDissipatedPower = PhysicsCalc.Electronics
+                .ledsTotalDissipatedPower(numberOfLEDs, current, voltageDropAcrossLED);
+            // then
+            assertEquals(0.08, totalDissipatedPower, DELTA2);
+        }
+
+        @Test
+        void testLedSeriesDissipatedPowerInResistor() {
+            // given
+            final byte numberOfLEDs = 2;
+            final short supplyVoltage = 5;
+            final double current = ElectricCurrentUnit.milliAmperesToAmperes(20);
+            final byte ledRedColor = 2;
+            final double resistance = PhysicsCalc.Electronics
+                .ledSeriesResistance(numberOfLEDs, supplyVoltage, current, ledRedColor);
+            // when
+            final double resistor = PhysicsCalc.Electronics.ledSeriesDissipatedPowerInResistor(current, resistance);
+            // then
+            assertEquals(0.02, resistor, DELTA2);
+        }
+
+        @Test
+        void testLedParallelResistance() {
+            // given
+            final byte numberOfLEDs = 2;
+            final short supplyVoltage = 5;
+            final double current = ElectricCurrentUnit.milliAmperesToAmperes(20);
+            final byte ledRedColor = 2;
+            // when
+            final double resistance = PhysicsCalc.Electronics
+                .ledParallelResistance(numberOfLEDs, supplyVoltage, current, ledRedColor);
+            // then
+            assertEquals(75, resistance, DELTA1);
+        }
+
+        @Test
+        void testLedParallelDissipatedPowerInResistor() {
+            // given
+            final byte numberOfLEDs = 2;
+            final short supplyVoltage = 5;
+            final double current = ElectricCurrentUnit.milliAmperesToAmperes(20);
+            final byte ledRedColor = 2;
+            final double resistance = PhysicsCalc.Electronics
+                .ledParallelResistance(numberOfLEDs, supplyVoltage, current, ledRedColor);
+            // when
+            final double resistor = PhysicsCalc.Electronics
+                .ledParallelDissipatedPowerInResistor(numberOfLEDs, current, resistance);
+            // then
+            assertEquals(0.12, resistor, DELTA2);
+        }
+
+        @Test
+        void testShockleyDiode() {
+            // given
+            final byte emissionCoefficient = 1;
+            final short saturationCurrent = 150;
+            final short thermalVoltage = 220;
+            final byte voltageDrop = 20;
+            // when
+            final double current = PhysicsCalc.Electronics
+                .shockleyDiode(emissionCoefficient, saturationCurrent, thermalVoltage, voltageDrop);
+            // then
+            assertEquals(14.275, current, DELTA3);
         }
     }
 
