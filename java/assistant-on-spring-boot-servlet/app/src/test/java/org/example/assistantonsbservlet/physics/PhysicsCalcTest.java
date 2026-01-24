@@ -586,6 +586,406 @@ class PhysicsCalcTest {
             // then
             assertEquals(3, angularAcceleration, DELTA1);
         }
+
+        @Test
+        void testCentrifugalForce() {
+            // given
+            final short massKg = 1000;
+            final short radius = 150;
+            final byte tangentialVelocity = 50;
+            // when
+            final double force = PhysicsCalc.Kinematics.centrifugalForce(massKg, radius, tangentialVelocity);
+            // then
+            assertEquals(16_666.6, force, DELTA1);
+        }
+
+        @Test
+        void testCentrifugalAcceleration() {
+            // given
+            final double centrifugalForce = 16_666.6;
+            final short massKg = 1000;
+            // when
+            final double acceleration = PhysicsCalc.Kinematics.centrifugalAcceleration(massKg, centrifugalForce);
+            // then
+            assertEquals(16.667, acceleration, DELTA3);
+        }
+
+        @Test
+        void testCentripetalForce() {
+            // given
+            final short massKg = 2000;
+            final byte radius = 10;
+            final double tangentialVelocity = 12.5;
+            // when
+            final double centripetalForce = PhysicsCalc.Kinematics.centripetalForce(massKg, radius, tangentialVelocity);
+            // then
+            assertEquals(31_250, centripetalForce, DELTA1);
+        }
+
+        @Test
+        void testCentripetalAcceleration() {
+            // given
+            final byte radius = 10;
+            final double tangentialVelocity = 12.5;
+            // when
+            final double acceleration = PhysicsCalc.Kinematics.centripetalAcceleration(radius, tangentialVelocity);
+            // then
+            assertEquals(15.625, acceleration, DELTA3);
+        }
+
+        @Test
+        void testAngularDisplacement() {
+            // given
+            final short distanceTraveled = 185;
+            final byte radius = 9;
+            // when
+            final double angularDisplacement = PhysicsCalc.Kinematics.angularDisplacement(distanceTraveled, radius);
+            // then
+            assertEquals(20.556, angularDisplacement, DELTA3);
+        }
+
+        @Test
+        void testAngularDisplacementFromAngularVelocity() {
+            // given
+            final byte angularVelocity = 24;
+            final byte time = 8;
+            // when
+            final double angularDisplacement = PhysicsCalc.Kinematics
+                .angularDisplacementFromAngularVelocity(angularVelocity, time);
+            // then
+            assertEquals(192, angularDisplacement, DELTA1);
+        }
+
+        @Test
+        void testAngularDisplacementFromAngularAcceleration() {
+            // given
+            final byte angularVelocity = 24;
+            final byte time = 8;
+            final byte angularAcceleration = 3;
+            // when
+            final double angularDisplacement = PhysicsCalc.Kinematics
+                .angularDisplacementFromAngularAcceleration(angularVelocity, time, angularAcceleration);
+            // then
+            assertEquals(288, angularDisplacement, DELTA1);
+        }
+
+        @Test
+        void testAngularMomentumAroundOwnAxis() {
+            // given
+            final byte momentOfInertia = 2;
+            final byte angularVelocity = 1;
+            // when
+            final double angularMomentum = PhysicsCalc.Kinematics
+                .angularMomentumAroundOwnAxis(momentOfInertia, angularVelocity);
+            // then
+            assertEquals(2, angularMomentum, DELTA1);
+        }
+
+        @Test
+        void testAngularMomentumAroundCentralPoint() {
+            // given
+            final byte massKg = 3;
+            final byte velocity = 2;
+            final double radius = 0.1;
+            // when
+            final double angularMomentum = PhysicsCalc.Kinematics
+                .angularMomentumAroundCentralPoint(massKg, velocity, radius);
+            // then
+            assertEquals(0.6, angularMomentum, DELTA1);
+        }
+
+        @Test
+        void testPolarMomentOfInertiaOfSolidCircle() {
+            // given
+            final double diameter = 0.05;
+            // when
+            final double momentOfInertia = PhysicsCalc.Kinematics.polarMomentOfInertiaOfSolidCircle(diameter);
+            // then
+            assertEquals(6.136e-7, momentOfInertia, DELTA1);
+        }
+
+        @Test
+        void testPolarMomentOfInertiaOfHollowCircle() {
+            // given
+            final double innerDiameter = 0.02;
+            final double outerDiameter = 0.05;
+            // when
+            final double momentOfInertia = PhysicsCalc.Kinematics
+                .polarMomentOfInertiaOfHollowCircle(innerDiameter, outerDiameter);
+            // then
+            assertEquals(5.979e-7, momentOfInertia, DELTA1);
+        }
+
+        @Test
+        void testMassMomentOfInertiaOfBall() {
+            // given
+            final double massKg = 1.5;
+            final double radius = 0.3;
+            // when
+            final double momentOfInertia = PhysicsCalc.Kinematics.massMomentOfInertiaOfBall(massKg, radius);
+            // then
+            assertEquals(0.054, momentOfInertia, DELTA3);
+        }
+
+        @Test
+        void testMassMomentOfInertiaOfCircularHoop() {
+            // given
+            final double massKg = 1.5;
+            final double radius = 0.3;
+            // when
+            final double[] moments = PhysicsCalc.Kinematics.massMomentOfInertiaOfCircularHoop(massKg, radius);
+            // then
+            assertArrayEquals(new double[]{0.0675, 0.135}, moments, DELTA4);
+        }
+
+        @Test
+        void testMassMomentOfInertiaOfCuboid() {
+            // given
+            final byte massKg = 5;
+            final byte length = 1;
+            final byte width = 2;
+            final byte height = 2;
+            // when
+            final double[] moments = PhysicsCalc.Kinematics.massMomentOfInertiaOfCuboid(massKg, length, width, height);
+            // then
+            assertArrayEquals(new double[]{3.3333, 2.0833, 2.0833, 2.2222}, moments, DELTA4);
+        }
+
+        @Test
+        void testMassMomentOfInertiaOfCylinder() {
+            // given
+            final double massKg = 1.5;
+            final double radius = 0.3;
+            final double height = 0.9;
+            // when
+            final double[] moments = PhysicsCalc.Kinematics.massMomentOfInertiaOfCylinder(massKg, radius, height);
+            // then
+            assertArrayEquals(new double[]{0.135, 0.0675}, moments, DELTA4);
+        }
+
+        @Test
+        void testMassMomentOfInertiaOfCylindricalTube() {
+            // given
+            final double massKg = 1.5;
+            final double innerRadius = 0.01;
+            final double outerRadius = 0.3;
+            final double height = 0.9;
+            // when
+            final double[] moments = PhysicsCalc.Kinematics
+                .massMomentOfInertiaOfCylinderTube(massKg, innerRadius, outerRadius, height);
+            // then
+            assertArrayEquals(new double[]{0.13504, 0.06758}, moments, DELTA5);
+        }
+
+        @Test
+        void testMassMomentOfInertiaOfCylindricalShell() {
+            // given
+            final double massKg = 1.5;
+            final double radius = 0.3;
+            // when
+            final double momentOfInertia = PhysicsCalc.Kinematics.massMomentOfInertiaOfCylinderShell(massKg, radius);
+            // then
+            assertEquals(0.135, momentOfInertia, DELTA3);
+        }
+
+        @Test
+        void testMassMomentOfInertiaOfDisc() {
+            // given
+            final double massKg = 1.5;
+            final double radius = 0.3;
+            // when
+            final double[] moments = PhysicsCalc.Kinematics.massMomentOfInertiaOfDisc(massKg, radius);
+            // then
+            assertArrayEquals(new double[]{0.03375, 0.0675}, moments, DELTA5);
+        }
+
+        @Test
+        void testMassMomentOfInertiaOfDodecahedron() {
+            // given
+            final double massKg = 1.5;
+            final double side = 0.3;
+            // when
+            final double[] moments = PhysicsCalc.Kinematics.massMomentOfInertiaOfDodecahedron(massKg, side);
+            // then
+            assertArrayEquals(new double[]{0.082, 0.13665}, moments, DELTA5);
+        }
+
+        @Test
+        void testMassMomentOfEllipsoid() {
+            // given
+            final double massKg = 1.5;
+            final double semiaxisA = 0.3;
+            final double semiaxisB = 0.6;
+            final double semiaxisC = 0.9;
+            // when
+            final double[] moments = PhysicsCalc.Kinematics
+                .massMomentOfInertiaOfEllipsoid(massKg, semiaxisA, semiaxisB, semiaxisC);
+            // then
+            assertArrayEquals(new double[]{0.351, 0.27, 0.135}, moments, DELTA3);
+        }
+
+        @Test
+        void testMassMomentOfInertiaOfIcosahedron() {
+            // given
+            final double massKg = 1.5;
+            final double side = 0.3;
+            // when
+            final double[] moments = PhysicsCalc.Kinematics.massMomentOfInertiaOfIcosahedron(massKg, side);
+            // then
+            assertArrayEquals(new double[]{0.03534, 0.0589}, moments, DELTA5);
+        }
+
+        @Test
+        void testMassMomentOfInertiaOfIsoscelesTriangle() {
+            // given
+            final double commonSideLength = 0.3;
+            final double massKg = 1.5;
+            final double angle = 0.5236;
+            // when
+            final double moment = PhysicsCalc.Kinematics
+                .massMomentOfInertiaOfIsoscelesTriangle(commonSideLength, massKg, angle);
+            // then
+            assertEquals(0.05625, moment, DELTA5);
+        }
+
+        @Test
+        void testMassMomentOfInertiaOfOctahedron() {
+            // given
+            final double massKg = 1.5;
+            final double side = 0.3;
+            // when
+            final double[] moments = PhysicsCalc.Kinematics.massMomentOfInertiaOfOctahedron(massKg, side);
+            // then
+            assertArrayEquals(new double[]{0.0135, 0.0225}, moments, DELTA4);
+        }
+
+        @Test
+        void testMassMomentOfPointMass() {
+            // given
+            final double massKg = 1.5;
+            final double distance = 0.3;
+            // when
+            final double moment = PhysicsCalc.Kinematics.massMomentOfPointMass(massKg, distance);
+            // then
+            assertEquals(0.135, moment, DELTA3);
+        }
+
+        @Test
+        void testMassMomentOfRectangularPlate() {
+            // given
+            final double massKg = 1.5;
+            final double width = 0.5;
+            final double length = 1;
+            // when
+            final double moment = PhysicsCalc.Kinematics.massMomentOfRectangularPlate(massKg, width, length);
+            // then
+            assertEquals(0.15625, moment, DELTA5);
+        }
+
+        @Test
+        void testMassMomentOfRectangularPolygon() {
+            // given
+            final double massKg = 1.5;
+            final double radius = 0.3;
+            final byte numberOfVertices = 4;
+            // when
+            final double moment = PhysicsCalc.Kinematics.massMomentOfRegularPolygon(massKg, radius, numberOfVertices);
+            // then
+            assertEquals(0.045, moment, DELTA3);
+        }
+
+        @Test
+        void testMassMomentOfHollowRightCircularCone() {
+            // given
+            final double massKg = 1.5;
+            final double radius = 0.3;
+            final double height = 1.7;
+            // when
+            final double[] moments = PhysicsCalc.Kinematics.massMomentOfHollowRightCircularCone(massKg, radius, height);
+            // then
+            assertArrayEquals(new double[]{2.2013, 0.0675}, moments, DELTA4);
+        }
+
+        @Test
+        void testMassMomentOfSolidRightCircularCone() {
+            // given
+            final double massKg = 1.5;
+            final double radius = 0.3;
+            final double height = 1.7;
+            // when
+            final double[] moments = PhysicsCalc.Kinematics.massMomentOfSolidRightCircularCone(massKg, radius, height);
+            // then
+            assertArrayEquals(new double[]{2.6212, 0.0405}, moments, DELTA4);
+        }
+
+        @Test
+        void testMassMomentOfRod() {
+            // given
+            final double massKg = 1.5;
+            final double length = 0.3;
+            // when
+            final double[] moments = PhysicsCalc.Kinematics.massMomentOfRod(massKg, length);
+            // then
+            assertArrayEquals(new double[]{0.01125, 0.045}, moments, DELTA5);
+        }
+
+        @Test
+        void testMassMomentOfInertiaOfSphere() {
+            // given
+            final byte massKg = 9;
+            final double radius = 0.7;
+            // when
+            final double momentOfInertia = PhysicsCalc.Kinematics.massMomentOfInertiaOfSphere(massKg, radius);
+            // then
+            assertEquals(2.94, momentOfInertia, DELTA2);
+        }
+
+        @Test
+        void testMassMomentOfSphericalShell() {
+            // given
+            final double massKg = 1.5;
+            final double innerRadius = 0.03;
+            final double outerRadius = 0.3;
+            // when
+            final double moment = PhysicsCalc.Kinematics.massMomentOfSphericalShell(massKg, innerRadius, outerRadius);
+            // then
+            assertEquals(0.05405, moment, DELTA5);
+        }
+
+        @Test
+        void testMassMomentOfTetrahedron() {
+            // given
+            final double massKg = 1.5;
+            final double side = 0.3;
+            // when
+            final double[] moments = PhysicsCalc.Kinematics.massMomentOfTetrahedron(massKg, side);
+            // then
+            assertArrayEquals(new double[]{0.00675, 0.01125}, moments, DELTA5);
+        }
+
+        @Test
+        void testMassMomentOfTorus() {
+            // given
+            final double massKg = 1.5;
+            final double minorRadius = 0.03;
+            final double majorRadius = 0.3;
+            // when
+            final double[] moments = PhysicsCalc.Kinematics.massMomentOfTorus(massKg, minorRadius, majorRadius);
+            // then
+            assertArrayEquals(new double[]{0.13601, 0.06834}, moments, DELTA5);
+        }
+
+        @Test
+        void testMassMomentOfTwoPointMasses() {
+            // given
+            final double massKg1 = 1.5;
+            final double massKg2 = 0.5;
+            final double distance = 0.8;
+            // when
+            final double moment = PhysicsCalc.Kinematics.massMomentOfTwoPointMasses(massKg1, massKg2, distance);
+            // then
+            assertEquals(0.24, moment, DELTA2);
+        }
     }
 
     @Nested
@@ -1149,6 +1549,167 @@ class PhysicsCalcTest {
                 .shearModulusFromShearStressAndStrain(stress, strain);
             // then
             assertEquals(4, modulus, DELTA1);
+        }
+
+        @Test
+        void testAngleOfTwist() {
+            // given
+            final int internalTorque = 279_973;
+            final double shaftLength = 0.25;
+            final long shearModulus = 68_000_000_000L;
+            // when
+            final double angle = PhysicsCalc.Mechanics
+                .angleOfTwist(internalTorque, shaftLength, shearModulus);
+            // then
+            assertEquals(0.002684, angle, DELTA6);
+        }
+
+        @Test
+        void testAngleOfRepose() {
+            // given
+            final double heapHeight = 0.35;
+            final double heapRadius = 0.96;
+            // when
+            final double angle = PhysicsCalc.Mechanics.angleOfRepose(heapHeight, heapRadius);
+            // then
+            assertEquals(0.3496, angle, DELTA4);
+        }
+
+        @Test
+        void testBulkModulusChangeInVolume() {
+            // given
+            final double pressure = 21e6;
+            final double initialVolume = 0.001155;
+            final double bulkModulus = 5e9;
+            // when
+            final double changeInVolume = PhysicsCalc.Mechanics
+                .bulkModulusChangeInVolume(pressure, initialVolume, bulkModulus);
+            // then
+            assertEquals(-0.000004851, changeInVolume, DELTA9);
+        }
+
+        @Test
+        void testBulkStrain() {
+            // given
+            final double initialVolume = 0.001155;
+            final double changeInVolume = -0.000004851;
+            // when
+            final double bulkStrain = PhysicsCalc.Mechanics.bulkStrain(initialVolume, changeInVolume);
+            // then
+            assertEquals(-0.0042, bulkStrain, DELTA4);
+        }
+
+        @Test
+        void testShaftSizeForTwistingMomentOnly() {
+            // given
+            final double powerTransmitted = PowerUnit.kilowattsToWatts(20);
+            final double shaftRotationSpeed = 200;
+            // when
+            final double torque = PhysicsCalc.Mechanics
+                .shaftSizeForTwistingMomentOnly(powerTransmitted, shaftRotationSpeed);
+            // then
+            assertEquals(955, torque, DELTA1);
+        }
+
+        @Test
+        void testDiameterOfSolidShaftForTwistingMomentOnly() {
+            // given
+            final double torque = 955;
+            final int allowableShearStress = 42_000_000;
+            // when
+            final double diameter = PhysicsCalc.Mechanics
+                .diameterOfSolidShaftForTwistingMomentOnly(torque, allowableShearStress);
+            // then
+            assertEquals(0.04874, diameter, DELTA5);
+        }
+
+        @Test
+        void testShaftSizeDiametersForTwistingOrBendingMoment() {
+            // given
+            final double diameterOfSolidShaft = 0.06141;
+            final double diameterRatio = 0.5;
+            // when
+            final double[] diameters = PhysicsCalc.Mechanics
+                .shaftSizeDiametersForTwistingOrBendingMoment(diameterOfSolidShaft, diameterRatio);
+            // then
+            assertArrayEquals(new double[]{0.062745, 0.031372}, diameters, DELTA6);
+        }
+
+        @Test
+        void testShaftSizeForBendingMomentOnly() {
+            // given
+            final double bendingMoment = 955;
+            final int allowableBendingStress = 42_000_000;
+            // when
+            final double diameter = PhysicsCalc.Mechanics
+                .shaftSizeForBendingMomentOnly(bendingMoment, allowableBendingStress);
+            // then
+            assertEquals(0.06141, diameter, DELTA5);
+        }
+
+        @Test
+        void testEquivalentTwistingMoment() {
+            // given
+            final double torque = 955;
+            final double bendingMoment = 955;
+            // when
+            final double equivalentTwistingMoment = PhysicsCalc.Mechanics
+                .equivalentTwistingMoment(bendingMoment, torque);
+            // then
+            assertEquals(1350.5, equivalentTwistingMoment, DELTA1);
+        }
+
+        @Test
+        void testEquivalentBendingMoment() {
+            // given
+            final double torque = 955;
+            final double bendingMoment = 955;
+            // when
+            final double equivalentBendingMoment = PhysicsCalc.Mechanics.equivalentBendingMoment(bendingMoment, torque);
+            // then
+            assertEquals(1152.8, equivalentBendingMoment, DELTA1);
+        }
+
+        @Test
+        void testFluctuatingEquivalentTwistingMoment() {
+            // given
+            final double torque = 955;
+            final double bendingMoment = 955;
+            final double bendingFactor = 1.0001;
+            final double torsionFactor = 745.6;
+            // when
+            final double equivalentTwistingMoment = PhysicsCalc.Mechanics
+                .fluctuatingEquivalentTwistingMoment(torque, bendingMoment, bendingFactor, torsionFactor);
+            // then
+            assertEquals(712_048.6, equivalentTwistingMoment, DELTA1);
+        }
+
+        @Test
+        void testFluctuatingEquivalentBendingMoment() {
+            // given
+            final double torque = 955;
+            final double bendingMoment = 955;
+            final double bendingFactor = 1.0001;
+            final double torsionFactor = 745.6;
+            // when
+            final double equivalentBendingMoment = PhysicsCalc.Mechanics
+                .fluctuatingEquivalentBendingMoment(torque, bendingMoment, bendingFactor, torsionFactor);
+            // then
+            assertEquals(356_501.8, equivalentBendingMoment, DELTA1);
+        }
+
+        @Test
+        void testShaftSizeDiameterForTorsionalRigidity() {
+            // given
+            final double torque = 955;
+            final short rigidityModulus = 2400;
+            final double angle = 0.2618;
+            final double length = 1.5;
+            // when
+            final double solidShaftDiameter = PhysicsCalc.Mechanics
+                .shaftSizeDiameterForTorsionalRigidity(torque, rigidityModulus, angle, length);
+            // then
+            assertEquals(2.1952, solidShaftDiameter, DELTA4);
         }
     }
 

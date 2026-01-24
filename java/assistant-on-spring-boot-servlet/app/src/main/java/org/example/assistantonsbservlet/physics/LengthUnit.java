@@ -16,6 +16,7 @@ public enum LengthUnit {
     METER_PER_CENTIMETERS, // m/cm
     EARTH_RADII, // R⊕
     SUN_RADII, // R☉
+    ANGSTROM, // ångström Å
     LIGHT_YEAR, // ly
     ASTRONOMICAL_UNITS, // au
     PARSEC, // pcs

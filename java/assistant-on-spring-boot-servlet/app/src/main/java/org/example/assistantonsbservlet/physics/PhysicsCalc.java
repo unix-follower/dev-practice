@@ -732,6 +732,380 @@ public final class PhysicsCalc {
         public static double angularAcceleration(double tangentialAcceleration, double radiusMeters) {
             return tangentialAcceleration / radiusMeters;
         }
+
+        /**
+         * @param tangentialVelocity in m/s
+         * @return F = mv²/r. The units are N
+         */
+        public static double centrifugalForce(double massKg, double radiusMeters, double tangentialVelocity) {
+            return (massKg * tangentialVelocity * tangentialVelocity) / radiusMeters;
+        }
+
+        /**
+         * @return a = F / m. The units are m/s²
+         */
+        public static double centrifugalAcceleration(double massKg, double centrifugalForceNewtons) {
+            return centrifugalForceNewtons / massKg;
+        }
+
+        /**
+         * The centripetal force makes an object move along a curved trajectory, and it points
+         * to the rotation's center. The centrifugal force is an apparent force felt by the body
+         * which moves along a curved path, and it points outside the curvature.
+         *
+         * @param tangentialVelocity in m/s
+         * @return F = mv²/r. The units are N
+         */
+        public static double centripetalForce(double massKg, double radiusMeters, double tangentialVelocity) {
+            return (massKg * tangentialVelocity * tangentialVelocity) / radiusMeters;
+        }
+
+        /**
+         * @param tangentialVelocity in m/s
+         * @return a = v²/r. The units are m/s²
+         */
+        public static double centripetalAcceleration(double radiusMeters, double tangentialVelocity) {
+            return (tangentialVelocity * tangentialVelocity) / radiusMeters;
+        }
+
+        /**
+         * @return θ = s/r. The units are rad
+         */
+        public static double angularDisplacement(double distanceMeters, double radiusMeters) {
+            return distanceMeters / radiusMeters;
+        }
+
+        /**
+         * @param angularVelocity in rad/s
+         * @return θ = ω × t. The units are rad
+         */
+        public static double angularDisplacementFromAngularVelocity(double angularVelocity, double timeSeconds) {
+            return angularVelocity * timeSeconds;
+        }
+
+        /**
+         * @param angularVelocity     in rad/s
+         * @param angularAcceleration in rad/s²
+         * @return θ = (ω × t) + (1 / 2 × ɑ × t²). The units are rad
+         */
+        public static double angularDisplacementFromAngularAcceleration(
+            double angularVelocity, double timeSeconds, double angularAcceleration) {
+            return (angularVelocity * timeSeconds) + (MathCalc.ONE_HALF * angularAcceleration
+                * timeSeconds * timeSeconds);
+        }
+
+        /**
+         * @param momentOfInertia in kg⋅m²
+         * @param angularVelocity in rad/s
+         * @return L = Iω. The units are kg⋅m²/s
+         */
+        public static double angularMomentumAroundOwnAxis(double momentOfInertia, double angularVelocity) {
+            return momentOfInertia * angularVelocity;
+        }
+
+        /**
+         * @param velocity in m/s
+         * @return L = mvr. The units are kg⋅m²/s
+         */
+        public static double angularMomentumAroundCentralPoint(double massKg, double velocity, double radiusMeters) {
+            return massKg * velocity * radiusMeters;
+        }
+
+        /**
+         * J = ∫_A ρ²dA
+         * J = I_z = Iₓ + Iᵧ
+         * <br/>
+         * For ellipse: K = πa³b³/(a² + b²)
+         * where:
+         * K – Torsion constant of the ellipse;
+         * a – Distance between the center and any ellipse vertices;
+         * b – Distance between the center and the other ellipse's vertices.
+         *
+         * @return J = π/32 * D⁴. The units are m⁴
+         */
+        public static double polarMomentOfInertiaOfSolidCircle(double diameterMeters) {
+            final double quartic = diameterMeters * diameterMeters * diameterMeters * diameterMeters;
+            return Trigonometry.PI_OVER_32 * quartic;
+        }
+
+        /**
+         * @return J = π/2(R⁴ - Rᵢ⁴). The units are m⁴
+         */
+        public static double polarMomentOfInertiaOfHollowCircle(double innerDiameterMeters,
+                                                                double outerDiameterMeters) {
+            final double innerRadius = Geometry.circleRadius(innerDiameterMeters);
+            final double outerRadius = Geometry.circleRadius(outerDiameterMeters);
+            final double quarticDiff = Math.pow(outerRadius, 4) - Math.pow(innerRadius, 4);
+            return Trigonometry.PI_OVER_2 * quarticDiff;
+        }
+
+        /**
+         * @return I = 2/5 * mr². The units are kg⋅m²
+         */
+        public static double massMomentOfInertiaOfBall(double massKg, double radiusMeters) {
+            return MathCalc.TWO_FIFTH * massKg * radiusMeters * radiusMeters;
+        }
+
+        /**
+         * Iₓ = Iᵧ = 1/2 * mr²
+         * I_z = m*r²
+         *
+         * @return [Iₓ, I_z]. The units are kg⋅m²
+         */
+        public static double[] massMomentOfInertiaOfCircularHoop(double massKg, double radiusMeters) {
+            final double inertiaZ = massKg * radiusMeters * radiusMeters;
+            return new double[]{MathCalc.ONE_HALF * inertiaZ, inertiaZ};
+        }
+
+        /**
+         * Iₗ = 1/12 * m(w²+h²)
+         * I_w = 1/12 * m(l²+h²)
+         * Iₕ = 1/12 * m(l²+w²)
+         * I_d = 1/6 * m((w²h²+l²h²+l²w²) / (l²+w²+h²))
+         *
+         * @return The moment of inertia about an axis passing through the [length, width, height, longest diagonal].
+         * The units are kg⋅m²
+         */
+        public static double[] massMomentOfInertiaOfCuboid(
+            double massKg, double lengthMeters, double widthMeters, double heightMeters) {
+            final double wSquared = widthMeters * widthMeters;
+            final double hSquared = heightMeters * heightMeters;
+            final double lengthInertia = MathCalc.ONE_TWELFTH * massKg * (wSquared + hSquared);
+            final double lSquared = lengthMeters * lengthMeters;
+            final double widthInertia = MathCalc.ONE_TWELFTH * massKg * (lSquared + hSquared);
+            final double heightInertia = MathCalc.ONE_TWELFTH * massKg * (lSquared + wSquared);
+            final double diagonalInertia = MathCalc.ONE_SIXTH * massKg * ((wSquared * hSquared + lSquared * hSquared
+                + lSquared * wSquared) / (lSquared + wSquared + hSquared));
+            return new double[]{lengthInertia, widthInertia, heightInertia, diagonalInertia};
+        }
+
+        /**
+         * Iₓ = Iᵧ = 1/12 * m(3r²+h²)
+         * I_z = 1/2 * m*r²
+         *
+         * @return [Iₓ, I_z]. The units are kg⋅m²
+         */
+        public static double[] massMomentOfInertiaOfCylinder(double massKg, double radiusMeters, double heightMeters) {
+            final double rSquared = radiusMeters * radiusMeters;
+            return new double[]{
+                MathCalc.ONE_TWELFTH * massKg * (3 * rSquared + heightMeters * heightMeters),
+                MathCalc.ONE_HALF * massKg * rSquared
+            };
+        }
+
+        /**
+         * Iₓ = Iᵧ = 1/12 * m(3(r²₂+r²₁)+h²)
+         * I_z = 1/2 * m(r²₂+r²₁)
+         *
+         * @return [Iₓ, I_z]. The units are kg⋅m²
+         */
+        public static double[] massMomentOfInertiaOfCylinderTube(
+            double massKg, double innerRadiusMeters, double outerRadiusMeters, double heightMeters) {
+            final double radiusSqSum = outerRadiusMeters * outerRadiusMeters + innerRadiusMeters * innerRadiusMeters;
+            return new double[]{
+                MathCalc.ONE_TWELFTH * massKg * (3 * radiusSqSum + heightMeters * heightMeters),
+                MathCalc.ONE_HALF * massKg * radiusSqSum
+            };
+        }
+
+        /**
+         * @return I = mr². The units are kg⋅m²
+         */
+        public static double massMomentOfInertiaOfCylinderShell(double massKg, double radiusMeters) {
+            return massKg * radiusMeters * radiusMeters;
+        }
+
+        /**
+         * Iₓ = Iᵧ = 1/4 * mr²
+         * I_z = 1/2 * mr²
+         *
+         * @return [Iₓ, I_z]. The units are kg⋅m²
+         */
+        public static double[] massMomentOfInertiaOfDisc(double massKg, double radiusMeters) {
+            final double radiusSq = radiusMeters * radiusMeters;
+            return new double[]{MathCalc.ONE_FOURTH * massKg * radiusSq, MathCalc.ONE_HALF * massKg * radiusSq};
+        }
+
+        /**
+         * φ = (1 + √5)/2
+         * Solid: Iₓ = Iᵧ = I_z = (39φ + 28)/150 * ms²
+         * Hollow: Iₓ = Iᵧ = I_z = (39φ + 28)/90 * ms²
+         *
+         * @return [solid, hollow]. The units are kg⋅m²
+         */
+        public static double[] massMomentOfInertiaOfDodecahedron(double massKg, double sideMeters) {
+            final double phi = (1 + squareRoot(5)) / 2;
+            final double numerator = 39 * phi + 28;
+            final double prod = massKg * sideMeters * sideMeters;
+            return new double[]{numerator / 150 * prod, numerator / 90 * prod};
+        }
+
+        /**
+         * Iₐ = 1/5 * m(b² + c²)
+         * I_b = 1/5 * m(a² + c²)
+         * I꜀ = 1/5 * m(a² + b²)
+         *
+         * @return [a, b, c]. The units are kg⋅m²
+         */
+        public static double[] massMomentOfInertiaOfEllipsoid(
+            double massKg, double semiaxisA, double semiaxisB, double semiaxisC) {
+            final double aSq = semiaxisA * semiaxisA;
+            final double bSq = semiaxisB * semiaxisB;
+            final double cSq = semiaxisC * semiaxisC;
+            final double mass = MathCalc.ONE_FIFTH * massKg;
+            return new double[]{mass * (bSq + cSq), mass * (aSq + cSq), mass * (aSq + bSq)};
+        }
+
+        /**
+         * φ = (1 + √5)/2
+         * Solid: Iₓ = Iᵧ = I_z = φ²/10 * ms²
+         * Hollow: Iₓ = Iᵧ = I_z = φ²/6 * ms²
+         *
+         * @return [solid, hollow]. The units are kg⋅m²
+         */
+        public static double[] massMomentOfInertiaOfIcosahedron(double massKg, double sideMeters) {
+            final double phi = (1 + squareRoot(5)) / 2;
+            final double phiSq = phi * phi;
+            final double sSq = sideMeters * sideMeters;
+            return new double[]{(phiSq / 10) * massKg * sSq, (phiSq / 6) * massKg * sSq};
+        }
+
+        /**
+         * @return I = 1/2 * mL²(1 - 2/3 sin²(β)). The units are kg⋅m²
+         */
+        public static double massMomentOfInertiaOfIsoscelesTriangle(
+            double commonSideLengthMeters, double massKg, double angleRad) {
+            final double lSq = commonSideLengthMeters * commonSideLengthMeters;
+            final double sinBeta = Trigonometry.sin(angleRad);
+            return MathCalc.ONE_HALF * massKg * lSq * (1 - MathCalc.TWO_THIRDS * sinBeta * sinBeta);
+        }
+
+        /**
+         * Solid: Iₓ = Iᵧ = I_z = 1/10 * ms²
+         * Hollow: Iₓ = Iᵧ = I_z = 1/6 * ms²
+         *
+         * @return [solid, hollow]. The units are kg⋅m²
+         */
+        public static double[] massMomentOfInertiaOfOctahedron(double massKg, double sideMeters) {
+            final double sSq = sideMeters * sideMeters;
+            return new double[]{reciprocal(10) * massKg * sSq, reciprocal(6) * massKg * sSq};
+        }
+
+        /**
+         * @return I = mr². The units are kg⋅m²
+         */
+        public static double massMomentOfPointMass(double massKg, double distanceMeters) {
+            return massKg * distanceMeters * distanceMeters;
+        }
+
+        /**
+         * @return I = 1/12 m(w²+l²). The units are kg⋅m²
+         */
+        public static double massMomentOfRectangularPlate(double massKg, double widthMeters, double lengthMeters) {
+            return MathCalc.ONE_TWELFTH * massKg * (widthMeters * widthMeters + lengthMeters * lengthMeters);
+        }
+
+        /**
+         * R = s/(2 sin(π/n))
+         *
+         * @param radiusMeters Radius of circumscribed circle.
+         * @return I = 1/2 mR²(1-2/3 sin²(π/n)). The units are kg⋅m²
+         */
+        public static double massMomentOfRegularPolygon(double massKg, double radiusMeters, long numberOfVertices) {
+            final double sine = Trigonometry.sin(Math.PI / numberOfVertices);
+            return MathCalc.ONE_HALF * massKg * radiusMeters * radiusMeters * (1 - MathCalc.TWO_THIRDS * sine * sine);
+        }
+
+        /**
+         * Iₓ = Iᵧ = 1/4 * m(r² + 2h²)
+         * I_z = 1/2 * mr²
+         *
+         * @return [Iₓ, I_z]. The units are kg⋅m²
+         */
+        public static double[] massMomentOfHollowRightCircularCone(
+            double massKg, double radiusMeters, double heightMeters) {
+            final double rSq = radiusMeters * radiusMeters;
+            return new double[]{
+                MathCalc.ONE_FOURTH * massKg * (rSq + 2 * heightMeters * heightMeters),
+                MathCalc.ONE_HALF * massKg * rSq
+            };
+        }
+
+        /**
+         * Iₓ = Iᵧ = 3/20 * m(r² + 4h²)
+         * I_z = 3/10 * mr²
+         *
+         * @return [Iₓ, I_z]. The units are kg⋅m²
+         */
+        public static double[] massMomentOfSolidRightCircularCone(
+            double massKg, double radiusMeters, double heightMeters) {
+            final double rSq = radiusMeters * radiusMeters;
+            return new double[]{
+                0.15 * massKg * (rSq + 4 * heightMeters * heightMeters),
+                0.3 * massKg * rSq
+            };
+        }
+
+        /**
+         * I_center = 1/12 * mL²
+         * I_end = 1/3 * mL²
+         *
+         * @return [I_center, I_end]. The units are kg⋅m²
+         */
+        public static double[] massMomentOfRod(double massKg, double lengthMeters) {
+            final double lSq = lengthMeters * lengthMeters;
+            return new double[]{MathCalc.ONE_TWELFTH * massKg * lSq, MathCalc.ONE_THIRD * massKg * lSq};
+        }
+
+        /**
+         * @return I = 2/3 * mr². The units are kg⋅m²
+         */
+        public static double massMomentOfInertiaOfSphere(double massKg, double radiusMeters) {
+            return MathCalc.TWO_THIRDS * massKg * radiusMeters * radiusMeters;
+        }
+
+        /**
+         * @return I = 2/5 * m((r⁵₂-r⁵₁)/(r³₂-r³₁)). The units are kg⋅m²
+         */
+        public static double massMomentOfSphericalShell(
+            double massKg, double innerRadiusMeters, double outerRadiusMeters) {
+            final double numerator = Math.pow(outerRadiusMeters, 5) - Math.pow(innerRadiusMeters, 5);
+            final double denominator = Math.pow(outerRadiusMeters, 3) - Math.pow(innerRadiusMeters, 3);
+            return MathCalc.TWO_FIFTH * massKg * (numerator / denominator);
+        }
+
+        /**
+         * I_solid = 1/20 * ms²
+         * I_hollow = 1/12 * ms²
+         *
+         * @return [I_solid, I_hollow]. The units are kg⋅m²
+         */
+        public static double[] massMomentOfTetrahedron(double massKg, double sideMeters) {
+            final double sSq = sideMeters * sideMeters;
+            return new double[]{MathCalc.ONE_TWENTIETH * massKg * sSq, MathCalc.ONE_TWELFTH * massKg * sSq};
+        }
+
+        /**
+         * I⟂diameter = 1/4 * m(3a²+4b²)
+         * I∥diameter = 1/8 * m(5a²+4b²)
+         *
+         * @return [center, diameter]. The units are kg⋅m²
+         */
+        public static double[] massMomentOfTorus(double massKg, double minorRadiusMeters, double majorRadiusMeters) {
+            final double aSq = minorRadiusMeters * minorRadiusMeters;
+            final double bSq = majorRadiusMeters * majorRadiusMeters;
+            return new double[]{
+                MathCalc.ONE_FOURTH * massKg * (3 * aSq + 4 * bSq),
+                MathCalc.ONE_EIGHTH * massKg * (5 * aSq + 4 * bSq)
+            };
+        }
+
+        /**
+         * @return I = m₁m₂/m₁+m₂ * r² = μr²). The units are kg⋅m²
+         */
+        public static double massMomentOfTwoPointMasses(double massKg1, double massKg2, double distanceMeters) {
+            return (massKg1 * massKg2) / (massKg1 + massKg2) * distanceMeters * distanceMeters;
+        }
     }
 
     public static final class Mechanics {
@@ -912,22 +1286,6 @@ public final class PhysicsCalc {
             return new double[]{tntFactor, equivalentWeight};
         }
 
-        // Rotational and periodic motion
-
-        /**
-         * where:
-         * <ul>
-         *     <li>m — The mass of the particle;</li>
-         *     <li>v — Cyclotron speed;</li>
-         *     <li>r — The radius of the revolution.</li>
-         * </ul>
-         *
-         * @return Fc = m × v²/r
-         */
-        public static double centripetalForce() {
-            throw new UnsupportedOperationException();
-        }
-
         /**
          * @return W = F⋅cos(θ)⋅s. The units are joules
          */
@@ -1043,6 +1401,147 @@ public final class PhysicsCalc {
          */
         public static double youngsModulus() {
             throw new UnsupportedOperationException();
+        }
+
+        /**
+         * @param internalTorque N·m
+         * @return ϕ = ∑(TL)/(JG). The units are rad
+         */
+        public static double angleOfTwist(double internalTorque, double shaftLengthMeters, double shearModulusPa) {
+            final double momentOfInertia = Kinematics.polarMomentOfInertiaOfSolidCircle(shaftLengthMeters);
+            return (internalTorque * shaftLengthMeters) / (momentOfInertia * shearModulusPa);
+        }
+
+        /**
+         * θᵣ = arctan(μₛ)
+         * θᵣ — Angle of repose;
+         * μₛ — Static friction coefficient.
+         *
+         * @return θ = arctan(h/r). The units are rad
+         */
+        public static double angleOfRepose(double heapHeightMeters, double heapRadiusMeters) {
+            final double staticFrictionCoeff = heapHeightMeters / heapRadiusMeters;
+            return Trigonometry.tanInverse(staticFrictionCoeff);
+        }
+
+        /**
+         * @return B = E / 3(1 - 2ν). The units are Pa
+         */
+        public static double bulkModulusFromYoungsModulus(double youngsModulus, double poissonsRatio) {
+            return youngsModulus / (3 * (1 - 2 * poissonsRatio));
+        }
+
+        /**
+         * @param pressurePa    Pressure applied on object (ΔP). Don't include the ambient pressure
+         * @param initialVolume V₀ in m³
+         * @return ΔV = −(ΔPV₀)/B. The units are m³
+         */
+        public static double bulkModulusChangeInVolume(double pressurePa, double initialVolume, double bulkModulusPa) {
+            return -(pressurePa * initialVolume) / bulkModulusPa;
+        }
+
+        /**
+         * @param initialVolume  V₀ in m³
+         * @param changeInVolume in m³
+         * @return ΔV/V₀
+         */
+        public static double bulkStrain(double initialVolume, double changeInVolume) {
+            return changeInVolume / initialVolume;
+        }
+
+        /**
+         * @return T = 60⋅P/(2π⋅n). The units are N⋅m
+         */
+        public static double shaftSizeForTwistingMomentOnly(double transmittedPowerWatts,
+                                                            double shaftRotationSpeedRPM) {
+            return 60 * transmittedPowerWatts / (Trigonometry.PI2 * shaftRotationSpeedRPM);
+        }
+
+        /**
+         * T = π⋅τ⋅d³/16
+         *
+         * @param torque in N⋅m
+         * @return d = ∛((16T)/(πτ)). The units are m
+         */
+        public static double diameterOfSolidShaftForTwistingMomentOnly(double torque, double allowableShearStressPa) {
+            return Algebra.cubeRoot((16 * torque) / (Math.PI * allowableShearStressPa));
+        }
+
+        /**
+         * M = π/32 × σ_b ⋅ d³₀(1−k)
+         * dₒ = d/∛(1-k⁴)
+         * dᵢ = d/dₒ
+         *
+         * @return The units are m
+         */
+        public static double[] shaftSizeDiametersForTwistingOrBendingMoment(
+            double diameterOfSolidShaftMeters, double diameterRatio) {
+            final double outer = diameterOfSolidShaftMeters / Algebra.cubeRoot(1 - Math.pow(diameterRatio, 4));
+            final double inner = diameterRatio * outer;
+            return new double[]{outer, inner};
+        }
+
+        /**
+         * M = π/32 × σ_b ⋅ d³₀(1−k⁴)
+         *
+         * @param bendingMoment in N⋅m
+         * @return d = ∛((M*32)/(π*σ_b)). The units are m
+         */
+        public static double shaftSizeForBendingMomentOnly(double bendingMoment, double allowableBendingStressPa) {
+            return Algebra.cubeRoot((32 * bendingMoment) / (Math.PI * allowableBendingStressPa));
+        }
+
+        /**
+         * @param bendingMoment in N⋅m
+         * @param torque        in N⋅m
+         * @return Tₑ = √(M²+T²) = π/16 × τₘₐₓ ⋅ d³₀(1−k⁴). The units are N⋅m
+         */
+        public static double equivalentTwistingMoment(double bendingMoment, double torque) {
+            return squareRoot(bendingMoment * bendingMoment + torque * torque);
+        }
+
+        /**
+         * @param bendingMoment in N⋅m
+         * @param torque        in N⋅m
+         * @return Tₑ = 1/2(M+√(M²+T²)) = π/32 × σ_b(ₘₐₓ) ⋅ d³₀(1−k⁴). The units are N⋅m
+         */
+        public static double equivalentBendingMoment(double bendingMoment, double torque) {
+            return MathCalc.ONE_HALF * (bendingMoment + squareRoot(bendingMoment * bendingMoment + torque * torque));
+        }
+
+        /**
+         * @param bendingMoment in N⋅m
+         * @param torque        in N⋅m
+         * @return Tₑ = √((Kₘ⋅M)² + (Kₜ⋅T)²). The units are N⋅m
+         */
+        public static double fluctuatingEquivalentTwistingMoment(
+            double torque, double bendingMoment, double bendingFactor, double torsionFactor) {
+            return squareRoot(Math.pow(bendingFactor * bendingMoment, 2) + Math.pow(torsionFactor * torque, 2));
+        }
+
+        /**
+         * @param bendingMoment in N⋅m
+         * @param torque        in N⋅m
+         * @return Mₑ = 1/2(Kₘ⋅M+√((Kₘ⋅M)²+(Kₜ⋅T)²)). The units are N⋅m
+         */
+        public static double fluctuatingEquivalentBendingMoment(
+            double torque, double bendingMoment, double bendingFactor, double torsionFactor) {
+            return MathCalc.ONE_HALF * (bendingFactor * bendingMoment
+                + squareRoot(Math.pow(bendingFactor * bendingMoment, 2) + Math.pow(torsionFactor * torque, 2)));
+        }
+
+        /**
+         * For a solid circular shaft: T = (G⋅θ)/L × π/32×d⁴.
+         * For a hollow circular shaft: T = (G⋅θ)/L × π/32 × (d⁴ₒ−d⁴ᵢ).
+         *
+         * @param angleRad Torsional deflection or angle of twist (θ)
+         * @return d = ⁴√((32⋅T⋅L)/(G⋅π⋅θ)). The units are m
+         */
+        public static double shaftSizeDiameterForTorsionalRigidity(
+            double torque, double rigidityModulusPa, double angleRad, double lengthMeters) {
+            final double numerator = 32 * torque * lengthMeters;
+            final double denominator = rigidityModulusPa * Math.PI * angleRad;
+            return Algebra.nthRoot(numerator / denominator, 4);
         }
     }
 
