@@ -17,6 +17,8 @@ public enum MassUnit {
     MASSES_OF_EARTH, // Earths
     SOLAR, // masses of the Sun, Suns
     ELECTRON_REST_MASS, // me
+    PROTON_REST_MASS, // mp
+    NEUTRON_REST_MASS, // nm
     ATOMIC_MASS_UNITS, // amu, u
     TROY_OUNCE; // oz t
 

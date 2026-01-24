@@ -22,11 +22,16 @@ import static org.example.assistantonsbservlet.math.NumberUtils.checkGreater;
 import static org.example.assistantonsbservlet.math.NumberUtils.checkGreater0;
 
 public final class MathCalc {
+    public static final double ONE_TWENTIETH = 0.05;  // 1/20
+    public static final double ONE_SIXTEENTH = 0.0625;  // 1/16
+    public static final double ONE_TWELFTH = 0.08333333;  // 1/12
+    public static final double ONE_EIGHTH = 0.125; // 1/8
+    public static final double ONE_SIXTH = 0.16666667; // 1/6
     public static final double ONE_FIFTH = 0.2; // 1/5
     public static final double ONE_FOURTH = 0.25; // 1/4
+    public static final double ONE_THIRD = 0.33333333; // 1/3
+    public static final double TWO_FIFTH = 0.4;  // 2/5
     public static final double ONE_HALF = 0.5; // 1/2
-    public static final double ONE_EIGHTH = 0.125; // 1/8
-    public static final double ONE_SIXTEENTH = 0.0625;  // 1/16
     public static final double TWO_THIRDS = 0.66666667;  // 2/3
     public static final double THREE_FOURTH = 0.75;  // 3/4
     public static final double FOUR_FIFTH = 0.8;  // 4/5
@@ -3329,12 +3334,13 @@ public final class MathCalc {
      * </table>
      */
     public static final class Trigonometry {
+        public static final double PI_OVER_32 = Math.PI / 32;
         public static final double PI_OVER_12 = Math.PI / 12;
         public static final double PI_OVER_6 = Math.PI / 6;
         public static final double PI_OVER_4 = Math.PI / 4;
         public static final double PI_OVER_3 = Math.PI / 3;
-        public static final double PI5_OVER_12 = 5 * Math.PI / 12;
         public static final double PI_OVER_2 = Math.PI / 2;
+        public static final double PI5_OVER_12 = 5 * Math.PI / 12;
         public static final double PI7_OVER_12 = 7 * Math.PI / 12;
         public static final double PI2_OVER_3 = 2 * Math.PI / 3;
         public static final double PI3_OVER_4 = 3 * Math.PI / 4;
