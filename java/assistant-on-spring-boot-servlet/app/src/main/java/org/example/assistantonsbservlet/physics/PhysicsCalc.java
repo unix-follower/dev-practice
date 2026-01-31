@@ -27,7 +27,9 @@ public final class PhysicsCalc {
      * ~3.00 * 10⁸ m/s. Also, 300 * 10⁶ m/s
      */
     public static final int SPEED_OF_LIGHT = 299_792_458;
-    public static final double ELECTRON_CHARGE_IN_COULOMBS = 1.6021766208e-19;
+    public static final double ELECTRON_CHARGE = 1.6021766208e-19; // In Coulombs
+    public static final double ELECTRON_REST_MASS = 9.1093837139e-31; // In kg
+    public static final double FINE_STRUCTURE_CONSTANT = 0.0072973525643; // ≈ 137.035999177⁻¹, 1/137
     public static final double BLINK_OF_AN_EYE_SEC = 0.350; // 350e-3
     /**
      * (6.02214 * 10²³ electrons/mole) / (6.24151 * 10¹⁸ electrons/coulomb) = 96485 coulombs/mole
@@ -56,7 +58,9 @@ public final class PhysicsCalc {
     public static final int FPE_CONSTANT = 450_240; // foot-pounds of energy
     public static final double GRAVITATIONAL_CONSTANT = 6.6743e-11; // 6.6743 × 10⁻¹¹ m³ kg⁻¹ s⁻²
     public static final byte MONOATOMIC_GAS_DEGREES_OF_FREEDOM = 3;
+    public static final double SUN_RADIUS = 6.963e8;
     public static final double SUN_POTENTIAL_ENERGY_ERGS = 1.788e54;
+    public static final double SOLAR_CONSTANT = 1367; // in W/m²
     public static final double REDUCED_PLANCK_CONSTANT = 1.0545718001e-34; // h/2π; 1.0545718001×10⁻³⁴ J·s
     public static final double UNIVERSAL_GAS_CONSTANT = 8.31446261815324; // J/(mol·K)
 
@@ -210,6 +214,12 @@ public final class PhysicsCalc {
         }
 
         /**
+         * vₐᵥ = Δr/Δt
+         * where:
+         * vₐᵥ — Average velocity;
+         * Δr — Displacement vector;
+         * Δt — Time interval.
+         *
          * @return average velocity = (velocity₁ × time₁ + velocity₂ × time₂ + …) / total time. The units are m/s
          */
         public static double avgVelocity(double[][] velocities) {
@@ -220,6 +230,13 @@ public final class PhysicsCalc {
                 .toList()
                 .toArray(new double[0][]);
             return Arithmetic.weightedAverage(timeVelocityArray);
+        }
+
+        /**
+         * vᵢₙₛₜ = lim_Δt→0 vₐᵥ = lim_Δt→0 Δr/Δt = dr/dt
+         */
+        public static double instantaneousVelocity() {
+            throw new UnsupportedOperationException();
         }
 
         /**
@@ -247,6 +264,28 @@ public final class PhysicsCalc {
                 (2 * massInKg * gravitationalAcceleration)
                     / (fluidDensity * crossSectionalArea * dragCoef)
             );
+        }
+
+        /**
+         * v = vₓ ᵣₑₛi + vᵧ ᵣₑₛj
+         * vₓ ᵣₑₛ = v₁⋅cos(θ₁) + v₂⋅cos(θ₂) + … vₙ⋅cos(θₙ)
+         * vᵧ ᵣₑₛ = v₁⋅sin(θ₁) + v₂⋅sin(θ₂) + … vₙ⋅sin(θₙ)
+         *
+         * @return vᵣₑₛ = √(v²ₓ ᵣₑₛ + v²ᵧ ᵣₑₛ). The units are m/s
+         */
+        public static double resultantVelocity(double[] velocities, double[] angles) {
+            final double[] cosineAngles = Arrays.stream(angles).map(Trigonometry::cos).toArray();
+            final double vxResultant = LinearAlgebra.dotProduct(velocities, cosineAngles);
+            final double[] sineAngles = Arrays.stream(angles).map(Trigonometry::sin).toArray();
+            final double vyResultant = LinearAlgebra.dotProduct(velocities, sineAngles);
+            return LinearAlgebra.vectorMagnitude(new double[]{vxResultant, vyResultant});
+        }
+
+        /**
+         * @return θᵣₑₛ = arctan(vᵧ ᵣₑₛ / vₓ ᵣₑₛ). The units are rad
+         */
+        public static double resultantVelocityAngle(double vxResultant, double vyResultant) {
+            return Trigonometry.tanInverse(vyResultant / vxResultant);
         }
 
         /**
@@ -560,25 +599,24 @@ public final class PhysicsCalc {
         }
 
         /**
-         * @return a = √(a₁² + a₂² + a₃²)
+         * @param accelerationComponents The items are in m/s²
+         * @return a = √(a₁² + a₂² + a₃²). The units are m/s²
          */
-        public static double magnitudeOfAcceleration(double[] accelerationComponents) {
-            return Math.sqrt(Arrays.stream(accelerationComponents).sum());
+        public static double accelerationMagnitude(double[] accelerationComponents) {
+            return LinearAlgebra.vectorMagnitude(accelerationComponents);
         }
 
         /**
-         * @return |a| = |v₁ - v₂| / Δt
+         * @param initialVelocityVector The items are in m/s
+         * @param finalVelocityVector   The items are in m/s
+         * @return |a| = |v₁ - v₀| / Δt. The units are m/s²
          */
-        public static double[] magnitudeOfAcceleration(
-            long timeDifference,
-            double initialVelocityX, double initialVelocityY,
-            double finalVelocityX, double finalVelocityY) {
-            if (timeDifference == 0) {
-                throw new IllegalArgumentException("Time difference cannot be zero.");
-            }
-            final double vDiffX = finalVelocityX - initialVelocityX;
-            final double vDiffY = finalVelocityY - initialVelocityY;
-            return new double[]{vDiffX / timeDifference, vDiffY / timeDifference};
+        public static double accelerationMagnitude(
+            double[] initialVelocityVector, double[] finalVelocityVector, double timeDifferenceSeconds) {
+            checkGreater0(timeDifferenceSeconds);
+            final double[] vDiff = LinearAlgebra.vectorSubtract(finalVelocityVector, initialVelocityVector);
+            final double[] acceleration = LinearAlgebra.vectorDivideScalar(vDiff, timeDifferenceSeconds);
+            return LinearAlgebra.vectorMagnitude(acceleration);
         }
 
         /**
@@ -1101,10 +1139,155 @@ public final class PhysicsCalc {
         }
 
         /**
-         * @return I = m₁m₂/m₁+m₂ * r² = μr²). The units are kg⋅m²
+         * @return I = (m₁m₂)/(m₁+m₂) * r² = μr². The units are kg⋅m²
          */
         public static double massMomentOfTwoPointMasses(double massKg1, double massKg2, double distanceMeters) {
             return (massKg1 * massKg2) / (massKg1 + massKg2) * distanceMeters * distanceMeters;
+        }
+
+        /**
+         * Launching the object from the ground (initial height h = 0).
+         * hₘₐₓ = (V²₀ sin² α)/(2g).
+         * Launching the object from some elevation (initial height h > 0).
+         * If α = 90°: hₘₐₓ = h + V²₀/(2g).
+         * If α = 45°: hₘₐₓ = h + V²₀/(4g).
+         * If α = 0°: hₘₐₓ = h.
+         *
+         * @return hₘₐₓ = h + (V²₀ sin² α)/(2g). The units are m
+         */
+        public static double projectileMotionMaximumHeight(
+            double initialHeightMeters, double initialVelocity, double launchAngleRad) {
+            final double sine = Trigonometry.sin(launchAngleRad);
+            return initialHeightMeters + (initialVelocity * initialVelocity * sine * sine)
+                / (2 * GRAVITATIONAL_ACCELERATION_ON_EARTH);
+        }
+
+        /**
+         * @return t = 2Vᵧ₀/g. The units are sec
+         */
+        public static double projectileMotionLaunchingFromGroundTimeOfFlight(double initialVerticalVelocity) {
+            return 2 * initialVerticalVelocity / GRAVITATIONAL_ACCELERATION_ON_EARTH;
+        }
+
+        /**
+         * @return t = (Vᵧ₀ + √(Vᵧ₀² + 2gh)) / g. The units are sec
+         */
+        public static double projectileMotionLaunchingFromElevationTimeOfFlight(double initialHeightMeters,
+                                                                                double initialVelocity) {
+            final double g = GRAVITATIONAL_ACCELERATION_ON_EARTH;
+            return (initialVelocity + squareRoot(initialVelocity * initialVelocity + 2 * g * initialHeightMeters))
+                / g;
+        }
+
+        /**
+         * Height, h = 0: t = 2 × V₀ × sin(α) / g.
+         * h > 0: t = (V₀ × sin(α) + √((V₀ × sin(α))² + 2 × g × h)) / g.
+         * <br/>
+         * The flight ends when the projectile hits the ground (y = 0).
+         * 0 = V₀ t sin(α) − 1/2 * gt²
+         * <br/>
+         * t = 2 * Vᵧ₀/g = 2 * V₀/g * sin α
+         *
+         * @return The units are sec
+         */
+        public static double projectileMotionTimeOfFlight(
+            double initialHeightMeters, double initialVelocity, double launchAngleRad) {
+            final double g = GRAVITATIONAL_ACCELERATION_ON_EARTH;
+            final double v0 = initialVelocity;
+            final double sine = Trigonometry.sin(launchAngleRad);
+            if (initialHeightMeters == 0) {
+                return 2 * v0 * sine / g;
+            }
+            return (v0 * sine + squareRoot(Math.pow(v0 * sine, 2) + 2 * g * initialHeightMeters)) / g;
+        }
+
+        /**
+         * @return t = √((2h)/g). The units are sec
+         */
+        public static double projectileMotionTimeOfFlight(double initialHeightMeters) {
+            return squareRoot(2 * initialHeightMeters / GRAVITATIONAL_ACCELERATION_ON_EARTH);
+        }
+
+        /**
+         * @param initialVelocity in m/s
+         * @return Vₓ = V₀ cos α. The units are m/s
+         */
+        public static double projectileMotionHorizontalVelocityComponent(double initialVelocity,
+                                                                         double launchAngleRad) {
+            return initialVelocity * Trigonometry.cos(launchAngleRad);
+        }
+
+        /**
+         * @param initialVelocity in m/s
+         * @return Vᵧ = V₀ sin α − gt. The units are m/s
+         */
+        public static double projectileMotionVerticalVelocityComponent(
+            double initialVelocity, double launchAngleRad, double flightTimeSeconds) {
+            return initialVelocity * Trigonometry.sin(launchAngleRad)
+                - GRAVITATIONAL_ACCELERATION_ON_EARTH * flightTimeSeconds;
+        }
+
+        /**
+         * @param initialVelocity in m/s
+         * @return r = Vt = V * √(2h/g). Horizontal range of the projectile. The units are m
+         */
+        public static double projectileMotionHorizontalDistance(double initialHeightMeters, double initialVelocity) {
+            final double timeOfFlight = projectileMotionTimeOfFlight(initialHeightMeters);
+            return initialVelocity * timeOfFlight;
+        }
+
+        /**
+         * <ol>
+         *     <li><span>Launch from the ground (initial height = 0)</span>
+         *     <p>
+         *         d = V × t = V₀ × cos(α) × 2 × V₀ × sin(α)/g
+         *         d = 2 × V₀² × cos(α) × sin(α)/g
+         *         d = V₀² × sin(2 × α)/g
+         *     </p></li>
+         *     <li><span>Launch from an elevation (initial height > 0)</span><p>
+         *         d = Vₓ₀ cos α × (Vᵧ₀ sin α + √((Vᵧ₀ sin α)²+2gh))/g
+         *     </p></li>
+         * </ol>
+         *
+         * @param initialVelocity in m/s
+         * @return Horizontal range of the projectile. The units are m
+         */
+        public static double projectileMotionRange(
+            double initialVelocity, double launchAngleRad, double initialHeightMeters) {
+            final double g = GRAVITATIONAL_ACCELERATION_ON_EARTH;
+            final double vx0 = projectileMotionHorizontalVelocityComponent(initialVelocity, launchAngleRad);
+            final double vy0 = projectileMotionVerticalVelocityComponent(initialVelocity, launchAngleRad, 0);
+            if (initialHeightMeters > 0) {
+                final double numerator = vy0 + squareRoot(vy0 * vy0 + 2 * g * initialHeightMeters);
+                return vx0 * numerator / g;
+            }
+
+            //d = 2 × V₀² × cos(α) × sin(α)/g
+            return (initialVelocity * initialVelocity * Trigonometry.sinDoubleAngle(launchAngleRad)) / g;
+        }
+
+        /**
+         * @param initialVelocity in m/s
+         * @return y = h + x × tan(α) − g × x²/(2×V₀²×cos²(α)). The units are m
+         */
+        public static double projectileMotionTrajectory(
+            double initialHeightMeters, double initialVelocity, double launchAngleRad) {
+            final double time = projectileMotionTimeOfFlight(initialHeightMeters, initialVelocity, launchAngleRad);
+            final double vx = projectileMotionHorizontalVelocityComponent(initialVelocity, launchAngleRad);
+            final double x = vx * time;
+            final double g = GRAVITATIONAL_ACCELERATION_ON_EARTH;
+            final double v0Squared = initialVelocity * initialVelocity;
+            final double cosine = Trigonometry.cos(launchAngleRad);
+            return initialHeightMeters + x * Trigonometry.tan(launchAngleRad)
+                - g * (x * x) / (2 * v0Squared * cosine * cosine);
+        }
+
+        /**
+         * @return y = –1/2 * gt² = (−gx²)/(2V²). The units are m/s
+         */
+        public static double projectileMotionTrajectory(double initialHeightMeters, double initialVelocity) {
+            return (-GRAVITATIONAL_ACCELERATION_ON_EARTH * initialHeightMeters * initialHeightMeters)
+                / (2 * initialVelocity * initialVelocity);
         }
     }
 
@@ -1360,10 +1543,33 @@ public final class PhysicsCalc {
         }
 
         /**
-         * @return γ ≈ Δx/L
+         * @return γ = Δx/L. The units are rad
          */
         public static double shearStrain(double displacementMeters, double transverseLengthMeters) {
             return displacementMeters / transverseLengthMeters;
+        }
+
+        /**
+         * @return γ = 𝜏/G. The units are rad
+         */
+        public static double shearStrainUsingShearStressAndModulus(double shearStressPa, double shearModulusPa) {
+            return shearStressPa / shearModulusPa;
+        }
+
+        /**
+         * @return γ = (ρϕ)/L. The units are rad
+         */
+        public static double shearStrainForShaftUnderTorsion(
+            double distanceFromShaftAxisMeters, double angleOfTwistRad, double shaftLengthMeters) {
+            return (distanceFromShaftAxisMeters * angleOfTwistRad) / shaftLengthMeters;
+        }
+
+        /**
+         * @return γₘₐₓ = (cϕ)/L. The units are rad
+         */
+        public static double maxShearStrainForShaftUnderTorsion(
+            double angleOfTwistRad, double shaftRadiusMeters, double shaftLengthMeters) {
+            return (shaftRadiusMeters * angleOfTwistRad) / shaftLengthMeters;
         }
 
         /**
@@ -1392,15 +1598,16 @@ public final class PhysicsCalc {
         }
 
         /**
+         * E = 2×G(1+v)
          * where:
          * E — Young's modulus, in gigapascals (GPa);
          * G — Shear modulus, in GPa;
          * v — Poisson's ratio.
          *
-         * @return E = 2×G(1+v)
+         * @return E = σ/ε
          */
-        public static double youngsModulus() {
-            throw new UnsupportedOperationException();
+        public static double youngsModulus(double stress, double strain) {
+            return stress / strain;
         }
 
         /**
@@ -1542,6 +1749,412 @@ public final class PhysicsCalc {
             final double numerator = 32 * torque * lengthMeters;
             final double denominator = rigidityModulusPa * Math.PI * angleRad;
             return Algebra.nthRoot(numerator / denominator, 4);
+        }
+
+        /**
+         * @param area m²
+         * @return σ = F/A. The units are Pa
+         */
+        public static double stress(double area, double forceNewtons) {
+            return forceNewtons / area;
+        }
+
+        /**
+         * @return ε = ΔL/L₁. The units are Pa
+         */
+        public static double strain(double initialLengthMeters, double changeInLengthMeters) {
+            return changeInLengthMeters / initialLengthMeters;
+        }
+
+        /**
+         * @param firstMomentOfArea in m³
+         * @param momentOfInertia   in m⁴
+         * @return τ = (VQ)/(It). The units are Pa
+         */
+        public static double shearStressTransverseForArbitraryCrossSection(
+            double shearForceMagnitudeN, double widthMeters, double firstMomentOfArea, double momentOfInertia) {
+            return (shearForceMagnitudeN * firstMomentOfArea) / (momentOfInertia * widthMeters);
+        }
+
+        /**
+         * A = db
+         * τₘₐₓ = (3V)/(2A)
+         *
+         * @return τ = τₘₐₓ * (1 − y²/(d/2)²). The units are Pa
+         */
+        public static double shearStressTransverseForRectangular(
+            double shearForceMagnitudeN, double widthMeters, double heightMeters, double distanceToNeutralAxisMeters) {
+            final double area = Geometry.areaOfRectangle(widthMeters, heightMeters);
+            final double ySq = distanceToNeutralAxisMeters * distanceToNeutralAxisMeters;
+            final double tauMax = (3 * shearForceMagnitudeN) / (2 * area);
+            return tauMax * (1 - ySq / Math.pow(heightMeters / 2, 2));
+        }
+
+        /**
+         * @return τₘₐₓ = (4V)/(3A) * (R²+RRᵢ+Rᵢ²)/(R²+Rᵢ²). The units are Pa
+         */
+        public static double shearStressTransverseForHollowCircular(
+            double shearForceMagnitudeN, double outerRadiusMeters, double innerRadiusMeters) {
+            final double rSq = outerRadiusMeters * outerRadiusMeters;
+            final double riSq = innerRadiusMeters * innerRadiusMeters;
+            final double area = Geometry.hollowCircleArea(outerRadiusMeters, innerRadiusMeters);
+            return (4 * shearForceMagnitudeN) / (3 * area)
+                * (rSq + outerRadiusMeters * innerRadiusMeters + riSq) / (rSq + riSq);
+        }
+
+        /**
+         * I = (b(d+2t)³−(b−t)d³)/12
+         *
+         * @return τₘₐₓ = V/(8Iₓt) * (b(d+2t)² − bd² + td²). The units are Pa
+         */
+        public static double shearStressTransverseForIBeam(
+            double shearForceMagnitudeN, double widthMeters, double webThicknessMeters, double webLengthMeters) {
+            final double tmp = (widthMeters * Math.pow(webLengthMeters + 2 * webThicknessMeters, 3)
+                - (widthMeters - webThicknessMeters) * Math.pow(webLengthMeters, 3)) / 12;
+            final double dSq = webLengthMeters * webLengthMeters;
+            return shearForceMagnitudeN / (8 * tmp * webThicknessMeters)
+                * (widthMeters * Math.pow(webLengthMeters + 2 * webThicknessMeters, 2) - widthMeters * dSq
+                + webThicknessMeters * dSq);
+        }
+
+        /**
+         * I = (b(d+2t)³−(b−t)d³)/12
+         *
+         * @return τₘᵢₙ = (Vb)/(8Iₓt) * ((d+2t)² − d²). The units are Pa
+         */
+        public static double minShearStressTransverseForIBeam(
+            double shearForceMagnitudeN, double widthMeters, double webThicknessMeters, double webLengthMeters) {
+            final double tmp = (widthMeters * Math.pow(webLengthMeters + 2 * webThicknessMeters, 3)
+                - (widthMeters - webThicknessMeters) * Math.pow(webLengthMeters, 3)) / 12;
+            final double dSq = webLengthMeters * webLengthMeters;
+            return (shearForceMagnitudeN * widthMeters) / (8 * tmp * webThicknessMeters)
+                * (Math.pow(webLengthMeters + 2 * webThicknessMeters, 2) - dSq);
+        }
+
+        /**
+         * @param torque in N⋅m
+         * @return τₘₐₓ = (TR)/J. The units are Pa
+         */
+        public static double shearStressTorsionalForSolidCircle(double torque, double radiusMeters) {
+            final double diameter = Geometry.circleDiameter(radiusMeters);
+            final double momentOfInertia = Kinematics.polarMomentOfInertiaOfSolidCircle(diameter);
+            return (torque * radiusMeters) / momentOfInertia;
+        }
+
+        /**
+         * @param torque in N⋅m
+         * @return τₘₐₓ = (TR)/J. The units are Pa
+         */
+        public static double shearStressTorsionalForHollowCircle(
+            double torque, double outerRadiusMeters, double innerRadiusMeters) {
+            final double inDiameter = Geometry.circleDiameter(innerRadiusMeters);
+            final double outDiameter = Geometry.circleDiameter(outerRadiusMeters);
+            final double momentOfInertia = Kinematics.polarMomentOfInertiaOfHollowCircle(inDiameter, outDiameter);
+            return (torque * outerRadiusMeters) / momentOfInertia;
+        }
+
+        /**
+         * If ΔT > 0 than the thermal stress is tensile in nature. If ΔT < 0 it's compressive.
+         *
+         * @param thermalExpansionCoeff in /K or K⁻¹
+         * @return σₜ = EαΔT. The units are Pa
+         */
+        public static double thermalStress(
+            double thermalExpansionCoeff, double youngsModulusPa, double initialTempCelsius, double finalTempCelsius) {
+            return youngsModulusPa * thermalExpansionCoeff * (finalTempCelsius - initialTempCelsius);
+        }
+
+        /**
+         * @return Eₚ = (L_f−Lₒ)/Lₒ × 100%. The units are %
+         */
+        public static double elongation(double originalLengthMeters, double finalLengthMeters) {
+            return (finalLengthMeters - originalLengthMeters) / originalLengthMeters * 100;
+        }
+
+        /**
+         * where Ɛ_nom is the nominal or engineering strain.
+         *
+         * @return Ɛ = ln(1 + Ɛ_nom)
+         */
+        public static double trueStrain(double engineeringStrain) {
+            return ln(1 + engineeringStrain);
+        }
+
+        /**
+         * @return σ = σ_nom(1 + Ɛ_nom). The units are Pa
+         */
+        public static double trueStress(double engineeringStrain, double engineeringStressPa) {
+            return engineeringStressPa * (1 + engineeringStrain);
+        }
+    }
+
+    public static final class QuantumMechanics {
+        public static final double PLANCK_CONSTANT = 6.62607015e-34; // m²·kg/s
+        public static final double REDUCED_PLANCK_CONSTANT = 1.054571817e-34; // J·s; ℏ = h/2π
+        public static final double BOHR_MAGNETON = 9.274e-24; // J/T
+        public static final double WIEN_DISPLACEMENT_CONSTANT = 2.897771955e-3; // m·K
+        public static final double RYDBERG_CONSTANT_FOR_HYDROGEN = 1.0973e7; // R≈1.0973×10⁷ m⁻¹
+
+        private QuantumMechanics() {
+        }
+
+        /**
+         * @return ν = c/λ. The units are Hz
+         */
+        public static double lightFrequency(double wavelengthMeters) {
+            return SPEED_OF_LIGHT / wavelengthMeters;
+        }
+
+        /**
+         * @return E = (hc)/λ = hf. The units are J
+         */
+        public static double photonEnergy(double wavelengthMeters) {
+            return PLANCK_CONSTANT * lightFrequency(wavelengthMeters);
+        }
+
+        /**
+         * ΔE = E2 - E1 = h×f
+         * If ΔE > 0 the electron will emit the electromagnetic wave.
+         * Otherwise, when ΔE < 0, the electron needs to absorb the electromagnetic wave.
+         *
+         * @return ΔE / h. The units are Hz
+         */
+        public static double bohrModelPhotonFrequency(double initialEnergy, double finalEnergy) {
+            return (initialEnergy - finalEnergy) / PLANCK_CONSTANT;
+        }
+
+        /**
+         * @return λ = h / (m × v). The units are meters
+         */
+        public static double deBroglieWavelength(double restMassKg, double velocity) {
+            return PLANCK_CONSTANT / (restMassKg * velocity);
+        }
+
+        /**
+         * Eₙ = −(mₑc²α²Z²)/(2n²)
+         * where:
+         * Eₙ — Energy of the electron at energy level n;
+         * mₑ — Mass of the electron;
+         * c — Speed of light;
+         * α = 1/137 — Fine structure constant;
+         * Z — Atomic number (Z=1 for the hydrogen);
+         * n — Energy level.
+         *
+         * @return Eₙ = −(13.6 * Z²)/n². The units are eV
+         */
+        public static double hydrogenLikeLevelEnergy(int energyLevel, int atomicNumber) {
+            final int zSq = atomicNumber * atomicNumber;
+            return -(13.6 * zSq) / (energyLevel * energyLevel);
+        }
+
+        /**
+         * @param area       in m²
+         * @param emissivity How effective a material is in emitting energy as thermal radiation.
+         *                   It ranges from 0 (full reflection) to 1 (black body).
+         * @return P = σ×ϵ×A×T⁴. The units are W
+         */
+        public static double radiatedPower(double area, double tempKelvins, double emissivity) {
+            return STEFAN_BOLTZMANN_CONSTANT * emissivity * area * Math.pow(tempKelvins, 4);
+        }
+
+        /**
+         * @param area in m²
+         * @return P = S × a = S × 4πD². The units are W
+         */
+        public static double radiatedPower(double area) {
+            return SOLAR_CONSTANT * area;
+        }
+
+        /**
+         * @param area in m²
+         * @return T = (P/(σ×ϵ×A))^1/4. The units are K
+         */
+        public static double radiatedPowerTemperature(double area, double powerWatts, double perfectEmissivity) {
+            return Math.pow(powerWatts / (STEFAN_BOLTZMANN_CONSTANT * perfectEmissivity * area), 1. / 4);
+        }
+
+        /**
+         * @return λ = h/(mc). The units are meters
+         */
+        public static double comptonWavelength(double massKg) {
+            return PLANCK_CONSTANT * (massKg * SPEED_OF_LIGHT);
+        }
+
+        /**
+         * @param massKg Mass of the particle
+         * @return Δλ = h/(mc) * (1−cos(θ)). The units are meters
+         */
+        public static double comptonScattering(double massKg, double scatteringAngleRad) {
+            return comptonWavelength(massKg) * (1 - Trigonometry.cos(scatteringAngleRad));
+        }
+
+        /**
+         * @param latticeConstant in nanometers
+         * @param magneticMoment  in μB (Bohr magneton)
+         * @return C = μ₀/(3k_B) × N / a³ × μ². The units are K⋅A/(T⋅m)
+         */
+        public static double curieConstant(double numberOfAtoms, double latticeConstant, double magneticMoment) {
+            return VACUUM_PERMEABILITY / (3 * BOLTZMANN_CONSTANT) * numberOfAtoms / Math.pow(latticeConstant, 3)
+                * magneticMoment * magneticMoment;
+        }
+
+        /**
+         * <table>
+         *     <tr>
+         *         <th>Value of l</th><td>0</td><td>1</td><td>2</td><td>3</td><td>4</td><td>5</td>
+         *     </tr>
+         *     <tr>
+         *         <th>Name of the orbital</th><td>s</td><td>p</td><td>d</td><td>f</td><td>g</td><td>h</td>
+         *     </tr>
+         * </table>
+         *
+         * @param quantumNumber The level
+         * @return Magnitude: L = √(l(l+1)) * h/(2π). The units are J·s
+         */
+        public static double angularMomentumMagnitude(int quantumNumber) {
+            return squareRoot(quantumNumber * (quantumNumber + 1)) * PLANCK_CONSTANT / Trigonometry.PI2;
+        }
+
+        /**
+         * @param quantumNumber s = ±1/2
+         * @return Magnitude: S = √(s(s+1)) * h/(2π). The units are J·s
+         */
+        public static double spinMagnitude(double quantumNumber) {
+            if (quantumNumber != -MathCalc.ONE_HALF && quantumNumber != MathCalc.ONE_HALF) {
+                throw new IllegalArgumentException("The valid quantum number is ±1/2");
+            }
+            return squareRoot(quantumNumber * (quantumNumber + 1)) * PLANCK_CONSTANT / Trigonometry.PI2;
+        }
+
+        /**
+         * gJ = 3/2 + (S(S+1) - L(L+1))/(2J×(J+1))
+         *
+         * @return μ = -gJ × √(J×(J+1)). The units are μB
+         */
+        public static double magneticMoment(double spin, int orbital) {
+            final double s = spin;
+            final double l = orbital;
+            final double j = l + s;
+            final double gJ = MathCalc.THREE_HALF + (s * (s + 1) - l * (l + 1)) / (2 * j * (j + 1));
+            return -gJ * squareRoot(j * (j + 1));
+        }
+
+        /**
+         * @return T = b/λₘₐₓ. The units are K
+         */
+        public static double wiensLawTemperature(double peakWavelengthMeters) {
+            return WIEN_DISPLACEMENT_CONSTANT / peakWavelengthMeters;
+        }
+
+        /**
+         * @return λₘₐₓ = b/T. The units are meters
+         */
+        public static double wiensLawPeakWavelength(double tempKelvins) {
+            return WIEN_DISPLACEMENT_CONSTANT / tempKelvins;
+        }
+
+        /**
+         * @return fₘₐₓ = k × T. The units are Hz
+         */
+        public static double wiensLawPeakFrequency(double tempKelvins) {
+            return 5.8789232e10 * tempKelvins;
+        }
+
+        /**
+         * @param frequencyHz Frequency of the incident photon
+         * @return Kₘₐₓ = h(f−f₀). Maximum kinetic energy of an ejected electron. The units are J
+         */
+        public static double photoelectricEffectEjectedElectron(double frequencyHz, double thresholdFrequencyHz) {
+            if (frequencyHz < thresholdFrequencyHz) {
+                throw new IllegalArgumentException("f>f₀ is necessary for the photoelectric effect to occur");
+            }
+            return PLANCK_CONSTANT * (frequencyHz - thresholdFrequencyHz);
+        }
+
+        /**
+         * @return ϕ = hf₀. Threshold energy. The units are J
+         */
+        public static double photoelectricEffectWorkFunction(double thresholdFrequency) {
+            return PLANCK_CONSTANT * thresholdFrequency;
+        }
+
+        /**
+         * @param initialState Principal quantum number of the initial orbital.
+         * @param finalState   Principal quantum number of the final orbital.
+         * @return 1/λ = R × Z² × (1/n₁² - 1/n₂²). Wavelength. The units are meters
+         */
+        public static double rydbergEquation(int atomicNumber, int initialState, int finalState) {
+            final int zSq = atomicNumber * atomicNumber;
+            final int n1Sq = initialState * initialState;
+            final int n2Sq = finalState * finalState;
+            return reciprocal(RYDBERG_CONSTANT_FOR_HYDROGEN * zSq * (reciprocal(n1Sq) - reciprocal(n2Sq)));
+        }
+
+        /**
+         * @return σₚ. The standard deviation of the momentum measurement. The units are kg·m/s
+         */
+        public static double heisenbergMomentumUncertainty(double momentum, double percentUncertainty) {
+            return momentum * (percentUncertainty / 100);
+        }
+
+        /**
+         * σₓσₚ ≥ h/(4π)
+         *
+         * @return σₓ = h/(4πσₚ). The standard deviation of the position measurement. The units are m
+         */
+        public static double heisenbergPositionUncertainty(double momentumUncertainty) {
+            return PLANCK_CONSTANT / (Trigonometry.PI4 * momentumUncertainty);
+        }
+
+        /**
+         * @return σᵥ = h/(4π*m*σₓ). The standard deviation of the velocity measurement. The units are m/s
+         */
+        public static double heisenbergVelocityUncertainty(double massKg, double positionUncertainty) {
+            return PLANCK_CONSTANT / (Trigonometry.PI4 * massKg * positionUncertainty);
+        }
+
+        /**
+         * aka Fermi wave vector
+         *
+         * @param numberDensityOfElectrons in electrons/m³
+         * @return k_F = ∛(3π²n). The units are meters
+         */
+        public static double fermiWaveNumber(double numberDensityOfElectrons) {
+            return Algebra.cubeRoot(3 * Math.PI * Math.PI * numberDensityOfElectrons);
+        }
+
+        /**
+         * @param fermiWaveNumber in meters
+         * @return E_F = ℏ² * k_F²/(2mₑ). The units are J
+         */
+        public static double fermiEnergy(double fermiWaveNumber) {
+            final double hSq = REDUCED_PLANCK_CONSTANT * REDUCED_PLANCK_CONSTANT;
+            return hSq * fermiWaveNumber * fermiWaveNumber / (2 * ELECTRON_REST_MASS);
+        }
+
+        /**
+         * @return T_F = E_F/k_B. The units are K
+         */
+        public static double fermiTemperature(double fermiEnergyJoules) {
+            return fermiEnergyJoules / BOLTZMANN_CONSTANT;
+        }
+
+        /**
+         * @return v_F = ℏ * k_F/mₑ. The units are m/s
+         */
+        public static double fermiVelocity(double fermiWaveNumberMeters) {
+            return REDUCED_PLANCK_CONSTANT * fermiWaveNumberMeters / ELECTRON_REST_MASS;
+        }
+
+        /**
+         * aka Fermi-Dirac statistics
+         * If the energy of the particle equals Fermi energy E=E_F,
+         * then f(E) should be exactly 0.5 regardless of temperature.
+         *
+         * @return f(E) = 1/(e^((E−E_F)/k_B*T))+1. The units are m/s
+         */
+        public static double fermiDiracDistribution(double energyJoules, double fermiEnergyJoules, double tempKelvins) {
+            return reciprocal(Math.exp((energyJoules - fermiEnergyJoules) / (BOLTZMANN_CONSTANT * tempKelvins)) + 1);
         }
     }
 
@@ -1689,14 +2302,16 @@ public final class PhysicsCalc {
         }
 
         /**
-         * @return a = (vf − vi) / Δt. The units are m/s²
+         * @param initialVelocity in m/s
+         * @param finalVelocity   in m/s
+         * @return a = (v_f − vᵢ) / Δt. The units are m/s²
          */
-        public static double acceleration(double initialVelocity, double finalVelocity, long changeInTime) {
+        public static double acceleration(double initialVelocity, double finalVelocity, double changeInTime) {
             return (finalVelocity - initialVelocity) / changeInTime;
         }
 
         /**
-         * @return a = 2 * (Δd − vi * Δt) / Δt². The units are m/s²
+         * @return a = 2 * (Δd − vᵢ * Δt) / Δt². The units are m/s²
          */
         public static double accelerationWithDeltaDistance(
             double initialVelocity, double distanceTraveled, long changeInTime) {
@@ -1704,6 +2319,8 @@ public final class PhysicsCalc {
         }
 
         /**
+         * Newton's 2nd Law
+         *
          * @return a = F / m. The units are m/s²
          */
         public static double acceleration(double mass, double netForce) {
@@ -1790,13 +2407,45 @@ public final class PhysicsCalc {
         }
 
         /**
-         * F = m×(v₁−v₀)/t
+         * Newton's 2nd Law
+         *
+         * @param initialVelocity in m/s
+         * @param finalVelocity   in m/s
+         * @return F = m×(v₁−v₀)/t. The units are N
+         */
+        public static double force(double massKg, double initialVelocity,
+                                   double finalVelocity, double changeInTime) {
+            return massKg * (finalVelocity - initialVelocity) / changeInTime;
+        }
+
+        /**
+         * Newton's 2nd Law
          *
          * @param acceleration in m/s²
-         * @return F = m⋅a or F = m⋅g at a constant speed
+         * @return F = m⋅a or F = m⋅g at a constant speed. The units are N
          */
         public static double force(double massInKg, double acceleration) {
             return massInKg * acceleration;
+        }
+
+        /**
+         * Newton's 3rd Law
+         * m₁×a₁ = −(m₂×a₂)
+         *
+         * @param acceleration in m/s²
+         * @return F_action = −F_reaction. The units are N
+         */
+        public static double newtons3rdLawReactionForce(double massKg, double acceleration) {
+            return -force(massKg, acceleration);
+        }
+
+        /**
+         * Newton's 3rd Law
+         *
+         * @return a₂ = −(m₁×a₁/m₂). The units are N
+         */
+        public static double newtons3rdLawAcceleration(double actionForceNewtons, double massKg) {
+            return -(actionForceNewtons / massKg);
         }
 
         /**
@@ -4580,6 +5229,52 @@ public final class PhysicsCalc {
         public static double blackHoleTemperature(double massKg) {
             return (REDUCED_PLANCK_CONSTANT * Math.pow(SPEED_OF_LIGHT, 3))
                 / (Trigonometry.PI8 * GRAVITATIONAL_CONSTANT * massKg * BOLTZMANN_CONSTANT);
+        }
+    }
+
+    public static final class Relativity {
+        private Relativity() {
+        }
+
+        /**
+         * Albert Einstein's equation.
+         *
+         * @return E = mc². The units are J
+         */
+        public static double emc2(double massKg) {
+            return massKg * SPEED_OF_LIGHT * SPEED_OF_LIGHT;
+        }
+
+        /**
+         * Einsteinian velocity
+         *
+         * @return v_rel = c * √(1 − (1 / (1 + (eVₐ)/(m₀c²)²))). The units are m/s
+         */
+        public static double electronSpeed(double acceleratingPotentialVolts) {
+            final double c = SPEED_OF_LIGHT;
+            final double ratio = (ELECTRON_CHARGE * acceleratingPotentialVolts) / (ELECTRON_REST_MASS * c * c);
+            return c * squareRoot(1 - reciprocal(Math.pow(1 + ratio, 2)));
+        }
+
+        /**
+         * Newtonian (classical) velocity
+         *
+         * @return vₙ = √(2eVₐ / m). The units are m/s
+         */
+        public static double electronSpeedClassicalVelocity(double acceleratingPotentialVolts) {
+            return squareRoot(2 * ELECTRON_CHARGE * acceleratingPotentialVolts / ELECTRON_REST_MASS);
+        }
+
+        /**
+         * If the velocity of an object is lower than 1% of light speed,
+         * you can use the regular {@link Mechanics#kineticEnergy} instead.
+         *
+         * @return KE = m₀c²(√(1 − v²/c²) − 1). The units are m/s
+         */
+        public static double relativisticKE(double massKg, double velocity) {
+            final double cSq = (double) SPEED_OF_LIGHT * SPEED_OF_LIGHT;
+            final double vSq = velocity * velocity;
+            return massKg * cSq * (squareRoot(1 - vSq / cSq) - 1);
         }
     }
 }

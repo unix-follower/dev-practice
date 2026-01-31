@@ -23,6 +23,9 @@ public enum LengthUnit {
     MEGA_LIGHT_YEAR, // Mly
     MEGA_PARSEC; // Mpcs
 
+    public static double nanometersToMeters(double nm) {
+        return nm / 1e9;
+    }
 
     public static double millimetersToMeters(double mm) {
         return mm / 1000;

@@ -18,13 +18,6 @@ public final class ConversionCalculator {
     private ConversionCalculator() {
     }
 
-    /**
-     * @return radians = π/180° * degrees
-     */
-    public static double degreesToRadians(double degrees) {
-        return Math.toRadians(degrees);
-    }
-
     public static double[] gramsToCalories(double carbohydrateInGrams, double proteinInGrams, double fatInGrams) {
         final double carbohydrateKcal = KCAL_IN_ONE_GRAM_OF_CARBOHYDRATE * carbohydrateInGrams;
         final double proteinKcal = KCAL_IN_ONE_GRAM_OF_PROTEIN * proteinInGrams;

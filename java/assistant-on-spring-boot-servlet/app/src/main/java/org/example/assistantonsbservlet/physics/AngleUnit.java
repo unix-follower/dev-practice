@@ -16,6 +16,14 @@ public enum AngleUnit {
     SQUARE_MINUTES_OF_ARC, // sq'
     SQUARE_SECONDS_OF_ARC; // sq''
 
+    /**
+     * @return radians = π/180° * degrees
+     */
+    public static double degToRadians(double degrees) {
+        // or Math.toRadians(degrees)
+        return Math.PI / 180 * degrees;
+    }
+
     public static double degToArcseconds(double degrees) {
         return degrees * 3600;
     }

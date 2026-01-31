@@ -357,8 +357,35 @@ class PhysicsCalcTest {
             assertEquals(32.734, terminalVelocity, DELTA3);
         }
 
+        static List<Arguments> resultantVelocityArgs() {
+            return List.of(
+                Arguments.of(new double[]{15, 7}, new double[]{0, AngleUnit.degToRadians(90)},
+                    16.55, DELTA2)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("resultantVelocityArgs")
+        void testResultantVelocity(double[] velocities, double[] angles, double expectedResult, double delta) {
+            // when
+            final double resultantVelocity = PhysicsCalc.Kinematics.resultantVelocity(velocities, angles);
+            // then
+            assertEquals(expectedResult, resultantVelocity, delta);
+        }
+
         @Test
-        void calculateWeightOfFreeFallingBody() {
+        void testResultantVelocityAngle() {
+            // given
+            final double vxResultant = 15;
+            final double vyResultant = 7;
+            // when
+            final double angle = PhysicsCalc.Kinematics.resultantVelocityAngle(vxResultant, vyResultant);
+            // then
+            assertEquals(AngleUnit.degToRadians(25), angle, DELTA2);
+        }
+
+        @Test
+        void testWeightOfFreeFallingBody() {
             // given
             final double massInKg = 60;
             // when
@@ -463,6 +490,29 @@ class PhysicsCalcTest {
             final double finalMomentum = PhysicsCalc.Kinematics.finalMomentumFromImpulse(impulse, initialMomentum);
             // then
             assertEquals(0, finalMomentum, DELTA1);
+        }
+
+        @Test
+        void testAccelerationMagnitudeComponents() {
+            // given
+            final double[] accelerationVector = new double[]{-3, 4, 2};
+            // when
+            final double magnitudeOfAcceleration = PhysicsCalc.Kinematics.accelerationMagnitude(accelerationVector);
+            // then
+            assertEquals(5.385, magnitudeOfAcceleration, DELTA3);
+        }
+
+        @Test
+        void testAccelerationMagnitudeGivenVelocityVectorsDifference() {
+            // given
+            final double[] initialVelocityVector = new double[]{-3, 4};
+            final double[] finalVelocityVector = new double[]{3, 2};
+            final byte timeDifference = 5;
+            // when
+            final double magnitudeOfAcceleration = PhysicsCalc.Kinematics
+                .accelerationMagnitude(initialVelocityVector, finalVelocityVector, timeDifference);
+            // then
+            assertEquals(1.265, magnitudeOfAcceleration, DELTA3);
         }
 
         @Test
@@ -985,6 +1035,151 @@ class PhysicsCalcTest {
             final double moment = PhysicsCalc.Kinematics.massMomentOfTwoPointMasses(massKg1, massKg2, distance);
             // then
             assertEquals(0.24, moment, DELTA2);
+        }
+
+        static List<Arguments> projectileMotionMaximumHeightArgs() {
+            return List.of(
+                Arguments.of(1, 9.144, 0, 1, DELTA1),
+                Arguments.of(0, 9.144, AngleUnit.degToRadians(45), 2.13, DELTA2),
+                Arguments.of(0, 9.144, AngleUnit.degToRadians(70), 3.764, DELTA3),
+                Arguments.of(0, 14.7, AngleUnit.degToRadians(90), 11.02, DELTA2)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("projectileMotionMaximumHeightArgs")
+        void testProjectileMotionMaximumHeight(double initialHeight, double initialVelocity, double angleOfLaunch,
+                                               double expectedResult, double delta) {
+            // when
+            final double maxHeight = PhysicsCalc.Kinematics
+                .projectileMotionMaximumHeight(initialHeight, initialVelocity, angleOfLaunch);
+            // then
+            assertEquals(expectedResult, maxHeight, delta);
+        }
+
+        static List<Arguments> projectileMotionTimeOfFlightArgs() {
+            return List.of(
+                // The deepest point of the Grand Canyon
+                Arguments.of(1828.8, 4.8768, AngleUnit.degToRadians(20), 19.5, DELTA1),
+                Arguments.of(0, 4.8768, AngleUnit.degToRadians(20), 0.34, DELTA2)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("projectileMotionTimeOfFlightArgs")
+        void testProjectileMotionTimeOfFlight(double initialHeight, double initialVelocity, double angleOfLaunch,
+                                              double expectedResult, double delta) {
+            // when
+            final double maxHeight = PhysicsCalc.Kinematics
+                .projectileMotionTimeOfFlight(initialHeight, initialVelocity, angleOfLaunch);
+            // then
+            assertEquals(expectedResult, maxHeight, delta);
+        }
+
+        @Test
+        void testProjectileMotionLaunchingFromGroundTimeOfFlight() {
+            // given
+            final double initialVelocity = 15;
+            // when
+            final double timeOfFlight = PhysicsCalc.Kinematics
+                .projectileMotionLaunchingFromGroundTimeOfFlight(initialVelocity);
+            // then
+            assertEquals(3.06, timeOfFlight, DELTA2);
+        }
+
+        @Test
+        void testProjectileMotionLaunchingFromElevationTimeOfFlight() {
+            // given
+            final byte initialHeight = 5;
+            final double initialVelocity = 14.7;
+            // when
+            final double timeOfFlight = PhysicsCalc.Kinematics
+                .projectileMotionLaunchingFromElevationTimeOfFlight(initialHeight, initialVelocity);
+            // then
+            assertEquals(3.306, timeOfFlight, DELTA3);
+        }
+
+        @Test
+        void testProjectileMotionHorizontalVelocityComponent() {
+            // given
+            // Initial vertical velocity (Vᵧ) = 5
+            final double initialVelocity = 5.7735;
+            final double angleOfLaunch = 1.047198;
+            // when
+            final double horizontalVelocity = PhysicsCalc.Kinematics
+                .projectileMotionHorizontalVelocityComponent(initialVelocity, angleOfLaunch);
+            // then
+            assertEquals(2.887, horizontalVelocity, DELTA1);
+        }
+
+        @Test
+        void testProjectileMotionVerticalVelocityComponent() {
+            // given
+            // Initial horizontal velocity (Vₓ) = 2.887
+            // Initial vertical velocity (Vᵧ) = 5
+            final double initialVelocity = 5.7735;
+            final double angleOfLaunch = 1.047198;
+            final byte timeOfFlight = 0;
+            // when
+            final double verticalVelocity = PhysicsCalc.Kinematics
+                .projectileMotionVerticalVelocityComponent(initialVelocity, angleOfLaunch, timeOfFlight);
+            // then
+            assertEquals(5, verticalVelocity, DELTA1);
+        }
+
+        @Test
+        void testProjectileMotionHorizontalDistance() {
+            // given
+            final short eiffelTowerHeight = 324;
+            final byte initialVelocity = 7;
+            // when
+            final double distance = PhysicsCalc.Kinematics
+                .projectileMotionHorizontalDistance(eiffelTowerHeight, initialVelocity);
+            // then
+            assertEquals(56.9017, distance, DELTA4);
+        }
+
+        static List<Arguments> projectileMotionRangeArgs() {
+            return List.of(
+                Arguments.of(30, 0.436332, 100, 162.87, DELTA2),
+                Arguments.of(22, 0.610865, 0, 46.38, DELTA2)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("projectileMotionRangeArgs")
+        void testProjectileMotionRange(double initialVelocity, double angleOfLaunch, double initialHeight,
+                                       double expectedResult, double delta) {
+            // when
+            final double range = PhysicsCalc.Kinematics
+                .projectileMotionRange(initialVelocity, angleOfLaunch, initialHeight);
+            // then
+            assertEquals(expectedResult, range, delta);
+        }
+
+        @Test
+        void testProjectileMotionTrajectory() {
+            // given
+            final double initialVelocity = 1.524;
+            final double angleOfLaunch = AngleUnit.degToRadians(60);
+            final double initialHeight = 0.127;
+            // when
+            final double distance = PhysicsCalc.Kinematics
+                .projectileMotionTrajectory(initialHeight, initialVelocity, angleOfLaunch);
+            // then
+            assertEquals(3.22e-15, distance, DELTA1);
+        }
+
+        @Test
+        void testProjectileMotionTrajectoryWithoutAngle() {
+            // given
+            final double initialVelocity = 1.524;
+            final double initialHeight = 0.127;
+            // when
+            final double distance = PhysicsCalc.Kinematics
+                .projectileMotionTrajectory(initialHeight, initialVelocity);
+            // then
+            assertEquals(3.22e-15, distance, DELTA1);
         }
     }
 
@@ -1526,6 +1721,44 @@ class PhysicsCalcTest {
         }
 
         @Test
+        void testShearStrainUsingShearStressAndModulus() {
+            // given
+            final int shearStress = 8_000_000;
+            final long brassShearModulus = 35_000_000_000L;
+            // when
+            final double shearStrain = PhysicsCalc.Mechanics
+                .shearStrainUsingShearStressAndModulus(shearStress, brassShearModulus);
+            // then
+            assertEquals(0.00022857, shearStrain, DELTA8);
+        }
+
+        @Test
+        void testShearStrainForShaftUnderTorsion() {
+            // given
+            final double distanceFromShaftAxis = 0.2;
+            final double angleOfTwist = 0.2618;
+            final double shaftLength = 0.8;
+            // when
+            final double shearStrain = PhysicsCalc.Mechanics
+                .shearStrainForShaftUnderTorsion(distanceFromShaftAxis, angleOfTwist, shaftLength);
+            // then
+            assertEquals(0.06545, shearStrain, DELTA5);
+        }
+
+        @Test
+        void testMaxShearStrainForShaftUnderTorsion() {
+            // given
+            final double shaftRadius = 0.3;
+            final double angleOfTwist = 0.2618;
+            final double shaftLength = 0.8;
+            // when
+            final double shearStrain = PhysicsCalc.Mechanics
+                .maxShearStrainForShaftUnderTorsion(angleOfTwist, shaftRadius, shaftLength);
+            // then
+            assertEquals(0.09817, shearStrain, DELTA5);
+        }
+
+        @Test
         void testShearModulus() {
             // given
             final byte forceMagnitude = 10;
@@ -1710,6 +1943,479 @@ class PhysicsCalcTest {
                 .shaftSizeDiameterForTorsionalRigidity(torque, rigidityModulus, angle, length);
             // then
             assertEquals(2.1952, solidShaftDiameter, DELTA4);
+        }
+
+        @Test
+        void testStress() {
+            // given
+            final double area = 1e-4;
+            final short force = 30_000;
+            // when
+            final double stress = PhysicsCalc.Mechanics.stress(area, force);
+            // then
+            assertEquals(300_000_000, stress, DELTA1);
+        }
+
+        @Test
+        void testStrain() {
+            // given
+            final byte initialLength = 2;
+            final double changeInLength = 0.003;
+            // when
+            final double stress = PhysicsCalc.Mechanics.strain(initialLength, changeInLength);
+            // then
+            assertEquals(0.0015, stress, DELTA4);
+        }
+
+        @Test
+        void testYoungsModulus() {
+            // given
+            final int stress = 300_000_000;
+            final double strain = 0.0015;
+            // when
+            final double modulus = PhysicsCalc.Mechanics.youngsModulus(stress, strain);
+            // then
+            assertEquals(200_000_000_000L, modulus, DELTA1);
+        }
+
+        @Test
+        void testShearStressTransverseForArbitraryCrossSection() {
+            // given
+            final byte shearForceMagnitude = 120;
+            final double width = 0.1;
+            final byte firstMomentOfArea = 10;
+            final double momentOfInertia = 15.708;
+            // when
+            final double shearStressMagnitude = PhysicsCalc.Mechanics.shearStressTransverseForArbitraryCrossSection(
+                shearForceMagnitude, width, firstMomentOfArea, momentOfInertia);
+            // then
+            assertEquals(764, shearStressMagnitude, DELTA1);
+        }
+
+        @Test
+        void testShearStressTransverseForRectangular() {
+            // given
+            final byte shearForceMagnitude = 120;
+            final byte baseWidth = 4;
+            final byte squareHeight = 2;
+            final double distanceToNeutralAxis = 0.8;
+            // when
+            final double shearStressMagnitudeAtDistance = PhysicsCalc.Mechanics.shearStressTransverseForRectangular(
+                shearForceMagnitude, baseWidth, squareHeight, distanceToNeutralAxis);
+            // then
+            assertEquals(8.1, shearStressMagnitudeAtDistance, DELTA1);
+        }
+
+        @Test
+        void testShearStressTransverseForHollowCircular() {
+            // given
+            final byte shearForceMagnitude = 120;
+            final double outerRadius = 0.3;
+            final double innerRadius = 0.03;
+            // when
+            final double maxShearStressMagnitude = PhysicsCalc.Mechanics
+                .shearStressTransverseForHollowCircular(shearForceMagnitude, outerRadius, innerRadius);
+            // then
+            assertEquals(628.2, maxShearStressMagnitude, DELTA1);
+        }
+
+        @Test
+        void testShearStressTransverseForIBeam() {
+            // given
+            final byte shearForceMagnitude = 120;
+            final byte baseWidth = 4;
+            final double webThickness = 0.2;
+            final double webLength = 0.6;
+            // when
+            final double maxShearStressMagnitude = PhysicsCalc.Mechanics
+                .shearStressTransverseForIBeam(shearForceMagnitude, baseWidth, webThickness, webLength);
+            // then
+            assertEquals(745.1, maxShearStressMagnitude, DELTA1);
+        }
+
+        @Test
+        void testMinShearStressTransverseForIBeam() {
+            // given
+            final byte shearForceMagnitude = 120;
+            final byte baseWidth = 4;
+            final double webThickness = 0.2;
+            final double webLength = 0.6;
+            // when
+            final double maxShearStressMagnitude = PhysicsCalc.Mechanics
+                .minShearStressTransverseForIBeam(shearForceMagnitude, baseWidth, webThickness, webLength);
+            // then
+            assertEquals(724.7, maxShearStressMagnitude, DELTA1);
+        }
+
+        @Test
+        void testShearStressTorsionalForSolidCircle() {
+            // given
+            final double appliedTorque = 0.9;
+            final double outerRadius = 0.3;
+            // when
+            final double maxShearStressMagnitude = PhysicsCalc.Mechanics
+                .shearStressTorsionalForSolidCircle(appliedTorque, outerRadius);
+            // then
+            assertEquals(21.22, maxShearStressMagnitude, DELTA2);
+        }
+
+        @Test
+        void testShearStressTorsionalForHollowCircle() {
+            // given
+            final double appliedTorque = 0.9;
+            final double outerRadius = 0.3;
+            final double innerRadius = 0.03;
+            // when
+            final double maxShearStressMagnitude = PhysicsCalc.Mechanics
+                .shearStressTorsionalForHollowCircle(appliedTorque, outerRadius, innerRadius);
+            // then
+            assertEquals(21.223, maxShearStressMagnitude, DELTA3);
+        }
+
+        @Test
+        void testThermalStress() {
+            // given
+            final double copperThermalExpansionCoeff = 0.000017;
+            final long youngsModulus = 110_000_000_000L;
+            final byte initialTemperature = 20;
+            final byte finalTemperature = 50;
+            // when
+            final double thermalStress = PhysicsCalc.Mechanics
+                .thermalStress(copperThermalExpansionCoeff, youngsModulus, initialTemperature, finalTemperature);
+            // then
+            assertEquals(56_100_000, thermalStress, DELTA1);
+        }
+
+        @Test
+        void testElongation() {
+            // given
+            final double originalLength = 0.01;
+            final double finalLength = 0.015;
+            // when
+            final double elongation = PhysicsCalc.Mechanics.elongation(originalLength, finalLength);
+            // then
+            assertEquals(50, elongation, DELTA1);
+        }
+
+        @Test
+        void testTrueStrain() {
+            // given
+            final double engineeringStrain = 0.1;
+            // when
+            final double trueStrain = PhysicsCalc.Mechanics.trueStrain(engineeringStrain);
+            // then
+            assertEquals(0.09531, trueStrain, DELTA5);
+        }
+
+        @Test
+        void testTrueStress() {
+            // given
+            final double engineeringStrain = 0.1;
+            final int engineeringStress = 8_000_000;
+            // when
+            final double trueStress = PhysicsCalc.Mechanics.trueStress(engineeringStrain, engineeringStress);
+            // then
+            assertEquals(8_800_000, trueStress, DELTA1);
+        }
+    }
+
+    @Nested
+    class QuantumMechanics {
+        @Test
+        void testPhotonEnergy() {
+            // given
+            final double wavelength = LengthUnit.nanometersToMeters(450);
+            // when
+            final double energy = PhysicsCalc.QuantumMechanics.photonEnergy(wavelength);
+            // then
+            assertEquals(4.414342e-19, energy, DELTA1);
+        }
+
+        @Test
+        void testBohrModelPhotonFrequency() {
+            // given
+            final double initialEnergy = EnergyUnit.electronVoltsToJoules(-13.6);
+            final double finalEnergy = EnergyUnit.electronVoltsToJoules(-3.4);
+            // when
+            final double frequency = PhysicsCalc.QuantumMechanics.bohrModelPhotonFrequency(initialEnergy, finalEnergy);
+            // then f = 2466.3 THz ≈ 2.5 × 10¹⁵ Hz
+            assertEquals(-2_466_349_082_759_464L, frequency, 1e15);
+        }
+
+        @Test
+        void testDeBroglieWavelength() {
+            // given
+            final double restMass = 9.10938356e-31;
+            final double velocity = 2_997_924.58;
+            // when
+            final double wavelength = PhysicsCalc.QuantumMechanics.deBroglieWavelength(restMass, velocity);
+            // then
+            assertEquals(2.42632e-10, wavelength, DELTA1);
+        }
+
+        @Test
+        void testHydrogenLikeLevelEnergy() {
+            // given
+            final byte energyLevel = 1;
+            final byte atomicNumber = 1;
+            // when
+            final double energy = PhysicsCalc.QuantumMechanics.hydrogenLikeLevelEnergy(energyLevel, atomicNumber);
+            // then
+            assertEquals(-13.6, energy, DELTA1);
+        }
+
+        @Test
+        void testRadiatedPower() {
+            // given
+            final double sunArea = MathCalc.Geometry.sphereArea(PhysicsCalc.SUN_RADIUS);
+            final short temperature = 5776;
+            final byte perfectEmissivity = 1;
+            // when
+            final double power = PhysicsCalc.QuantumMechanics.radiatedPower(sunArea, temperature, perfectEmissivity);
+            // then
+            assertEquals(3.845e26, power, 1e23);
+        }
+
+        @Test
+        void testRadiatedPowerGivenArea() {
+            // given
+            final double distanceFromEarthToSun = LengthUnit.kilometersToMeters(149_600_000);
+            final double area = MathCalc.Geometry.sphereArea(distanceFromEarthToSun);
+            // when
+            final double power = PhysicsCalc.QuantumMechanics.radiatedPower(area);
+            // then
+            assertEquals(3.845e26, power, 1e23);
+        }
+
+        @Test
+        void testRadiatedPowerTemperature() {
+            // given
+            final double sunArea = MathCalc.Geometry.sphereArea(PhysicsCalc.SUN_RADIUS);
+            final double power = 3.845e26;
+            final byte perfectEmissivity = 1;
+            // when
+            final double temperature = PhysicsCalc.QuantumMechanics
+                .radiatedPowerTemperature(sunArea, power, perfectEmissivity);
+            // then
+            assertEquals(5776, temperature, DELTA1);
+        }
+
+        @Test
+        void testComptonWavelength() {
+            // given
+            final double mass = MassUnit.meToKg(1);
+            // when
+            final double wavelength = PhysicsCalc.QuantumMechanics.comptonWavelength(mass);
+            // then
+            assertEquals(2.4263e-12, wavelength, DELTA1);
+        }
+
+        @Test
+        void testComptonScattering() {
+            // given
+            final double mass = 9.109e-31;
+            final double scatteringAngle = AngleUnit.degToRadians(80);
+            // when
+            final double wavelengthExtension = PhysicsCalc.QuantumMechanics.comptonScattering(mass, scatteringAngle);
+            // then
+            assertEquals(2.005e-12, wavelengthExtension, DELTA1);
+        }
+
+        @Test
+        void testCurieConstant() {
+            // given
+            final byte numberOfAtoms = 4;
+            final double latticeConstant = 0.2;
+            final double magneticMoment = 9.274e-24;
+            // when
+            final double curieConstant = PhysicsCalc.QuantumMechanics
+                .curieConstant(numberOfAtoms, latticeConstant, magneticMoment);
+            // then
+            assertEquals(1.1221e-46, curieConstant, DELTA1);
+        }
+
+        @Test
+        void testAngularMomentumMagnitude() {
+            // given
+            final byte quantumNumber = 1;
+            // when
+            final double magnitude = PhysicsCalc.QuantumMechanics.angularMomentumMagnitude(quantumNumber);
+            // then
+            assertEquals(1.4913897670116408e-34, magnitude, DELTA1);
+        }
+
+        @Test
+        void testSpinMagnitude() {
+            // given
+            final double quantumNumber = MathCalc.ONE_HALF;
+            // when
+            final double magnitude = PhysicsCalc.QuantumMechanics.spinMagnitude(quantumNumber);
+            // then
+            assertEquals(9.13285984196702e-35, magnitude, DELTA1);
+        }
+
+        @Test
+        void testMagneticMoment() {
+            // given
+            final double spin = 0.5;
+            final byte orbital = 1;
+            // when
+            final double magneticMoment = PhysicsCalc.QuantumMechanics.magneticMoment(spin, orbital);
+            // then
+            assertEquals(2.582, Math.abs(magneticMoment), DELTA3);
+        }
+
+        @Test
+        void testWiensLawTemperature() {
+            // given an A-type star
+            final double peakWavelength = LengthUnit.nanometersToMeters(340);
+            // when
+            final double temperature = PhysicsCalc.QuantumMechanics.wiensLawTemperature(peakWavelength);
+            // then
+            assertEquals(8522.8, temperature, DELTA1);
+        }
+
+        @Test
+        void testWiensLawPeakWavelength() {
+            // given
+            final double temperature = 8522.8;
+            // when
+            final double peakWavelength = PhysicsCalc.QuantumMechanics.wiensLawPeakWavelength(temperature);
+            // then
+            assertEquals(LengthUnit.nanometersToMeters(340), peakWavelength, DELTA1);
+        }
+
+        @Test
+        void testWiensLawPeakFrequency() {
+            // given
+            final double temperature = 8522.8;
+            // when
+            final double peakFrequency = PhysicsCalc.QuantumMechanics.wiensLawPeakFrequency(temperature);
+            // then
+            assertEquals(501_048_866_489_600L, peakFrequency, DELTA1);
+        }
+
+        @Test
+        void testPhotoelectricEffectEjectedElectron() {
+            // given
+            final double frequency = FrequencyUnit.thzToHz(501);
+            final double thresholdFrequency = FrequencyUnit.thzToHz(490);
+            // when
+            final double maxKE = PhysicsCalc.QuantumMechanics
+                .photoelectricEffectEjectedElectron(frequency, thresholdFrequency);
+            // then
+            assertEquals(7.321e-21, maxKE, DELTA1);
+        }
+
+        @Test
+        void testPhotoelectricEffectWorkFunction() {
+            // given
+            final double thresholdFrequency = FrequencyUnit.thzToHz(490);
+            // when
+            final double energy = PhysicsCalc.QuantumMechanics.photoelectricEffectWorkFunction(thresholdFrequency);
+            // then
+            assertEquals(3.247e-19, energy, DELTA1);
+        }
+
+        @Test
+        void testRydbergEquation() {
+            // given
+            final byte atomicNumber = 1;
+            final byte initialState = 4;
+            final byte finalState = 2;
+            // when
+            final double wavelength = PhysicsCalc.QuantumMechanics
+                .rydbergEquation(atomicNumber, initialState, finalState);
+            // then
+            assertEquals(4.86e-7, wavelength, DELTA1);
+        }
+
+        @Test
+        void testHeisenbergMomentumUncertainty() {
+            // given
+            final double momentum = PhysicsCalc.Kinematics.momentum(9.11e-31, 2e6);
+            final double percentUncertainty = 0.5;
+            // when
+            final double momentumUncertainty = PhysicsCalc.QuantumMechanics
+                .heisenbergMomentumUncertainty(momentum, percentUncertainty);
+            // then
+            assertEquals(9.1e-27, momentumUncertainty, DELTA1);
+        }
+
+        @Test
+        void testHeisenbergPositionUncertainty() {
+            // given
+            final double momentumUncertainty = 9.1e-27;
+            // when
+            final double positionUncertainty = PhysicsCalc.QuantumMechanics
+                .heisenbergPositionUncertainty(momentumUncertainty);
+            // then
+            assertEquals(LengthUnit.nanometersToMeters(5.8), positionUncertainty, DELTA1);
+        }
+
+        @Test
+        void testHeisenbergVelocityUncertainty() {
+            // given
+            final double mass = 0.149;
+            final double positionUncertainty = 5.8e-9;
+            // when
+            final double velocityUncertainty = PhysicsCalc.QuantumMechanics
+                .heisenbergVelocityUncertainty(mass, positionUncertainty);
+            // then
+            assertEquals(6.101e-17, velocityUncertainty, DELTA1);
+        }
+
+        @Test
+        void testFermiWaveNumber() {
+            // given
+            final double copperNumberDensityOfElectrons = 8.47e28;
+            // when
+            final double waveNumber = PhysicsCalc.QuantumMechanics.fermiWaveNumber(copperNumberDensityOfElectrons);
+            // then
+            assertEquals(13_586_308_450L, waveNumber, 1);
+        }
+
+        @Test
+        void testFermiEnergy() {
+            // given
+            final double copperWaveNumber = 13_586_308_450L;
+            // when
+            final double energy = PhysicsCalc.QuantumMechanics.fermiEnergy(copperWaveNumber);
+            // then
+            assertEquals(EnergyUnit.electronVoltsToJoules(7.033), energy, DELTA1);
+        }
+
+        @Test
+        void testFermiTemperature() {
+            // given
+            final double copperEnergy = EnergyUnit.electronVoltsToJoules(7.033);
+            // when
+            final double temperature = PhysicsCalc.QuantumMechanics.fermiTemperature(copperEnergy);
+            // then
+            assertEquals(81_614.7, temperature, DELTA1);
+        }
+
+        @Test
+        void testFermiVelocity() {
+            // given
+            final double copperWaveNumber = 13_586_308_450L;
+            // when
+            final double velocity = PhysicsCalc.QuantumMechanics.fermiVelocity(copperWaveNumber);
+            // then
+            assertEquals(1_572_854.8, velocity, DELTA1);
+        }
+
+        @Test
+        void testFermiDiracDistribution() {
+            // given
+            final double energy = 1.1268e-17;
+            final double fermiEnergyJoules = 1.1268e-18;
+            final double temperature = 81_612;
+            // when
+            final double fermiFunction = PhysicsCalc.QuantumMechanics
+                .fermiDiracDistribution(energy, fermiEnergyJoules, temperature);
+            // then
+            assertEquals(0.000123, fermiFunction, DELTA1);
         }
     }
 
@@ -1984,6 +2690,43 @@ class PhysicsCalcTest {
             final double energy = PhysicsCalc.Dynamics.bulletEnergy(massKg, bulletVelocity);
             // then
             assertEquals(expectedResult, energy, delta);
+        }
+
+        @Test
+        void testForceGivenVelocitiesAndDeltaTime() {
+            // given
+            final byte massKg = 10;
+            final byte initialVelocity = 100;
+            final byte finalVelocity = 120;
+            final byte changeInTime = 6;
+            // when
+            final double force = PhysicsCalc.Dynamics.force(massKg, initialVelocity, finalVelocity, changeInTime);
+            // then
+            assertEquals(33.33, force, DELTA2);
+        }
+
+        @Test
+        void testNewtons3rdLawReactionForce() {
+            // given
+            final byte massKg = 20;
+            final byte acceleration = 70;
+            // when
+            final double force = PhysicsCalc.Dynamics.newtons3rdLawReactionForce(massKg, acceleration);
+            // then
+            assertEquals(-1400, force, DELTA1);
+        }
+
+        @Test
+        void testNewtons3rdLawAcceleration() {
+            // given
+            final byte massKg1 = 90;
+            final byte acceleration1 = 20;
+            final double actionForce = PhysicsCalc.Dynamics.force(massKg1, acceleration1);
+            final byte massKg2 = 30;
+            // when
+            final double acceleration2 = PhysicsCalc.Dynamics.newtons3rdLawAcceleration(actionForce, massKg2);
+            // then
+            assertEquals(-60, acceleration2, DELTA1);
         }
 
         @Test
@@ -5233,6 +5976,45 @@ class PhysicsCalcTest {
             final double temperature = PhysicsCalc.Astrophysics.blackHoleTemperature(mass);
             // then
             assertEquals(1.2344e-8, temperature, 1e-8);
+        }
+    }
+
+    @Nested
+    class Relativity {
+        @Test
+        void testEmc2() {
+            // given A Uranium-235 fission reaction yield
+            final double massKg = MassUnit.amuToKg(235);
+            // when
+            final double energy = PhysicsCalc.Relativity.emc2(massKg);
+            // then
+            assertEquals(3.50718e-8, energy, DELTA1);
+        }
+
+        @Test
+        void testElectronSpeed() {
+            // given
+            final double acceleratingPotential = VoltageUnit.kilovoltsToVolts(11);
+            // when
+            final double relativisticVelocity = PhysicsCalc.Relativity.electronSpeed(acceleratingPotential);
+            final double classicalVelocity = PhysicsCalc.Relativity
+                .electronSpeedClassicalVelocity(acceleratingPotential);
+            final double velocityDifference = relativisticVelocity - classicalVelocity;
+            // then
+            assertEquals(61_220_537, relativisticVelocity, 1);
+            assertEquals(62_204_534, classicalVelocity, 1);
+            assertEquals(-983_997, velocityDifference, 1);
+        }
+
+        @Test
+        void testRelativisticKE() {
+            // given
+            final double massKg = 9.11e-31;
+            final double velocity = SpeedUnit.lightSpeedToMetersPerSecond(0.99);
+            // when
+            final double relativisticKE = PhysicsCalc.Relativity.relativisticKE(massKg, velocity);
+            // then
+            assertEquals(4.985e-13, relativisticKE, DELTA1);
         }
     }
 }

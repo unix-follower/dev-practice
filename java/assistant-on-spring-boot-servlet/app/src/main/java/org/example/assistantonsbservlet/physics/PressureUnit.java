@@ -4,16 +4,17 @@ public enum PressureUnit {
     MICROPASCAL, // µPa
     MILLIPASCAL, // mPa
     PASCAL, // Pa
+    KILOPASCAL, // kPa
+    HECTOPASCAL, // hPa
+    MEGAPASCAL, // MPa
+    GIGAPASCAL, // GPa
     MILLIBAR, // mb
     BAR, // bar
     POUNDS_PER_SQUARE_INCH, // psi
+    KILOPOUNDS_PER_SQUARE_INCH, // ksi
     TECHNICAL_ATMOSPHERE, // at
     STANDARD_ATMOSPHERE, // atm
     TORR, // Torr
-    HECTOPASCAL, // hPa
-    KILOPASCAL, // kPa
-    MEGAPASCAL, // MPa
-    GIGAPASCAL, // GPa
     INCH_OF_MERCURY, // inHg
     MILLIMETER_OF_MERCURY; // mmHg
 

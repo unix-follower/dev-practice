@@ -1,6 +1,8 @@
 package org.example.assistantonsbservlet.physics;
 
 public enum MassUnit {
+    PICOGRAM, // pg
+    NANOGRAM, // ng
     MICROGRAM, // μg
     MILLIGRAM, // mg
     GRAM, // g
@@ -49,6 +51,10 @@ public enum MassUnit {
 
     public static double amuToKg(double atomicMassUnits) {
         return atomicMassUnits * 1.66053906660e-27;
+    }
+
+    public static double meToKg(double electronRestMass) {
+        return electronRestMass / 1.098e30;
     }
 
     public static double sunsToKg(double suns) {
