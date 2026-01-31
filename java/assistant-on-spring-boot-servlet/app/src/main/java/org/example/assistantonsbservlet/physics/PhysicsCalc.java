@@ -2148,7 +2148,7 @@ public final class PhysicsCalc {
 
         /**
          * aka Fermi-Dirac statistics
-         * f the energy of the particle equals Fermi energy E=E_F,
+         * If the energy of the particle equals Fermi energy E=E_F,
          * then f(E) should be exactly 0.5 regardless of temperature.
          *
          * @return f(E) = 1/(e^((E−E_F)/k_B*T))+1. The units are m/s
