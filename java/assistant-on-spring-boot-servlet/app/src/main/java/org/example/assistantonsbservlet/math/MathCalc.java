@@ -37,6 +37,7 @@ public final class MathCalc {
     public static final double FOUR_FIFTH = 0.8;  // 4/5
     public static final double FIVE_SIXTH = 0.83333333;  // 5/6
     public static final byte ONE = 1;
+    public static final double THREE_HALF = 1.5;  // 3/2
 
     private static final double EPSILON_NEGATIVE10 = 1e-10;
 
@@ -2491,6 +2492,15 @@ public final class MathCalc {
         }
 
         /**
+         * @return A = π(R²−r²)
+         */
+        public static double hollowCircleArea(double outerRadius, double innerRadius) {
+            checkGreater0(outerRadius);
+            checkGreater(outerRadius, innerRadius);
+            return Math.PI * (outerRadius * outerRadius - innerRadius * innerRadius);
+        }
+
+        /**
          * @return area = ½ * πr². The units are cm²
          */
         public static double semicircleArea(double radius) {
@@ -3271,6 +3281,13 @@ public final class MathCalc {
          */
         public static double crossSectionalAreaOfCircularWire(double diameter) {
             return Math.PI * diameter * diameter / 4;
+        }
+
+        /**
+         * @return A = 4πr². The units are m²
+         */
+        public static double sphereArea(double radius) {
+            return Trigonometry.PI4 * radius * radius;
         }
     }
 
@@ -5772,6 +5789,17 @@ public final class MathCalc {
             final double[] result = new double[vector1.length];
             for (int i = 0; i < vector1.length; i++) {
                 result[i] = vector1[i] - vector2[i];
+            }
+            return result;
+        }
+
+        public static double[] vectorDivideScalar(double[] vector, double scalar) {
+            Objects.requireNonNull(vector);
+            checkGreater0(scalar);
+
+            final double[] result = new double[vector.length];
+            for (int i = 0; i < vector.length; i++) {
+                result[i] = vector[i] / scalar;
             }
             return result;
         }

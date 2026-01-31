@@ -10,5 +10,9 @@ public enum SpeedUnit {
     MILES_PER_HOUR, // mph
     MILES_PER_SECOND, // mi/s
     KNOT, // kn
-    LIGHT_SPEED // c
+    LIGHT_SPEED; // c
+
+    public static double lightSpeedToMetersPerSecond(double lightSpeed) {
+        return lightSpeed * 299792543.55986;
+    }
 }

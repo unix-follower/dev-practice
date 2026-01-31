@@ -6,6 +6,7 @@ public enum ForceUnit {
     MEGANEWTON, // MN
     GIGANEWTON, // GN
     TERANEWTON, // TN
+    POUNDAL, // pdl
     POUND_FORCE, // lbf
     KIP,
     DYNE; // dyn
