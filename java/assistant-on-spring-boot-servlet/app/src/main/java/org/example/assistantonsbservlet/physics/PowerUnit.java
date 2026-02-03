@@ -21,7 +21,15 @@ public enum PowerUnit {
     KILOCALORIES_PER_MINUTE, // kcal/min
     KILOCALORIES_PER_HOUR, // kcal/h
     ERGS_PER_SECOND, // erg/s
-    TONS_OF_REFRIGERATION; // TR
+    TONS_OF_REFRIGERATION, // TR
+    SOLAR_LUMINOSITY; // L☉
+
+    public static final double ZERO_POINT_LUMINOSITY = 3.0128e28; // in W
+    public static final double NOMINAL_SOLAR_LUMINOSITY = 3.828e26; // in W
+    /**
+     * The measured total solar irradiance (TSR) converted into luminosity.
+     */
+    public static final double OBSERVED_SOLAR_LUMINOSITY = 3.846e26; // in W
 
     public static double milliwattsToWatts(double mW) {
         return mW / 1000;
@@ -53,6 +61,10 @@ public enum PowerUnit {
 
     public static double decibel(double inputPowerWatts, double outputPowerWatts) {
         return 10 * log(outputPowerWatts / inputPowerWatts);
+    }
+
+    public static double solarLuminosityToWatts(double solarLuminosity) {
+        return solarLuminosity * NOMINAL_SOLAR_LUMINOSITY;
     }
 
     public enum PWR {

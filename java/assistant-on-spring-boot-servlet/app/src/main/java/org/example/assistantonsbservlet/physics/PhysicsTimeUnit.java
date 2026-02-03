@@ -18,5 +18,13 @@ public enum PhysicsTimeUnit {
     DAYS_PER_HOURS, // days/hrs
     MILLION_YEARS, // myrs
     BILLION_YEARS, // byrs
-    AGES_OF_UNIVERSE // Univ.
+    AGES_OF_UNIVERSE; // Univ.
+
+    public static double hoursToSeconds(double hrs) {
+        return hrs * 3600;
+    }
+
+    public static double yearsToSeconds(double years) {
+        return years * 3.154e7;
+    }
 }
