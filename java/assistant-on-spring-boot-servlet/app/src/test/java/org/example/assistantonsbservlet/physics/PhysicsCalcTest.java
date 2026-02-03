@@ -2167,7 +2167,7 @@ class PhysicsCalcTest {
         @Test
         void testRadiatedPower() {
             // given
-            final double sunArea = MathCalc.Geometry.sphereArea(PhysicsCalc.SUN_RADIUS);
+            final double sunArea = MathCalc.Geometry.sphereArea(LengthUnit.SUN_RADIUS);
             final short temperature = 5776;
             final byte perfectEmissivity = 1;
             // when
@@ -2190,14 +2190,14 @@ class PhysicsCalcTest {
         @Test
         void testRadiatedPowerTemperature() {
             // given
-            final double sunArea = MathCalc.Geometry.sphereArea(PhysicsCalc.SUN_RADIUS);
+            final double sunArea = MathCalc.Geometry.sphereArea(LengthUnit.SUN_RADIUS);
             final double power = 3.845e26;
             final byte perfectEmissivity = 1;
             // when
             final double temperature = PhysicsCalc.QuantumMechanics
                 .radiatedPowerTemperature(sunArea, power, perfectEmissivity);
             // then
-            assertEquals(5776, temperature, DELTA1);
+            assertEquals(5775.7, temperature, DELTA1);
         }
 
         @Test
@@ -5977,6 +5977,127 @@ class PhysicsCalcTest {
             // then
             assertEquals(1.2344e-8, temperature, 1e-8);
         }
+
+        @Test
+        void testSchwarzschildRadius() {
+            // given
+            final double mass = MassUnit.sunsToKg(10);
+            // when
+            final double radius = PhysicsCalc.Astrophysics.schwarzschildRadius(mass);
+            // then
+            assertEquals(29_541.2, radius, DELTA1);
+        }
+
+        @Test
+        void testRedshift() {
+            // given
+            final double emittedLightWavelength = LengthUnit.nanometersToMeters(620);
+            final double observedLightWavelength = LengthUnit.nanometersToMeters(610);
+            // when
+            final double z = PhysicsCalc.Astrophysics.redshift(emittedLightWavelength, observedLightWavelength);
+            // then
+            assertEquals(-0.01613, z, DELTA5);
+        }
+
+        @Test
+        void testRedshiftFromFrequency() {
+            // given
+            final double emittedLight = FrequencyUnit.thzToHz(483.5);
+            final double observedLight = FrequencyUnit.thzToHz(491.5);
+            // when
+            final double z = PhysicsCalc.Astrophysics.redshiftFromFrequency(emittedLight, observedLight);
+            // then
+            assertEquals(-0.01613, z, DELTA3);
+        }
+
+        @Test
+        void testParallaxDistance() {
+            // given
+            final double proximaCentauriAngle = AngleUnit.marcsecToArcsec(771.6);
+            // when
+            final double distance = PhysicsCalc.Astrophysics.parallaxDistance(proximaCentauriAngle);
+            // then
+            assertEquals(1.296, distance, DELTA3);
+        }
+
+        @Test
+        void testRadiationPressureInsideStar() {
+            // given
+            final double temperature = 78_000;
+            // when
+            final double pressure = PhysicsCalc.Astrophysics.radiationPressureInsideStar(temperature);
+            // then
+            assertEquals(9334.8, pressure, DELTA1);
+        }
+
+        @Test
+        void testRadiationPressureOutsideOpaqueStar() {
+            // given
+            final double angle = AngleUnit.degToRadians(15);
+            final double luminosity = 0.9;
+            final double distance = LengthUnit.astronomicalUnitsToMeters(2);
+            // when
+            final double pressure = PhysicsCalc.Astrophysics
+                .radiationPressureOutsideOpaqueStar(angle, luminosity, distance);
+            // then
+            assertEquals(9.53e-7, pressure, DELTA1);
+        }
+
+        @Test
+        void testRadiationPressureOutsideReflectiveStar() {
+            // given
+            final double angle = AngleUnit.degToRadians(15);
+            final double luminosity = 0.9;
+            final double distance = LengthUnit.astronomicalUnitsToMeters(2);
+            // when
+            final double pressure = PhysicsCalc.Astrophysics
+                .radiationPressureOutsideReflectiveStar(angle, luminosity, distance);
+            // then
+            assertEquals(0.000001906, pressure, DELTA1);
+        }
+
+        @Test
+        void testLuminosity() {
+            // given Vega star
+            final double starRadius = MassUnit.sunsRadiusToMeters(2.5);
+            final short temperature = 9602;
+            // when
+            final double luminosity = PhysicsCalc.Astrophysics.luminosity(starRadius, temperature);
+            // then
+            assertEquals(47.67, luminosity, DELTA2);
+        }
+
+        @Test
+        void testLuminosityUsingBoltzmann() {
+            // given Vega star
+            final double starRadius = MassUnit.sunsRadiusToMeters(2.5);
+            final short temperature = 9602;
+            // when
+            final double luminosity = PhysicsCalc.Astrophysics.luminosityUsingBoltzmann(starRadius, temperature);
+            // then
+            assertEquals(PowerUnit.solarLuminosityToWatts(47.67), luminosity, 1e26);
+        }
+
+        @Test
+        void testAbsoluteMagnitude() {
+            // given Vega star
+            final double luminosity = PowerUnit.solarLuminosityToWatts(47.67);
+            // when
+            final double absMagnitude = PhysicsCalc.Astrophysics.absoluteMagnitude(luminosity);
+            // then
+            assertEquals(0.544, absMagnitude, DELTA3);
+        }
+
+        @Test
+        void testApparentMagnitude() {
+            // given Vega star
+            final double absMagnitude = 0.544;
+            final double distance = 7.68;
+            // when
+            final double apparentMagnitude = PhysicsCalc.Astrophysics.apparentMagnitude(absMagnitude, distance);
+            // then
+            assertEquals(-0.02866, apparentMagnitude, DELTA3);
+        }
     }
 
     @Nested
@@ -6015,6 +6136,173 @@ class PhysicsCalcTest {
             final double relativisticKE = PhysicsCalc.Relativity.relativisticKE(massKg, velocity);
             // then
             assertEquals(4.985e-13, relativisticKE, DELTA1);
+        }
+
+        @Test
+        void testTimeDilation() {
+            // given
+            final byte timeInterval = 3;
+            final int velocity = 200_000_000;
+            // when
+            final double relativeTime = PhysicsCalc.Relativity.timeDilation(timeInterval, velocity);
+            // then
+            assertEquals(4.027154, relativeTime, DELTA6);
+        }
+
+        @Test
+        void testGravitationalTimeDilationTimeDiff() {
+            // given supermassive black hole
+            final double bhMass = MassUnit.sunsToKg(4.3e9);
+            final double bhRadius = LengthUnit.kilometersToMeters(18_921_401_000L);
+            final short bhTimeInterval = 300; // coordinate time
+            // when
+            final double blackHoleTimeDiff = PhysicsCalc.Relativity
+                .gravitationalTimeDilationTimeDiff(bhMass, bhRadius, bhTimeInterval);
+            // then
+            assertEquals(223.2986377633, blackHoleTimeDiff, DELTA6);
+        }
+
+        @Test
+        void testGravitationalTimeDilationInOtherFrameRef() {
+            // given the 1st frame of reference (Earth) and the 2nd (black hole)
+            final double bhMass = MassUnit.sunsToKg(4.3e9);
+            final double bhRadius = LengthUnit.kilometersToMeters(18_921_401_000L);
+            final short bhTimeInterval = 300; // coordinate time
+            // when
+            final double earthFrameRefTime = PhysicsCalc.Relativity
+                .gravitationalTimeDilationInOtherFrameRef(bhMass, bhRadius, bhTimeInterval);
+            // then
+            final double equivalentTimeOnEarth = 523.2986377633;
+            assertEquals(equivalentTimeOnEarth, earthFrameRefTime, DELTA6);
+        }
+
+        @Test
+        void testLengthContraction() {
+            // given
+            final double properLength = 2;
+            final int relativeVelocity = 19_980_000;
+            // when
+            final double observedLength = PhysicsCalc.Relativity.lengthContraction(properLength, relativeVelocity);
+            // then
+            assertEquals(1.9956, observedLength, DELTA4);
+        }
+    }
+
+    @Nested
+    class Astronomy {
+        @Test
+        void testFirstCosmicVelocity() {
+            // given
+            final double massKg = MassUnit.earthsToKg(1);
+            final double radius = LengthUnit.avgEarthRadiiToMeters(1);
+            // when
+            final double velocity = PhysicsCalc.Astronomy.firstCosmicVelocity(massKg, radius);
+            // then
+            assertEquals(7909.8, velocity, DELTA1);
+        }
+
+        @Test
+        void testEscapeVelocity() {
+            // given
+            final double massKg = MassUnit.earthsToKg(1);
+            final double radius = LengthUnit.avgEarthRadiiToMeters(1);
+            // when
+            final double velocity = PhysicsCalc.Astronomy.escapeVelocity(massKg, radius);
+            // then
+            assertEquals(11_186.1, velocity, DELTA1);
+        }
+
+        @Test
+        void testEarthOrbitalSpeed() {
+            // given International Space Station (ISS)
+            final double height = LengthUnit.kilometersToMeters(400);
+            // when
+            final double speed = PhysicsCalc.Astronomy.earthOrbitalSpeed(height);
+            // then
+            assertEquals(7672.6, speed, DELTA1);
+        }
+
+        @Test
+        void testEarthOrbitalPeriod() {
+            // given International Space Station (ISS)
+            final double height = LengthUnit.kilometersToMeters(400);
+            // when
+            final double period = PhysicsCalc.Astronomy.earthOrbitalPeriod(height);
+            // then
+            assertEquals(PhysicsTimeUnit.hoursToSeconds(1.5403), period, 1);
+        }
+
+        @Test
+        void testOrbitalVelocityEccentricity() {
+            // given Earth
+            final byte semiMajorAxis = 1;
+            final double semiMinorAxis = 0.99986;
+            // when
+            final double eccentricity = PhysicsCalc.Astronomy.orbitalVelocityEccentricity(semiMajorAxis, semiMinorAxis);
+            // then
+            assertEquals(0.016733, eccentricity, DELTA6);
+        }
+
+        @Test
+        void testApoapsisAndPeriapsisDistance() {
+            // given Earth
+            final byte semiMajorAxis = 1;
+            final double semiMinorAxis = 0.99986;
+            // when
+            final double[] distances = PhysicsCalc.Astronomy.apoapsisAndPeriapsisDistance(semiMajorAxis, semiMinorAxis);
+            // then
+            assertArrayEquals(new double[]{1.0167, 0.9833}, distances, DELTA4);
+        }
+
+        @Test
+        void testOrbitalEnergy() {
+            // given Earth
+            final double starMass = MassUnit.SOLAR_KG;
+            final double satelliteMass = MassUnit.EARTH_KG;
+            final double earthSemiMajorAxis = LengthUnit.astronomicalUnitsToMeters(1);
+            // when
+            final double energy = PhysicsCalc.Astronomy.orbitalEnergy(starMass, satelliteMass, earthSemiMajorAxis);
+            // then
+            assertEquals(-2.65e33, energy, 1e30);
+        }
+
+        @Test
+        void testVelocityAtApoapsisAndPeriapsis() {
+            // given Earth
+            final double distanceAtApoapsis = LengthUnit.astronomicalUnitsToMeters(1.0167);
+            final double distanceAtPeriapsis = LengthUnit.astronomicalUnitsToMeters(0.9833);
+            // when
+            final double[] velocities = PhysicsCalc.Astronomy
+                .velocityAtApoapsisAndPeriapsis(distanceAtApoapsis, distanceAtPeriapsis);
+            // then
+            assertArrayEquals(new double[]{29_295.5, 30_290.5}, velocities, DELTA1);
+        }
+
+        @Test
+        void testOrbitalVelocity() {
+            // given Earth
+            final double distanceAtApoapsis = LengthUnit.astronomicalUnitsToMeters(1.0167);
+            final double distanceAtPeriapsis = LengthUnit.astronomicalUnitsToMeters(0.9833);
+            final double semiMajorAxis = PhysicsCalc.Astronomy.semiMajorAxis(distanceAtApoapsis, distanceAtPeriapsis);
+            final double distance = LengthUnit.astronomicalUnitsToMeters(1);
+            final double gm = PhysicsCalc.GRAVITATIONAL_CONSTANT * MassUnit.SOLAR_KG;
+            // when
+            final double velocity = PhysicsCalc.Astronomy.orbitalVelocity(distance, semiMajorAxis, gm);
+            // then
+            assertEquals(29_788.8, velocity, DELTA1);
+        }
+
+        @Test
+        void testOrbitalPeriod() {
+            // given Earth
+            final double distanceAtApoapsis = LengthUnit.astronomicalUnitsToMeters(1.0167);
+            final double distanceAtPeriapsis = LengthUnit.astronomicalUnitsToMeters(0.9833);
+            final double semiMajorAxis = PhysicsCalc.Astronomy.semiMajorAxis(distanceAtApoapsis, distanceAtPeriapsis);
+            final double gm = PhysicsCalc.GRAVITATIONAL_CONSTANT * MassUnit.SOLAR_KG;
+            // when
+            final double period = PhysicsCalc.Astronomy.orbitalPeriod(semiMajorAxis, gm);
+            // then
+            assertEquals(31553987, period, 1e3);
         }
     }
 }

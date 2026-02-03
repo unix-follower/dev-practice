@@ -10,6 +10,12 @@ public enum TemperatureUnit {
     REAUMUR, // °Ré
     ROMER; // °Rø
 
+    /**
+     * The Sun's effective temperature.
+     */
+    public static final short SOLAR_TEMPERATURE = 5778; // K
+    public static final short NOMINAL_SOLAR_TEMPERATURE = 5772; // K
+
     public static double celsiusToKelvin(double celsius) {
         return celsius + 273.15;
     }

@@ -39,4 +39,8 @@ public enum AngleUnit {
     public static double turnsToDegrees(double turns) {
         return turns * 360;
     }
+
+    public static double marcsecToArcsec(double marcsec) {
+        return marcsec / 1000;
+    }
 }

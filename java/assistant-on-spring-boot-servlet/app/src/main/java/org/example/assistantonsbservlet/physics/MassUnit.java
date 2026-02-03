@@ -31,7 +31,8 @@ public enum MassUnit {
         POUNDS_PER_POUND_MOLE // lb/lbmol
     }
 
-    public static final double ONE_SOLAR = 1.989e30;
+    public static final double SOLAR_KG = 1.989e30;
+    public static final double EARTH_KG = 5.9722e24;
 
     public static double grToKg(double grains) {
         return grains * 0.00006479891;
@@ -57,7 +58,15 @@ public enum MassUnit {
         return electronRestMass / 1.098e30;
     }
 
+    public static double earthsToKg(double earths) {
+        return earths * EARTH_KG;
+    }
+
     public static double sunsToKg(double suns) {
-        return suns * ONE_SOLAR;
+        return suns * SOLAR_KG;
+    }
+
+    public static double sunsRadiusToMeters(double sunRadius) {
+        return sunRadius * LengthUnit.NOMINAL_SOLAR_RADIUS;
     }
 }

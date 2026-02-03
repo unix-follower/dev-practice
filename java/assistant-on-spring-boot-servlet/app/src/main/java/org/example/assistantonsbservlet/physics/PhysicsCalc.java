@@ -58,9 +58,8 @@ public final class PhysicsCalc {
     public static final int FPE_CONSTANT = 450_240; // foot-pounds of energy
     public static final double GRAVITATIONAL_CONSTANT = 6.6743e-11; // 6.6743 × 10⁻¹¹ m³ kg⁻¹ s⁻²
     public static final byte MONOATOMIC_GAS_DEGREES_OF_FREEDOM = 3;
-    public static final double SUN_RADIUS = 6.963e8;
     public static final double SUN_POTENTIAL_ENERGY_ERGS = 1.788e54;
-    public static final double SOLAR_CONSTANT = 1367; // in W/m²
+    public static final short SOLAR_CONSTANT = 1367; // in W/m²
     public static final double REDUCED_PLANCK_CONSTANT = 1.0545718001e-34; // h/2π; 1.0545718001×10⁻³⁴ J·s
     public static final double UNIVERSAL_GAS_CONSTANT = 8.31446261815324; // J/(mol·K)
 
@@ -154,7 +153,7 @@ public final class PhysicsCalc {
         /**
          * @return velocity = distance / time. The units are m/s
          */
-        public static double velocity(double distanceMeters, long timeSeconds) {
+        public static double velocity(double distanceMeters, double timeSeconds) {
             checkGreater0(distanceMeters);
             checkTimeInput(timeSeconds);
             return distanceMeters / timeSeconds;
@@ -165,7 +164,7 @@ public final class PhysicsCalc {
          * @param acceleration  in m/s²
          * @return u = v − a * t. The units are m/s
          */
-        public static double initialVelocity(double finalVelocity, double acceleration, long timeSeconds) {
+        public static double initialVelocity(double finalVelocity, double acceleration, double timeSeconds) {
             return finalVelocity - velocityChange(acceleration, timeSeconds);
         }
 
@@ -198,7 +197,7 @@ public final class PhysicsCalc {
             return (displacement / time) - (acceleration * time / 2.0);
         }
 
-        private static void checkTimeInput(long time) {
+        private static void checkTimeInput(double time) {
             if (time == 0) {
                 throw new IllegalArgumentException("Time cannot be zero.");
             }
@@ -242,7 +241,7 @@ public final class PhysicsCalc {
         /**
          * @return The units are m/s
          */
-        public static double velocityChange(double acceleration, long timeSeconds) {
+        public static double velocityChange(double acceleration, double timeSeconds) {
             return acceleration * timeSeconds;
         }
 
@@ -5230,6 +5229,100 @@ public final class PhysicsCalc {
             return (REDUCED_PLANCK_CONSTANT * Math.pow(SPEED_OF_LIGHT, 3))
                 / (Trigonometry.PI8 * GRAVITATIONAL_CONSTANT * massKg * BOLTZMANN_CONSTANT);
         }
+
+        /**
+         * @return r = 2 × G × M/c². The units are meters
+         */
+        public static double schwarzschildRadius(double blackHoleMassKg) {
+            final double cSq = (double) SPEED_OF_LIGHT * SPEED_OF_LIGHT;
+            return 2 * GRAVITATIONAL_CONSTANT * blackHoleMassKg / cSq;
+        }
+
+        /**
+         * If z < 0 you will observe a blueshift. If z > 0 you will observe a redshift.
+         *
+         * @return z = (λ_obsv−λ_emit)/λ_emit
+         */
+        public static double redshift(double emittedLightWavelengthM, double observedLightWavelengthM) {
+            return (observedLightWavelengthM - emittedLightWavelengthM) / emittedLightWavelengthM;
+        }
+
+        /**
+         * @return z = (f_emit−f_obsv)/f_obsv
+         */
+        public static double redshiftFromFrequency(double emittedLightHz, double observedLightHz) {
+            return (emittedLightHz - observedLightHz) / observedLightHz;
+        }
+
+        /**
+         * @return distance = 1 / stellar parallax. The units are pcs
+         */
+        public static double parallaxDistance(double parallaxArcsecond) {
+            return reciprocal(parallaxArcsecond);
+        }
+
+        /**
+         * @return p_int = (4σT⁴)/(3c). The units are Pa
+         */
+        public static double radiationPressureInsideStar(double tempKelvins) {
+            return (4 * STEFAN_BOLTZMANN_CONSTANT * Math.pow(tempKelvins, 4)) / (3 * SPEED_OF_LIGHT);
+        }
+
+        /**
+         * Where x – Determines the type of surface: x=1 – opaque surface, x=2 – reflective surface.
+         *
+         * @param angleRad α – Angle between the light beam and the surface of absorbing/reflecting surface.
+         * @return p_out = (x*L*cos²(α))/(4πR²c). The units are Pa
+         */
+        public static double radiationPressureOutsideStar(
+            double surfaceType, double angleRad, double luminosity, double distanceMeters) {
+            final double cosine = Trigonometry.cos(angleRad);
+            return (surfaceType * luminosity * cosine * cosine)
+                / (4 * STEFAN_BOLTZMANN_CONSTANT * distanceMeters * distanceMeters * SPEED_OF_LIGHT);
+        }
+
+        public static double radiationPressureOutsideOpaqueStar(
+            double angleRad, double luminosity, double distanceMeters) {
+            return radiationPressureOutsideStar(1, angleRad, luminosity, distanceMeters);
+        }
+
+        public static double radiationPressureOutsideReflectiveStar(
+            double angleRad, double luminosity, double distanceMeters) {
+            return radiationPressureOutsideStar(2, angleRad, luminosity, distanceMeters);
+        }
+
+        /**
+         * @return L/L⨀ = (R/R⨀)² * (T/T⨀)⁴. The units are L☉
+         */
+        public static double luminosity(double radius, double tempKelvins) {
+            return Math.pow(radius / LengthUnit.NOMINAL_SOLAR_RADIUS, 2)
+                * Math.pow(tempKelvins / TemperatureUnit.SOLAR_TEMPERATURE, 4);
+        }
+
+        /**
+         * @param tempKelvins Surface temperature (T).
+         * @return L = σ · A · T⁴. The units are W
+         */
+        public static double luminosityUsingBoltzmann(double radius, double tempKelvins) {
+            final double area = Geometry.sphereArea(radius);
+            return STEFAN_BOLTZMANN_CONSTANT * area * Math.pow(tempKelvins, 4);
+        }
+
+        /**
+         * @return M = −2.5log₁₀(L/L₀)
+         */
+        public static double absoluteMagnitude(double luminosityWatts) {
+            return -2.5 * Algebra.log(luminosityWatts / PowerUnit.ZERO_POINT_LUMINOSITY);
+        }
+
+        /**
+         * Also called the apparent brightness.
+         *
+         * @return m = M−5+5log₁₀(D)
+         */
+        public static double apparentMagnitude(double absMagnitude, double distancePcs) {
+            return absMagnitude - 5 + 5 * Algebra.log(distancePcs);
+        }
     }
 
     public static final class Relativity {
@@ -5275,6 +5368,212 @@ public final class PhysicsCalc {
             final double cSq = (double) SPEED_OF_LIGHT * SPEED_OF_LIGHT;
             final double vSq = velocity * velocity;
             return massKg * cSq * (squareRoot(1 - vSq / cSq) - 1);
+        }
+
+        /**
+         * Where γ is Lorentz factor.
+         *
+         * @param timeIntervalSeconds Time interval as measured by a traveling observer
+         * @param observerVelocity    in m/s
+         * @return Δt′ = γΔt = Δt/(√(1 − v²/c²)). Time interval as measured by a stationary observer. The units are sec
+         */
+        public static double timeDilation(double timeIntervalSeconds, double observerVelocity) {
+            return timeIntervalSeconds / squareRoot(1 - Math.pow(observerVelocity, 2) / Math.pow(SPEED_OF_LIGHT, 2));
+        }
+
+        /**
+         * @return Δt′ = √(1 − (2GM)/(rc²)). The units are sec
+         */
+        public static double gravitationalTimeDilationFactor(double massKg, double radiusMeters) {
+            final double cSq = (double) SPEED_OF_LIGHT * SPEED_OF_LIGHT;
+            return squareRoot(1 - (2 * GRAVITATIONAL_CONSTANT * massKg) / (radiusMeters * cSq));
+        }
+
+        /**
+         * Find proper time (Δt′) given coordinate time (Δt)
+         *
+         * @return Δt′ = Δt * √(1 − (2GM)/(rc²)). The units are sec
+         */
+        public static double gravitationalTimeDilationProperTime(
+            double massKg, double radiusMeters, double coordinateTimeSeconds) {
+            final double timeDilationFactor = gravitationalTimeDilationFactor(massKg, radiusMeters);
+            return coordinateTimeSeconds * timeDilationFactor;
+        }
+
+        /**
+         * Find coordinate time (Δt) given proper time (Δt′).
+         * The coordinate time is the time interval with no gravity. The time that passes in flat spacetime.
+         *
+         * @return Δt = Δt′ / √(1 − (2GM)/(rc²)). The units are sec
+         */
+        public static double gravitationalTimeDilationCoordinateTime(
+            double massKg, double radiusMeters, double properTimeSeconds) {
+            final double timeDilationFactor = gravitationalTimeDilationFactor(massKg, radiusMeters);
+            return properTimeSeconds / timeDilationFactor;
+        }
+
+        /**
+         * @param massKg                Mass of the object causing gravitational dilation.
+         * @param radiusMeters          Distance from the center of the object causing gravitational dilation.
+         * @param coordinateTimeSeconds Lapse of time influenced by the object's gravity.
+         * @return The difference between the time intervals for chosen frames of reference. The units are sec
+         */
+        public static double gravitationalTimeDilationTimeDiff(
+            double massKg, double radiusMeters, double coordinateTimeSeconds) {
+            final double deltaTimeFlat = gravitationalTimeDilationCoordinateTime(
+                massKg, radiusMeters, coordinateTimeSeconds);
+            return deltaTimeFlat - coordinateTimeSeconds;
+        }
+
+        /**
+         * @return The units are sec
+         */
+        public static double gravitationalTimeDilationInOtherFrameRef(
+            double massKg, double radiusMeters, double coordinateTimeSeconds) {
+            final double timeDiff = gravitationalTimeDilationTimeDiff(
+                massKg, radiusMeters, coordinateTimeSeconds);
+            return coordinateTimeSeconds + timeDiff;
+        }
+
+        /**
+         * Length measured by the observer that is moving relative to the rest frame.
+         * Where γ(v) – Lorentz factor, defined as γ(v) ≡ 1/√(1−v²/c²)
+         *
+         * @param properLengthMeters L₀ – Length of the object in its rest frame.
+         * @param relativeVelocity   in m/s
+         * @return L = 1/γ(v) * L₀ = L₀ * √(1−v²/c²). The units are meters
+         */
+        public static double lengthContraction(double properLengthMeters, double relativeVelocity) {
+            final double cSq = (double) SPEED_OF_LIGHT * SPEED_OF_LIGHT;
+            return properLengthMeters * squareRoot(1 - relativeVelocity * relativeVelocity / cSq);
+        }
+    }
+
+    public static final class Astronomy {
+        private Astronomy() {
+        }
+
+        /**
+         * @return first cosmic velocity = √(MG/R). The units are meters
+         */
+        public static double firstCosmicVelocity(double massKg, double radiusMeters) {
+            return squareRoot(GRAVITATIONAL_CONSTANT * massKg / radiusMeters);
+        }
+
+        /**
+         * aka second cosmic velocity.
+         *
+         * @return v = √(2GM/R). The units are meters
+         */
+        public static double escapeVelocity(double massKg, double radiusMeters) {
+            return squareRoot(2 * GRAVITATIONAL_CONSTANT * massKg / radiusMeters);
+        }
+
+        /**
+         * Period of satellite rotation.
+         *
+         * @param heightMeters h – Perpendicular distance of the satellite from the surface of the earth.
+         * @return orbital period = 2π * √((R_E+h)³/(G⋅M_E)). The units are sec
+         */
+        public static double earthOrbitalPeriod(double heightMeters) {
+            return Trigonometry.PI2 * squareRoot(Math.pow(LengthUnit.EARTH_RADIUS + heightMeters, 3)
+                / (GRAVITATIONAL_CONSTANT * MassUnit.EARTH_KG));
+        }
+
+        /**
+         * Speed of the satellite.
+         *
+         * @return orbital speed = √((G⋅M_E)/(R_E+h)). The units are m/s
+         */
+        public static double earthOrbitalSpeed(double heightMeters) {
+            return squareRoot(GRAVITATIONAL_CONSTANT * MassUnit.EARTH_KG / (LengthUnit.EARTH_RADIUS + heightMeters));
+        }
+
+        /**
+         * Eccentricity defines the shape of the orbit. It equals 0 for a circular orbit and
+         * is between 0 and 1 for an elliptic orbit.
+         *
+         * @param semiMajorAxis In au. The longest diameter of an orbit.
+         * @param semiMinorAxis In au. The shortest diameter of an orbit.
+         * @return e = √((1−b²)/a²)
+         */
+        public static double orbitalVelocityEccentricity(double semiMajorAxis, double semiMinorAxis) {
+            return squareRoot((1 - Math.pow(semiMinorAxis, 2)) / (Math.pow(semiMajorAxis, 2)));
+        }
+
+        /**
+         * rₐ+rₚ = 2a
+         *
+         * @return a = (rₐ+rₚ)/2. The units are au
+         */
+        public static double semiMajorAxis(double apoapsis, double periapsis) {
+            return (apoapsis + periapsis) / 2;
+        }
+
+        /**
+         * rₐrₚ = b²
+         *
+         * @param semiMajorAxis in au or meters
+         * @param semiMinorAxis in au or meters
+         * @return [distance at apoapsis, distance at periapsis]. The units are au or meters
+         */
+        public static double[] apoapsisAndPeriapsisDistance(double semiMajorAxis, double semiMinorAxis) {
+            final double eccentricity = orbitalVelocityEccentricity(semiMajorAxis, semiMinorAxis);
+            final double ra = semiMajorAxis * (1 + eccentricity);
+            final double rp = semiMajorAxis * (1 - eccentricity);
+            return new double[]{ra, rp};
+        }
+
+        /**
+         * @return E = −(GMm)/(2a). The units are J
+         */
+        public static double orbitalEnergy(double starMassKg, double satelliteMassKg, double semiMajorAxisMeters) {
+            return -(GRAVITATIONAL_CONSTANT * starMassKg * satelliteMassKg) / (2 * semiMajorAxisMeters);
+        }
+
+        /**
+         * Velocity at apoapsis is the satellite's speed at the farthest point
+         * in the orbit of the satellite about the star.
+         * Velocity at periapsis is the satellite's speed at the nearest point
+         * in the orbit of the satellite about the star.
+         *
+         * @param distanceAtApoapsis  In meters. The distance from the center to the farthest point
+         *                            in the orbit of the satellite about the star.
+         * @param distanceAtPeriapsis In meters. The distance from the center to the nearest point
+         *                            in the orbit of the satellite about the star.
+         * @return [Velocity at apoapsis, Velocity at periapsis]. The units are m/s
+         */
+        public static double[] velocityAtApoapsisAndPeriapsis(double distanceAtApoapsis, double distanceAtPeriapsis) {
+            final double gm = GRAVITATIONAL_CONSTANT * MassUnit.SOLAR_KG;
+            final double a = semiMajorAxis(distanceAtApoapsis, distanceAtPeriapsis);
+            return new double[]{
+                squareRoot(gm * (2. / distanceAtApoapsis - 1 / a)),
+                squareRoot(gm * (2. / distanceAtPeriapsis - 1 / a)),
+            };
+        }
+
+        /**
+         * Vis-viva equation: v² = μ(2/r − 1/a).
+         * The corresponding velocity of the satellite at a specific distance. It must be between
+         * the velocities at apoapsis and periapsis.
+         *
+         * @param distanceMeters            The distance between the star and satellite. It must be between
+         *                                  the distances at apoapsis and periapsis.
+         * @param stdGravitationalParameter In m³/s². A product of the gravitational constant G
+         *                                  and the sum of the masses of the satellite and star.
+         * @return The units are m/s
+         */
+        public static double orbitalVelocity(
+            double distanceMeters, double semiMajorAxisMeters, double stdGravitationalParameter) {
+            return squareRoot(stdGravitationalParameter * (2 / distanceMeters - 1 / semiMajorAxisMeters));
+        }
+
+        /**
+         * @return T² = (4π²a³)/μ. The units are sec
+         */
+        public static double orbitalPeriod(double semiMajorAxisMeters, double stdGravitationalParameter) {
+            final double numerator = 4 * Math.PI * Math.PI * Math.pow(semiMajorAxisMeters, 3);
+            return squareRoot(numerator / stdGravitationalParameter);
         }
     }
 }
