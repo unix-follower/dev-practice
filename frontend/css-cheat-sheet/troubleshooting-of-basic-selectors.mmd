@@ -1,0 +1,24 @@
+flowchart TD
+    C[Is the selector spelled correctly and matches the HTML?]
+
+    C -->|No| D[Fix typos or incorrect selector syntax]
+    C -->|Yes| E[Is there a more specific selector overriding your rule?]
+
+    E -->|Yes| F["Increase specificity or use !important (with caution)"]
+    E -->|No| G[Is the property being inherited or overridden by another rule?]
+
+    G -->|Yes| H[Check inheritance and cascade order]
+    G -->|No| I[Is the CSS file loaded and linked correctly in HTML?]
+
+    I -->|No| J[Fix the <link> tag or file path]
+    I -->|Yes| K[Is there a browser compatibility issue?]
+
+    K -->|Yes| L[Check browser support and use vendor prefixes if needed]
+    K -->|No| M[Clear browser cache and reload page]
+
+    D --> N[Re-test selector]
+    F --> N
+    H --> N
+    J --> N
+    L --> N
+    M --> N

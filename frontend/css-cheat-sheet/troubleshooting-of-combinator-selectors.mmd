@@ -1,0 +1,24 @@
+flowchart TD
+    C["Is the selector syntax correct? (e.g., div > p, ul li, h2 + p, h2 ~ p)"]
+
+    C -->|No| D[Fix the selector syntax]
+    C -->|Yes| E[Does the HTML structure match the combinator logic?]
+
+    E -->|No| F[Adjust HTML structure to match selector requirements]
+    E -->|Yes| G[Is there a more specific selector or !important overriding your rule?]
+
+    G -->|Yes| H["Increase specificity or use !important (with caution)"]
+    G -->|No| I[Is the CSS file loaded and linked correctly in HTML?]
+
+    I -->|No| J[Fix the <link> tag or file path]
+    I -->|Yes| K[Is there a browser compatibility issue?]
+
+    K -->|Yes| L[Check browser support for combinator selectors]
+    K -->|No| M[Clear browser cache and reload page]
+
+    D --> N[Re-test selector]
+    F --> N
+    H --> N
+    J --> N
+    L --> N
+    M --> N

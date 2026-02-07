@@ -1,0 +1,22 @@
+flowchart TD
+    A["Start: Query with WHERE on non-leading index column(s)"]
+    B["Multicolumn B-Tree Index Exists (e.g., (col1, col2, col3))"]
+    A --> B
+
+    C{Is PostgreSQL version 11+?}
+    B --> C
+
+    C -->|No| D[Index cannot be used; full scan or other index]
+    C -->|Yes| E{"Is query using IS NULL, IN, or skipping values on leading column(s)?"}
+
+    E -->|No| F[Standard index scan not possible; consider query rewrite or additional index]
+    E -->|Yes| G[Skip Scan Optimization Activated]
+
+    G --> H["Database engine skips over possible values of leading column(s)"]
+    H --> I["Index scan proceeds on specified non-leading column(s)"]
+    I --> J[Efficient retrieval of matching rows]
+
+    D --> K[Query performance may be suboptimal]
+    F --> K
+    J --> L[End]
+    K --> L

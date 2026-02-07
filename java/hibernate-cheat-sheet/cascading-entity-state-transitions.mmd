@@ -1,0 +1,20 @@
+flowchart TD
+    A[Start]
+    B[Parent Entity Operation]
+    B@{ shape: comment, label: "e.g., em.persist(parent)" }
+    A --> B
+
+    C[Check Cascade Type on Association]
+    C@{ shape: comment, label: "@OneToMany(cascade = CascadeType.PERSIST)" }
+    B --> C
+
+    D[Operation Propagated to Child Entities]
+    D@{ shape: comment, label: "Child entities receive the same operation" }
+    C --> D
+
+    E[Child Entity State Transition]
+    E@{ shape: comment, label: "e.g., child becomes managed" }
+    D --> E
+
+    F[Continue with Other Operations]
+    E --> F

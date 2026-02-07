@@ -1,0 +1,24 @@
+flowchart TD
+    C["Is network connectivity working? (ping 8.8.8.8)"]
+
+    C -->|No| D[Check network cables, Wi-Fi, IP config]
+    C -->|Yes| E[Is /etc/resolv.conf configured correctly?]
+
+    E -->|No| F[Edit /etc/resolv.conf or check NetworkManager settings]
+    E -->|Yes| G[Can you resolve DNS with dig/nslookup/host?]
+
+    G -->|No| H["Try different DNS server (e.g., 8.8.8.8)"]
+    G -->|Yes| I[Is DNS slow or intermittent?]
+
+    H -->|No| J[Check firewall, router, ISP issues]
+    H -->|Yes| K[Set DNS server in /etc/resolv.conf or via NetworkManager]
+
+    I -->|Yes| L[Check for multiple DNS servers, VPN, or DNS cache issues]
+    I -->|No| M[Try systemd-resolve --status for local resolver issues]
+
+    D --> N[Re-test DNS]
+    F --> N
+    J --> N
+    K --> N
+    L --> N
+    M --> N

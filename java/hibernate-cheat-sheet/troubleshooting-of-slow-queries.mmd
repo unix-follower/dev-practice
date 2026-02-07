@@ -1,0 +1,25 @@
+flowchart TD
+    C[Enable SQL logging and analyze generated queries]
+
+    C --> D["Are there too many queries (N+1 problem)?"]
+    D -->|Yes| E[Use JOIN FETCH, Entity Graphs, or batch fetching]
+    D -->|No| F[Are queries missing indexes?]
+
+    F -->|Yes| G[Add appropriate database indexes]
+    F -->|No| H["Are you fetching unnecessary data (overfetching)?"]
+
+    H -->|Yes| I[Adjust fetch strategies, use projections or DTOs]
+    H -->|No| J[Are queries using inefficient joins or subqueries?]
+
+    J -->|Yes| K[Rewrite queries for better performance]
+    J -->|No| L[Is the database under heavy load or misconfigured?]
+
+    L -->|Yes| M[Optimize database configuration and resources]
+    L -->|No| N[Profile JVM and check for application-level bottlenecks]
+
+    E --> O[Re-test query performance]
+    G --> O
+    I --> O
+    K --> O
+    M --> O
+    N --> O

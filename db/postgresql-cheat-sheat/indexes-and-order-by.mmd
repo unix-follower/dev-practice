@@ -1,0 +1,24 @@
+sequenceDiagram
+    participant App as Application
+    participant PG as PostgreSQL Engine
+    participant Index as Index (B-Tree)
+    participant Table as Table Data
+
+    App->>PG: Submit query with ORDER BY col [NULLS FIRST/LAST]
+    PG->>Index: Check for suitable index on col
+
+    alt Index exists and matches ORDER BY direction
+        Index-->>PG: Perform index scan
+        PG->>Index: Retrieve sorted values
+        alt NULLS FIRST/LAST specified
+            Index-->>PG: Handle NULLs as per query (place at start/end)
+        else Default NULLs order
+            Index-->>PG: Use default NULLs ordering
+        end
+        PG-->>App: Return ordered result set
+    else No suitable index
+        PG->>Table: Perform full table scan
+        Table-->>PG: Retrieve all rows
+        PG->>PG: Sort rows in memory, handle NULLs as specified
+        PG-->>App: Return ordered result set
+    end

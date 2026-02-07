@@ -1,0 +1,24 @@
+flowchart TD
+    C["Is box-sizing set correctly? (content-box vs border-box)"]
+
+    C -->|No| D[Set box-sizing to border-box for predictable sizing]
+    C -->|Yes| E[Are padding and border included in the total width/height calculation?]
+
+    E -->|No| F[Adjust box-sizing or recalculate width/height]
+    E -->|Yes| G[Is there unexpected margin or margin collapse?]
+
+    G -->|Yes| H[Check for vertical margin collapse and adjust margins or add overflow/clearfix]
+    G -->|No| I[Are there unexpected scrollbars or overflow issues?]
+
+    I -->|Yes| J[Check overflow property and content size]
+    I -->|No| K["Is the element’s display property appropriate? (block, inline, inline-block, flex, grid)"]
+
+    K -->|No| L[Set correct display property]
+    K -->|Yes| M[Check for inherited or conflicting styles]
+
+    D --> N[Re-test box model]
+    F --> N
+    H --> N
+    J --> N
+    L --> N
+    M --> N

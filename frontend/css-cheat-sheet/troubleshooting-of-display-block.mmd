@@ -1,0 +1,28 @@
+flowchart TD
+    C[Is the selector targeting the correct element?]
+
+    C -->|No| D[Fix selector or check for typos]
+    C -->|Yes| E["Is another display property overriding it (e.g., flex, grid, inline)?"]
+
+    E -->|Yes| F["Increase specificity or use !important (with caution)"]
+    E -->|No| G["Is the element hidden (display: none, visibility: hidden, opacity: 0)?"]
+
+    G -->|Yes| H[Remove or adjust hiding properties]
+    G -->|No| I["Is the element inside a parent with restrictive styles (e.g., flex, grid, inline)?"]
+
+    I -->|Yes| J[Check parent styles and adjust as needed]
+    I -->|No| K[Is the browser compatible with 'display: block'?]
+
+    K -->|No| L[Check browser compatibility or use vendor prefixes]
+    K -->|Yes| M["Is the element's default display already block? (e.g., div, p, h1)"]
+
+    M -->|Yes| N[No visible change; 'display: block' is default]
+    M -->|No| O[Clear browser cache and reload page]
+
+    D --> P[Re-test display]
+    F --> P
+    H --> P
+    J --> P
+    L --> P
+    N --> P
+    O --> P

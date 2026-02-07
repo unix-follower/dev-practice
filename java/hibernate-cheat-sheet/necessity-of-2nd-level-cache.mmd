@@ -1,0 +1,18 @@
+flowchart TD
+    A[Do you have entities that are frequently read and rarely updated?] -->|No| B[Second-level cache may not be necessary]
+    A -->|Yes| C[Are entities accessed by multiple sessions/users?]
+
+    C -->|No| D["First-level (Session) cache is sufficient"]
+    C -->|Yes| E[Is data consistency critical and can you tolerate eventual consistency?]
+
+    E -->|No| F[Second-level cache may cause stale data issues; consider alternatives]
+    E -->|Yes| G[Are entities large or complex, or do you have memory constraints?]
+
+    G -->|Yes| H[Carefully configure cache regions and eviction policies]
+    G -->|No| I[Enable second-level cache for these entities]
+
+    H --> J[Monitor cache performance and memory usage]
+    I --> J
+    F --> J
+    D --> J
+    B --> J

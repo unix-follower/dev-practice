@@ -1,0 +1,36 @@
+flowchart TD
+    C[Is the width/height property set correctly?]
+
+    C -->|No| D[Set the correct width/height property]
+    C -->|Yes| E["Are you using the appropriate units? (px, %, em, rem, vw, vh)"]
+
+    E -->|No| F[Change to the correct unit for your layout needs]
+    E -->|Yes| G[Is the parent/container size as expected?]
+
+    G -->|No| H[Check and fix parent/container sizing]
+    G -->|Yes| I["Is box-sizing set correctly? (content-box vs border-box)"]
+
+    I -->|No| J[Set box-sizing to border-box for predictable sizing]
+    I -->|Yes| K[Are there padding or border values affecting size?]
+
+    K -->|Yes| L[Adjust padding/border or use border-box]
+    K -->|No| M["Is the display property appropriate? (block, inline, flex, grid)"]
+
+    M -->|No| N[Set the correct display property]
+    M -->|Yes| O[Are there inherited or conflicting styles?]
+
+    O -->|Yes| P[Override or remove conflicting styles]
+    O -->|No| Q[Check for min/max-width or height constraints]
+
+    Q -->|Yes| R[Adjust or remove min/max constraints]
+    Q -->|No| S[Clear browser cache and reload page]
+
+    D --> T[Re-test sizing]
+    F --> T
+    H --> T
+    J --> T
+    L --> T
+    N --> T
+    P --> T
+    R --> T
+    S --> T
