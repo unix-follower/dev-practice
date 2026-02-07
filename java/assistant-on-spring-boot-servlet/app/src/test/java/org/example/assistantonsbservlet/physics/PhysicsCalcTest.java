@@ -1181,6 +1181,82 @@ class PhysicsCalcTest {
             // then
             assertEquals(3.22e-15, distance, DELTA1);
         }
+
+        @Test
+        void testInclinedPlaneCubicBlockSlidingTime() {
+            // given
+            final byte mass = 2;
+            final double initialVelocity = 0;
+            final double angle = AngleUnit.degToRadians(40);
+            final double frictionCoeff = 0.2;
+            final double height = 5;
+            // when
+            final double time = PhysicsCalc.Kinematics
+                .inclinedPlaneCubicBlockSlidingTime(mass, initialVelocity, angle, frictionCoeff, height);
+            // then
+            assertEquals(1.8, time, DELTA1);
+        }
+
+        @Test
+        void testInclinedPlaneCubicBlockEnergyLoss() {
+            // given
+            final double mass = 2;
+            final double acceleration = 4.801;
+            final double time = 1.8;
+            final double finalVelocity = PhysicsCalc.Kinematics.finalVelocity(0, acceleration, time);
+            final double height = 5;
+            // when
+            final double loss = PhysicsCalc.Kinematics.inclinedPlaneCubicBlockEnergyLoss(mass, finalVelocity, height);
+            // then
+            assertEquals(23.38, loss, DELTA2);
+        }
+
+        @Test
+        void testInclinedPlaneRollingObjSlidingTime() {
+            // given
+            final double initialVelocity = 2;
+            final double angle = AngleUnit.degToRadians(30);
+            final double height = 5;
+            final double constantFactor = 2. / 5;
+            // when
+            final double time = PhysicsCalc.Kinematics
+                .inclinedPlaneRollingObjSlidingTime(initialVelocity, angle, height, constantFactor);
+            // then
+            assertEquals(1.886, time, DELTA3);
+        }
+
+        @Test
+        void testCentrifugeSpeedRCFtoRPM() {
+            // given
+            final byte rotorRadius = 5;
+            final short rcf = 10_956;
+            // when
+            final double rpm = PhysicsCalc.Kinematics.centrifugeSpeedRCFtoRPM(rotorRadius, rcf);
+            // then
+            assertEquals(13_999.7, rpm, DELTA1);
+        }
+
+        @Test
+        void testCentrifugeSpeedRPMtoRCF() {
+            // given
+            final byte rotorRadius = 5;
+            final short rpm = 14_000;
+            // when
+            final double rcf = PhysicsCalc.Kinematics.centrifugeSpeedRPMtoRCF(rotorRadius, rpm);
+            // then
+            assertEquals(10_956.4, rcf, DELTA1);
+        }
+
+        @Test
+        void testSledSlidingDown() {
+            // given
+            final byte hillLength = 10;
+            final double frictionCoeff = 0.474;
+            // when
+            final double[] results = PhysicsCalc.Kinematics.sledSlidingDown(hillLength, frictionCoeff);
+            // then
+            assertArrayEquals(new double[]{4.649, 9.642, 2.0742}, results, DELTA3);
+        }
     }
 
     @Nested
@@ -2778,6 +2854,86 @@ class PhysicsCalcTest {
                 .gravitationalForce(earthMassKg, moonMassKg, distanceFromEarthToSun);
             // then
             assertEquals(198_211_072_907_925_212_312d, force, 1e21);
+        }
+
+        @Test
+        void testStoppingDistance() {
+            // given
+            final double vehicleSpeed = 120;
+            final double perceptionReactionTime = 1.5;
+            final double roadGrade = 0; // flat surface
+            final double wetRoadFrictionCoeff = 0.27;
+            // when
+            final double distance = PhysicsCalc.Dynamics
+                .stoppingDistance(vehicleSpeed, perceptionReactionTime, roadGrade, wetRoadFrictionCoeff);
+            // then
+            assertEquals(260, distance, DELTA1);
+        }
+
+        @Test
+        void testBrakingTime() {
+            // given
+            final double initialSpeed = LengthUnit.kmphToMetersPerSecond(120);
+            final double deceleration = 43.7;
+            // when
+            final double time = PhysicsCalc.Dynamics.brakingTime(initialSpeed, deceleration);
+            // then
+            assertEquals(0.7628, time, DELTA4);
+        }
+
+        @Test
+        void testHookesLawForce() {
+            // given
+            final double springDisplacement = 0.15;
+            // initialSpringLength = 2 m
+            // finalSpringLength = 2 m + 0.15 m = 2.15 m
+            final byte springForceConstant = 80;
+            // when
+            final double force = PhysicsCalc.Dynamics.hookesLawForce(springDisplacement, springForceConstant);
+            // then
+            assertEquals(-12, force, DELTA1);
+        }
+
+        static List<Arguments> tensionHangingObjectOnRopesArgs() {
+            final double angle30 = AngleUnit.degToRadians(30);
+            final double angle60 = AngleUnit.degToRadians(60);
+            final double weight = PhysicsCalc.Statics.massToWeight(10);
+            return List.of(
+                Arguments.of(weight, angle60, angle60, new double[]{56.61, 56.61}, DELTA2),
+                Arguments.of(weight, angle60, angle30, new double[]{84.92, 49.03}, DELTA2)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("tensionHangingObjectOnRopesArgs")
+        void testTensionHangingObjectOnRopes(double weightN, double angleAlpha, double angleBeta,
+                                             double[] expectedResult, double delta) {
+            // when
+            final double[] tensions = PhysicsCalc.Dynamics.tensionHangingObjectOnRopes(weightN, angleAlpha, angleBeta);
+            // then
+            assertArrayEquals(expectedResult, tensions, delta);
+        }
+
+        static List<Arguments> tensionPullingOnFrictionlessSurfaceArgs() {
+            final double angle30 = AngleUnit.degToRadians(30);
+            final double angle45 = AngleUnit.degToRadians(45);
+            final double angle60 = AngleUnit.degToRadians(60);
+            return List.of(
+                Arguments.of(new double[]{3}, 20, angle30, new double[]{20}, DELTA1),
+                Arguments.of(new double[]{3, 2}, 24, angle60, new double[]{24, 4.8}, DELTA1),
+                Arguments.of(new double[]{3, 2, 5}, 32, angle45, new double[]{32, 15.84, 11.314}, DELTA3)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("tensionPullingOnFrictionlessSurfaceArgs")
+        void testTensionPullingOnFrictionlessSurface(double[] masses, double pullingForceN, double angleTheta,
+                                                     double[] expectedResult, double delta) {
+            // when
+            final double[] tensions = PhysicsCalc.Dynamics
+                .tensionPullingOnFrictionlessSurface(masses, pullingForceN, angleTheta);
+            // then
+            assertArrayEquals(expectedResult, tensions, delta);
         }
     }
 
@@ -6059,7 +6215,7 @@ class PhysicsCalcTest {
         @Test
         void testLuminosity() {
             // given Vega star
-            final double starRadius = MassUnit.sunsRadiusToMeters(2.5);
+            final double starRadius = LengthUnit.sunRadiusToMeters(2.5);
             final short temperature = 9602;
             // when
             final double luminosity = PhysicsCalc.Astrophysics.luminosity(starRadius, temperature);
@@ -6070,7 +6226,7 @@ class PhysicsCalcTest {
         @Test
         void testLuminosityUsingBoltzmann() {
             // given Vega star
-            final double starRadius = MassUnit.sunsRadiusToMeters(2.5);
+            final double starRadius = LengthUnit.sunRadiusToMeters(2.5);
             final short temperature = 9602;
             // when
             final double luminosity = PhysicsCalc.Astrophysics.luminosityUsingBoltzmann(starRadius, temperature);
@@ -6303,6 +6459,172 @@ class PhysicsCalcTest {
             final double period = PhysicsCalc.Astronomy.orbitalPeriod(semiMajorAxis, gm);
             // then
             assertEquals(31553987, period, 1e3);
+        }
+
+        @Test
+        void testSatelliteAroundCentralSphereOrbitalPeriod() {
+            // given Earth density
+            final double density = 5510;
+            // when
+            final double period = PhysicsCalc.Astronomy.satelliteAroundCentralSphereOrbitalPeriod(density);
+            // then
+            assertEquals(5062.4, period, DELTA1);
+        }
+
+        @Test
+        void testBinarySystemOrbitalPeriod() {
+            // given
+            final double semiMajorAxis = LengthUnit.astronomicalUnitsToMeters(1);
+            final double sunMass = MassUnit.SOLAR_KG;
+            final double earthMass = MassUnit.EARTH_KG;
+            // when
+            final double period = PhysicsCalc.Astronomy.binarySystemOrbitalPeriod(semiMajorAxis, sunMass, earthMass);
+            // then
+            assertEquals(31_554_527, period, 1e3);
+        }
+
+        @Test
+        void testKepler3RdLawPlanetPeriod() {
+            // given Mars semi-major axis
+            final double starMass = MassUnit.SOLAR_KG;
+            final double semiMajorAxis = LengthUnit.astronomicalUnitsToMeters(1.524);
+            // when
+            final double planetPeriod = PhysicsCalc.Astronomy.kepler3rdLawPlanetPeriod(starMass, semiMajorAxis);
+            // then
+            assertEquals(1.882, PhysicsTimeUnit.secondsToYears(planetPeriod), DELTA3);
+        }
+
+        @Test
+        void testKepler3RdLawStarMass() {
+            // given Mars data
+            final double semiMajorAxis = LengthUnit.astronomicalUnitsToMeters(1.524);
+            final double planetPeriod = PhysicsTimeUnit.yearsToSeconds(1.881);
+            // when
+            final double mass = PhysicsCalc.Astronomy.kepler3rdLawStarMass(semiMajorAxis, planetPeriod);
+            // then
+            assertEquals(MassUnit.SOLAR_KG, mass, 1e28); // ≈0.13% diff
+        }
+
+        @Test
+        void testSynodicPeriod() {
+            // given
+            final double refPlanetSiderealPeriod = 1; // Earth
+            final double planetSiderealPeriod = 11.9; // Jupyter
+            // when
+            final double period = PhysicsCalc.Astronomy.synodicPeriod(refPlanetSiderealPeriod, planetSiderealPeriod);
+            // then
+            assertEquals(1.092, period, DELTA3);
+        }
+
+        @Test
+        void testExoplanetRadialVelocityDetection() {
+            // given Proxima Centauri b
+            final double starOrbitalSpeed = 1.511;
+            final double readshift = PhysicsCalc.Astrophysics.redshift(starOrbitalSpeed);
+            final double originalWavelength = 6.1e-7;
+            // when
+            final double readshiftedWavelength = PhysicsCalc.Astronomy
+                .exoplanetRadialVelocityDetection(readshift, originalWavelength);
+            // then
+            assertEquals(0.000001, readshiftedWavelength, DELTA6);
+        }
+
+        @Test
+        void testExoplanetTransitDetection() {
+            // given Proxima Centauri b
+            final double starArea = 36154522229066854D;
+            final double planetArea = 183623209887524D;
+            // when
+            final double starAppearance = PhysicsCalc.Astronomy.exoplanetTransitDetection(starArea, planetArea);
+            // then
+            assertEquals(0.5079, starAppearance, DELTA4);
+        }
+
+        @Test
+        void testExoplanetAstrometryDetection() {
+            // given Proxima Centauri b
+            final byte amplitudeFactor = 2;
+            final double starMass = 0.1221;
+            final int starDistance = 265_611;
+            final double planetMass = 0.000003903;
+            final double semiMajorAxis = 0.0485;
+            // when
+            final double angularDisplacement = PhysicsCalc.Astronomy
+                .exoplanetAstrometryDetection(amplitudeFactor, starMass, starDistance, planetMass, semiMajorAxis);
+            // then
+            assertEquals(0.000002408, angularDisplacement, DELTA9);
+        }
+
+        @Test
+        void testIdealRocketEquation() {
+            // given
+            final double effectiveExhaustVelocity = 450.5;
+            final short initialMass = 5000;
+            final short finalMass = 4500;
+            // when
+            final double velocityChange = PhysicsCalc.Astronomy
+                .idealRocketEquation(effectiveExhaustVelocity, initialMass, finalMass);
+            // then
+            assertEquals(47.465, velocityChange, DELTA3);
+        }
+
+        @Test
+        void testRocketThrust() {
+            // given Falcon 9
+            final short effectiveExhaustVelocity = 3000;
+            final double flowAreaAtNozzle = 1.227185;
+            // totalFuelMass = 44320; timeElapsed = 162;
+            final double massLossRate = 273.6; // ≈ totalFuelMass / timeElapsed
+            final double ambientPressure = 101_325;
+            final double pressureAtNozzle = 84_424;
+            // when
+            final double thrust = PhysicsCalc.Astronomy.rocketThrust(effectiveExhaustVelocity, flowAreaAtNozzle,
+                massLossRate, ambientPressure, pressureAtNozzle);
+            // then
+            assertEquals(800_059.3, thrust, DELTA1);
+        }
+
+        @Test
+        void testSpecificImpulse() {
+            // given Kouznetsov NK-33
+            final double exhaustVelocity = 3250;
+            // when
+            final double impulse = PhysicsCalc.Astronomy.specificImpulse(exhaustVelocity);
+            // then
+            assertEquals(331.4, impulse, DELTA1);
+        }
+
+        @Test
+        void testTsfc() {
+            // given Kouznetsov NK-33
+            final int massFlowRate = 52_194;
+            final int thrust = 169_632;
+            // when
+            final double tsfc = PhysicsCalc.Astronomy.tsfc(massFlowRate, thrust);
+            // then
+            assertEquals(0.3077, tsfc, DELTA4);
+        }
+
+        @Test
+        void testSpecificThrust() {
+            // given Kouznetsov NK-33
+            final int thrust = 169_632;
+            final int massFlowRate = 52_194;
+            // when
+            final double tsfcInverse = PhysicsCalc.Astronomy.specificThrust(thrust, massFlowRate);
+            // then
+            assertEquals(3.25, tsfcInverse, DELTA2);
+        }
+
+        @Test
+        void testThrustWeightRatio() {
+            // given Boeing 747 (Aircraft)
+            final int thrust = 1_184_000;
+            final double weight = PhysicsCalc.Statics.massToWeight(447_700);
+            // when
+            final double ratio = PhysicsCalc.Astronomy.thrustWeightRatio(thrust, weight);
+            // then
+            assertEquals(0.2697, ratio, DELTA4);
         }
     }
 }

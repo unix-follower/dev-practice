@@ -208,7 +208,7 @@ public final class PhysicsCalc {
          * @param acceleration    in m/s²
          * @return v = u + at. The units are m/s
          */
-        public static double finalVelocity(double initialVelocity, double acceleration, long timeSeconds) {
+        public static double finalVelocity(double initialVelocity, double acceleration, double timeSeconds) {
             return initialVelocity + velocityChange(acceleration, timeSeconds);
         }
 
@@ -1288,6 +1288,95 @@ public final class PhysicsCalc {
             return (-GRAVITATIONAL_ACCELERATION_ON_EARTH * initialHeightMeters * initialHeightMeters)
                 / (2 * initialVelocity * initialVelocity);
         }
+
+        /**
+         * Gravitational force: F_g = m×g
+         * Fᵢ = F_g × sin(θ) – parallel to inclined plane;
+         * Fₙ = F_g × cos(θ) – perpendicular one.
+         * Force of friction: F_f = f × Fₙ
+         * The resultant force: F = Fᵢ - F_f = F_g * (sin(θ) - f*cos(θ))
+         * a = F/m
+         * V = V₀+at
+         * t = √(2L/a)
+         *
+         * @param initialVelocity in m/s
+         * @return t = (√(V₀²+2La)−V₀)/a. The units are sec
+         */
+        public static double inclinedPlaneCubicBlockSlidingTime(
+            double massKg, double initialVelocity, double angleThetaRad, double frictionCoeff, double heightMeters) {
+            final double gravForce = Statics.massToWeight(massKg);
+            final double horizontalCmp = gravForce * Trigonometry.cos(angleThetaRad);
+            final double sine = Trigonometry.sin(angleThetaRad);
+            final double verticalCmp = gravForce * sine;
+            final double friction = friction(frictionCoeff, horizontalCmp);
+            final double resultantForce = verticalCmp - friction;
+            final double acceleration = Dynamics.acceleration(massKg, resultantForce);
+            final double inclinedPlaneLength = heightMeters / sine;
+            final double numerator = squareRoot(initialVelocity * initialVelocity + 2 * inclinedPlaneLength
+                * acceleration) - initialVelocity;
+            return numerator / acceleration;
+        }
+
+        /**
+         * @return ΔE = mgH − mV²/2. The units are J
+         */
+        public static double inclinedPlaneCubicBlockEnergyLoss(double massKg, double finalVelocity,
+                                                               double heightMeters) {
+            return Statics.massToWeight(massKg) * heightMeters - (massKg * finalVelocity * finalVelocity) / 2;
+        }
+
+        /**
+         * I = kmr²; where k is some constant factor.
+         * a = Fᵢ/(m + I/r²) = mg * sin(θ) / (m+(2mr²)/(5r²))
+         * Solid sphere: k=2/5
+         * Solid cylinder: k=1/2
+         * Hoop: k=1
+         * Torus: k depends on geometry.
+         * a = g * sin(θ)/(1+k)
+         *
+         * @return The units are J
+         */
+        public static double inclinedPlaneRollingObjSlidingTime(
+            double initialVelocity, double angleThetaRad, double heightMeters, double constantFactor) {
+            final double sine = Trigonometry.sin(angleThetaRad);
+            final double acceleration = GRAVITATIONAL_ACCELERATION_ON_EARTH * sine / (1 + constantFactor);
+            final double inclinedPlaneLength = heightMeters / sine;
+            final double numerator = squareRoot(initialVelocity * initialVelocity + 2 * inclinedPlaneLength
+                * acceleration) - initialVelocity;
+            return numerator / acceleration;
+        }
+
+        /**
+         * Relative centrifugal force to revolutions per minute.
+         * g = 11.18 × radius × (RPM/1000)²
+         *
+         * @param rcf Expressed in multiples of the acceleration due to gravity.
+         * @return RPM = √(RCF/(radius × 11.18)) × 1000. The units are rpm
+         */
+        public static double centrifugeSpeedRCFtoRPM(double rotorRadiusCm, double rcf) {
+            return squareRoot(rcf / (rotorRadiusCm * 11.18)) * 1000;
+        }
+
+        /**
+         * @return RCF = 11.18 × radius × (RPM/1000)². The units are rpm
+         */
+        public static double centrifugeSpeedRPMtoRCF(double rotorRadiusCm, double rpm) {
+            return 11.18 * rotorRadiusCm * Math.pow(rpm / 1000, 2);
+        }
+
+        /**
+         * a = g * sin(θ) + μ*g*cos(θ)
+         *
+         * @return [m/s², m/s, sec]
+         */
+        public static double[] sledSlidingDown(double hillLengthMeters, double frictionCoeff) {
+            final double acceleration = frictionCoeff * GRAVITATIONAL_ACCELERATION_ON_EARTH;
+            // t_slope = √((2ℓ)/acceleration)
+            final double slidingTime = squareRoot((2 * hillLengthMeters) / acceleration);
+            // v_bottom = at_slope
+            final double velocityAtBottom = acceleration * slidingTime;
+            return new double[]{acceleration, velocityAtBottom, slidingTime};
+        }
     }
 
     public static final class Mechanics {
@@ -2294,6 +2383,13 @@ public final class PhysicsCalc {
         public static double pressure(double forceNewtons, double areaSquareMeters) {
             return forceNewtons / areaSquareMeters;
         }
+
+        /**
+         * @return The units are N
+         */
+        public static double massToWeight(double massKg) {
+            return massKg * GRAVITATIONAL_ACCELERATION_ON_EARTH;
+        }
     }
 
     public static final class Dynamics {
@@ -2462,6 +2558,93 @@ public final class PhysicsCalc {
          */
         public static double gravitationalForce(double massKg1, double massKg2, double distanceMeters) {
             return (GRAVITATIONAL_CONSTANT * massKg1 * massKg2) / (distanceMeters * distanceMeters);
+        }
+
+        /**
+         * According to AASHTO (the American Association of State Highway and Transportation Officials).
+         * Perception reaction time?
+         * 1 second – A keen and alert driver;
+         * 1.5 seconds – An average driver;
+         * 2 seconds – A tired driver or an older person;
+         * 2.5 seconds – The worst-case scenario.
+         *
+         * @param vehicleSpeed  in km/h.
+         * @param roadGrade     in %. A slope. Positive for an uphill and negative for a downhill.
+         * @param frictionCoeff It is assumed to be 0.7 on a dry road and between 0.3 and 0.4 on a wet road.
+         * @return s = (0.278 × t × v) + v² / (254 × (f + G)). The units are newtons
+         */
+        public static double stoppingDistance(
+            double vehicleSpeed, double reactTimeSeconds, double roadGrade, double frictionCoeff) {
+            return (0.278 * reactTimeSeconds * vehicleSpeed) + (vehicleSpeed * vehicleSpeed)
+                / (254 * (frictionCoeff + roadGrade / 100));
+        }
+
+        /**
+         * @param initialSpeed in m/s
+         * @param deceleration in m/s²
+         * @return The units are sec
+         */
+        public static double brakingTime(double initialSpeed, double deceleration) {
+            return initialSpeed / deceleration;
+        }
+
+        /**
+         * @param springDisplacementMeters Δx is the displacement. Positive for elongation and negative for compression
+         * @param springForceConstant      in N/m
+         * @return F = −kΔx. The units are N
+         */
+        public static double hookesLawForce(double springDisplacementMeters, double springForceConstant) {
+            return -springForceConstant * springDisplacementMeters;
+        }
+
+        /**
+         * The tension is equal to weight when there is only 1 rope: T = W = mg.
+         * <br/>
+         * The symmetric case (the angles are equal): T = W * 2 * sin(θ); T₁=T₂
+         * The asymmetric case (the angles are not equal):
+         * T₁ = W * sin(α) / sin(α+β)
+         * T₂ = W * sin(β) / sin(α+β)
+         *
+         * @param weightN mg
+         * @return The units are N
+         */
+        public static double[] tensionHangingObjectOnRopes(double weightN, double angleAlphaRad, double angleBetaRad) {
+            if (angleAlphaRad == angleBetaRad) {
+                final double tension = weightN / (2 * Trigonometry.sin(angleAlphaRad));
+                return new double[]{tension, tension};
+            }
+
+            final double denominator = Trigonometry.sin(angleAlphaRad + angleBetaRad);
+            final double tensionAlpha = weightN * Trigonometry.sin(angleAlphaRad) / denominator;
+            final double tensionBeta = weightN * Trigonometry.sin(angleBetaRad) / denominator;
+            return new double[]{tensionAlpha, tensionBeta};
+        }
+
+        /**
+         * @param masses in kg
+         * @return The units are N
+         */
+        public static double[] tensionPullingOnFrictionlessSurface(
+            double[] masses, double pullingForceNewtons, double angleThetaRad) {
+            if (masses.length == 1) {
+                return new double[]{pullingForceNewtons};
+            }
+
+            final double horizontalPullingForce = pullingForceNewtons * Trigonometry.cos(angleThetaRad);
+            final double totalMass = Arrays.stream(masses).sum();
+            final double acceleration = acceleration(totalMass, horizontalPullingForce);
+
+            final double[] tensions = new double[masses.length];
+            tensions[Constants.ARR_1ST_INDEX] = pullingForceNewtons;
+
+            for (int i = 1; i < masses.length; i++) {
+                double massBehind = 0;
+                for (int j = i; j < masses.length; j++) {
+                    massBehind += masses[j];
+                }
+                tensions[i] = acceleration * massBehind;
+            }
+            return tensions;
         }
     }
 
@@ -5248,6 +5431,14 @@ public final class PhysicsCalc {
         }
 
         /**
+         * @param objectSpeed in m/s
+         * @return z = v/c
+         */
+        public static double redshift(double objectSpeed) {
+            return objectSpeed / SPEED_OF_LIGHT;
+        }
+
+        /**
          * @return z = (f_emit−f_obsv)/f_obsv
          */
         public static double redshiftFromFrequency(double emittedLightHz, double observedLightHz) {
@@ -5569,11 +5760,149 @@ public final class PhysicsCalc {
         }
 
         /**
-         * @return T² = (4π²a³)/μ. The units are sec
+         * @return √T² = √((4π²a³)/μ). The units are sec
          */
         public static double orbitalPeriod(double semiMajorAxisMeters, double stdGravitationalParameter) {
             final double numerator = 4 * Math.PI * Math.PI * Math.pow(semiMajorAxisMeters, 3);
             return squareRoot(numerator / stdGravitationalParameter);
+        }
+
+        /**
+         * m × r × ω² = G × m × M / r²
+         *
+         * @return T = √(4π²a³/GM). The units are sec
+         */
+        public static double kepler3rdLawPlanetPeriod(double starMass, double semiMajorAxisMeters) {
+            final double numerator = 4 * Math.PI * Math.PI * Math.pow(semiMajorAxisMeters, 3);
+            return squareRoot(numerator / (GRAVITATIONAL_CONSTANT * starMass));
+        }
+
+        /**
+         * GM/4π² = r³/T²
+         *
+         * @return M = 4r³π²/T²G. Approximate mass. The units are kg
+         */
+        public static double kepler3rdLawStarMass(double semiMajorAxisMeters, double planetPeriodSeconds) {
+            final double numerator = 4 * Math.pow(semiMajorAxisMeters, 3) * Math.PI * Math.PI;
+            return numerator / (planetPeriodSeconds * planetPeriodSeconds * GRAVITATIONAL_CONSTANT);
+        }
+
+        /**
+         * Orbital period of the satellite orbiting the central body over its surface.
+         *
+         * @param centralBodyDensity in kg/m³
+         * @return T = √((3π)/(Gρ). Approximate mass. The units are sec
+         */
+        public static double satelliteAroundCentralSphereOrbitalPeriod(double centralBodyDensity) {
+            return squareRoot(Trigonometry.PI3 / (GRAVITATIONAL_CONSTANT * centralBodyDensity));
+        }
+
+        /**
+         * @return T_binary = 2⋅π * √(a³/(G⋅(M₁+M₂))). The units are sec
+         */
+        public static double binarySystemOrbitalPeriod(
+            double semiMajorAxisMeters, double bodyMassKg, double bodyMass2Kg) {
+            return Trigonometry.PI2 * squareRoot(Math.pow(semiMajorAxisMeters, 3)
+                / (GRAVITATIONAL_CONSTANT * (bodyMassKg + bodyMass2Kg)));
+        }
+
+        /**
+         * @return λ_reds = (1 + z) × λ_og. The units are meters
+         */
+        public static double exoplanetRadialVelocityDetection(double readshift, double originalWavelength) {
+            return (1 + readshift) * originalWavelength;
+        }
+
+        /**
+         * @param starArea   in m²
+         * @param planetArea in m²
+         * @return Transit depth. The units are %
+         */
+        public static double exoplanetTransitDetection(double starArea, double planetArea) {
+            return (planetArea / starArea) * 100;
+        }
+
+        /**
+         * The Astrometric Formula: α = (mₚ/mₛ)(a*L).
+         *
+         * @param amplitudeFactor 2 for full amplitude, 1 for semi-amplitude.
+         * @return α×206265. Angular displacement. The units are arcsec
+         */
+        public static double exoplanetAstrometryDetection(double amplitudeFactor, double starMassSuns,
+                                                          double starDistanceAu, double planetMassSuns,
+                                                          double semiMajorAxisAu) {
+            return AngleUnit.radiansToArcseconds(
+                amplitudeFactor * (planetMassSuns / starMassSuns) * (semiMajorAxisAu / starDistanceAu));
+        }
+
+        /**
+         * @param refPlanetSiderealPeriodYrs The sidereal period of the planet the observer is located on.
+         *                                   1 year is the default value when viewed from Earth.
+         * @return 1/P_syn = |1/P_sid - 1/P₀|. The units are yrs
+         */
+        public static double synodicPeriod(double refPlanetSiderealPeriodYrs, double planetSiderealPeriodYrs) {
+            return reciprocal(Math.abs(reciprocal(planetSiderealPeriodYrs) - reciprocal(refPlanetSiderealPeriodYrs)));
+        }
+
+        /**
+         * @param effectiveExhaustVelocity in m/s
+         * @return Δv = vₑ * ln(m₀/m_f). The units are m/s
+         */
+        public static double idealRocketEquation(
+            double effectiveExhaustVelocity, double initialMassKg, double finalMassKg) {
+            return effectiveExhaustVelocity * ln(initialMassKg / finalMassKg);
+        }
+
+        /**
+         * @param velocity           in m/s. Effective exhaust velocity at the rocket nozzle.
+         * @param flowArea           in m². Flow area at nozzle.
+         * @param massLossRate       in kg/s. dm/dt – Flow at which mass is exhausted.
+         * @param pressureAtNozzlePa Pₑ – Static pressure at the jet rocket exhaust.
+         * @return F = vₑ * dm/dt + Aₑ(Pₑ − P_amb). Net force or rocket propulsion (rocket thrust). The units are N
+         */
+        public static double rocketThrust(double velocity, double flowArea, double massLossRate,
+                                          double ambientPressurePa, double pressureAtNozzlePa) {
+            return velocity * massLossRate + flowArea * (pressureAtNozzlePa - ambientPressurePa);
+        }
+
+        /**
+         * I = ∫ F dt
+         *
+         * @param exhaustVelocity in m/s
+         * @return F = mvₑ ⟹ Iₛₚ = vₑ/g₀. The units are sec
+         */
+        public static double specificImpulse(double exhaustVelocity) {
+            return exhaustVelocity / GRAVITATIONAL_ACCELERATION_ON_EARTH;
+        }
+
+        /**
+         * Thrust-specific fuel consumption
+         *
+         * @param massFlowRate in g/s
+         * @return TSFC = m/F. The units are g/(s⋅N)
+         */
+        public static double tsfc(double massFlowRate, double thrustNewtons) {
+            return massFlowRate / thrustNewtons;
+        }
+
+        /**
+         * An inverse of the TSFC, i.e., the thrust produced per unit flow rate of fuel.
+         *
+         * @param massFlowRate in g/s
+         * @return Fₛ = F/m. The units are (s⋅N)/g
+         */
+        public static double specificThrust(double thrustNewtons, double massFlowRate) {
+            return thrustNewtons / massFlowRate;
+        }
+
+        /**
+         * Tᵣ = 1/(Lift/Drag)_cruise
+         * Tᵣ = Thrust available/Weight
+         *
+         * @return Tᵣ = F/W ⟹ Iₛₚ = (WTᵣ)/(mg₀)
+         */
+        public static double thrustWeightRatio(double thrustNewtons, double weight) {
+            return thrustNewtons / weight;
         }
     }
 }

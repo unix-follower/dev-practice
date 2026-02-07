@@ -23,7 +23,7 @@ public enum PressureUnit {
     }
 
     public static double kpaToPa(double kilopascals) {
-        return kilopascals / 1000;
+        return kilopascals * 1000;
     }
 
     public static double megaPaToPa(double megapascals) {
