@@ -1,0 +1,28 @@
+flowchart TD
+    C["Is the selector syntax correct? (e.g., :hover, ::after)"]
+
+    C -->|No| D[Fix the selector syntax]
+    C -->|Yes| E[Is the pseudo-class/pseudo-element supported by the browser?]
+
+    E -->|No| F[Check browser compatibility or use fallbacks]
+    E -->|Yes| G["Is the HTML structure appropriate for the selector? (e.g., ::first-line on block elements)"]
+
+    G -->|No| H[Adjust HTML structure to match selector requirements]
+    G -->|Yes| I[Is there a more specific selector or !important overriding your rule?]
+
+    I -->|Yes| J["Increase specificity or use !important (with caution)"]
+    I -->|No| K[Is the CSS file loaded and linked correctly in HTML?]
+
+    K -->|No| L[Fix the <link> tag or file path]
+    K -->|Yes| M[Is the property being inherited or overridden by another rule?]
+
+    M -->|Yes| N[Check inheritance and cascade order]
+    M -->|No| O[Clear browser cache and reload page]
+
+    D --> P[Re-test selector]
+    F --> P
+    H --> P
+    J --> P
+    L --> P
+    N --> P
+    O --> P

@@ -1,0 +1,28 @@
+flowchart TD
+    C[Is the attribute present on the HTML element?]
+
+    C -->|No| D[Add the required attribute to the element]
+    C -->|Yes| E["Is the selector syntax correct? (e.g., [type='text'])"]
+
+    E -->|No| F[Fix the selector syntax]
+    E -->|Yes| G["Does the attribute value match exactly (case-sensitive)?"]
+
+    G -->|No| H["Correct the attribute value or use case-insensitive selector (e.g., [attr='value' i])"]
+    G -->|Yes| I[Is there a more specific selector or !important overriding your rule?]
+
+    I -->|Yes| J["Increase specificity or use !important (with caution)"]
+    I -->|No| K[Is the CSS file loaded and linked correctly in HTML?]
+
+    K -->|No| L[Fix the <link> tag or file path]
+    K -->|Yes| M[Is there a browser compatibility issue?]
+
+    M -->|Yes| N[Check browser support for attribute selectors]
+    M -->|No| O[Clear browser cache and reload page]
+
+    D --> P[Re-test selector]
+    F --> P
+    H --> P
+    J --> P
+    L --> P
+    N --> P
+    O --> P

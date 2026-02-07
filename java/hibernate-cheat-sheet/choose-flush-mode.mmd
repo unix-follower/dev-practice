@@ -1,0 +1,9 @@
+flowchart TD
+    A[Do you want Hibernate to flush automatically before queries?] -->|Yes| B[Use FlushModeType.AUTO]
+    A -->|No| C[Do you want to flush only at transaction commit?]
+    C -->|Yes| D[Use FlushModeType.COMMIT]
+    C -->|No| E["Do you want to flush explicitly only when you call em.flush()?"]
+    E -->|Yes| F[Use FlushModeType.MANUAL]
+    E -->|No| G[Do you want to flush before every query execution?]
+    G -->|Yes| H[Use FlushModeType.ALWAYS]
+    G -->|No| I[Review your requirements; default is AUTO]

@@ -1,0 +1,34 @@
+sequenceDiagram
+    participant App as Application
+    participant Thread as Java Thread
+    participant JVM as JVM Scheduler
+    participant Monitor as Monitor/Lock
+
+    App->>Thread: new Thread()
+    Thread->>JVM: Thread in NEW state
+
+    App->>Thread: thread.start()
+    Thread->>JVM: Transition to RUNNABLE
+
+    JVM->>Thread: Schedule for execution
+    Thread->>JVM: Running (RUNNABLE)
+
+    Note over Thread,JVM: May be preempted or waiting for resources
+
+    Thread->>Monitor: Attempt to acquire lock
+    alt Lock available
+        Monitor-->>Thread: Acquired, continue RUNNABLE
+    else Lock not available
+        Monitor-->>Thread: BLOCKED
+        JVM->>Thread: Wait for lock
+        Monitor-->>Thread: Lock acquired, back to RUNNABLE
+    end
+
+    Thread->>JVM: wait(), join(), or park()
+    JVM-->>Thread: WAITING or TIMED_WAITING
+
+    App->>Thread: notify(), notifyAll(), or timeout expires
+    JVM-->>Thread: Back to RUNNABLE
+
+    Thread->>JVM: run() completes or uncaught exception
+    JVM-->>Thread: TERMINATED

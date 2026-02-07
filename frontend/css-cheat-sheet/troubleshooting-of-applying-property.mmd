@@ -1,0 +1,32 @@
+flowchart TD
+    C[Is the property supported by the browser?]
+
+    C -->|No| D[Check browser compatibility or use vendor prefixes]
+    C -->|Yes| E[Is the selector targeting the correct element?]
+
+    E -->|No| F[Fix selector or check for typos]
+    E -->|Yes| G[Is the property being overridden by a more specific rule or !important?]
+
+    G -->|Yes| H["Increase specificity or use !important (with caution)"]
+    G -->|No| I[Is the property inheritable and inherited from a parent?]
+
+    I -->|Yes| J[Check parent styles and inheritance]
+    I -->|No| K["Is the element’s display property appropriate? (block, inline, etc.)"]
+
+    K -->|No| L[Set correct display property]
+    K -->|Yes| M[Is the property value valid and non-zero?]
+
+    M -->|No| N[Set a valid, non-zero value]
+    M -->|Yes| O["Is the element visible (not hidden, opacity, z-index, etc.)?"]
+
+    O -->|No| P[Check visibility, opacity, z-index, and position]
+    O -->|Yes| Q[Clear browser cache and reload page]
+
+    D --> R[Re-test visual result]
+    F --> R
+    H --> R
+    J --> R
+    L --> R
+    N --> R
+    P --> R
+    Q --> R

@@ -1,0 +1,27 @@
+flowchart TD
+    A[Start: Search, Insert, or Delete Operation]
+    B[Begin at Root Node]
+    A --> B
+
+    C[Compare Key with Current Node's Keys]
+    B --> C
+
+    D{Is Key Less, Equal, or Greater?}
+    C --> D
+
+    D -->|Less| E[Move to Left Child Node]
+    D -->|Equal| F["Key Found (for Search) or Update/Delete"]
+    D -->|Greater| G[Move to Right Child Node]
+
+    E --> C
+    G --> C
+
+    F --> H[Operation Complete]
+
+    I{"Is Node Full? (for Insert)"}
+    F --> I
+    I -->|Yes| J[Split Node and Promote Middle Key]
+    I -->|No| H
+
+    J --> K[Rebalance Tree if Needed]
+    K --> H

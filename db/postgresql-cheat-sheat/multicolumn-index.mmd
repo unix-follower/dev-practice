@@ -1,0 +1,22 @@
+flowchart TD
+    A["Is there a multicolumn index on (col1, col2, col3)?"] -->|No| B[Consider creating a multicolumn index]
+    A -->|Yes| C[Does the query filter on col1?]
+
+    C -->|Yes| D[Does the query also filter on col2?]
+    C -->|No| E[Does the query filter on col2 or col3 only?]
+
+    D -->|Yes| F["Multicolumn index used efficiently (col1, col2)"]
+    D -->|No| G[Multicolumn index used for col1 only]
+
+    E -->|Yes| H[Is the index type B-Tree and PostgreSQL 11+?]
+    E -->|No| I[Index not used; full scan or other index]
+
+    H -->|Yes| J["Index skipping optimization may apply (for IS NULL or IN conditions)"]
+    H -->|No| K[Index not used; consider query rewrite or additional index]
+
+    F --> L[Efficient index scan]
+    G --> L
+    J --> L
+    K --> L
+    I --> L
+    B --> L

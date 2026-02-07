@@ -1,0 +1,21 @@
+flowchart TD
+    A[Do you need to fetch associations with parent entities?] -->|No| B[No N+1 problem]
+    A -->|Yes| C[Can you use JPQL/HQL with JOIN FETCH?]
+
+    C -->|Yes| D["Use JOIN FETCH in JPQL/HQL"]
+    C -->|No| E[Can you use Entity Graphs?]
+
+    E -->|Yes| F[Define and apply Entity Graph with required associations]
+    E -->|No| G[Can you use Hibernate-specific FetchProfile?]
+
+    G -->|Yes| H[Enable FetchProfile for associations]
+    G -->|No| I[Can you batch fetch collections/entities?]
+
+    I -->|Yes| J["Configure batch fetching (Hibernate: @BatchSize, JPA: hibernate.default_batch_fetch_size)"]
+    I -->|No| K[Consider restructuring queries or using DTO projections]
+
+    D --> L[Monitor SQL logs to verify N+1 is avoided]
+    F --> L
+    H --> L
+    J --> L
+    K --> L

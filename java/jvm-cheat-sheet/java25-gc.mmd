@@ -1,0 +1,28 @@
+sequenceDiagram
+    participant App as Application Thread
+    participant G1 as G1 GC
+    participant Heap as Java Heap (Regions)
+    participant OS as Operating System
+
+    App->>Heap: Allocate objects
+    Heap-->>App: Return references
+
+    Note over G1,Heap: Heap fills up with objects
+
+    G1->>Heap: Monitor region usage and thresholds
+    Heap-->>G1: Report region occupancy
+
+    G1->>App: (Concurrent) Mark live objects
+    App-->>G1: Mutate objects (write barriers)
+
+    G1->>Heap: Identify regions with most garbage
+    G1->>Heap: (Concurrent) Mark and Sweep
+    G1->>Heap: (Stop-the-world) Evacuate live objects from selected regions
+    Heap-->>G1: Update references
+
+    G1->>App: Resume application threads
+
+    G1->>OS: Return freed memory if possible
+    OS-->>G1: Acknowledge
+
+    App->>Heap: Continue allocation

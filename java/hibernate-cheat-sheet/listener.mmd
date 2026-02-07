@@ -1,0 +1,15 @@
+sequenceDiagram
+    participant App as Application
+    participant EM as EntityManager/Session
+    participant Hibernate as Hibernate Core
+    participant Listener as Event Listener
+
+    App->>EM: Perform entity operation (e.g., save, update, delete)
+    EM->>Hibernate: Delegate operation
+    Hibernate->>Listener: Trigger pre-event (e.g., PreInsertEvent)
+    Listener-->>Hibernate: Listener processes event (can modify entity)
+    Hibernate->>Hibernate: Perform main operation (e.g., insert into DB)
+    Hibernate->>Listener: Trigger post-event (e.g., PostInsertEvent)
+    Listener-->>Hibernate: Listener processes event (e.g., logging, auditing)
+    Hibernate-->>EM: Return control
+    EM-->>App: Operation complete

@@ -1,0 +1,17 @@
+flowchart TD
+    A[Do you perform bulk inserts, updates, or deletes?] -->|No| B[JDBC batching not needed]
+    A -->|Yes| C[Is batching enabled in Hibernate config?]
+
+    C -->|No| D[Set hibernate.jdbc.batch_size property]
+    C -->|Yes| E[Are you using versioned entities or generated keys?]
+
+    E -->|Yes| F[Consider using hibernate.jdbc.batch_versioned_data and hibernate.order_inserts/updates]
+    E -->|No| G[Are you using EntityManager or Hibernate Session?]
+
+    G -->|EntityManager| H[Flush and clear periodically to avoid memory issues]
+    G -->|Hibernate Session| I[Use StatelessSession for large batches if possible]
+
+    D --> J[Monitor SQL logs to verify batching is working]
+    F --> J
+    H --> J
+    I --> J

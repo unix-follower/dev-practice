@@ -1,0 +1,24 @@
+flowchart TD
+    A[Start]
+    B[Entity Loaded into Persistence Context]
+    B@{ shape: comment, label: "em.find() or em.getReference()" }
+    A --> B
+
+    C[External Update to Database]
+    C@{ shape: comment, label: "Update by another transaction/app" }
+    B --> C
+
+    D[Entity in Memory Becomes Out-of-Sync]
+    D@{ shape: comment, label: "Java object state is stale" }
+    C --> D
+
+    E[Need to Refresh Entity]
+    E@{ shape: comment, label: "Call em.refresh(entity)" }
+    D --> E
+
+    F[Entity State Updated from Database]
+    F@{ shape: comment, label: "Java object now reflects DB" }
+    E --> F
+
+    G[Continue Operations]
+    F --> G

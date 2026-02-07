@@ -1,0 +1,14 @@
+flowchart TD
+    A[Do you need associated entities loaded immediately with the parent?] -->|Yes| B[Is the association small and not likely to cause large result sets?]
+    A -->|No| C["Use FetchType.LAZY (default), FetchMode.SELECT"]
+
+    B -->|Yes| D[Use FetchType.EAGER, FetchMode.JOIN]
+    B -->|No| E[Is the association used in batch operations?]
+
+    E -->|Yes| F["Use FetchMode.SUBSELECT (Hibernate-specific)"]
+    E -->|No| G[Use FetchType.LAZY, FetchMode.SELECT]
+
+    D --> H[Monitor SQL joins for performance]
+    F --> H
+    G --> H
+    C --> H

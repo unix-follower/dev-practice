@@ -1,0 +1,12 @@
+flowchart TD
+    A[Do you need to customize fetch strategies for specific queries?] -->|No| B[Use default fetch strategies]
+    A -->|Yes| C[Is the fetch plan static and reusable across queries?]
+
+    C -->|Yes| D["Use Entity Graphs (@NamedEntityGraph or dynamic)"]
+    C -->|No| E[Do you need to override fetch strategies for associations in Hibernate Session?]
+
+    E -->|Yes| F["Use FetchProfile (Hibernate-specific)"]
+    E -->|No| G[Do you need to build dynamic, type-safe queries?]
+
+    G -->|Yes| H[Use CriteriaBuilder]
+    G -->|No| I[Consider JPQL or native queries]

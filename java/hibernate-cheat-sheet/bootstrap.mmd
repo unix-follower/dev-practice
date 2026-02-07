@@ -1,0 +1,10 @@
+flowchart TD
+    A[Start] --> B[Load Hibernate Configuration]
+    B --> C[Build ServiceRegistry]
+    C --> D[Create MetadataSources]
+    D --> E[Build Metadata]
+    E --> F[Build SessionFactory]
+    F --> G[Obtain Session]
+    G --> H[Perform Database Operations]
+    H --> I[Close Session]
+    I --> J[Shutdown]

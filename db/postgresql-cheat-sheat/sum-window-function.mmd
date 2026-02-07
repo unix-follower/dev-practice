@@ -1,0 +1,20 @@
+sequenceDiagram
+    participant App as Application
+    participant PG as PostgreSQL Engine
+    participant Planner as Query Planner
+    participant Executor as Query Executor
+    participant Table as Table Data
+
+    App->>PG: Submit query with SUM(...) OVER (PARTITION BY ... ORDER BY ...)
+    PG->>Planner: Parse and plan query
+    Planner->>Table: Identify relevant table and columns
+    Planner->>Executor: Pass execution plan
+
+    Executor->>Table: Fetch rows as per plan
+    Table-->>Executor: Return rows
+
+    Executor->>Executor: For each row, determine window frame (PARTITION BY, ORDER BY)
+    Executor->>Executor: Calculate SUM for window frame
+    Executor-->>PG: Attach SUM result to each row
+
+    PG-->>App: Return result set with SUM window function values

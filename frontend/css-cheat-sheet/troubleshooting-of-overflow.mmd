@@ -1,0 +1,28 @@
+flowchart TD
+    C["Is the overflow property set correctly? (visible, hidden, scroll, auto)"]
+
+    C -->|No| D[Set the correct overflow property]
+    C -->|Yes| E[Is the container sized appropriately for its content?]
+
+    E -->|No| F[Adjust container width/height or use min/max properties]
+    E -->|Yes| G[Are child elements using absolute/fixed positioning or large sizes?]
+
+    G -->|Yes| H[Adjust child positioning or sizing]
+    G -->|No| I[Is overflow caused by padding, border, or margin?]
+
+    I -->|Yes| J[Adjust box model properties or use box-sizing: border-box]
+    I -->|No| K[Is there unwanted horizontal or vertical scrolling?]
+
+    K -->|Yes| L[Set overflow-x or overflow-y as needed]
+    K -->|No| M[Is overflow affected by flex or grid layout?]
+
+    M -->|Yes| N[Check flex/grid settings and alignment]
+    M -->|No| O[Clear browser cache and reload page]
+
+    D --> P[Re-test overflow]
+    F --> P
+    H --> P
+    J --> P
+    L --> P
+    N --> P
+    O --> P

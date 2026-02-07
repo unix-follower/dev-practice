@@ -1,0 +1,27 @@
+flowchart TD
+    A[Do you want child entities to be automatically affected by parent operations?] -->|No| B[Do not use cascade]
+    A -->|Yes| C[Which operation should cascade?]
+
+    C --> D["PERSIST (save new child with parent?)"]
+    D -->|Yes| E[Add CascadeType.PERSIST]
+    D -->|No| F
+
+    F["MERGE (update child with parent?)"]
+    F -->|Yes| G[Add CascadeType.MERGE]
+    F -->|No| H
+
+    H["REMOVE (delete child with parent?)"]
+    H -->|Yes| I[Add CascadeType.REMOVE]
+    H -->|No| J
+
+    J["REFRESH (refresh child with parent?)"]
+    J -->|Yes| K[Add CascadeType.REFRESH]
+    J -->|No| L
+
+    L["DETACH (detach child with parent?)"]
+    L -->|Yes| M[Add CascadeType.DETACH]
+    L -->|No| N
+
+    N[Need all above?]
+    N -->|Yes| O[Add CascadeType.ALL]
+    N -->|No| P[Combine only needed cascade types]

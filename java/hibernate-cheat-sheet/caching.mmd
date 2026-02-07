@@ -1,0 +1,26 @@
+flowchart TD
+    A[Start]
+    B["Entity Requested (find/get)"]
+    A --> B
+
+    C{"Entity in First-Level (Session) Cache?"}
+    B --> C
+
+    C -->|Yes| D[Return Entity from Session Cache]
+    C -->|No| E{Entity in Second-Level Cache?}
+
+    E -->|Yes| F{Is Entity Stale?}
+    E -->|No| G[Load Entity from Database]
+
+    F -->|No| H[Return Entity from Second-Level Cache]
+    F -->|Yes| I[Refresh Entity from Database]
+    I --> J["Update Entity in Second-Level Cache"]
+    J --> K["Update Entity in First-Level (Session) Cache"]
+    K --> L[Return Refreshed Entity to Application]
+
+    G --> M["Store Entity in Second-Level Cache (if enabled)"]
+    M --> N["Store Entity in First-Level (Session) Cache"]
+    N --> O[Return Entity to Application]
+
+    D --> O
+    H --> N

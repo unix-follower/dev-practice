@@ -1,0 +1,24 @@
+flowchart TD
+    C["Is network connectivity working? (ping 8.8.8.8)"]
+
+    C -->|No| D[Check network cables, Wi-Fi, IP config]
+    C -->|Yes| E["Is DNS server configured correctly? (ipconfig /all)"]
+
+    E -->|No| F[Set DNS server in network adapter settings]
+    E -->|Yes| G[Can you resolve DNS with nslookup?]
+
+    G -->|No| H["Try different DNS server (e.g., 8.8.8.8)"]
+    G -->|Yes| I[Is DNS slow or intermittent?]
+
+    H -->|No| J[Check firewall, router, ISP issues]
+    H -->|Yes| K[Set DNS server in network adapter settings]
+
+    I -->|Yes| L[Check for multiple DNS servers, VPN, or DNS cache issues]
+    I -->|No| M["Flush DNS cache (ipconfig /flushdns)"]
+
+    D --> N[Re-test DNS]
+    F --> N
+    J --> N
+    K --> N
+    L --> N
+    M --> N
