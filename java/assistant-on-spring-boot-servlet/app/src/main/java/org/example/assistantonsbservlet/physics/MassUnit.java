@@ -65,8 +65,4 @@ public enum MassUnit {
     public static double sunsToKg(double suns) {
         return suns * SOLAR_KG;
     }
-
-    public static double sunsRadiusToMeters(double sunRadius) {
-        return sunRadius * LengthUnit.NOMINAL_SOLAR_RADIUS;
-    }
 }

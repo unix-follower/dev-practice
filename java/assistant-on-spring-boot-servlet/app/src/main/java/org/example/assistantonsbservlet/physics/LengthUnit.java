@@ -53,6 +53,10 @@ public enum LengthUnit {
         return km * 1000;
     }
 
+    public static double kmphToMetersPerSecond(double kmPerHour) {
+        return kilometersToMeters(kmPerHour) / 3600;
+    }
+
     public static double squareMeterToSquareFeet(double sqMeters) {
         return sqMeters * 10.7639;
     }
@@ -78,6 +82,10 @@ public enum LengthUnit {
      */
     public static double polarEarthRadiiToMeters(double earthRadii) {
         return earthRadii * EARTH_POLAR_RADIUS;
+    }
+
+    public static double sunRadiusToMeters(double sunRadius) {
+        return sunRadius * NOMINAL_SOLAR_RADIUS;
     }
 
     public static double astronomicalUnitsToMeters(double au) {

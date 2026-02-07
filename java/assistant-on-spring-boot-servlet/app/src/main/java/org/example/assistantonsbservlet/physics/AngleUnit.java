@@ -11,6 +11,9 @@ public enum AngleUnit {
     GRADIAN, // gon
     MINUTE_OF_ARC, // arcmin
     SECOND_OF_ARC, // arcsec
+    MILLISECOND_OF_ARC, // marcsec
+    MICROSECOND_OF_ARC, // μarcsec
+    NANOSECOND_OF_ARC, // narcsec
     STERADIAN, // sr
     SQUARE_DEGREES, // deg²
     SQUARE_MINUTES_OF_ARC, // sq'
@@ -42,5 +45,9 @@ public enum AngleUnit {
 
     public static double marcsecToArcsec(double marcsec) {
         return marcsec / 1000;
+    }
+
+    public static double radiansToArcseconds(double radians) {
+        return radians * 206_264.8;
     }
 }

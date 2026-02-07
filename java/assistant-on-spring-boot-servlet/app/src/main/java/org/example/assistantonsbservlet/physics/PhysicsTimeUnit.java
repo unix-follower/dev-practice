@@ -24,6 +24,10 @@ public enum PhysicsTimeUnit {
         return hrs * 3600;
     }
 
+    public static double secondsToYears(double seconds) {
+        return seconds / 3.154e7;
+    }
+
     public static double yearsToSeconds(double years) {
         return years * 3.154e7;
     }

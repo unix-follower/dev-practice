@@ -3371,6 +3371,7 @@ public final class MathCalc {
         public static final double PI7_OVER_4 = 7 * Math.PI / 4;
         public static final double PI11_OVER_6 = 11 * Math.PI / 6;
         public static final double PI2 = 2 * Math.PI;
+        public static final double PI3 = 3 * Math.PI;
         public static final double PI4 = 4 * Math.PI;
         public static final double PI8 = 8 * Math.PI;
 
