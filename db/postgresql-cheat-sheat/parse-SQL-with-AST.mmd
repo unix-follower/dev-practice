@@ -1,0 +1,25 @@
+flowchart TD
+    A[Start: Client submits SQL statement]
+    B[PostgreSQL receives SQL statement]
+    A --> B
+
+    C["Parse SQL statement (Lexer & Parser)"]
+    B --> C
+
+    D["Build Abstract Syntax Tree (AST)"]
+    C --> D
+
+    E[Semantic Analysis & Query Rewriting]
+    D --> E
+
+    F[Query Planning & Optimization]
+    E --> F
+
+    G[Generate Execution Plan]
+    F --> G
+
+    H[Execute Plan]
+    G --> H
+
+    I[Return results to client]
+    H --> I

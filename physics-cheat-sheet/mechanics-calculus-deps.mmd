@@ -1,0 +1,242 @@
+graph TD
+    %% Classical Mechanics
+    A["Position (x, y, z)"]
+    B["Velocity (v)"]
+    C["Acceleration (a)"]
+    D["Force (F)"]
+    E["Momentum (p)"]
+    F["Energy (E)"]
+    G["Power (P)"]
+    H["Mass (m)"]
+    I["Time (t)"]
+    J["Work (W)"]
+    K["Angular Position (θ)"]
+    L["Angular Velocity (ω)"]
+    M["Angular Acceleration (α)"]
+    N["Torque (τ)"]
+    O["Angular Momentum (L)"]
+    P["Moment of Inertia (I)"]
+    Q["Stress (σ)"]
+    R["Strain (ε)"]
+    S["Deformation (δ)"]
+    T["Tensor (T_ij)"]
+    U["Partial Derivative (∂/∂x, ∂/∂t)"]
+    V["Derivative (d/dt)"]
+    W["Integral (∫ dt)"]
+    X["Integral (∫ dx)"]
+    Y["Integral (∫ dV)"]
+    Z["Gradient (∇)"]
+    AA["Divergence (∇·)"]
+    AB["Curl (∇×)"]
+    AC[Boundary Conditions]
+    AD[Green's Function]
+    AE[Eigenvalue Problem]
+    AF["Hamiltonian (H)"]
+    AG["Lagrangian (L)"]
+    AH["Action (S)"]
+    AI[Noether's Theorem]
+    AJ[Conservation Laws]
+    AK[Equations of Motion]
+    AL["Stability (Chaos)"]
+    AM[Lyapunov Exponent]
+    AN[Relativistic Mechanics]
+    AO["Spacetime (ct, x, y, z)"]
+    AP[Four-Vectors]
+    AQ[Tensor Calculus]
+    AR[Quantum Mechanics]
+    AS["Wavefunction (ψ)"]
+    AT[Schrödinger Equation]
+    AU["Operator (Â)"]
+    AV[Commutator]
+    AW[Path Integral]
+    AX[Quantum Field Theory]
+    AY[Continuum Mechanics]
+    AZ[Navier-Stokes Equation]
+    BA[Elasticity]
+    BB[Plasticity]
+    BC[Fluid Mechanics]
+    BD[General Relativity]
+    BE[Einstein Field Equations]
+    BF[Geodesic Equation]
+    BG["Metric Tensor (g_μν)"]
+    BH[Symplectic Geometry]
+    BI[Phase Space]
+    BJ[Canonical Transformation]
+    BK[Poisson Bracket]
+    BL[Hamilton-Jacobi Equation]
+    BM[Variational Principle]
+    BN[Wave Equation]
+    BO[Nonlinear Dynamics]
+    BP[Solitary Wave/Soliton]
+    BQ[Chaos Theory]
+    BR[Fractals]
+    BS[Multi-Scale Analysis]
+
+    %% Advanced Topics
+    CA["Supersymmetry (SUSY)"]
+    CB[Superpartner]
+    CC[Superfield]
+    CD[Superalgebra]
+    CE[String Theory]
+    CF[String Action]
+    CG[Worldsheet]
+    CH[Extra Dimensions]
+    CI[Brane]
+    CJ[M-Theory]
+    CK[Duality]
+    CL[Conformal Field Theory]
+    CM[Computational Mechanics]
+    CN["Finite Element Method (FEM)"]
+    CO["Finite Difference Method (FDM)"]
+    CP["Boundary Element Method (BEM)"]
+    CQ[Mesh Generation]
+    CR[Numerical Integration]
+    CS[Numerical Differentiation]
+    CT[Symbolic Computation]
+    CU["High-Performance Computing (HPC)"]
+    CV[Simulation]
+    CW[Data-Driven Mechanics]
+    CX[Machine Learning in Mechanics]
+
+    %% Classical Mechanics
+    A -- "d/dt" --> B
+    B -- "d/dt" --> C
+    C -- "Newton's 2nd Law: F = m a" --> D
+    B -- "× m" --> E
+    D -- "∫ dt" --> E
+    D -- "· dx" --> J
+    J -- "Work-Energy Theorem" --> F
+    B -- "½ m v²" --> F
+    F -- "d/dt" -->
+ G
+    K -- "d/dt" --> L
+    L -- "d/dt" --> M
+    M -- "I α = τ" --> N
+    L -- "× I" --> O
+    N -- "∫ dt" --> O
+    Q -- "∂/∂x" --> R
+    Q -- "∫ dA" --> S
+    Q -- "Tensor Form" --> T
+    R -- "Tensor Form" --> T
+
+    %% Calculus Operations
+    A -- "∇" --> Z
+    B -- "∇·" --> AA
+    B -- "∇×" --> AB
+    U -- "Partial Derivatives" --> AK
+    V -- "Time Derivative" --> AK
+    W -- "Integral wrt t" --> AK
+    X -- "Integral wrt x" --> AK
+    Y -- "Volume Integral" --> AK
+
+    %% Analytical Mechanics
+    AG -- "Euler-Lagrange Eq." --> AK
+    AF -- "Hamilton's Eq." --> AK
+    AG -- "Action S = ∫L dt" --> AH
+    AH -- "Variational Principle" --> BM
+    BM -- "Noether's Theorem" --> AI
+    AI -- "Conservation Laws" --> AJ
+    AF -- "Hamilton-Jacobi Eq." --> BL
+    AF -- "Poisson Bracket" --> BK
+    AF -- "Symplectic Geometry" --> BH
+    BH -- "Phase Space" --> BI
+    BI -- "Canonical Transformation" --> BJ
+
+    %% Continuum Mechanics & Fluid Mechanics
+    AY -- "Navier-Stokes Eq." --> AZ
+    AZ -- "∂/∂x, ∂/∂t" --> U
+    AZ -- "Boundary Conditions" --> AC
+    BA -- "Elasticity Tensor" --> T
+    BB -- "Yield Criteria" --> T
+    BC -- "Navier-Stokes Eq." --> AZ
+
+    %% Relativistic Mechanics & General Relativity
+    AN -- "Spacetime" --> AO
+    AO -- "Four-Vectors" --> AP
+    AP -- "Tensor Calculus" --> AQ
+    AQ -- "Einstein Field Eq." --> BE
+    BE -- "Metric Tensor" --> BG
+    BE -- "Geodesic Eq." --> BF
+    BD -- "Einstein Field Eq." --> BE
+
+    %% Quantum Mechanics & Field Theory
+    AR -- "Wavefunction" --> AS
+    AS -- "Schrödinger Eq." --> AT
+    AT -- "Operator" --> AU
+    AU -- "Commutator" --> AV
+    AR -- "Path Integral" --> AW
+    AR -- "Hamiltonian" --> AF
+    AR -- "Eigenvalue Problem" --> AE
+    AX -- "Quantum Field Theory" --> AR
+
+    %% Nonlinear Dynamics, Solitons, Chaos
+    BO -- "Soliton" --> BP
+    BO -- "Chaos Theory" --> BQ
+    BQ -- "Lyapunov Exponent" --> AM
+    BQ -- "Fractals" --> BR
+    BO -- "Multi-Scale Analysis" --> BS
+
+    %% Wave Equation & Green's Function
+    BN -- "Green's Function" --> AD
+    BN -- "Boundary Conditions" --> AC
+
+    %% Connections
+    AK -- "Stability/Chaos" --> AL
+    AL -- "Lyapunov Exponent" --> AM
+    AK -- "Nonlinear Dynamics" --> BO
+    AK -- "Quantum Mechanics" --> AR
+    AK -- "Relativistic Mechanics" --> AN
+    AK -- "Continuum Mechanics" --> AY
+    AK -- "General Relativity" --> BD
+    AK -- "Fluid Mechanics" --> BC
+    AK -- "Elasticity/Plasticity" --> BA
+    AK -- "Wave Equation" --> BN
+    AK -- "Eigenvalue Problem" --> AE
+    AK -- "Boundary Conditions" --> AC
+
+    %% Supersymmetry & String Theory
+    CA -- "Superpartner" --> CB
+    CA -- "Superfield" --> CC
+    CA -- "Superalgebra" --> CD
+    CA -- "Quantum Field Theory" --> AX
+    CA -- "Hamiltonian" --> AF
+    CA -- "Lagrangian" --> AG
+    CE -- "String Action" --> CF
+    CF -- "Worldsheet" --> CG
+    CE -- "Extra Dimensions" --> CH
+    CE -- "Brane" --> CI
+    CE -- "M-Theory" --> CJ
+    CE -- "Duality" --> CK
+    CE -- "Conformal Field Theory" --> CL
+    CE -- "Quantum Field Theory" --> AX
+    CE -- "Hamiltonian" --> AF
+    CE -- "Lagrangian" --> AG
+    CG -- "Partial Derivative" --> U
+    CG -- "Integral" --> X
+    CH -- "Tensor Calculus" --> AQ
+
+    %% Computational Mechanics
+    CM -- "Finite Element Method" --> CN
+    CM -- "Finite Difference Method" --> CO
+    CM -- "Boundary Element Method" --> CP
+    CM -- "Mesh Generation" --> CQ
+    CM -- "Numerical Integration"
+ --> CR
+    CM -- "Numerical Differentiation" --> CS
+    CM -- "Symbolic Computation" --> CT
+    CM -- "High-Performance Computing" --> CU
+    CM -- "Simulation" --> CV
+    CM -- "Data-Driven Mechanics" --> CW
+    CM -- "Machine Learning in Mechanics" --> CX
+    CN -- "Boundary Conditions" --> AC
+    CO -- "Boundary Conditions" --> AC
+    CP -- "Boundary Conditions" --> AC
+    CR -- "Integral" --> X
+    CS -- "Derivative" --> V
+    CT -- "Symbolic Derivative/Integral" --> V
+    CT -- "Symbolic Derivative/Integral" --> X
+    CU -- "Simulation" --> CV
+    CW -- "Machine Learning" --> CX
+    CX -- "Eigenvalue Problem" --> AE
+    CX -- "Simulation" --> CV
+    CX -- "Symbolic Computation" --> CT

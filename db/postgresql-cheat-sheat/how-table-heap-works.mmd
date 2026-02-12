@@ -1,0 +1,38 @@
+flowchart TD
+    A["Start: SQL Operation (INSERT, UPDATE, SELECT, DELETE)"]
+    B{Operation Type?}
+    A --> B
+
+    %% INSERT
+    B -->|INSERT| C[Find free space in heap page]
+    C --> D[Write new tuple to heap page]
+    D --> E["Update visibility info (xmin, xmax)"]
+    E --> F["Update indexes with new tuple pointer (TID)"]
+    F --> G[Commit transaction]
+
+    %% UPDATE
+    B -->|UPDATE| H[Find tuple to update in heap]
+    H --> I["Mark old tuple as expired (set xmax)"]
+    I --> J["Write new tuple version to heap (new row)"]
+    J --> K["Update visibility info (xmin, xmax)"]
+    K --> L[Update indexes if indexed columns changed]
+    L --> G
+
+    %% DELETE
+    B -->|DELETE| M[Find tuple to delete in heap]
+    M --> N["Mark tuple as expired (set xmax)"]
+    N --> G
+
+    %% SELECT
+    B -->|SELECT| O["Scan heap pages (sequentially or via index TID)"]
+    O --> P["For each tuple, check visibility (xmin, xmax, current tx)"]
+    P -->|Visible| Q[Return tuple to executor]
+    P -->|Not visible| R[Skip tuple]
+    Q --> S[Continue scan or finish]
+    R --> S
+    S --> T[Return result set to client]
+
+    %% VACUUM
+    T --> U[Background: VACUUM scans heap]
+    U --> V["Remove dead tuples (not visible to any tx)"]
+    V --> W[Reclaim space for future inserts]

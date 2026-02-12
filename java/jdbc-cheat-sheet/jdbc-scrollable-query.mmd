@@ -1,0 +1,28 @@
+sequenceDiagram
+    participant App as Application
+    participant JDBC as JDBC Driver
+    participant PG as PostgreSQL Server
+
+    %% Regular Query
+    App->>JDBC: Create Statement (default ResultSet)
+    App->>JDBC: Execute query (e.g., SELECT ...)
+    JDBC->>PG: Send SQL query
+    PG->>JDBC: Return all result rows at once
+    JDBC-->>App: Provide ResultSet (forward-only)
+    App->>JDBC: Iterate ResultSet (next())
+    JDBC-->>App: Return row data
+    App->>JDBC: Close ResultSet/Statement
+    JDBC->>PG: Connection cleanup
+
+    %% Scrollable ResultSet (Cursor)
+    App->>JDBC: Create Statement (ResultSet.TYPE_SCROLL_INSENSITIVE or TYPE_SCROLL_SENSITIVE)
+    App->>JDBC: Execute query (e.g., SELECT ...)
+    JDBC->>PG: Send SQL query with cursor declaration
+    PG->>JDBC: Open cursor, return initial rows
+    JDBC-->>App: Provide scrollable ResultSet
+    App->>JDBC: Move cursor (next(), previous(), absolute(), relative())
+    JDBC->>PG: Fetch rows as needed (cursor stays open)
+    PG->>JDBC: Return requested rows
+    JDBC-->>App: Return row data
+    App->>JDBC: Close ResultSet/Statement
+    JDBC->>PG: Close cursor, cleanup connection

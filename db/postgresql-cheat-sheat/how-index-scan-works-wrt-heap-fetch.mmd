@@ -1,0 +1,15 @@
+sequenceDiagram
+    participant App as Application
+    participant PG as PostgreSQL Executor
+    participant IDX as Index
+    participant HEAP as Table (Heap)
+
+    App->>PG: Submit query with WHERE clause
+    PG->>IDX: Search index for matching entries
+    loop For each matching index entry
+        IDX-->>PG: Return row pointer (TID)
+        PG->>HEAP: Fetch row from heap using TID
+        HEAP-->>PG: Return row data
+        PG-->>App: Return row (if matches visibility and query)
+    end
+    PG-->>App: Return result set

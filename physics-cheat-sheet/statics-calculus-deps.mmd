@@ -1,0 +1,104 @@
+graph TD
+    %% Basic Statics Quantities
+    A["Force (F)"]
+    B["Moment/Torque (M)"]
+    C[Equilibrium]
+    D["Distributed Force (f(x))"]
+    E["Center of Mass (x_cm)"]
+    F["Stress (σ)"]
+    G["Strain (ε)"]
+    H["Deformation (δ)"]
+    I["Area (A)"]
+    J["Volume (V)"]
+    K["Pressure (p)"]
+    L["Partial Derivative (∂/∂x, ∂/∂y)"]
+    M["Derivative (d/dx)"]
+    N["Integral (∫ dx)"]
+    O["Integral (∫ dA)"]
+    P["Integral (∫ dV)"]
+    Q[Beam Deflection]
+    R["Shear Force (V(x))"]
+    S["Bending Moment (M(x))"]
+    T[Equilibrium Equations]
+    U[Hooke's Law]
+    V[Stress-Strain Curve]
+    W[Boundary Conditions]
+    X["Elasticity Tensor (C_ijkl)"]
+    Y["Strain Tensor (ε_ij)"]
+    Z["Stress Tensor (σ_ij)"]
+    AA[Virtual Work Principle]
+    AB[Minimum Potential Energy Principle]
+    AC[Structural Analysis]
+    AD["Finite Element Method (FEM)"]
+    AE[Tensor Calculus]
+    AF[Multi-Dimensional Statics]
+    AG[Elastic Potential Energy]
+    AH["Stiffness Matrix (K)"]
+    AI["Displacement Field (u(x,y,z))"]
+    AJ[Compatibility Equations]
+    AK[Constitutive Equations]
+    AL[Yield Criteria]
+    AM[Plasticity]
+    AN[Fracture Mechanics]
+    AO["Stability (Buckling)"]
+    AP[Eigenvalue Analysis]
+
+    %% Calculus Operations
+    D -- "Integral wrt x" --> A
+    D -- "Integral wrt x" --> B
+    A -- "Equilibrium Equations" --> C
+    B -- "Equilibrium Equations" --> C
+    D -- "Integral wrt x" --> E
+    F -- "Partial Derivative wrt x, y" --> L
+    G -- "Partial Derivative wrt x, y" --> L
+    F -- "Derivative wrt x" --> M
+    G -- "Derivative wrt x" --> M
+    F -- "Integral wrt x" --> N
+    G -- "Integral wrt x" --> N
+    A -- "Integral wrt area" --> O
+    A -- "Integral wrt volume" --> P
+    K -- "Force / Area" --> F
+    F -- "Stress-Strain Curve" --> V
+    G -- "Stress-Strain Curve" --> V
+    G -- "Hooke's Law" --> U
+    U -- "Deformation" --> H
+    D -- "Boundary Conditions" --> W
+    Q -- "Second Derivative wrt x" --> S
+    S -- "Derivative wrt x" --> R
+    Q -- "Integral wrt x" --> H
+    E -- "Integral wrt x" --> J
+    J -- "Center of Mass Calculation" --> E
+    T -- "Equilibrium Equations" --> C
+
+    %% Advanced Statics & Structural Analysis
+    F -- "Tensor Form" --> Z
+    G -- "Tensor Form" --> Y
+    Z -- "Elasticity Tensor" --> X
+    Y -- "Elasticity Tensor" --> X
+    X -- "Constitutive Equations" --> AK
+    AK -- "Relates Stress & Strain" --> Z
+    AK -- "Relates Stress & Strain" --> Y
+    Z -- "Yield Criteria" --> AL
+    AL -- "Plasticity" --> AM
+    AM -- "Fracture Mechanics" --> AN
+    F -- "Elastic Potential Energy" --> AG
+    AG -- "Minimum Potential Energy Principle" --> AB
+    AB -- "Structural Analysis" --> AC
+    AC -- "Finite Element Method" --> AD
+    AD -- "Stiffness Matrix" --> AH
+    AH -- "Displacement Field" --> AI
+    AI -- "Compatibility Equations" --> AJ
+    AJ -- "Boundary Conditions" --> W
+    AC -- "Multi-Dimensional Statics" --> AF
+    AF -- "Tensor Calculus" --> AE
+    Q -- "Stability (Buckling)" --> AO
+    AO -- "Eigenvalue Analysis" --> AP
+    AC -- "Virtual Work Principle" --> AA
+    AA -- "Minimum Potential Energy Principle" --> AB
+
+    %% Area, Volume, and Integrals
+    O -- "Area Integrals" --> AC
+    P -- "Volume Integrals" --> AC
+    AE -- "Partial Derivatives, Integrals" --> X
+    AE -- "Partial Derivatives, Integrals" --> Y
+    AE -- "Partial Derivatives, Integrals" --> Z

@@ -1,0 +1,17 @@
+flowchart TD
+    A[Start: Query with WHERE and/or SELECT]
+    B[PostgreSQL Query Planner Analyzes Query]
+    A --> B
+
+    C{Is there an index that covers all WHERE and SELECT columns?}
+    B --> C
+
+    C -->|No| D[Perform regular index scan + heap fetch]
+    C -->|Yes| E{"Are all index tuples visible to the current transaction? (Check visibility map)"}
+
+    E -->|No| F[Perform index scan + heap fetch for visibility check]
+    E -->|Yes| G["Perform index-only scan (no heap fetch needed)"]
+
+    D --> H[Return result set]
+    F --> H
+    G --> H

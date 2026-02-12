@@ -1,0 +1,59 @@
+graph TD
+    %% Kinematics Quantities
+    A["Position (s or x)"]
+    B["Displacement (Δx)"]
+    C["Velocity (v)"]
+    D["Speed (|v|)"]
+    E["Acceleration (a)"]
+    F["Jerk (j)"]
+    G["Time (t)"]
+    H[Average Velocity]
+    I[Average Acceleration]
+    J[Area under v-t curve]
+    K[Area under a-t curve]
+    L[Graphical Interpretation]
+
+    %% Calculus Operations
+    M["Derivative (d/dt)"]
+    N["Integral (∫ dt)"]
+
+    %% Derivative Relationships
+    A -- "First Derivative wrt Time" --> C
+    C -- "First Derivative wrt Time" --> E
+    E -- "First Derivative wrt Time" --> F
+
+    %% Integral Relationships
+    F -- "Integral wrt Time" --> E
+    E -- "Integral wrt Time" --> C
+    C -- "Integral wrt Time" --> A
+
+    %% Displacement and Area
+    B -- "Area under v-t curve" --> J
+    J -- "Equals" --> B
+
+    %% Average Values
+    H -- "Δx / Δt" --> B
+    I -- "Δv / Δt" --> C
+
+    %% Speed
+    C -- "Absolute Value" --> D
+
+    %% Area under a-t curve
+    K -- "Equals" --> I
+
+    %% Calculus Operations
+    M -- "Calculus Operation" --> C
+    M -- "Calculus Operation" --> E
+    M -- "Calculus Operation" --> F
+
+    N -- "Calculus Operation" --> A
+    N -- "Calculus Operation" --> C
+    N -- "Calculus Operation" --> E
+
+    %% Graphical Interpretation
+    J -- "Graphical Interpretation" --> L
+    K -- "Graphical Interpretation" --> L
+
+    %% Time
+    G --- M
+    G --- N
