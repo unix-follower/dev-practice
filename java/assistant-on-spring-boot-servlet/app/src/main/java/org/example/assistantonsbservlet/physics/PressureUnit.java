@@ -18,6 +18,8 @@ public enum PressureUnit {
     INCH_OF_MERCURY, // inHg
     MILLIMETER_OF_MERCURY; // mmHg
 
+    public static final int ATMOSPHERIC_PRESSURE = 101_325;
+
     public static double hpaToPa(double hectopascals) {
         return hectopascals * 100;
     }

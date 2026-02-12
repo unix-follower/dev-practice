@@ -13,7 +13,13 @@ public final class NumberUtils {
 
     public static void checkGreater(double value, double inclusiveBound) {
         if (value <= inclusiveBound) {
-            throw new IllegalArgumentException("This value must be greater than " + inclusiveBound);
+            throw new IllegalArgumentException("This value must be > " + inclusiveBound);
+        }
+    }
+
+    public static void checkLessOrEq(double value, double inclusiveBound) {
+        if (value > inclusiveBound) {
+            throw new IllegalArgumentException("This value must be <= " + inclusiveBound);
         }
     }
 }

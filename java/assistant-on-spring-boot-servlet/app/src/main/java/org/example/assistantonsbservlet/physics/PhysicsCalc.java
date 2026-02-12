@@ -7,6 +7,7 @@ import org.example.assistantonsbservlet.math.MathCalc.Arithmetic;
 import org.example.assistantonsbservlet.math.MathCalc.Geometry;
 import org.example.assistantonsbservlet.math.MathCalc.LinearAlgebra;
 import org.example.assistantonsbservlet.math.MathCalc.Trigonometry;
+import org.example.assistantonsbservlet.math.NumberUtils;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -20,6 +21,8 @@ import static org.example.assistantonsbservlet.math.MathCalc.Arithmetic.reciproc
 import static org.example.assistantonsbservlet.math.MathCalc.Geometry.crossSectionalAreaOfCircularWire;
 import static org.example.assistantonsbservlet.math.NumberUtils.checkGreater0;
 import static org.example.assistantonsbservlet.physics.AccelerationUnit.GRAVITATIONAL_ACCELERATION_ON_EARTH;
+import static org.example.assistantonsbservlet.physics.SpeedUnit.SOUND_SPEED_IN_AIR_KELVIN_REF_POINT;
+import static org.example.assistantonsbservlet.physics.SpeedUnit.SOUND_SPEED_IN_DRY_AIR;
 
 public final class PhysicsCalc {
     public static final double AVOGADRO_NUMBER = 6.02214076e23;
@@ -52,9 +55,6 @@ public final class PhysicsCalc {
      * μ₀≈4π×10⁻⁷ H/m; 1.25664×10⁻⁶ T⋅m/A
      */
     public static final double VACUUM_PERMEABILITY = Trigonometry.PI4 * 1e-7;
-    public static final short SOUND_SPEED = 343; // Normal room temperature at 20°C; m/s or 1130 ft/s
-    public static final double SOUND_SPEED_IN_DRY_AIR = 331.3; // at 0°C; m/s
-    public static final double SOUND_SPEED_IN_AIR_KELVIN_REF_POINT = 273.15; // at 0°C
     public static final int FPE_CONSTANT = 450_240; // foot-pounds of energy
     public static final double GRAVITATIONAL_CONSTANT = 6.6743e-11; // 6.6743 × 10⁻¹¹ m³ kg⁻¹ s⁻²
     public static final byte MONOATOMIC_GAS_DEGREES_OF_FREEDOM = 3;
@@ -700,6 +700,13 @@ public final class PhysicsCalc {
          */
         public static double timeTakenFromAngularFrequency(double angularFrequency, double angularDisplacement) {
             return angularDisplacement / angularFrequency;
+        }
+
+        /**
+         * @return ω = 2πf. The units are rad/s
+         */
+        public static double angularFrequencyOfOscillatingObjectFromFrequency(double frequencyHz) {
+            return Trigonometry.PI2 * frequencyHz;
         }
 
         /**
@@ -1377,6 +1384,55 @@ public final class PhysicsCalc {
             final double velocityAtBottom = acceleration * slidingTime;
             return new double[]{acceleration, velocityAtBottom, slidingTime};
         }
+
+        /**
+         * Displacement y = A⋅sin(ωt)
+         * Velocity v = A⋅ω⋅cos(ωt)
+         * Acceleration a =−A⋅ω²⋅sin(ωt)
+         *
+         * @return [m, m/s, m/s²]
+         */
+        public static double[] simpleHarmonicMotion(double amplitudeMeters, double timeSeconds, double frequencyHz) {
+            final double omega = angularFrequencyOfOscillatingObjectFromFrequency(frequencyHz);
+            final double period = omega * timeSeconds;
+            final double displacement = amplitudeMeters * Trigonometry.sin(period);
+            final double velocity = amplitudeMeters * omega * Trigonometry.cos(period);
+            final double acceleration = -amplitudeMeters * omega * omega * Trigonometry.sin(period);
+            return new double[]{displacement, velocity, acceleration};
+        }
+
+        /**
+         * In the northern hemisphere, the direction of a moving body deflects to the right.
+         * In the southern hemisphere, to the left.
+         *
+         * @param velocity        in m/s
+         * @param angularVelocity in rad/s
+         * @return a = F / m = 2 × v × ω × sin(α). The units are m/s²
+         */
+        public static double coriolisEffect(double velocity, double angularVelocity, double latitudeRad) {
+            return 2 * velocity * angularVelocity * Trigonometry.sin(latitudeRad);
+        }
+
+        /**
+         * @param velocity        in m/s
+         * @param angularVelocity in rad/s
+         * @return F = 2 × m × v × ω × sin(α). The units are N
+         */
+        public static double coriolisForce(
+            double massKg, double velocity, double angularVelocity, double latitudeRad) {
+            return massKg * coriolisEffect(velocity, angularVelocity, latitudeRad);
+        }
+
+        /**
+         * T = 2π√(L/g)
+         *
+         * @return f = 1/T = 1/(2π√(g/L)). The units are Hz
+         */
+        public static double simplePendulum(double lengthMeters) {
+            final double pendulumPeriodSeconds = Trigonometry.PI2
+                * squareRoot(lengthMeters / GRAVITATIONAL_ACCELERATION_ON_EARTH);
+            return reciprocal(pendulumPeriodSeconds);
+        }
     }
 
     public static final class Mechanics {
@@ -1974,6 +2030,136 @@ public final class PhysicsCalc {
         public static double trueStress(double engineeringStrain, double engineeringStressPa) {
             return engineeringStressPa * (1 + engineeringStrain);
         }
+
+        /**
+         * Types of belts:
+         * <ol>
+         *     <li>Flat belt</li>
+         *     <li>V belt</li>
+         *     <li>Circular belt</li>
+         *     <li>Timing belt</li>
+         *     <li>Spring belt</li>
+         *     <li>Ribbed belt</li>
+         *     <li>Film belt</li>
+         *     <li>More</li>
+         * </ol>
+         *
+         * @return ((D_L+Dₛ)⋅π/2) + (D_L−Dₛ)⋅arcsin((D_L−Dₛ)/(2L)) + 2√(L²−0.25⋅(D_L−Dₛ)²). The units are meters
+         */
+        public static double beltLength(
+            double largePulleyDiameterM, double smallPulleyDiameterM, double pulleyCenterDistanceM) {
+            final double diff = largePulleyDiameterM - smallPulleyDiameterM;
+            return ((largePulleyDiameterM + smallPulleyDiameterM) * Trigonometry.PI_OVER_2)
+                + diff * Trigonometry.sinInverse(diff / (2 * pulleyCenterDistanceM))
+                + 2 * squareRoot(pulleyCenterDistanceM * pulleyCenterDistanceM - MathCalc.ONE_FOURTH * diff * diff);
+        }
+
+        /**
+         * @return π/2 * (D_L+Dₛ) + 2L + (D_L−Dₛ)²/(4L). The units are meters
+         */
+        public static double approximateBeltLength(
+            double largePulleyDiameterM, double smallPulleyDiameterM, double pulleyCenterDistanceM) {
+            return Trigonometry.PI_OVER_2 * (largePulleyDiameterM + smallPulleyDiameterM) + 2 * pulleyCenterDistanceM
+                + (Math.pow(largePulleyDiameterM - smallPulleyDiameterM, 2) / 4 * pulleyCenterDistanceM);
+        }
+
+        /**
+         * d₁ × n₁ = d₂ × n₂
+         * n₂ = d₁ × n₁ / d₂
+         * L = (d₁ × π / 2) + (d₂ × π / 2) + 2D + ((d₁ - d₂)² / 4D)
+         * v = π × d₁ × n₁ / 60
+         * F = P / v
+         * T = P /(2 × π × n / 60)
+         *
+         * @return [N·m, RPM, N·m, m, m/s, N]
+         */
+        public static double[] pulley(
+            double transmittingPowerW, double pulleyCenterDistanceM, double driverPulleyDiameterM,
+            double driverPulleyAngularVelocityRPM, double drivenPulleyDiameterM) {
+            final double drivenPulleyAngularVelocity = driverPulleyDiameterM * driverPulleyAngularVelocityRPM
+                / drivenPulleyDiameterM;
+            final double driveTorque = transmittingPowerW / (Trigonometry.PI2 * driverPulleyAngularVelocityRPM / 60);
+            final double drivenTorque = transmittingPowerW / (Trigonometry.PI2 * drivenPulleyAngularVelocity / 60);
+            final double beltLength =
+                approximateBeltLength(driverPulleyDiameterM, drivenPulleyDiameterM, pulleyCenterDistanceM);
+            final double beltVelocity = Math.PI * driverPulleyDiameterM * driverPulleyAngularVelocityRPM / 60;
+            final double beltTension = transmittingPowerW / beltVelocity;
+            return new double[]{driveTorque, drivenPulleyAngularVelocity, drivenTorque, beltLength, beltVelocity,
+                beltTension};
+        }
+
+        /**
+         * Speed (mm/min) = Engine RPM × π × Tire Diameter (mm) / (Transmission Gear Ratio × Differential Gear Ratio)
+         *
+         * @param differentialGearRatio The ratio of the ring gear to the pinion gear.
+         * @return (Speed × 1000000) × 60. The units are km/h
+         */
+        public static double transmissionSpeed(double tireDiameterMm, double engineRPM, double transmissionGearRatio,
+                                               double differentialGearRatio) {
+            final double tireCircumferenceMm = Geometry.circleCircumferenceOfDiameter(tireDiameterMm);
+            final double distance = engineRPM * tireCircumferenceMm / (transmissionGearRatio * differentialGearRatio);
+            return LengthUnit.distancePerMinuteMmToKmh(distance);
+        }
+
+        /**
+         * Engine displacement = No. of cylinders * Volume of a single cylinder
+         *
+         * @return V = N * L * π * D² / 4. The units are mm³
+         */
+        public static double engineDisplacement(int numOfCylinders, double boreDiameterMm, double strokeLengthMm) {
+            return numOfCylinders * strokeLengthMm * Math.PI * boreDiameterMm * boreDiameterMm / 4;
+        }
+
+        /**
+         * @param engineDisplacement in mm³
+         * @return D = √((4 * V) / (N * π * L)). The units are mm
+         */
+        public static double engineBoreDiameter(int numOfCylinders, double strokeLengthMm, double engineDisplacement) {
+            return squareRoot((4 * engineDisplacement) / (numOfCylinders * Math.PI * strokeLengthMm));
+        }
+
+        /**
+         * specific gravity = material density/water density
+         * ρ = m[g]/V[cm³] g/cm³
+         * ρ₀ = m₀/V₀
+         * {@link FluidMechanics#sinkInWater}
+         *
+         * @return sg = ρ/ρ₀
+         */
+        public static double specificGravity(double substanceDensity, double referenceDensity) {
+            return substanceDensity / referenceDensity;
+        }
+
+        /**
+         * For mass in kg, volume in m³: the result in kg/m³.
+         * For mass in g, volume in cm³: the result in g/cm³.
+         * For mass in g, volume in mL: the result in g/mL.
+         *
+         * @return D = m/V
+         */
+        public static double density(double mass, double volume) {
+            return mass / volume;
+        }
+
+        public static double massFromDensity(double density, double volume) {
+            return density * volume;
+        }
+
+        /**
+         * @return V = M/ρ
+         */
+        public static double volumeFromDensity(double mass, double density) {
+            return mass / density;
+        }
+
+        /**
+         * @param density   in kg/m³ or g/cm³
+         * @param molarMass in kg/mol or g/mol
+         * @return n = (N_A*Z*ρₘ) / M. The units are carriers/m³
+         */
+        public static double numberDensity(double density, double molarMass, int numOfFreeElectrons) {
+            return (AVOGADRO_NUMBER * numOfFreeElectrons * density) / molarMass;
+        }
     }
 
     public static final class QuantumMechanics {
@@ -2253,10 +2439,12 @@ public final class PhysicsCalc {
         }
 
         /**
-         * @return p = ρ × v² / 2. The units are pascals
+         * @param fluidDensity  in kg/m³
+         * @param fluidVelocity in m/s
+         * @return p = 1/2 × ρv². The units are pascals
          */
-        public static double dynamicPressure(double forceNewtons, double areaSquareMeters) {
-            return forceNewtons / areaSquareMeters;
+        public static double dynamicPressure(double fluidDensity, double fluidVelocity) {
+            return MathCalc.ONE_HALF * fluidDensity * fluidVelocity * fluidVelocity;
         }
 
         /**
@@ -2370,6 +2558,482 @@ public final class PhysicsCalc {
          */
         public static double prandtlNumber() {
             throw new UnsupportedOperationException();
+        }
+
+        /**
+         * Specific Gravity = 141.5 / (131.5 + API)
+         *
+         * @return API = (141.5 / Specific Gravity) - 131.5. The units are °API
+         */
+        public static double apiGravityDegree(double crudeLiquidDensity) {
+            final double specificGravity = Mechanics.specificGravity(crudeLiquidDensity, DensityUnit.WATER_DENSITY);
+            return (141.5 / specificGravity) - 131.5;
+        }
+
+        /**
+         * @param objectTrueMassKg Mass of the object in air.
+         * @return F_B = V_fl * ρg = mg. The force of buoyancy. The units are N
+         */
+        public static double archimedesPrinciple(double objectTrueMassKg, double objectDensity) {
+            final double volume = Mechanics.volumeFromDensity(objectTrueMassKg, objectDensity);
+            final double h2oDensity = VolumeUnit.gcm3ToKgm3(DensityUnit.WATER_DENSITY);
+            final double massOfFluidDisplaced = Mechanics.massFromDensity(h2oDensity, volume);
+            return massOfFluidDisplaced * GRAVITATIONAL_ACCELERATION_ON_EARTH;
+        }
+
+        /**
+         * @return The units are kg
+         */
+        public static double archimedesPrincipleObjApparentMass(double objectTrueMassKg, double displacedFluidMassKg) {
+            return objectTrueMassKg - displacedFluidMassKg;
+        }
+
+        /**
+         * @param objectTrueMassKg Mass of the object in air.
+         * @return W_obs = W_obj−F_B = Mg−mg. Observed mass of the object in fluid. The units are kg
+         */
+        public static double archimedesPrincipleObjApparentWeight(double objectTrueMassKg, double buoyancyForceN) {
+            final double objTrueWeight = Statics.massToWeight(objectTrueMassKg);
+            return objTrueWeight - buoyancyForceN;
+        }
+
+        /**
+         * Q = V/t
+         *
+         * @param velocity     in m/s
+         * @param filledMeters partially filled pipe
+         * @return ˙V = A⋅v. The units are m³/s
+         */
+        public static double volumetricFlowRateInCircularPipe(
+            double diameterMeters, double velocity, double filledMeters) {
+            final double area;
+            if (filledMeters > 0) {
+                NumberUtils.checkLessOrEq(filledMeters, diameterMeters);
+                final double radius = Geometry.circleRadius(diameterMeters);
+                area = Geometry.circularSegmentArea(radius, filledMeters);
+            } else {
+                area = Geometry.crossSectionalAreaOfCircle(diameterMeters);
+            }
+            return area * velocity;
+        }
+
+        /**
+         * π(d/2)²v₁ = π(d/2)²v₂
+         *
+         * @param fluidSpeed in m/s
+         * @return q = π(d/2)²v × 3600. The units are m³/s
+         */
+        public static double volumetricFlowRateInCircularPipeBernoulliEq(double diameterMeters, double fluidSpeed) {
+            return Math.PI * Math.pow(diameterMeters / 2, 2) * fluidSpeed;
+        }
+
+        /**
+         * ˙m = m/t
+         *
+         * @param velocity     in m/s
+         * @param density      in kg/m³
+         * @param filledMeters partially filled pipe
+         * @return m = ρ⋅V = ρ⋅A⋅v. The units are kg/s
+         */
+        public static double massFlowRateInCircularPipe(
+            double diameterMeters, double velocity, double density, double filledMeters) {
+            return density * volumetricFlowRateInCircularPipe(diameterMeters, velocity, filledMeters);
+        }
+
+        /**
+         * @param volumetricFlowRate in m³/s
+         * @param density            in kg/m³
+         * @return m = qρ. The units are kg/s
+         */
+        public static double massFlowRateInCircularPipeBernoulliEq(double volumetricFlowRate, double density) {
+            return volumetricFlowRate * density;
+        }
+
+        /**
+         * @param velocity in m/s
+         * @return ˙V = A⋅v. The units are m³/s
+         */
+        public static double volumetricFlowRateInRectangle(double widthMeters, double heightMeters, double velocity) {
+            final double area = Geometry.crossSectionalAreaOfRectangle(widthMeters, heightMeters);
+            return area * velocity;
+        }
+
+        /**
+         * @param velocity in m/s
+         * @param density  in kg/m³
+         * @return m = ρ⋅V = ρ⋅A⋅v. The units are kg/s
+         */
+        public static double massFlowRateInRectangle(
+            double widthMeters, double heightMeters, double velocity, double density) {
+            return density * volumetricFlowRateInRectangle(widthMeters, heightMeters, velocity);
+        }
+
+        /**
+         * @param dynamicViscosity in mPa⋅s; at temperature T.
+         * @param density          in kg/m³; at temperature T.
+         * @return ν_T = η_T/ρ_T. The units are mm²/s
+         */
+        public static double kinematicViscosity(double dynamicViscosity, double density) {
+            return dynamicViscosity / density;
+        }
+
+        /**
+         * Incompressible flow: M = 0;
+         * Subsonic flow: 0 < M < 1;
+         * Transonic flow: 0.8 ≤ M ≤ 1.2;
+         * Supersonic flow: M > 1;
+         * Hypersonic flow: M > 3.
+         *
+         * @param objectSpeed in m/s
+         * @param soundSpeed  in m/s
+         * @return M = v/c
+         */
+        public static double machNumber(double objectSpeed, double soundSpeed) {
+            return objectSpeed / soundSpeed;
+        }
+
+        /**
+         * @param soundSpeed in m/s
+         * @return v = M⋅c
+         */
+        public static double objectSpeedFromMachNumber(double soundSpeed, double machNumber) {
+            return machNumber * soundSpeed;
+        }
+
+        /**
+         * M₂ = √((γ+1)²*M₁⁴*sin²(β)−4(γM₁²*sin²(β)+1)(M₁²*sin²(β)−1) / ((2γM₁²*sin²(β)−(γ−1))(2+(γ−1)M₁²*sin²(β))))
+         *
+         * @param specificHeatRatio γ. For dry air at room temperature set to 1.4.
+         * @param machNumber        Upstream mach number (M₁) (oblique shock)
+         */
+        public static double obliqueShockDownstreamMachNumber(
+            double specificHeatRatio, double machNumber, double waveAngleRad) {
+            final double mSq = machNumber * machNumber;
+            final double sine = Trigonometry.sin(waveAngleRad);
+            final double sinSq = sine * sine;
+            final double numerator = Math.pow(specificHeatRatio + 1, 2) * Math.pow(machNumber, 4) * sinSq
+                - 4 * (specificHeatRatio * mSq * sinSq + 1) * (mSq * sinSq - 1);
+            final double denominator = (2 * specificHeatRatio * mSq * sinSq - (specificHeatRatio - 1))
+                * (2 + (specificHeatRatio - 1) * mSq * sinSq);
+            return squareRoot(numerator / denominator);
+        }
+
+        /**
+         * @param machNumber Upstream mach number (M₁) (oblique shock)
+         * @return Mₓ = M₁ * sin(β)
+         */
+        public static double normalShockUpstreamMachNumber(double machNumber, double waveAngleRad) {
+            return machNumber * Trigonometry.sin(waveAngleRad);
+        }
+
+        /**
+         * @param machNumber Downstream mach number (M₂) (oblique shock)
+         * @return Mᵧ = M₂ * sin(β−θ)
+         */
+        public static double normalShockDownstreamMachNumber(
+            double machNumber, double waveAngleRad, double turnAngleRad) {
+            return machNumber * Trigonometry.sin(waveAngleRad - turnAngleRad);
+        }
+
+        /**
+         * @param machNumber Upstream mach number (M₁) (oblique shock)
+         * @return p₂/p₁ = 1 + (2γ)/(γ+1) * (M₁² * sin²(β) − 1)
+         */
+        public static double obliqueShockPressureRatio(
+            double specificHeatRatio, double machNumber, double waveAngleRad) {
+            final double sine = Trigonometry.sin(waveAngleRad);
+            return 1 + ((2 * specificHeatRatio) / (specificHeatRatio + 1))
+                * (machNumber * machNumber * sine * sine - 1);
+        }
+
+        /**
+         * p₀₂/p₀₁ = [ρ₁/ρ₂]^(γ/(γ−1)) / [p₂/p₁]^(1/(γ−1))
+         * <br/>
+         * p₀₂/p₀₁ = [(γ+1)M₁²*sin²(β)/(2+(γ−1)M₁²*sin²(β))]^(γ/(γ−1)) × [(γ+1)/(2γM₁²*sin²(β)−(γ−1))]^(1/(γ−1))
+         *
+         * @param machNumber Upstream mach number (M₁) (oblique shock)
+         */
+        public static double obliqueShockStagnationPressureRatio(
+            double specificHeatRatio, double machNumber, double waveAngleRad) {
+            final double mSq = machNumber * machNumber;
+            final double sine = Trigonometry.sin(waveAngleRad);
+            final double mSqSineSq = mSq * sine * sine;
+            final double gammaPlus1 = specificHeatRatio + 1;
+            final double gammaMinus1 = specificHeatRatio - 1;
+            final double multiplicand = Math.pow((gammaPlus1 * mSqSineSq) / (2 + gammaMinus1 * mSqSineSq),
+                (specificHeatRatio / gammaMinus1));
+            final double multiplier = Math.pow(gammaPlus1 / (2 * specificHeatRatio * mSqSineSq - gammaMinus1),
+                reciprocal(gammaMinus1));
+            return multiplicand * multiplier;
+        }
+
+        /**
+         * @param machNumber Upstream mach number (M₁) (oblique shock)
+         * @return T₁/T₂ = ((2γM₁²*sin²(β)−(γ−1))(2+(γ−1)M₁²*sin²(β))) / ((γ+1)²M₁²*sin²(β))
+         */
+        public static double obliqueShockTemperatureRatio(
+            double specificHeatRatio, double machNumber, double waveAngleRad) {
+            final double mSq = machNumber * machNumber;
+            final double sine = Trigonometry.sin(waveAngleRad);
+            final double mSqSineSq = mSq * sine * sine;
+            final double gammaPlus1 = specificHeatRatio + 1;
+            final double gammaMinus1 = specificHeatRatio - 1;
+            return ((2 * specificHeatRatio * mSqSineSq - gammaMinus1) * (2 + gammaMinus1 * mSqSineSq))
+                / (gammaPlus1 * gammaPlus1 * mSqSineSq);
+        }
+
+        /**
+         * @param machNumber Upstream mach number (M₁) (oblique shock)
+         * @return ρ₁/ρ₂ = ((γ+1)M₁²*sin²(β)) / (2+(γ−1)M₁²*sin²(β))
+         */
+        public static double obliqueShockDensityRatio(
+            double specificHeatRatio, double machNumber, double waveAngleRad) {
+            final double mSq = machNumber * machNumber;
+            final double sine = Trigonometry.sin(waveAngleRad);
+            final double mSqSineSq = mSq * sine * sine;
+            final double gammaPlus1 = specificHeatRatio + 1;
+            final double gammaMinus1 = specificHeatRatio - 1;
+            return (gammaPlus1 * mSqSineSq) / (2 + gammaMinus1 * mSqSineSq);
+        }
+
+        /**
+         * @param crossSectionArea in m²
+         * @return H = A / W. The units are meters
+         */
+        public static double hydraulicMeanDepth(double crossSectionArea, double channelWidthMeters) {
+            return crossSectionArea / channelWidthMeters;
+        }
+
+        /**
+         * @param flowVelocity in m/s
+         * @return H_d = u² / (Fᵣ²g). The units are meters
+         */
+        public static double hydraulicMeanDepthFromFroudeNumber(double flowVelocity, double froudeNumber) {
+            return (flowVelocity * flowVelocity) / (froudeNumber * froudeNumber * GRAVITATIONAL_ACCELERATION_ON_EARTH);
+        }
+
+        /**
+         * @param crossSectionArea in m²
+         * @return W = A / H. The units are meters
+         */
+        public static double channelWidthFromHydraulicMeanDepth(double crossSectionArea, double depthMeters) {
+            return crossSectionArea / depthMeters;
+        }
+
+        /**
+         * The flow is characterized as supercritical (Fᵣ>1) or subcritical (Fᵣ<1) based on the value of Froude number.
+         * If the Froude number is around 1, then it's called critical flow.
+         *
+         * @param flowVelocity in m/s
+         * @return Fᵣ = u/√(gH_d)
+         */
+        public static double froudeNumber(double flowVelocity, double hydraulicMeanDepthMeters) {
+            return flowVelocity / squareRoot(GRAVITATIONAL_ACCELERATION_ON_EARTH * hydraulicMeanDepthMeters);
+        }
+
+        /**
+         * @return R = A / P = πr² / 2πr = r/2. The units are meters
+         */
+        public static double hydraulicRadiusOfPipe(double radiusMeters) {
+            final double area = Geometry.circleArea(radiusMeters);
+            final double wettedPerimeter = Geometry.circlePerimeter(radiusMeters);
+            return area / wettedPerimeter;
+        }
+
+        /**
+         * θ = 2 × arccos ((r − h) / r)
+         *
+         * @return R = A / P = (r² × (θ − sin(θ)) / 2) / (r × θ). The units are meters
+         */
+        public static double hydraulicRadiusOfPartiallyFilledPipe(double radiusMeters, double filledHeightMeters) {
+            final double centralAngle = 2 * Trigonometry
+                .cosInverse((radiusMeters - filledHeightMeters) / radiusMeters);
+            final double area = (radiusMeters * radiusMeters * (centralAngle - Trigonometry.sin(centralAngle)) / 2);
+            final double wettedPerimeter = radiusMeters * centralAngle;
+            return area / wettedPerimeter;
+        }
+
+        /**
+         * @return R = A / P = (b × y) / (b + y + y) = (b × y) / (b + 2y). The units are meters
+         */
+        public static double hydraulicRadiusOfRectangularChannel(double widthMeters, double heightMeters) {
+            final double area = Geometry.areaOfRectangle(widthMeters, heightMeters);
+            final double wettedPerimeter = Geometry.rectangularChannelPerimeter(widthMeters, heightMeters);
+            return area / wettedPerimeter;
+        }
+
+        /**
+         * @return R = A / P = (by + y²z) / (b + 2 × y × √(1 + z²)). The units are meters
+         */
+        public static double hydraulicRadiusOfTrapezoidalChannel(double topWidthM, double bottomWidthM,
+                                                                 double heightM) {
+            final double slope = (topWidthM - bottomWidthM) / (2 * heightM);
+            final double area = Geometry.trapezoidalChannelArea(bottomWidthM, heightM, slope);
+            final double wettedPerimeter = Geometry.trapezoidalChannelPerimeter(bottomWidthM, heightM, slope);
+            return area / wettedPerimeter;
+        }
+
+        /**
+         * @return R = A / P = y²z / (2 × y × √(1 + z²)) = yz / (2 × √(1 + z²)). The units are meters
+         */
+        public static double hydraulicRadiusOfTriangularChannel(double widthMeters, double heightMeters) {
+            final double slope = widthMeters / (2 * heightMeters);
+            final double area = Geometry.triangularChannelArea(heightMeters, slope);
+            final double wettedPerimeter = Geometry.triangularChannelPerimeter(heightMeters, slope);
+            return area / wettedPerimeter;
+        }
+
+        /**
+         * @param fluidDensity in kg/m³
+         * @return p = ρ×g×h+p₀. The units are Pa
+         */
+        public static double hydrostaticPressure(double fluidDensity, double depthMeters, double externalPressurePa) {
+            return fluidDensity * GRAVITATIONAL_ACCELERATION_ON_EARTH * depthMeters + externalPressurePa;
+        }
+
+        /**
+         * When Kn ≪ 1, the fluid behaves as a continuum fluid.
+         * When Kn ≫ 1, then statistical mechanics should be applied.
+         *
+         * @return Kn = λ/L
+         */
+        public static double knudsenNumber(double meanFreePathMeters, double characteristicLinearDimensionMeters) {
+            return meanFreePathMeters / characteristicLinearDimensionMeters;
+        }
+
+        /**
+         * For a cylindrical pipe, the transition between laminar and turbulent flow happens
+         * between Re_D 2300 and Re_D = 2900. Below the first threshold, the fluid is likely laminar in behavior.
+         * Above 2900, the fluid completes its transition to turbulent fluid.
+         *
+         * @param fluidVelocity                  in m/s
+         * @param characteristicLinearDimensionM A geometric parameter (it can be the diameter of the pipe crossed
+         *                                       by the flow).
+         * @param dynamicViscosity               in kg/(m⋅s)
+         * @return Re = ρ×u×L/μ
+         */
+        public static double reynoldsNumber(double fluidVelocity, double characteristicLinearDimensionM,
+                                            double fluidDensity, double dynamicViscosity) {
+            return fluidDensity * fluidVelocity * characteristicLinearDimensionM / dynamicViscosity;
+        }
+
+        /**
+         * @param fluidVelocity      in m/s
+         * @param kinematicViscosity in m²/s. ν=μ/ρ
+         * @return Re = u×L/ν
+         */
+        public static double reynoldsNumberFromKinematicViscosity(
+            double fluidVelocity, double characteristicLinearDimensionM, double kinematicViscosity) {
+            return fluidVelocity * characteristicLinearDimensionM / kinematicViscosity;
+        }
+
+        /**
+         * p₁ + 1/2 * ρv₁² + ρh₁g = p₂ + 1/2 * ρv₂² + ρh₂g
+         *
+         * @param fluidDensity in kg/m³
+         * @param fluidSpeed   in m/s
+         * @return v₂ = √((2 * (p₁ - p₂ + 1/2 * ρv₁² + ρg * (h₁-h₂))) / ρ). The units are m/s
+         */
+        public static double bernoulliEquationSolveForSpeed(
+            double fluidDensity, double pressurePa, double heightMeters, double fluidSpeed, double pressurePa2,
+            double heightMeters2) {
+            final double g = GRAVITATIONAL_ACCELERATION_ON_EARTH;
+            final double term = pressurePa - pressurePa2
+                + MathCalc.ONE_HALF * fluidDensity * fluidSpeed * fluidSpeed
+                + fluidDensity * g * (heightMeters - heightMeters2);
+            return squareRoot(2 * term / fluidDensity);
+        }
+
+        /**
+         * The vortex is induced by the rotation of the cylinder.
+         *
+         * @param angularVelocity ω in rad/s
+         * @return G = 2π⋅r²⋅ω. The units are m²/s
+         */
+        public static double vortexStrength(double radiusM, double angularVelocity) {
+            return Trigonometry.PI2 * radiusM * radiusM * angularVelocity;
+        }
+
+        /**
+         * The Kutta-Jowkowski equation: L = (2π⋅r)²⋅ρ⋅ℓ⋅f⋅v_free = 2π⋅r²⋅ρ⋅ℓ⋅ω⋅v_free
+         *
+         * @param angularVelocity    ω in rad/s
+         * @param fluidDensity       in kg/m³
+         * @param freeStreamVelocity v_free in m/s
+         * @return L = ρ⋅ℓ⋅v_free⋅G. The units are N
+         */
+        public static double magnusForce(double radiusM, double lengthM, double angularVelocity, double fluidDensity,
+                                         double freeStreamVelocity) {
+            return fluidDensity * lengthM * freeStreamVelocity * vortexStrength(radiusM, angularVelocity);
+        }
+
+        /**
+         * q = ½ × ρ × V²
+         * CL = 2 × F / (A × ρ × V²)
+         *
+         * @param flowSpeed    in m/s
+         * @param surfaceArea  in m²
+         * @param fluidDensity in kg/m³
+         * @return C_L = F / (A × q)
+         */
+        public static double liftCoefficient(double liftForceNewtons, double flowSpeed, double surfaceArea,
+                                             double fluidDensity) {
+            final double dynamicPressure = dynamicPressure(fluidDensity, flowSpeed);
+            return liftForceNewtons / (surfaceArea * dynamicPressure);
+        }
+
+        /**
+         * @param flowSpeed    in m/s
+         * @param surfaceArea  in m²
+         * @param fluidDensity in kg/m³
+         * @return F = C_L * A * ρ * V² / 2. The units are N
+         */
+        public static double liftForce(double liftCoeff, double flowSpeed, double surfaceArea, double fluidDensity) {
+            return liftCoeff * surfaceArea * fluidDensity * flowSpeed * flowSpeed / 2;
+        }
+
+        /**
+         * @param viscosity μ in Pa⋅s
+         * @return i = Δp/(μ×L)
+         */
+        public static double darcysLawHydraulicGradient(double pressureDiffPa, double viscosity, double distanceM) {
+            return pressureDiffPa / (viscosity * distanceM);
+        }
+
+        /**
+         * @param area         in m²
+         * @param permeability in m/s
+         * @return Q = k×I×A
+         */
+        public static double darcysLawFlowRate(double area, double permeability, double hydraulicGradient) {
+            return permeability * hydraulicGradient * area;
+        }
+
+        /**
+         * @param volume in m³
+         * @return Q = V/t
+         */
+        public static double darcysLawFlowRate(double volume, double timeSeconds) {
+            return volume / timeSeconds;
+        }
+
+        /**
+         * @param flowRate in m³/s
+         * @param area     in m²
+         * @return k = Q/(A×i). The units are m/s
+         */
+        public static double darcysLawPermeability(double flowRate, double area, double hydraulicGradient) {
+            return flowRate / (area * hydraulicGradient);
+        }
+
+        /**
+         * @param volume in m³
+         * @param area   in m²
+         * @return k = V/(t×A×i). The units are m/s
+         */
+        public static double darcysLawPermeability(double volume, double timeSeconds, double area,
+                                                   double hydraulicGradient) {
+            return volume / (timeSeconds * area * hydraulicGradient);
         }
     }
 

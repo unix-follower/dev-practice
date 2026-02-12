@@ -50,4 +50,8 @@ public enum AngleUnit {
     public static double radiansToArcseconds(double radians) {
         return radians * 206_264.8;
     }
+
+    public static double revolutionsPerSecFromAngularVelocity(double velocity) {
+        return velocity / MathCalc.Trigonometry.PI2;
+    }
 }

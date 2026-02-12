@@ -38,13 +38,6 @@ public final class ChemCalc {
         return protons < electrons;
     }
 
-    /**
-     * @return D = m/V
-     */
-    public static double density(double mass, double volume) {
-        return mass / volume;
-    }
-
     public static final class General {
         private General() {
         }

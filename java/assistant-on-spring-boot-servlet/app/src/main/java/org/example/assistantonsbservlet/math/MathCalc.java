@@ -18,6 +18,7 @@ import java.util.function.DoubleBinaryOperator;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.LongPredicate;
 
+import static org.example.assistantonsbservlet.math.MathCalc.Algebra.squareRoot;
 import static org.example.assistantonsbservlet.math.NumberUtils.checkGreater;
 import static org.example.assistantonsbservlet.math.NumberUtils.checkGreater0;
 
@@ -2121,8 +2122,8 @@ public final class MathCalc {
          * @return a = πr² = π × (d / 2)²
          */
         public static double circleAreaOfDiameter(double diameter) {
-            final double halfDiameter = diameter / 2;
-            return Math.PI * halfDiameter * halfDiameter;
+            final double radius = diameter / 2;
+            return Math.PI * radius * radius;
         }
 
         /**
@@ -2130,6 +2131,15 @@ public final class MathCalc {
          */
         public static double circleAreaOfCircumference(double circumference) {
             return (circumference * circumference) / (4 * Math.PI);
+        }
+
+        /**
+         * @return r² * cos⁻¹((r-h)/r) - (r-h) * √(2rh-h²)
+         */
+        public static double circularSegmentArea(double radius, double height) {
+            final double diff = radius - height;
+            return radius * radius * Trigonometry.cosInverse(diff / radius) - diff
+                * Algebra.squareRoot(2 * radius * height - (height * height));
         }
 
         /**
@@ -2357,6 +2367,20 @@ public final class MathCalc {
             return sideA + sideB + hypotenuse;
         }
 
+        /**
+         * @return P = b + 2y
+         */
+        public static double rectangularChannelPerimeter(double width, double height) {
+            return width + 2 * height;
+        }
+
+        /**
+         * @return 2πr
+         */
+        public static double circlePerimeter(double radius) {
+            return 2 * Math.PI * radius;
+        }
+
         public static double semiperimeter(double sideA, double sideB, double hypotenuse) {
             return perimeter(sideA, sideB, hypotenuse) / 2;
         }
@@ -2410,12 +2434,12 @@ public final class MathCalc {
         }
 
         /**
-         * @return area = a * b. The units are cm²
+         * @return area = width * height. The units are cm² or m²
          */
-        public static double areaOfRectangle(double sideLengthA, double sideLengthB) {
-            checkGreater0(sideLengthA);
-            checkGreater0(sideLengthB);
-            return sideLengthA * sideLengthB;
+        public static double areaOfRectangle(double width, double height) {
+            checkGreater0(width);
+            checkGreater0(height);
+            return width * height;
         }
 
         /**
@@ -2532,6 +2556,42 @@ public final class MathCalc {
             checkGreater0(sideB);
             checkGreater0(height);
             return (sideA + sideB) * height / 2;
+        }
+
+        /**
+         * z = (B−b)/(2y)
+         *
+         * @return A = by + y²z
+         */
+        public static double trapezoidalChannelArea(double bottomWidth, double height, double slope) {
+            return bottomWidth * height + height * height * slope;
+        }
+
+        /**
+         * z = (B−b)/(2y)
+         *
+         * @return b + 2 × y × √(1 + z²)
+         */
+        public static double trapezoidalChannelPerimeter(double bottomWidth, double height, double slope) {
+            return bottomWidth + 2 * height * squareRoot(1 + slope * slope);
+        }
+
+        /**
+         * z = B/(2y)
+         *
+         * @return y²z
+         */
+        public static double triangularChannelArea(double height, double slope) {
+            return height * height * slope;
+        }
+
+        /**
+         * z = B/(2y)
+         *
+         * @return 2 × y × √(1 + z²)
+         */
+        public static double triangularChannelPerimeter(double height, double slope) {
+            return 2 * height * squareRoot(1 + slope * slope);
         }
 
         /**
@@ -3209,7 +3269,7 @@ public final class MathCalc {
          * @return W × H
          */
         public static double crossSectionalAreaOfRectangle(double width, double height) {
-            return width * height;
+            return areaOfRectangle(width, height);
         }
 
         /**
@@ -3758,6 +3818,10 @@ public final class MathCalc {
             return Math.sin(angleRadians);
         }
 
+        public static double sinInverse(double angleRadians) {
+            return Math.asin(angleRadians);
+        }
+
         /**
          * @return sin(α) = opposite / hypotenuse = a/c
          */
@@ -3803,6 +3867,10 @@ public final class MathCalc {
          */
         public static double cos(double angleRadians) {
             return Math.cos(angleRadians);
+        }
+
+        public static double cosInverse(double angleRadians) {
+            return Math.acos(angleRadians);
         }
 
         /**
