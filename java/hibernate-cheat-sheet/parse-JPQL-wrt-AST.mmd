@@ -1,0 +1,19 @@
+flowchart TD
+    A[Start: Application submits JPQL or Criteria query]
+    B[Hibernate receives query]
+    A --> B
+
+    C{Is it a JPQL or Criteria query?}
+    B --> C
+
+    C -->|JPQL| D[JPQL Parser parses query string]
+    D --> E["JPQL parsed into Abstract Syntax Tree (AST)"]
+    E --> F["AST validated and transformed (semantic analysis, type checking)"]
+    F --> G[AST translated to SQL AST]
+    G --> H[SQL AST generates SQL statement]
+    H --> I[SQL executed against database]
+    I --> J[Return results to application]
+
+    C -->|Criteria| K[Criteria API builds query object model]
+    K --> L[Criteria model converted to AST]
+    L --> F

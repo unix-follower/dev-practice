@@ -1,0 +1,33 @@
+sequenceDiagram
+    participant App as Application
+    participant JDBC as JDBC Driver
+    participant TCP as TCP Stack (Client OS)
+    participant Net as Network
+    participant PG as PostgreSQL Server
+    participant TCP_PG as TCP Stack (Server OS)
+
+    App->>JDBC: Request to connect/send SQL statement
+    JDBC->>TCP: Open TCP connection (SYN)
+    TCP->>Net: Transmit SYN packet
+    Net->>TCP_PG: Deliver SYN to server
+    TCP_PG->>Net: SYN-ACK (if server reachable)
+    Net->>TCP: Deliver SYN-ACK
+    TCP->>JDBC: Connection established (if successful)
+
+    alt Connection established
+        JDBC->>TCP: Send SQL data (TCP segments)
+        TCP->>Net: Transmit data packets
+        Net->>TCP_PG: Deliver to server
+        TCP_PG->>PG: Pass data to PostgreSQL
+        PG->>TCP_PG: Process and respond
+        TCP_PG->>Net: Send response packets
+        Net->>TCP: Deliver to client
+        TCP->>JDBC: Pass response
+        JDBC-->>App: Return result set or update count
+    else Timeout during connect or query
+        alt No SYN-ACK or no response to data
+            TCP-->>JDBC: TCP timeout (e.g., connection or socket timeout)
+            JDBC-->>App: Throw SQLException (e.g., "Connection timed out", "SocketTimeoutException")
+            App->>App: Handle or log timeout exception
+        end
+    end

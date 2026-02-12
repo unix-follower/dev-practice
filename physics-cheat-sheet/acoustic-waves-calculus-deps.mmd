@@ -1,0 +1,185 @@
+graph TD
+    %% Basic Acoustic Quantities
+    A["Pressure (p)"]
+    B["Particle Velocity (v)"]
+    C["Displacement (ξ)"]
+    D["Frequency (f)"]
+    E["Wavelength (λ)"]
+    F["Wave Equation"]
+    G["Sound Intensity (I)"]
+    H["Acoustic Power (P)"]
+    I["Acoustic Impedance (Z)"]
+    J["Speed of Sound (c)"]
+    K["Derivative (d/dx, d/dt)"]
+    L["Partial Derivative (∂/∂x, ∂/∂t)"]
+    M["Integral (∫ dx)"]
+    N["Integral (∫ dA)"]
+    O["Integral (∫ dt)"]
+    P["Gradient (∇)"]
+    Q["Divergence (∇·)"]
+    R["Curl (∇×)"]
+    S[Boundary Conditions]
+    T[Green's Function]
+    U[Acoustic Resonator]
+    V[Reflection/Transmission]
+    W[Absorption]
+    X[Diffraction]
+    Y[Interference]
+    Z[Fourier Analysis]
+    AA[Signal Processing]
+    AB[Acoustic Metamaterial]
+    AC[Nonlinear Acoustics]
+    AD[Shock Waves]
+    AE[Acoustic Soliton]
+    AF[Acoustic Band Gap]
+    AG[Phononic Crystal]
+    AH[Quantum Acoustics]
+    AI[Phonon]
+    AJ[Quantum Signal Processing]
+    AK[Machine Learning in Acoustics]
+    AL[Neural Network for Acoustics]
+    AM[Inverse Design]
+    AN[Acoustic Imaging]
+    AO[Acoustic Sensing]
+    AP[Acoustic Tomography]
+    AQ[Acoustic Waveguide]
+    AR[Acoustic Fiber]
+    AS[Acoustic Plasmonics]
+    AT[Topological Acoustics]
+    AU[Edge States]
+    AV[Berry Phase]
+    AW[Band Structure]
+    AX[Eigenvalue Problem]
+    AY["Hamiltonian (H)"]
+
+    %% New Advanced Topics
+    BA[Acoustic Cloaking]
+    BB[Transformation Acoustics]
+    BC[Acoustic Holography]
+    BD[Bioacoustics]
+    BE[Animal Communication]
+    BF[Echolocation]
+    BG[Acoustic Ecology]
+    BH[Acoustic Hologram]
+    BI[Acoustic Cloak Design]
+    BJ[Metamaterial Cloak]
+    BK[Acoustic Holography Imaging]
+    BL[Bioacoustic Signal Processing]
+    BM[Bioacoustic Machine Learning]
+    BN[Bioacoustic Eigenvalue Problem]
+
+    %% Basic Calculus Operations
+    F -- "Partial Derivative wrt x, t" --> L
+    F -- "Integral wrt x" --> M
+    F -- "Boundary Conditions" --> S
+    F -- "Green's Function" --> T
+    A -- "Derivative wrt x, t" --> K
+    B -- "Derivative wrt x, t" --> K
+    C -- "Derivative wrt x, t" --> K
+    A -- "Integral wrt area" --> N
+    A -- "Integral wrt time" --> O
+    G -- "Integral wrt area" --> N
+    G -- "Integral wrt time" --> O
+    B -- "Integral wrt time" --> C
+    C -- "Derivative wrt time" --> B
+    A -- "Gradient" --> P
+    B -- "Divergence" --> Q
+    B -- "Curl" --> R
+
+    %% Acoustic Wave Properties
+    F -- "Frequency, Wavelength" --> D
+    F -- "Frequency, Wavelength" --> E
+    F -- "Speed of Sound" --> J
+    F -- "Acoustic Impedance" --> I
+    F -- "Sound Intensity" --> G
+    F -- "Acoustic Power" --> H
+
+    %% Advanced Topics
+    F -- "Reflection/Transmission" --> V
+    F -- "Absorption" --> W
+    F -- "Diffraction" --> X
+    F -- "Interference" --> Y
+    F -- "Fourier Analysis" --> Z
+    Z -- "Signal Processing" --> AA
+    AA -- "Machine Learning" --> AK
+    AK -- "Neural Network" --> AL
+    AK -- "Inverse Design" --> AM
+    AA -- "Acoustic Imaging" --> AN
+    AA -- "Acoustic Sensing" --> AO
+    AA -- "Acoustic Tomography" --> AP
+
+    %% Acoustic Metamaterials & Phononic Crystals
+    AB -- "Band Structure" --> AW
+    AB -- "Acoustic Band Gap" --> AF
+    AB -- "Phononic Crystal" --> AG
+    AG -- "Band Structure" --> AW
+    AG -- "Eigenvalue Problem" --> AX
+    AG -- "Acoustic Fiber" --> AR
+    AG -- "Acoustic Waveguide" --> AQ
+
+    %% Nonlinear Acoustics & Solitons
+    AC -- "Shock Waves" --> AD
+    AC -- "Acoustic Soliton" --> AE
+    AC -- "Nonlinear Wave Equation" --> F
+    AE -- "Integral, Derivative" --> M
+    AE -- "Integral, Derivative" --> L
+
+    %% Quantum Acoustics
+    AH -- "Phonon" --> AI
+    AH -- "Hamiltonian" --> AY
+    AH -- "Eigenvalue Problem" --> AX
+    AH -- "Quantum Signal Processing" --> AJ
+    AJ -- "Signal Processing" --> AA
+
+    %% Topological Acoustics
+    AT -- "Band Structure" --> AW
+    AT -- "Edge States" --> AU
+    AT -- "Berry Phase" --> AV
+    AT -- "Eigenvalue Problem" --> AX
+    AT -- "Acoustic Metamaterial" --> AB
+
+    %% Acoustic Plasmonics
+    AS -- "Acoustic Metamaterial" --> AB
+    AS -- "Phononic Crystal" --> AG
+
+    %% Calculus Operations
+    K -- "Calculus Operation" --> A
+    K -- "Calculus Operation" --> B
+    K -- "Calculus Operation" --> C
+    L -- "Calculus Operation" --> F
+    M -- "Calculus Operation" --> Z
+    N -- "Calculus Operation" --> G
+    O -- "Calculus Operation" --> G
+    P -- "Gradient" --> A
+    Q -- "Divergence" --> B
+    R -- "Curl" --> B
+    AX -- "Eigenvalue Problem" --> AW
+    AY -- "Hamiltonian" --> AX
+
+    %% Acoustic Cloaking
+    BA -- "Transformation Acoustics" --> BB
+    BB -- "Metamaterial Cloak" --> BJ
+    BJ -- "Acoustic Metamaterial" --> AB
+    BA -- "Cloak Design" --> BI
+    BI -- "Eigenvalue Problem" --> AX
+    BA -- "Boundary Conditions" --> S
+
+    %% Acoustic Holography
+    BC -- "Acoustic Hologram" --> BH
+    BH -- "Acoustic Holography Imaging" --> BK
+    BK -- "Signal Processing" --> AA
+    BK -- "Fourier Analysis" --> Z
+    BK -- "Eigenvalue Problem" --> AX
+
+    %% Bioacoustics
+    BD -- "Animal Communication" --> BE
+    BD -- "Echolocation" --> BF
+    BD -- "Acoustic Ecology" --> BG
+    BD -- "Signal Processing" --> BL
+    BL -- "Machine Learning" --> BM
+    BM -- "Neural Network" --> AL
+    BD -- "Eigenvalue Problem" --> BN
+    BD -- "Boundary Conditions" --> S
+    BD -- "Acoustic Imaging" --> AN
+    BD -- "Acoustic Sensing" --> AO
+    BD -- "Acoustic Tomography" --> AP

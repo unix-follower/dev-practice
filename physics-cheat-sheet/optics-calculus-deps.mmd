@@ -1,0 +1,311 @@
+graph TD
+    %% Basic Optics Quantities
+    A["Light Path (Ray)"]
+    B[Wavefront]
+    C["Intensity (I)"]
+    D["Phase (φ)"]
+    E["Frequency (f)"]
+    F["Wavelength (λ)"]
+    G[Snell's Law]
+    H[Reflection/Refraction]
+    I[Lens Equation]
+    J["Optical Path Length (OPL)"]
+    K["Derivative (d/dx, d/dt)"]
+    L["Partial Derivative (∂/∂x, ∂/∂t)"]
+    M["Integral (∫ dx)"]
+    N["Integral (∫ dA)"]
+    O["Integral (∫ dt)"]
+    P["Gradient (∇)"]
+    Q["Divergence (∇·)"]
+    R["Curl (∇×)"]
+    S[Maxwell's Equations]
+    T["Electromagnetic Field (E, B)"]
+    U[Polarization]
+    V[Diffraction]
+    W[Interference]
+    X[Fourier Optics]
+    Y[Nonlinear Optics]
+    Z[Wave Equation]
+    AA[Paraxial Approximation]
+    AB[Gaussian Beam]
+    AC[Optical Fiber]
+    AD[Dispersion]
+    AE[Scattering]
+    AF[Quantum Optics]
+    AG[Photon]
+    AH["Hamiltonian (H)"]
+    AI[Eigenvalue Problem]
+    AJ[Boundary Conditions]
+    AK[Green's Function]
+    AL[Optical Resonator]
+    AM[Laser]
+    AN[Optical Coherence]
+    AO[Optical Modulation]
+    AP[Optical Signal Processing]
+    AQ[Photonic Crystal]
+    AR[Band Structure]
+    AS["Eigenvalue Problem (Bloch's Theorem)"]
+    AT[Optical Soliton]
+    AU[Nonlinear Schrödinger Equation]
+    AV[Advanced Signal Processing]
+    AW[Optical Soliton Communication]
+    AX[Photonic Crystal Fiber]
+    AY[Optical Soliton Fiber]
+    AZ[Optical Soliton Laser]
+    BA[Photonic Band Gap]
+    BB[Bragg Reflection]
+    BC[Optical Soliton Stability]
+    BD[Optical Soliton Dispersion Management]
+
+    %% Metamaterials & Photonic Integrated Circuits
+    BE[Metamaterial]
+    BF[Negative Index Material]
+    BG[Transformation Optics]
+    BH[Subwavelength Imaging]
+    BI[Plasmonics]
+    BJ[Photonic Integrated Circuit]
+    BK[Waveguide]
+    BL[Microresonator]
+    BM[Integrated Laser]
+    BN[Integrated Modulator]
+    BO[Integrated Detector]
+    BP[Integrated Quantum Device]
+    BQ[Quantum Information]
+    BR[Qubit]
+    BS[Quantum Entanglement]
+    BT[Quantum Communication]
+    BU[Quantum Cryptography]
+    BV[Quantum Computing]
+    BW[Quantum Error Correction]
+    BX[Quantum Photonic Circuit]
+    BY[Quantum Signal Processing]
+
+    %% Photonic Crystal Fiber, Soliton Fiber, Soliton Laser
+    AX -- "Soliton Fiber" --> AY
+    AY -- "Soliton Laser" --> AZ
+    AX -- "Band Gap" --> BA
+    AX -- "Dispersion" --> AD
+
+    %% Quantum Information & Metamaterials
+    BE -- "Quantum Metamaterial" --> BQ
+    BE -- "Integrated Quantum Device" --> BP
+
+    %% Photonic Crystals & Band Structure
+    AQ -- "Periodic Structure" --> AR
+    AR -- "Eigenvalue Problem (Bloch's Theorem)" --> AS
+    AS -- "Band Gap Calculation" --> BA
+    AQ -- "Bragg Reflection" --> BB
+    AQ -- "Photonic Crystal Fiber" --> AX
+    AX -- "Dispersion" --> AD
+
+    %% Optical Solitons
+    AT -- "Nonlinear Schrödinger Equation" --> AU
+    AU -- "Integral, Derivative" --> M
+    AU -- "Integral, Derivative" --> L
+    AT -- "Soliton Communication" --> AW
+    AT -- "Soliton Fiber" --> AY
+    AT -- "Soliton Laser" --> AZ
+    AT -- "Stability Analysis" --> BC
+    AT -- "Dispersion Management" --> BD
+
+    %% Advanced Signal Processing
+    AP -- "Fourier Transform, Filtering" --> AV
+    AV -- "Integral, Derivative" --> M
+    AV -- "Integral, Derivative" --> L
+    AV -- "Eigenvalue Problem" --> AI
+
+    %% Metamaterials & Transformation Optics
+    BE -- "Negative Index" --> BF
+    BE -- "Transformation Optics" --> BG
+    BG -- "Maxwell's Equations" --> S
+    BE -- "Subwavelength Imaging" --> BH
+    BE -- "Plasmonics" --> BI
+    BE -- "Band Structure" --> AR
+    BE -- "Bragg Reflection" --> BB
+
+    %% Photonic Integrated Circuits
+    BJ -- "Waveguide" --> BK
+    BJ -- "Microresonator" --> BL
+    BJ -- "Integrated Laser" --> BM
+    BJ -- "Integrated Modulator" --> BN
+    BJ -- "Integrated Detector" --> BO
+    BJ -- "Integrated Quantum Device" --> BP
+    BJ -- "Photonic Crystal" --> AQ
+    BJ -- "Optical Fiber" --> AC
+    BJ -- "Quantum Photonic Circuit" --> BX
+    BX -- "Quantum Signal Processing" --> BY
+
+    %% Quantum Information
+    BQ -- "Qubit" --> BR
+    BQ -- "Entanglement" --> BS
+    BQ -- "Quantum Communication" --> BT
+    BQ -- "Quantum Cryptography" --> BU
+    BQ -- "Quantum Computing" --> BV
+    BQ -- "Quantum Error Correction" --> BW
+    BQ -- "Quantum Photonic Circuit" --> BX
+    BX -- "Integrated Quantum Device" --> BP
+    BX -- "Signal Processing" --> BY
+    BQ -- "Photon" --> AG
+    BQ -- "Hamiltonian" --> AH
+    BQ -- "Eigenvalue Problem" --> AI
+    BQ -- "Boundary Conditions" --> AJ
+    BQ -- "Green's Function" --> AK
+
+    %% Ray Optics
+    A -- "Derivative wrt Path" --> J
+    J -- "Snell's Law" --> G
+    G -- "Reflection/Refraction" --> H
+    H -- "Lens Equation" --> I
+
+    %% Wave Optics
+    B -- "Wave Equation" --> Z
+    Z -- "Partial Derivative wrt x, t" --> L
+    Z -- "Integral wrt x" --> M
+    Z -- "Boundary Conditions" --> AJ
+    Z -- "Green's Function" --> AK
+    B -- "Phase" --> D
+    D -- "Derivative wrt x, t" --> K
+    B -- "Frequency, Wavelength" --> E
+    B -- "Frequency, Wavelength" --> F
+    B -- "Intensity" --> C
+    C -- "Integral wrt area" --> N
+    C -- "Integral wrt time" --> O
+
+    %% Interference & Diffraction
+    B -- "Interference" --> W
+    B -- "Diffraction" --> V
+    V -- "Fourier Optics" --> X
+    X -- "Integral, Derivative" --> M
+    X -- "Integral, Derivative" --> L
+
+    %% Advanced Topics
+    S -- "Maxwell's Equations" --> T
+    T -- "Vector Calculus (∇, ∇·, ∇×)" --> P
+    T -- "Vector Calculus (∇, ∇·, ∇×)" --> Q
+    T -- "Vector Calculus (∇, ∇·, ∇×)" --> R
+    S -- "Wave Equation" --> Z
+    T -- "Polarization" --> U
+    T -- "Nonlinear Optics" --> Y
+    Y -- "Integral, Derivative" --> M
+    Y -- "Integral, Derivative" --> L
+    T -- "Dispersion" --> AD
+    T -- "Scattering" --> AE
+    T -- "Optical Fiber" --> AC
+    AC -- "Dispersion" --> AD
+    AC -- "Wave Equation" --> Z
+    AB -- "Gaussian Beam" --> AA
+    AA -- "Paraxial Approximation" --> Z
+    AL -- "Optical Resonator" --> AM
+    AM -- "Laser" --> AN
+    AN -- "Optical Coherence" --> AO
+    AO -- "Optical Modulation" --> AP
+    AP -- "Signal Processing" --> X
+
+    %% Quantum Optics
+    AF -- "Photon" --> AG
+    AF -- "Hamiltonian" --> AH
+    AH -- "Eigenvalue Problem" --> AI
+    AF -- "Boundary Conditions" --> AJ
+    AF -- "Green's Function" --> AK
+
+    %% Calculus Operations
+    K -- "Calculus Operation" --> A
+    K -- "Calculus Operation" --> B
+    L -- "Calculus Operation" --> Z
+    M -- "Calculus Operation" --> X
+    N -- "Calculus Operation" --> C
+    O -- "Calculus Operation" --> C
+    P -- "Gradient" --> T
+    Q -- "Divergence" --> T
+    R -- "Curl" --> T
+
+    %% Quantum Optics in Biological Systems
+    CA[Quantum Optics in Biology]
+    CB[Photosynthesis]
+    CC[Vision]
+    CD[Quantum Coherence in Biology]
+    CE[Quantum Entanglement in Biology]
+    CA -- "Quantum Coherence" --> CD
+    CA -- "Quantum Entanglement" --> CE
+    CA -- "Photon Transport" --> CB
+    CA -- "Photon Detection" --> CC
+    CA -- "Hamiltonian" --> AH
+    CA -- "Eigenvalue Problem" --> AI
+    CA -- "Boundary Conditions" --> AJ
+
+    %% Topological Photonics
+    CF[Topological Photonics]
+    CG[Topological Insulator]
+    CH[Edge States]
+    CI[Berry Phase]
+    CJ[Topological Band Structure]
+    CF -- "Band Structure" --> CJ
+    CF -- "Edge States" --> CH
+    CF -- "Berry Phase" --> CI
+    CF -- "Eigenvalue Problem" --> AI
+    CF -- "Photonic Crystal" --> AQ
+    CF -- "Metamaterial" --> BE
+
+    %% Machine Learning in Optics
+    CK[Machine Learning in Optics]
+    CL[Neural Network for Optics]
+    CM[Inverse Design]
+    CN[Optical Classification]
+    CO[Optical Regression]
+    CP[Data-driven Signal Processing]
+    CK -- "Neural Network" --> CL
+    CK -- "Inverse Design" --> CM
+    CK -- "Classification" --> CN
+    CK -- "Regression" --> CO
+    CK -- "Signal Processing" --> CP
+    CK -- "Fourier Optics" --> X
+    CK -- "Advanced Signal Processing" --> AV
+    CK -- "Eigenvalue Problem" --> AI
+    CK -- "Integral, Derivative" --> M
+    CK -- "Integral, Derivative" --> L
+    CK -- "Boundary Conditions" --> AJ
+
+    %% Quantum Imaging
+    DA[Quantum Imaging]
+    DB[Ghost Imaging]
+    DC[Quantum Superresolution]
+    DD[Quantum Interferometry]
+    DA -- "Quantum Entanglement" --> BS
+    DA -- "Photon" --> AG
+    DA -- "Hamiltonian" --> AH
+    DA -- "Eigenvalue Problem" --> AI
+    DA -- "Boundary Conditions" --> AJ
+    DA -- "Ghost Imaging" --> DB
+    DA -- "Superresolution" --> DC
+    DA -- "Interferometry" --> DD
+
+    %% Optomechanics
+    EA[Optomechanics]
+    EB[Optomechanical Cavity]
+    EC[Mechanical Oscillator]
+    ED[Light-Matter Interaction]
+    EA -- "Optical Resonator" --> AL
+    EA -- "Mechanical Oscillator" --> EC
+    EA -- "Hamiltonian" --> AH
+    EA -- "Eigenvalue Problem" --> AI
+    EA -- "Boundary Conditions" --> AJ
+    EA -- "Light-Matter Interaction" --> ED
+    EA -- "Optomechanical Cavity" --> EB
+
+    %% Photonic Neural Networks
+    FA[Photonic Neural Network]
+    FB[Optical Neuron]
+    FC[Optical Synapse]
+    FD[Optical Activation Function]
+    FE[Optical Backpropagation]
+    FA -- "Neural Network" --> CL
+    FA -- "Optical Neuron" --> FB
+    FA -- "Optical Synapse" --> FC
+    FA -- "Activation Function" --> FD
+    FA -- "Backpropagation" --> FE
+    FA -- "Photonic Integrated Circuit" --> BJ
+    FA -- "Signal Processing" --> AP
+    FA -- "Eigenvalue Problem" --> AI
+    FA -- "Integral, Derivative" --> M
+    FA -- "Integral, Derivative" --> L
+    FA -- "Boundary Conditions" --> AJ
