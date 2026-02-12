@@ -16,19 +16,6 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ChemCalcTest {
-    private static final double DELTA7 = 0.0000001;
-
-    @Test
-    void testDensity() {
-        // given
-        final int massGrams = 298;
-        final double volume = 78.6;
-        // when
-        final double density = ChemCalc.density(massGrams, volume);
-        // then
-        assertEquals(3.7913486, density, DELTA7);
-    }
-
     @Nested
     class General {
         @Test

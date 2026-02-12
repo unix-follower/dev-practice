@@ -49,6 +49,10 @@ public enum LengthUnit {
         return m / 1000;
     }
 
+    public static double distancePerMinuteMmToKmh(double distancePerMinuteMm) {
+        return (distancePerMinuteMm / 1_000_000) * 60;
+    }
+
     public static double kilometersToMeters(double km) {
         return km * 1000;
     }

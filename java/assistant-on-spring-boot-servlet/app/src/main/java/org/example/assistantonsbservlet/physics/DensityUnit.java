@@ -19,5 +19,13 @@ public enum DensityUnit {
     OUNCES_PER_CUBIC_INCH, // oz/cu in
     POUNDS_PER_CUBIC_INCH, // lb/cu in
     POUNDS_PER_CUBIC_FEET, // lb/cu ft
-    POUNDS_PER_CUBIC_YARD // lb/cu yd
+    POUNDS_PER_CUBIC_YARD; // lb/cu yd
+
+    /**
+     * g/cm³; at 0°C.
+     * Some calculations need it in 999.87 kg/m³
+     */
+    public static final double WATER_DENSITY = 0.99987;
+    public static final double AIR_DENSITY = 1.225; // at sea level (15°C and 101.325 kPa) in kg/m³
+    public static final double EARTH_DENSITY = 5514.4; // kg/m³
 }

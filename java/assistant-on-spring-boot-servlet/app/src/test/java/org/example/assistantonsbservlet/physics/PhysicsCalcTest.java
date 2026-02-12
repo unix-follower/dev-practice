@@ -1257,6 +1257,53 @@ class PhysicsCalcTest {
             // then
             assertArrayEquals(new double[]{4.649, 9.642, 2.0742}, results, DELTA3);
         }
+
+        @Test
+        void testSimpleHarmonicMotion() {
+            // given
+            final double amplitude = 0.015;
+            final double time = 1.4;
+            final byte frequency = 1;
+            // when
+            final double[] results = PhysicsCalc.Kinematics.simpleHarmonicMotion(amplitude, time, frequency);
+            // then
+            assertArrayEquals(new double[]{0.008817, -0.076248, -0.348072}, results, DELTA6);
+        }
+
+        @Test
+        void testCoriolisEffect() {
+            // given
+            final double velocity = 138.9;
+            final double angularVelocity = SpeedUnit.EARTH_ANGULAR_VELOCITY;
+            final double latitude = 0.9146; // Northern hemisphere
+            // when
+            final double acceleration = PhysicsCalc.Kinematics.coriolisEffect(velocity, angularVelocity, latitude);
+            // then
+            assertEquals(0.016, acceleration, DELTA3);
+        }
+
+        @Test
+        void testCoriolisForce() {
+            // given
+            final int mass = 50_000;
+            final double velocity = 138.9;
+            final double angularVelocity = SpeedUnit.EARTH_ANGULAR_VELOCITY;
+            final double latitude = 0.9146; // Northern hemisphere
+            // when
+            final double force = PhysicsCalc.Kinematics.coriolisForce(mass, velocity, angularVelocity, latitude);
+            // then
+            assertEquals(800, force, DELTA1);
+        }
+
+        @Test
+        void testSimplePendulum() {
+            // given
+            final byte length = 2;
+            // when
+            final double frequency = PhysicsCalc.Kinematics.simplePendulum(length);
+            // then
+            assertEquals(0.3524, frequency, DELTA4);
+        }
     }
 
     @Nested
@@ -2193,6 +2240,137 @@ class PhysicsCalcTest {
             // then
             assertEquals(8_800_000, trueStress, DELTA1);
         }
+
+        @Test
+        void testBeltLength() {
+            // given
+            final double largePulleyDiameter = 0.3;
+            final double smallPulleyDiameter = 0.15;
+            final double pulleyCenterDistance = 1.5;
+            // when
+            final double length = PhysicsCalc.Mechanics
+                .beltLength(largePulleyDiameter, smallPulleyDiameter, pulleyCenterDistance);
+            // then
+            assertEquals(3.7106, length, DELTA4);
+        }
+
+        @Test
+        void testApproximateBeltLength() {
+            // given
+            final double largePulleyDiameter = 0.3;
+            final double smallPulleyDiameter = 0.15;
+            final double pulleyCenterDistance = 1.5;
+            // when
+            final double length = PhysicsCalc.Mechanics
+                .approximateBeltLength(largePulleyDiameter, smallPulleyDiameter, pulleyCenterDistance);
+            assertEquals(3.7152, length, DELTA4);
+        }
+
+        @Test
+        void testPulley() {
+            // given
+            final short transmittingPower = 1500;
+            final short pulleyCenterDistance = 1;
+            final double driverPulleyDiameter = 0.4;
+            final short driverPulleyAngularVelocity = 1000;
+            final double drivenPulleyDiameter = 0.1;
+            // when
+            final double[] pulleyResults = PhysicsCalc.Mechanics.pulley(transmittingPower, pulleyCenterDistance,
+                driverPulleyDiameter, driverPulleyAngularVelocity, drivenPulleyDiameter);
+            // then
+            assertArrayEquals(new double[]{14.324, 4000, 3.581, 2.808, 20.944, 71.62}, pulleyResults, DELTA3);
+        }
+
+        @Test
+        void testTransmissionSpeed() {
+            // given
+            final short tireDiameter = 382;
+            final short engineRPM = 5000;
+            final byte transmissionGearRatio = 1;
+            final byte differentialGearRatio = 3;
+            // when
+            final double speed = PhysicsCalc.Mechanics
+                .transmissionSpeed(tireDiameter, engineRPM, transmissionGearRatio, differentialGearRatio);
+            assertEquals(120, speed, DELTA1);
+        }
+
+        @Test
+        void testEngineDisplacement() {
+            // given
+            final byte numOfCylinders = 4;
+            final byte boreDiameter = 50;
+            final short strokeLength = 250;
+            // when
+            final double volume = PhysicsCalc.Mechanics.engineDisplacement(numOfCylinders, boreDiameter, strokeLength);
+            assertEquals(1_963_495.4, volume, DELTA1);
+        }
+
+        @Test
+        void testEngineBoreDiameter() {
+            // given
+            final byte numOfCylinders = 2;
+            final short strokeLength = 150;
+            final double engineDisplacement = VolumeUnit.cm3ToMm3(200);
+            // when
+            final double boreDiameter = PhysicsCalc.Mechanics
+                .engineBoreDiameter(numOfCylinders, strokeLength, engineDisplacement);
+            assertEquals(29.135, boreDiameter, DELTA3);
+        }
+
+        static List<Arguments> densityArgs() {
+            return List.of(
+                Arguments.of(298, 78.6, 3.7913486, DELTA7), // g/cm³
+                Arguments.of(MassUnit.EARTH_KG, VolumeUnit.EARTH_VOLUME, DensityUnit.EARTH_DENSITY, DELTA1)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("densityArgs")
+        void testDensity(double mass, double volume, double expectedResult, double delta) {
+            // when
+            final double density = PhysicsCalc.Mechanics.density(mass, volume);
+            // then
+            assertEquals(expectedResult, density, delta);
+        }
+
+        @Test
+        void testMassFromDensity() {
+            // when
+            final double mass = PhysicsCalc.Mechanics
+                .massFromDensity(DensityUnit.EARTH_DENSITY, VolumeUnit.EARTH_VOLUME);
+            // then
+            assertEquals(MassUnit.EARTH_KG, mass, 1e21);
+        }
+
+        @Test
+        void testVolumeFromDensity() {
+            // when
+            final double volume = PhysicsCalc.Mechanics
+                .volumeFromDensity(MassUnit.EARTH_KG, DensityUnit.EARTH_DENSITY);
+            // then
+            assertEquals(VolumeUnit.EARTH_VOLUME, volume, 1e17);
+        }
+
+        @Test
+        void testSpecificGravity() {
+            // given
+            final double densityOfMercury = PhysicsCalc.Mechanics.density(135.34, 10);
+            final double refDensity = DensityUnit.WATER_DENSITY;
+            // when
+            final double specificGravity = PhysicsCalc.Mechanics.specificGravity(densityOfMercury, refDensity);
+            assertEquals(13.535, specificGravity, DELTA3);
+        }
+
+        @Test
+        void testNumberDensity() {
+            // given copper
+            final double density = 8960; // kg/m³
+            final double molarMass = MassUnit.gramsToKg(63.55); // kg/mol
+            final byte numOfFreeElectrons = 1;
+            // when
+            final double number = PhysicsCalc.Mechanics.numberDensity(density, molarMass, numOfFreeElectrons);
+            assertEquals(8.491e28, number, 1e25);
+        }
     }
 
     @Nested
@@ -2619,12 +2797,557 @@ class PhysicsCalcTest {
         @Test
         void testSinkInWater() {
             // given
-            final double waterDensity = 1024.9;
-            final short appleDensity = 808;
+            final double appleDensity = 0.808;
             // when
-            final boolean result = PhysicsCalc.FluidMechanics.sinkInWater(waterDensity, appleDensity);
+            final boolean result = PhysicsCalc.FluidMechanics.sinkInWater(DensityUnit.WATER_DENSITY, appleDensity);
             // then
             assertFalse(result);
+        }
+
+        @Test
+        void testApiGravityDegree() {
+            // given kerosene
+            final double crudeLiquidDensity = 0.775; // g/m³, 775 kg/m³
+            // when
+            final double degree = PhysicsCalc.FluidMechanics.apiGravityDegree(crudeLiquidDensity);
+            // then
+            assertEquals(51, degree, DELTA1);
+        }
+
+        @Test
+        void testArchimedesPrinciple() {
+            // given aluminum block wholly immersed in water
+            final double objectTrueMass = 1e6; // kg
+            final double objectDensity = 2.7e3; // kg/m³
+            // when
+            final double buoyancyForce = PhysicsCalc.FluidMechanics.archimedesPrinciple(objectTrueMass, objectDensity);
+            // then
+            assertEquals(3_631_620.4, buoyancyForce, DELTA1);
+        }
+
+        @Test
+        void testArchimedesPrincipleObjApparentMass() {
+            // given aluminum block wholly immersed in water
+            final double objectTrueMass = 1e6; // kg
+            final double displacedFluidMassKg = 370_370;
+            // when
+            final double mass = PhysicsCalc.FluidMechanics
+                .archimedesPrincipleObjApparentMass(objectTrueMass, displacedFluidMassKg);
+            // then
+            assertEquals(629_630, mass, DELTA1);
+        }
+
+        @Test
+        void testArchimedesPrincipleObjApparentWeight() {
+            // given aluminum block wholly immersed in water
+            final double objectTrueMass = 1e6; // kg
+            final double buoyancyForce = 3_632_089;
+            // when
+            final double weight = PhysicsCalc.FluidMechanics
+                .archimedesPrincipleObjApparentWeight(objectTrueMass, buoyancyForce);
+            // then
+            assertEquals(6_174_561, weight, DELTA1);
+        }
+
+        @Test
+        void testVolumetricFlowRateInCircularPipe() {
+            // given
+            final double diameter = 0.0762;
+            final double velocity = 3.048;
+            final double emptyPipe = 0;
+            // when
+            final double flowRate = PhysicsCalc.FluidMechanics
+                .volumetricFlowRateInCircularPipe(diameter, velocity, emptyPipe);
+            // then
+            assertEquals(0.0139, flowRate, DELTA4);
+        }
+
+        @Test
+        void testVolumetricFlowRateInCircularPipeBernoulliEq() {
+            // given
+            final double pipeDiameter = 0.2;
+            final byte fluidSpeed = 2;
+            // when
+            final double flowRate = PhysicsCalc.FluidMechanics
+                .volumetricFlowRateInCircularPipeBernoulliEq(pipeDiameter, fluidSpeed);
+            // then
+            assertEquals(0.06283, flowRate, DELTA5);
+        }
+
+        @Test
+        void testVolumetricFlowRateInCircularPipePartiallyFilled() {
+            // given
+            final double diameter = 0.0762;
+            final double velocity = 3.048;
+            final double filled = 0.07;
+            // when
+            final double flowRate = PhysicsCalc.FluidMechanics
+                .volumetricFlowRateInCircularPipe(diameter, velocity, filled);
+            // then
+            assertEquals(0.013366, flowRate, DELTA6);
+        }
+
+        @Test
+        void testMassFlowRateInCircularPipe() {
+            // given
+            final double diameter = 0.0762;
+            final double velocity = 3.048;
+            final double emptyPipe = 0;
+            final double density = VolumeUnit.gcm3ToKgm3(DensityUnit.WATER_DENSITY);
+            // when
+            final double massFlowRate = PhysicsCalc.FluidMechanics
+                .massFlowRateInCircularPipe(diameter, velocity, density, emptyPipe);
+            // then
+            assertEquals(13.898, massFlowRate, DELTA3);
+        }
+
+        @Test
+        void testMassFlowRateInCircularPipeBernoulliEq() {
+            // given
+            final double volumetricFlowRate = 0.06283;
+            final short density = 1000;
+            // when
+            final double massFlowRate = PhysicsCalc.FluidMechanics
+                .massFlowRateInCircularPipeBernoulliEq(volumetricFlowRate, density);
+            // then
+            assertEquals(62.83, massFlowRate, DELTA2);
+        }
+
+        @Test
+        void testMassFlowRateInCircularPipePartiallyFilled() {
+            // given
+            final double diameter = 0.0762;
+            final double velocity = 3.048;
+            final double filled = 0.07;
+            final double density = VolumeUnit.gcm3ToKgm3(DensityUnit.WATER_DENSITY);
+            // when
+            final double massFlowRate = PhysicsCalc.FluidMechanics
+                .massFlowRateInCircularPipe(diameter, velocity, density, filled);
+            // then
+            assertEquals(13.364, massFlowRate, DELTA3);
+        }
+
+        @Test
+        void testVolumetricFlowRateInRectangle() {
+            // given
+            final double width = 0.06;
+            final double height = 0.03;
+            final double velocity = 3.048;
+            // when
+            final double flowRate = PhysicsCalc.FluidMechanics.volumetricFlowRateInRectangle(width, height, velocity);
+            // then
+            assertEquals(0.005486, flowRate, DELTA6);
+        }
+
+        @Test
+        void testMassFlowRateInRectangle() {
+            // given
+            final double width = 0.06;
+            final double height = 0.03;
+            final double velocity = 3.048;
+            final double density = VolumeUnit.gcm3ToKgm3(DensityUnit.WATER_DENSITY);
+            // when
+            final double massFlowRate = PhysicsCalc.FluidMechanics
+                .massFlowRateInRectangle(width, height, velocity, density);
+            // then
+            assertEquals(5.486, massFlowRate, DELTA3);
+        }
+
+        @Test
+        void testKinematicViscosity() {
+            // given water at 78 °C
+            final double dynamicViscosity = 0.36336; // mPa⋅s
+            final double density = 0.973; // kg/m³
+            // when
+            final double kinematicViscosity = PhysicsCalc.FluidMechanics.kinematicViscosity(dynamicViscosity, density);
+            // then
+            assertEquals(0.37344, kinematicViscosity, DELTA5); // mm²/s
+        }
+
+        @Test
+        void testMachNumber() {
+            // given
+            final double objectSpeed = 416.67;
+            // when
+            final double number = PhysicsCalc.FluidMechanics.machNumber(objectSpeed, SpeedUnit.SOUND_SPEED);
+            // then
+            assertEquals(1.214, number, DELTA3);
+        }
+
+        @Test
+        void testObjectSpeedFromMachNumber() {
+            // given
+            final byte machNumber = 3;
+            // when
+            final double objectSpeed = PhysicsCalc.FluidMechanics
+                .objectSpeedFromMachNumber(SpeedUnit.SOUND_SPEED, machNumber);
+            // then
+            assertEquals(1029.6, objectSpeed, DELTA1);
+        }
+
+        @Test
+        void testObliqueShockDownstreamMachNumber() {
+            // given
+            final double specificHeatRatio = 1.4;
+            final byte upstreamMachNumber = 5;
+            final double waveAngle = AngleUnit.degToRadians(20);
+            // when
+            final double turnAngle = PhysicsCalc.FluidMechanics
+                .obliqueShockDownstreamMachNumber(specificHeatRatio, upstreamMachNumber, waveAngle);
+            // then
+            assertEquals(3.933, turnAngle, DELTA3);
+        }
+
+        @Test
+        void testNormalShockUpstreamMachNumber() {
+            // given
+            final byte upstreamMachNumber = 5;
+            final double waveAngle = AngleUnit.degToRadians(20);
+            // when
+            final double normalShock = PhysicsCalc.FluidMechanics
+                .normalShockUpstreamMachNumber(upstreamMachNumber, waveAngle);
+            // then
+            assertEquals(1.71, normalShock, DELTA2);
+        }
+
+        @Test
+        void testNormalShockDownstreamMachNumber() {
+            // given
+            final double downstreamMachNumber = 3.933;
+            final double waveAngle = AngleUnit.degToRadians(20);
+            final double turnAngle = 0.18615;
+            // when
+            final double normalShock = PhysicsCalc.FluidMechanics
+                .normalShockDownstreamMachNumber(downstreamMachNumber, waveAngle, turnAngle);
+            // then
+            assertEquals(0.638, normalShock, DELTA3);
+        }
+
+        @Test
+        void testObliqueShockPressureRatio() {
+            // given
+            final double specificHeatRatio = 1.4;
+            final byte upstreamMachNumber = 5;
+            final double waveAngle = AngleUnit.degToRadians(20);
+            // when
+            final double ratio = PhysicsCalc.FluidMechanics
+                .obliqueShockPressureRatio(specificHeatRatio, upstreamMachNumber, waveAngle);
+            // then
+            assertEquals(3.245, ratio, DELTA3);
+        }
+
+        @Test
+        void testObliqueShockStagnationPressureRatio() {
+            // given
+            final double specificHeatRatio = 1.4;
+            final byte upstreamMachNumber = 5;
+            final double waveAngle = AngleUnit.degToRadians(20);
+            // when
+            final double ratio = PhysicsCalc.FluidMechanics
+                .obliqueShockStagnationPressureRatio(specificHeatRatio, upstreamMachNumber, waveAngle);
+            // then
+            assertEquals(0.8515, ratio, DELTA4);
+        }
+
+        @Test
+        void testObliqueShockTemperatureRatio() {
+            // given
+            final double specificHeatRatio = 1.4;
+            final byte upstreamMachNumber = 5;
+            final double waveAngle = AngleUnit.degToRadians(20);
+            // when
+            final double ratio = PhysicsCalc.FluidMechanics
+                .obliqueShockTemperatureRatio(specificHeatRatio, upstreamMachNumber, waveAngle);
+            // then
+            assertEquals(1.4656, ratio, DELTA4);
+        }
+
+        @Test
+        void testObliqueShockDensityRatio() {
+            // given
+            final double specificHeatRatio = 1.4;
+            final byte upstreamMachNumber = 5;
+            final double waveAngle = AngleUnit.degToRadians(20);
+            // when
+            final double ratio = PhysicsCalc.FluidMechanics
+                .obliqueShockDensityRatio(specificHeatRatio, upstreamMachNumber, waveAngle);
+            // then
+            assertEquals(2.2142, ratio, DELTA4);
+        }
+
+        @Test
+        void testHydraulicMeanDepth() {
+            // given
+            final byte areaOfCrossSection = 1;
+            final double channelWidth = 0.5;
+            // when
+            final double depth = PhysicsCalc.FluidMechanics.hydraulicMeanDepth(areaOfCrossSection, channelWidth);
+            // then
+            assertEquals(2, depth, DELTA1);
+        }
+
+        @Test
+        void testHydraulicMeanDepthFromFroudeNumber() {
+            // given
+            final byte flowVelocity = 2;
+            final double froudeNumber = 0.4;
+            // when
+            final double depth = PhysicsCalc.FluidMechanics
+                .hydraulicMeanDepthFromFroudeNumber(flowVelocity, froudeNumber);
+            // then
+            assertEquals(2.5493, depth, DELTA4);
+        }
+
+        @Test
+        void testChannelWidthFromHydraulicMeanDepth() {
+            // given
+            final double areaOfCrossSection = 1.5;
+            final double depth = 2.5493;
+            // when
+            final double width = PhysicsCalc.FluidMechanics
+                .channelWidthFromHydraulicMeanDepth(areaOfCrossSection, depth);
+            // then
+            assertEquals(0.5884, width, DELTA4);
+        }
+
+        @Test
+        void testFroudeNumber() {
+            // given
+            final byte flowVelocity = 1;
+            final byte hydraulicMeanDepth = 2;
+            // when
+            final double number = PhysicsCalc.FluidMechanics.froudeNumber(flowVelocity, hydraulicMeanDepth);
+            // then
+            assertEquals(0.2258, number, DELTA4);
+        }
+
+        @Test
+        void testHydraulicRadiusOfPipe() {
+            // given
+            final double radius = 0.6;
+            // when
+            final double hydraulicRadius = PhysicsCalc.FluidMechanics.hydraulicRadiusOfPipe(radius);
+            // then
+            assertEquals(0.3, hydraulicRadius, DELTA1);
+        }
+
+        @Test
+        void testHydraulicRadiusOfPartiallyFilledPipe() {
+            // given
+            final double radius = 0.6;
+            final double filledHeight = 0.2;
+            // when
+            final double hydraulicRadius = PhysicsCalc.FluidMechanics
+                .hydraulicRadiusOfPartiallyFilledPipe(radius, filledHeight);
+            // then
+            assertEquals(0.12276, hydraulicRadius, DELTA5);
+        }
+
+        @Test
+        void testHydraulicRadiusOfRectangularChannel() {
+            // given
+            final byte height = 2;
+            final byte width = 6;
+            // when
+            final double radius = PhysicsCalc.FluidMechanics.hydraulicRadiusOfRectangularChannel(width, height);
+            // then
+            assertEquals(1.2, radius, DELTA1);
+        }
+
+        @Test
+        void testHydraulicRadiusOfTrapezoidalChannel() {
+            // given
+            final byte height = 2;
+            final double topWidth = 2.5;
+            final byte bottomWidth = 1;
+            // when
+            final double radius = PhysicsCalc.FluidMechanics
+                .hydraulicRadiusOfTrapezoidalChannel(topWidth, bottomWidth, height);
+            // then
+            assertEquals(0.6639, radius, DELTA4);
+        }
+
+        @Test
+        void testHydraulicRadiusOfTriangularChannel() {
+            // given
+            final byte width = 5;
+            final byte height = 2;
+            // when
+            final double radius = PhysicsCalc.FluidMechanics.hydraulicRadiusOfTriangularChannel(width, height);
+            // then
+            assertEquals(0.7809, radius, DELTA4);
+        }
+
+        @Test
+        void testHydrostaticPressure() {
+            // given pure water and the Mariana Trench in the Pacific Ocean
+            final short fluidDensity = 1000;
+            final short depth = 11_000;
+            final int externalPressure = PressureUnit.ATMOSPHERIC_PRESSURE;
+            // when
+            final double pressure = PhysicsCalc.FluidMechanics
+                .hydrostaticPressure(fluidDensity, depth, externalPressure);
+            // then
+            assertEquals(107_974_475, pressure, DELTA1);
+        }
+
+        @Test
+        void testKnudsenNumber() {
+            // given
+            final double meanFreePath = 0.08;
+            final double characteristicLinearDimension = 0.05;
+            // when
+            final double number = PhysicsCalc.FluidMechanics.knudsenNumber(meanFreePath, characteristicLinearDimension);
+            // then
+            assertEquals(1.6, number, DELTA1);
+        }
+
+        @Test
+        void testReynoldsNumber() {
+            // given
+            final byte fluidVelocity = 1;
+            final double characteristicLinearDimension = 0.25;
+            final double fluidDensity = 999.7;
+            final double dynamicViscosity = 0.001308;
+            // when
+            final double number = PhysicsCalc.FluidMechanics
+                .reynoldsNumber(fluidVelocity, characteristicLinearDimension, fluidDensity, dynamicViscosity);
+            // then
+            assertEquals(191_074.1, number, DELTA1);
+        }
+
+        @Test
+        void testReynoldsNumberFromKinematicViscosity() {
+            // given
+            final byte fluidVelocity = 1;
+            final double characteristicLinearDimension = 0.25;
+            final double kinematicViscosity = 0.0000013084;
+            // when
+            final double number = PhysicsCalc.FluidMechanics
+                .reynoldsNumberFromKinematicViscosity(fluidVelocity, characteristicLinearDimension, kinematicViscosity);
+            // then
+            assertEquals(191_073, number, DELTA1);
+        }
+
+        @Test
+        void testBernoulliEquationSolveForSpeed() {
+            // given
+            final short fluidDensity = 1000;
+            final short pressurePosition1 = 1000;
+            final double height = 3;
+            final double fluidSpeed = 2;
+            final short pressurePosition2 = 1200;
+            // when
+            final double speed = PhysicsCalc.FluidMechanics.bernoulliEquationSolveForSpeed(fluidDensity,
+                pressurePosition1, height, fluidSpeed, pressurePosition2, height);
+            // then
+            assertEquals(1.8974, speed, DELTA4);
+        }
+
+        @Test
+        void testMagnusForce() {
+            // given
+            final double radius = 0.5;
+            final byte length = 10;
+            final byte angularVelocity = 20;
+            final byte freeStreamVelocity = 10;
+            // when
+            final double force = PhysicsCalc.FluidMechanics
+                .magnusForce(radius, length, angularVelocity, DensityUnit.AIR_DENSITY, freeStreamVelocity);
+            // then
+            assertEquals(3848.451, force, DELTA3);
+        }
+
+        @Test
+        void testLiftCoefficient() {
+            // given air
+            final short liftForce = 800;
+            final byte flowSpeed = 100;
+            final byte surfaceArea = 1;
+            // when
+            final double coeff = PhysicsCalc.FluidMechanics
+                .liftCoefficient(liftForce, flowSpeed, surfaceArea, DensityUnit.AIR_DENSITY);
+            // then
+            assertEquals(0.1306, coeff, DELTA4);
+        }
+
+        @Test
+        void testLiftForce() {
+            // given air
+            final double liftCoeff = 0.52;
+            final short flowSpeed = 150;
+            final byte surfaceArea = 2;
+            // when
+            final double force = PhysicsCalc.FluidMechanics
+                .liftForce(liftCoeff, flowSpeed, surfaceArea, DensityUnit.AIR_DENSITY);
+            // then
+            assertEquals(14_332.5, force, DELTA1);
+        }
+
+        @Test
+        void testDarcysLawHydraulicGradient() {
+            // given
+            final byte pressureIn = 120;
+            final byte pressureOut = 20;
+            final byte pressureDifference = pressureIn - pressureOut;
+            final byte viscosity = 14;
+            final double distance = 38.095;
+            // when
+            final double hydraulicGradient = PhysicsCalc.FluidMechanics
+                .darcysLawHydraulicGradient(pressureDifference, viscosity, distance);
+            // then
+            assertEquals(0.1875, hydraulicGradient, DELTA4);
+        }
+
+        @Test
+        void testDarcysLawFlowRate() {
+            // given
+            final byte area = 2;
+            final double permeability = 0.8;
+            final double hydraulicGradient = 0.1875;
+            // when
+            final double flowRate = PhysicsCalc.FluidMechanics
+                .darcysLawFlowRate(area, permeability, hydraulicGradient);
+            // then
+            assertEquals(0.3, flowRate, DELTA1);
+        }
+
+        @Test
+        void testDarcysLawFlowRateFromVolumeAndTime() {
+            // given
+            final byte volume = 3;
+            final double time = 10;
+            // when
+            final double flowRate = PhysicsCalc.FluidMechanics.darcysLawFlowRate(volume, time);
+            // then
+            assertEquals(0.3, flowRate, DELTA1);
+        }
+
+        @Test
+        void testDarcysLawPermeability() {
+            // given
+            final double flowRate = 0.3;
+            final byte area = 2;
+            final double hydraulicGradient = 0.1875;
+            // when
+            final double permeability = PhysicsCalc.FluidMechanics
+                .darcysLawPermeability(flowRate, area, hydraulicGradient);
+            // then
+            assertEquals(0.8, permeability, DELTA1);
+        }
+
+        @Test
+        void testDarcysLawPermeabilityFromVolumeAndTime() {
+            // given
+            final double volume = 3;
+            final double time = 10;
+            final byte area = 2;
+            final double hydraulicGradient = 0.1875;
+            // when
+            final double permeability = PhysicsCalc.FluidMechanics
+                .darcysLawPermeability(volume, time, area, hydraulicGradient);
+            // then
+            assertEquals(0.8, permeability, DELTA1);
         }
     }
 
@@ -4749,7 +5472,7 @@ class PhysicsCalcTest {
             // when
             final double speedSound = PhysicsCalc.Acoustics.soundSpeed(wavelength, frequency);
             // then
-            assertEquals(PhysicsCalc.SOUND_SPEED, speedSound, DELTA1);
+            assertEquals(342.993, speedSound, DELTA1);
         }
 
         @Test
@@ -4800,23 +5523,21 @@ class PhysicsCalcTest {
         @Test
         void testSoundWavelength() {
             // given
-            final short speedOfSound = PhysicsCalc.SOUND_SPEED;
             final short frequency = 210;
             // when
-            final double wavelength = PhysicsCalc.Acoustics.soundWavelength(speedOfSound, frequency);
+            final double wavelength = PhysicsCalc.Acoustics.soundWavelength(SpeedUnit.SOUND_SPEED, frequency);
             // then
-            assertEquals(1.6333, wavelength, DELTA4);
+            assertEquals(1.6342, wavelength, DELTA4);
         }
 
         @Test
         void testSoundFrequency() {
             // given
-            final short speedOfSound = PhysicsCalc.SOUND_SPEED;
             final double wavelength = 1.6333;
             // when
-            final double frequency = PhysicsCalc.Acoustics.soundFrequency(speedOfSound, wavelength);
+            final double frequency = PhysicsCalc.Acoustics.soundFrequency(SpeedUnit.SOUND_SPEED, wavelength);
             // then
-            assertEquals(210, frequency, DELTA1);
+            assertEquals(210.1, frequency, DELTA1);
         }
 
         @Test

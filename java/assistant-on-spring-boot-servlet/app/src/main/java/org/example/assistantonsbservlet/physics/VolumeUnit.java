@@ -20,5 +20,20 @@ public enum VolumeUnit {
     QUART_US, // US qt
     QUART_UK, // UK qt
     PINT_US, // US pt
-    PINT_UK // UK pt
+    PINT_UK; // UK pt
+
+    public static final double EARTH_VOLUME = 1.083e21; // 1.08321e12 km³
+
+    public static double cm3ToMm3(double cubicCentimeters) {
+        return cubicCentimeters * 1000;
+    }
+
+    /**
+     * 1g/cm³ = 1000kg/m³
+     *
+     * @return kg/m³
+     */
+    public static double gcm3ToKgm3(double gramsPerCubicCentimeter) {
+        return gramsPerCubicCentimeter * 1000;
+    }
 }
