@@ -63,6 +63,13 @@ public enum PowerUnit {
         return 10 * log(outputPowerWatts / inputPowerWatts);
     }
 
+    /**
+     * gain/amplitude ratio
+     */
+    public static double decibelToLinearScale(double dB) {
+        return Math.pow(10, dB / 10.0);
+    }
+
     public static double solarLuminosityToWatts(double solarLuminosity) {
         return solarLuminosity * NOMINAL_SOLAR_LUMINOSITY;
     }

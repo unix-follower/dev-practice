@@ -16,6 +16,10 @@ public enum FrequencyUnit {
         return hertz / 1_000_000;
     }
 
+    public static double ghzToHz(double gigahertz) {
+        return gigahertz * 1e9;
+    }
+
     public static double thzToHz(double terahertz) {
         return terahertz * 1e12;
     }

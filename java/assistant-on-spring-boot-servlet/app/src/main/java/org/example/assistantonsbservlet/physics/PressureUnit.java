@@ -32,12 +32,20 @@ public enum PressureUnit {
         return megapascals / 1_000_000;
     }
 
+    public static double megaPaToGPa(double megapascals) {
+        return megapascals / 1_000;
+    }
+
     public static double paToMicroPa(double pascals) {
         return pascals * 1e6;
     }
 
     public static double gpaToPa(double gigapascals) {
         return gigapascals / 1_000_000_000;
+    }
+
+    public static double gpaToMPa(double gigapascals) {
+        return gigapascals * 1_000;
     }
 
     public static double pascalsToInchesOfWater(double pascals) {
