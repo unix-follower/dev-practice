@@ -37,6 +37,10 @@ public enum LengthUnit {
         return nm / 1e9;
     }
 
+    public static double micrometersToMeters(double micrometers) {
+        return micrometers / 1e6;
+    }
+
     public static double millimetersToMeters(double mm) {
         return mm / 1000;
     }
@@ -59,10 +63,6 @@ public enum LengthUnit {
 
     public static double kmphToMetersPerSecond(double kmPerHour) {
         return kilometersToMeters(kmPerHour) / 3600;
-    }
-
-    public static double squareMeterToSquareFeet(double sqMeters) {
-        return sqMeters * 10.7639;
     }
 
     /**

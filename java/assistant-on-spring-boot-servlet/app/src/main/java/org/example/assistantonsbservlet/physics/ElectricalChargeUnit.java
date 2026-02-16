@@ -10,8 +10,10 @@ public enum ElectricalChargeUnit {
     AMPERE_HOUR, // Ah
     MILLIAMPERE_HOUR; // mAh
 
+    public static final double ELECTRON_CHARGE = 1.602176634e-19; // In Coulombs
+
     public static double elementaryChargeToCoulomb(double charge) {
-        return charge * 1.602176634e-19;
+        return charge * ELECTRON_CHARGE;
     }
 
     public static double newtonPerCoulombToKiloNC(double chargeNC) {

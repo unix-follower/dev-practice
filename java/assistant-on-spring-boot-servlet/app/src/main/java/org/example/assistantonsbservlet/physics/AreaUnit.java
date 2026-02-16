@@ -14,5 +14,11 @@ public enum AreaUnit {
     DECARES, // da
     HECTARES, // ha
     ACRES, // ac
-    SOCCER_FIELDS // sf
+    SOCCER_FIELDS, // sf
+    CIRCULAR_MIL, // cmil
+    KILOCIRCULAR_MIL; // kcmil
+
+    public static double squareMeterToSquareFeet(double sqMeters) {
+        return sqMeters * 10.7639;
+    }
 }

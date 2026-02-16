@@ -43,4 +43,8 @@ public enum CapacitanceUnit {
     public static double microFaradsToPicofarads(double microFarads) {
         return microFarads * ONE_MICROFARAD_IN_PICOFARADS;
     }
+
+    public static double faradsPerSqCmToFaradsPerSqMeters(double capacitancePerUnitAreaSqCm) {
+        return capacitancePerUnitAreaSqCm * 10_000;
+    }
 }

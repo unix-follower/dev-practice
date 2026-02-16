@@ -16,21 +16,19 @@ import java.util.function.DoubleUnaryOperator;
 
 import static org.example.assistantonsbservlet.math.MathCalc.Algebra.ln;
 import static org.example.assistantonsbservlet.math.MathCalc.Algebra.log;
+import static org.example.assistantonsbservlet.math.MathCalc.Algebra.nthRoot;
 import static org.example.assistantonsbservlet.math.MathCalc.Algebra.squareRoot;
 import static org.example.assistantonsbservlet.math.MathCalc.Arithmetic.reciprocal;
 import static org.example.assistantonsbservlet.math.MathCalc.Geometry.crossSectionalAreaOfCircularWire;
 import static org.example.assistantonsbservlet.math.NumberUtils.checkGreater0;
 import static org.example.assistantonsbservlet.physics.AccelerationUnit.GRAVITATIONAL_ACCELERATION_ON_EARTH;
+import static org.example.assistantonsbservlet.physics.ElectricalChargeUnit.ELECTRON_CHARGE;
 import static org.example.assistantonsbservlet.physics.SpeedUnit.SOUND_SPEED_IN_AIR_KELVIN_REF_POINT;
 import static org.example.assistantonsbservlet.physics.SpeedUnit.SOUND_SPEED_IN_DRY_AIR;
+import static org.example.assistantonsbservlet.physics.SpeedUnit.SPEED_OF_LIGHT;
 
 public final class PhysicsCalc {
     public static final double AVOGADRO_NUMBER = 6.02214076e23;
-    /**
-     * ~3.00 * 10⁸ m/s. Also, 300 * 10⁶ m/s
-     */
-    public static final int SPEED_OF_LIGHT = 299_792_458;
-    public static final double ELECTRON_CHARGE = 1.6021766208e-19; // In Coulombs
     public static final double ELECTRON_REST_MASS = 9.1093837139e-31; // In kg
     public static final double FINE_STRUCTURE_CONSTANT = 0.0072973525643; // ≈ 137.035999177⁻¹, 1/137
     public static final double BLINK_OF_AN_EYE_SEC = 0.350; // 350e-3
@@ -60,8 +58,9 @@ public final class PhysicsCalc {
     public static final byte MONOATOMIC_GAS_DEGREES_OF_FREEDOM = 3;
     public static final double SUN_POTENTIAL_ENERGY_ERGS = 1.788e54;
     public static final short SOLAR_CONSTANT = 1367; // in W/m²
-    public static final double REDUCED_PLANCK_CONSTANT = 1.0545718001e-34; // h/2π; 1.0545718001×10⁻³⁴ J·s
     public static final double UNIVERSAL_GAS_CONSTANT = 8.31446261815324; // J/(mol·K)
+    public static final double PLANCK_CONSTANT = 6.62607015e-34; // m²·kg/s
+    public static final double REDUCED_PLANCK_CONSTANT = 1.054571817e-34; // J·s; ℏ = h/2π
 
     private PhysicsCalc() {
     }
@@ -1433,6 +1432,13 @@ public final class PhysicsCalc {
                 * squareRoot(lengthMeters / GRAVITATIONAL_ACCELERATION_ON_EARTH);
             return reciprocal(pendulumPeriodSeconds);
         }
+
+        /**
+         * @return λ = v/f. The units are meters
+         */
+        public static double wavelength(double waveVelocity, double waveFrequencyHz) {
+            return waveVelocity / waveFrequencyHz;
+        }
     }
 
     public static final class Mechanics {
@@ -2160,11 +2166,52 @@ public final class PhysicsCalc {
         public static double numberDensity(double density, double molarMass, int numOfFreeElectrons) {
             return (AVOGADRO_NUMBER * numOfFreeElectrons * density) / molarMass;
         }
+
+        /**
+         * @param meanDiagLength  in mm. Mean diagonal length on indentation (d)
+         * @param pyramidAngleRad Angle of indenter, commonly taken as α = 136°.
+         * @return HV = 2 × F × sin(α/2) / (g × d²). The units are kgf/mm²
+         */
+        public static double vickersHardnessNumber(double loadForceN, double meanDiagLength, double pyramidAngleRad) {
+            return 2 * loadForceN * Trigonometry.sin(pyramidAngleRad / 2)
+                / (GRAVITATIONAL_ACCELERATION_ON_EARTH * meanDiagLength * meanDiagLength);
+        }
+
+        /**
+         * @param vickersHardnessNumber in kgf/mm²
+         * @return H = HV × 9.80665/1000. The units are GPa
+         */
+        public static double surfaceAreaHardness(double vickersHardnessNumber) {
+            return PressureUnit.megaPaToGPa(vickersHardnessNumber * GRAVITATIONAL_ACCELERATION_ON_EARTH);
+        }
+
+        /**
+         * @param surfaceAreaHardness in GPa
+         * @param constant            The constant c depends on several factors; however, as a rule of thumb,
+         *                            c is taken as 3 for metallic crystalline materials.
+         * @return σᵤ = H/c
+         */
+        public static double tensileStrength(double surfaceAreaHardness, double constant) {
+            return surfaceAreaHardness / constant;
+        }
+
+        /**
+         * HBW = Test force [N] / Surface area of indentation [mm²]
+         *
+         * @param appliedLoadNewtons Test force (P)
+         * @return HBW = 0.102 * (2P)/(πD(D−√(D²−d²))). The units are MPa
+         */
+        public static double brinellHardnessNumber(double appliedLoadNewtons, double indenterDiameterMm,
+                                                   double indentationDiameterMm) {
+            final double sqIndenter = indenterDiameterMm * indenterDiameterMm;
+            final double sqIndentation = indentationDiameterMm * indentationDiameterMm;
+            final double indentationSurfaceArea = Math.PI * indenterDiameterMm * (indenterDiameterMm
+                - squareRoot(sqIndenter - sqIndentation));
+            return 0.102 * (2 * appliedLoadNewtons) / indentationSurfaceArea;
+        }
     }
 
     public static final class QuantumMechanics {
-        public static final double PLANCK_CONSTANT = 6.62607015e-34; // m²·kg/s
-        public static final double REDUCED_PLANCK_CONSTANT = 1.054571817e-34; // J·s; ℏ = h/2π
         public static final double BOHR_MAGNETON = 9.274e-24; // J/T
         public static final double WIEN_DISPLACEMENT_CONSTANT = 2.897771955e-3; // m·K
         public static final double RYDBERG_CONSTANT_FOR_HYDROGEN = 1.0973e7; // R≈1.0973×10⁷ m⁻¹
@@ -2286,7 +2333,7 @@ public final class PhysicsCalc {
          * @return Magnitude: L = √(l(l+1)) * h/(2π). The units are J·s
          */
         public static double angularMomentumMagnitude(int quantumNumber) {
-            return squareRoot(quantumNumber * (quantumNumber + 1)) * PLANCK_CONSTANT / Trigonometry.PI2;
+            return squareRoot((double) quantumNumber * (quantumNumber + 1)) * PLANCK_CONSTANT / Trigonometry.PI2;
         }
 
         /**
@@ -3027,6 +3074,19 @@ public final class PhysicsCalc {
         }
 
         /**
+         * @param dischargeRate    in m³/s (Q), aka flow rate
+         * @param distanceM        How far the fluid travels through the material.
+         * @param area             in m². Cross-sectional area of the material.
+         * @param dynamicViscosity in Pa⋅s (μ)
+         * @return k = (QμL)/(AΔp). The units are m²
+         */
+        public static double permeability(double dischargeRate, double pressureInPa, double pressureOutPa,
+                                          double distanceM, double area, double dynamicViscosity) {
+            final double pressureDiff = pressureInPa - pressureOutPa;
+            return (dischargeRate * dynamicViscosity * distanceM) / (area * pressureDiff);
+        }
+
+        /**
          * @param volume in m³
          * @param area   in m²
          * @return k = V/(t×A×i). The units are m/s
@@ -3034,6 +3094,85 @@ public final class PhysicsCalc {
         public static double darcysLawPermeability(double volume, double timeSeconds, double area,
                                                    double hydraulicGradient) {
             return volume / (timeSeconds * area * hydraulicGradient);
+        }
+
+        /**
+         * ΔP/L = (f⋅V²⋅ρ)/(2⋅D)
+         * The Colebrook equation: 1/√f = −2log(k/(3.7D) + 2.51/(Re√f)
+         *
+         * @param flowVelocity in m/s
+         * @param fluidDensity in kg/m³
+         * @return ΔP = (f⋅L⋅V²⋅ρ)/(2⋅D). The units are Pa
+         */
+        public static double darcyWeisbach(double lengthPipeM, double pipeDiameterM, double flowVelocity,
+                                           double fluidDensity, double frictionFactor) {
+            return (frictionFactor * lengthPipeM * flowVelocity * flowVelocity * fluidDensity) / (2 * pipeDiameterM);
+        }
+
+        /**
+         * The Moody formula.
+         * Check the relative roughness (k/D) to be under 0.01. A value of < 0.01 means
+         * the pipe is relatively smooth, which generally results in lower friction.
+         *
+         * @param reynoldsNumber ρ × V × D / μ
+         * @return f = 0.0055 × (1 + (2×10⁴ × k/D + 10⁶/Re)^(1/3))
+         */
+        public static double darcyFrictionFactor(
+            double hydraulicDiameterM, double surfaceRoughnessM, double reynoldsNumber) {
+            if (reynoldsNumber <= 4000 || reynoldsNumber >= 5e8) {
+                throw new IllegalArgumentException(
+                    "Moody approximation only works for Reynold's number within the limits (4000 - 5*10⁸)");
+            }
+            final double relativeRoughness = surfaceRoughnessM / hydraulicDiameterM;
+            return 0.0055 * (1 + Math.pow(20_000 * relativeRoughness + 1e6 / reynoldsNumber, MathCalc.ONE_THIRD));
+        }
+
+        /**
+         * Rate at which fluid departs the material.
+         *
+         * @param distanceM        How far the fluid travels through the material.
+         * @param area             in m². Cross-sectional area of the material.
+         * @param dynamicViscosity in Pa⋅s (μ)
+         * @param permeability     in m² (k)
+         * @return Q = (kAΔp)/(μL). The units are m³/s
+         */
+        public static double darcysLawFluidDischargeRate(double pressureInPa, double pressureOutPa, double distanceM,
+                                                         double area, double dynamicViscosity, double permeability) {
+            final double pressureDiff = pressureInPa - pressureOutPa;
+            return (permeability * area * pressureDiff) / (dynamicViscosity * distanceM);
+        }
+
+        /**
+         * @param distanceM        How far the fluid travels through the material.
+         * @param area             in m². Cross-sectional area of the material.
+         * @param dynamicViscosity in Pa⋅s
+         * @param permeability     in m²
+         * @return ϕ = (Qt)/(AL)
+         */
+        public static double porosity(double pressureInPa, double pressureOutPa, double distanceM, double area,
+                                      double dynamicViscosity, double residenceSeconds, double permeability) {
+            final double dischargeRate = darcysLawFluidDischargeRate(pressureInPa, pressureOutPa, distanceM, area,
+                dynamicViscosity, permeability);
+            return (dischargeRate * residenceSeconds) / (area * distanceM);
+        }
+
+        /**
+         * @param dynamicViscosity in Pa⋅s (μ)
+         * @return R = (8⋅μ⋅l) / (π⋅r⁴). The units are Pa⋅s/m³
+         */
+        public static double poiseuillesLawResistance(double dynamicViscosity, double pipeLengthM, double radiusM) {
+            return (8 * dynamicViscosity * pipeLengthM) / (Math.PI * Math.pow(radiusM, 4));
+        }
+
+        /**
+         * r⁴ = (8 * μ * l) / (π * R)
+         *
+         * @param dynamicViscosity in Pa⋅s (μ)
+         * @param resistance       in Pa⋅s/m³
+         * @return r = ((8 * μ * l) / (π * R))^(1/4). The units are meters
+         */
+        public static double poiseuillesLawPipeRadius(double dynamicViscosity, double pipeLengthM, double resistance) {
+            return nthRoot((8 * dynamicViscosity * pipeLengthM) / (Math.PI * resistance), 4);
         }
     }
 
@@ -3802,6 +3941,203 @@ public final class PhysicsCalc {
          */
         public static double currentFromMagneticDipoleMoment(double moment, double areaMeters, double numberOfTurns) {
             return Math.abs(moment) / (numberOfTurns * areaMeters);
+        }
+
+        /**
+         * @param cellEMFVolts Electromotive force of the voltage source.
+         * @return r = ε/I − R. The units are Ohms
+         */
+        public static double internalResistance(double cellEMFVolts, double loadResistanceOhms, double currentAmps) {
+            return cellEMFVolts / currentAmps - loadResistanceOhms;
+        }
+
+        /**
+         * @return V = ε − ir. The units are V
+         */
+        public static double terminalVoltage(double cellEMFVolts, double currentAmps, double internalResistanceOhms) {
+            return cellEMFVolts - currentAmps * internalResistanceOhms;
+        }
+
+        /**
+         * @return T = 60×P/(2×π×rpm). The units are N⋅m
+         */
+        public static double electricMotorTorque(double motorSpeed, double powerWatts) {
+            return (60 * powerWatts) / (Trigonometry.PI2 * motorSpeed);
+        }
+
+        /**
+         * @return s = (rpm_noload−rpm_load)/rpm_noload × 100%. The units are %
+         */
+        public static double electricMotorSlip(double motorSpeedRpm, double motorSpeedWithLoadRpm) {
+            return (motorSpeedRpm - motorSpeedWithLoadRpm) / motorSpeedRpm * 100;
+        }
+
+        /**
+         * rpm_synch - the rotational speed of the magnetic field.
+         * rpm_load - the real rotation speed when the motor is under load. It is less than the synchronous speed.
+         *
+         * @param numOfPoles Number of magnet poles in the electric motor.
+         *                   A 2 pole motor has a single magnet with two poles.
+         * @return rpm_synch = (120×f)/p. The units are RPM
+         */
+        public static double electricMotorSynchronousRPM(double supplyFrequency, int numOfPoles) {
+            return (120 * supplyFrequency) / numOfPoles;
+        }
+
+        /**
+         * r₁ₘₐₓ = √(c * D / (4 * f))
+         *
+         * @param distanceMeters Distance between the antennas
+         * @return r₁ₘₐₓ = √(λ * D / 4). The units are meters
+         */
+        public static double fresnel1stZoneLargestRadius(double frequencyHz, double distanceMeters) {
+            return fresnelZoneLargestRadius(1, frequencyHz, distanceMeters);
+        }
+
+        /**
+         * @param emitterDistanceM  Distance from the emitter antenna (d₁)
+         * @param receiverDistanceM Distance from the receiver antenna (d₂)
+         * @return r = √(λ * d₁ * d₂ / (d₁ + d₂)). The units are meters
+         */
+        public static double fresnel1stZoneRadius(
+            double emitterDistanceM, double receiverDistanceM, double wavelengthM) {
+            return fresnelZoneRadius(1, emitterDistanceM, receiverDistanceM, wavelengthM);
+        }
+
+        /**
+         * d₁ = d₂ = D / 2
+         *
+         * @param distanceMeters Distance between the antennas
+         * @return rₙₘₐₓ = √(n * λ * D / 4). The units are meters
+         */
+        public static double fresnelZoneLargestRadius(int numOfFresnelZone, double frequencyHz, double distanceMeters) {
+            final double wavelength = Kinematics.wavelength(SPEED_OF_LIGHT, frequencyHz);
+            return squareRoot(numOfFresnelZone * wavelength * distanceMeters / 4);
+        }
+
+        /**
+         * @param emitterDistanceM  Distance from the emitter antenna (d₁)
+         * @param receiverDistanceM Distance from the receiver antenna (d₂)
+         * @return rₙ = √(n * λ * d₁ * d₂ / (d₁ + d₂)). The units are meters
+         */
+        public static double fresnelZoneRadius(
+            int numOfFresnelZone, double emitterDistanceM, double receiverDistanceM, double wavelengthM) {
+            return squareRoot(numOfFresnelZone * wavelengthM * emitterDistanceM * receiverDistanceM
+                / (emitterDistanceM + receiverDistanceM));
+        }
+
+        /**
+         * @param radiusM The radius of the first Fresnel zone at the point to be checked.
+         * @return H - 0.6 * r. The units are meters
+         */
+        public static double fresnelZoneObstructionLimitHeight(double radiusM, double antennasHeightM) {
+            return antennasHeightM - 0.6 * radiusM;
+        }
+
+        /**
+         * @return nₑ = Q/e
+         */
+        public static double excessElectrons(double objectChargeCoulombs, double electronChargeCoulombs) {
+            return objectChargeCoulombs / electronChargeCoulombs;
+        }
+
+        /**
+         * Free space path loss (FSPL).
+         * Only applicable for unobstructed line of sight signal paths.
+         * P_R = P_T * G_T * G_R(λ/(4πd))²
+         * P_R = P_T * G_T * G_R(c/(4πdf))²
+         * where:
+         * P_T — Transmitted signal power;
+         * λ — Wavelength of the signal;
+         * f — Frequency of the signal.
+         * <br/>
+         * FSPL(dB) = −10log₁₀(P_R/P_T)
+         *
+         * @param transmitterGain in dB. G_T
+         * @param receiverGain    in dB. G_R
+         * @return FSPL(dB) = 20log₁₀(d) + 20log₁₀(f) + 20log₁₀(4π/c) − G_T − G_R. The units are dB
+         */
+        public static double fspl(double distanceM, double frequencyHz, double transmitterGain, double receiverGain) {
+            return 20 * log(distanceM) + 20 * log(frequencyHz) + 20 * log(Trigonometry.PI4 / SPEED_OF_LIGHT)
+                - transmitterGain - receiverGain;
+        }
+
+        /**
+         * For isotropic antennas (one that radiates equally in all directions), the antenna gain is 0 dB.
+         *
+         * @return FSPL(dB) = 20log₁₀(d) + 20log₁₀(f) + 20log₁₀(4π/c). The units are dB
+         */
+        public static double fspl(double distanceM, double frequencyHz) {
+            return fspl(distanceM, frequencyHz, 0, 0);
+        }
+
+        /**
+         * @return IL = 10log(P_L/P_T). The units are dB
+         */
+        public static double insertionLossFromPowerDeliveredToLoad(double powerBeforeInsertionW,
+                                                                   double powerAfterInsertionW) {
+            return 10 * log(powerBeforeInsertionW / powerAfterInsertionW);
+        }
+
+        /**
+         * @return IL = 20log(V₂/V₁). The units are dB
+         */
+        public static double insertionLossFromVoltageAcrossLoad(double voltageBeforeInsertionV,
+                                                                double voltageAfterInsertionV) {
+            return 20 * log(voltageBeforeInsertionV / voltageAfterInsertionV);
+        }
+
+        /**
+         * VSWR (voltage standing wave ratio).
+         * The ideal VSWR value is 1 : 1, which shows that the reflected power is 0, signifying no power wastage.
+         * This is also its lowest value - VSWR can't be less than 1!
+         *
+         * @return VSWR = (1 + |Γ|) / (1 - |Γ|)
+         */
+        public static double vswr(double reflectionCoefficient) {
+            final double absGamma = Math.abs(reflectionCoefficient);
+            return (1 + absGamma) / (1 - absGamma);
+        }
+
+        /**
+         * @return |Γ| = (VSWR - 1)/(VSWR + 1)
+         */
+        public static double reflectionCoefficient(double vswr) {
+            return (vswr - 1) / (vswr + 1);
+        }
+
+        /**
+         * @return Return loss = -20 * log(Γ). The units are dB
+         */
+        public static double returnLoss(double reflectionCoefficient) {
+            return -20 * log(reflectionCoefficient);
+        }
+
+        /**
+         * The percentage of the transmitted power that's reflected.
+         *
+         * @return Reflected power (p) = 100 * Γ². The units are %
+         */
+        public static double reflectedPower(double reflectionCoefficient) {
+            return 100 * reflectionCoefficient * reflectionCoefficient;
+        }
+
+        /**
+         * The percentage of transmitted power that has gone through without any loss.
+         *
+         * @return Through power percentage = 100% - Reflected power percentage. The units are %
+         */
+        public static double throughPower(double reflectedPowerPercent) {
+            return 100 - reflectedPowerPercent;
+        }
+
+        /**
+         * The power loss due to impedance mismatch.
+         *
+         * @return I = -10 * log(1 - Γ²). The units are dB
+         */
+        public static double mismatchLoss(double reflectionCoefficient) {
+            return -10 * log(1 - (reflectionCoefficient * reflectionCoefficient));
         }
     }
 
@@ -4796,6 +5132,160 @@ public final class PhysicsCalc {
         public static double shockleyDiode(
             double emissionCoeff, double saturationCurrentAmps, double thermalVoltageVolts, double voltageDropVolts) {
             return saturationCurrentAmps * (Math.exp(voltageDropVolts / (emissionCoeff * thermalVoltageVolts)) - 1);
+        }
+
+        /**
+         * Photon Detection Efficiency. Silicon Photomultiplier (SiPM) detector.
+         *
+         * @param gain                    The amount of charge created for each detected photon.
+         * @param afterpulsingProbability in %
+         * @param crosstalkProbability    in %
+         * @param responsivity            in amps per Watt A/W
+         * @return PDE = (Rhc) / (eλG(1+P_XT)(1+P_AP))
+         */
+        public static double pde(double gain, double afterpulsingProbability, double crosstalkProbability,
+                                 double wavelengthM, double responsivity) {
+            final double pxt = 1 + crosstalkProbability / 100;
+            final double pap = 1 + afterpulsingProbability / 100;
+            return (responsivity * PLANCK_CONSTANT * SPEED_OF_LIGHT)
+                / (ELECTRON_CHARGE * wavelengthM * gain * pxt * pap);
+        }
+
+        /**
+         * @param snrAtInput  The signal-to-noise ratio at the input expressed in absolute values.
+         * @param snrAtOutput The signal-to-noise ratio at the output expressed in absolute values.
+         * @return NF = 10×log₁₀(SNRᵢ/SNRₒ). The units are dB
+         */
+        public static double noiseFigureFromAbsoluteSNR(double snrAtInput, double snrAtOutput) {
+            return 10 * log(snrAtInput / snrAtOutput);
+        }
+
+        /**
+         * @return NF = SNRᵢ - SNRₒ. The units are dB
+         */
+        public static double noiseFigureFromSNRInDecibels(double snrAtInputDb, double snrAtOutputDb) {
+            return snrAtInputDb - snrAtOutputDb;
+        }
+
+        /**
+         * @return NF = 10×log₁₀(noise factor). The units are dB
+         */
+        public static double noiseFigureFromNoiseFactor(double noiseFactor) {
+            return 10 * log(noiseFactor);
+        }
+
+        /**
+         * @return F = 10^(NF/10)
+         */
+        public static double noiseFactorFromNoiseFigure(double noiseFigure) {
+            return Math.pow(10, noiseFigure / 10);
+        }
+
+        /**
+         * Gain_total = ∑_Mᶦ⁼¹ gᵢ
+         *
+         * @param noiseGainMatrix in dB
+         * @return Noise_total = 10log₁₀(n₁ + ∑_Mᶦ⁼² (nᵢ−1) / (∏ᵢ−₁ʲ⁼¹ gⱼ)). The units are dB
+         */
+        public static double noiseFigureFromCascadedAmplifiers(double[][] noiseGainMatrix) {
+            final int i1 = Constants.ARR_1ST_INDEX;
+            final int i2 = Constants.ARR_2ND_INDEX;
+            double sum = 0;
+            double gainProduct = PowerUnit.decibelToLinearScale(noiseGainMatrix[i1][i2]);
+            for (int i = 1; i < noiseGainMatrix.length; i++) {
+                final double noiseLinear = PowerUnit.decibelToLinearScale(noiseGainMatrix[i][i1]);
+                sum += (noiseLinear - 1) / gainProduct;
+                gainProduct *= PowerUnit.decibelToLinearScale(noiseGainMatrix[i][i2]);
+            }
+            final double noise1 = PowerUnit.decibelToLinearScale(noiseGainMatrix[i1][i1]);
+            return 10 * log(noise1 + sum);
+        }
+
+        /**
+         * Cut-off: I_D = 0, when Vgs < Vt: the device is turned off.
+         * K = 1/2 * W/L * μ_N * C_ox
+         *
+         * @return K = (2I_D) / (V_gs − V_T)². The dimensions of this quantity are 1/(V×R), in V⁻¹Ω⁻¹
+         */
+        public static double mosfetKParameter(double thresholdVoltageV, double gateSourceVoltageV,
+                                              double sourceDrainCurrentAmps) {
+            return (2 * sourceDrainCurrentAmps) / Math.pow(gateSourceVoltageV - thresholdVoltageV, 2);
+        }
+
+        /**
+         * @param capacitancePerUnitArea in F/m². Capacitance of the oxide layer.
+         * @return K = 1/2 * W/L * μ_N * C_ox. The units are V⁻¹Ω⁻¹
+         */
+        public static double mosfetKParameterFromElectronMobility(
+            double lengthMeters, double widthMeters, double capacitancePerUnitArea, double electronMobility) {
+            return MathCalc.ONE_HALF * widthMeters / lengthMeters * electronMobility * capacitancePerUnitArea;
+        }
+
+        /**
+         * The triode (or linear) regime.
+         * When Vgs ≥ VT and Vds ≤ Vgs - VT: the device operates as a variable resistor.
+         * I_D = W/L * μ_N * C_ox * (V_gs − V_ds/2 − V_T) * V_ds
+         *
+         * @param kParameter in V⁻¹Ω⁻¹
+         * @return I_D = 2 * K(V_gs − V_ds/2 −V_T)V_ds
+         */
+        public static double mosfetTriodeRegionCurrent(double thresholdVoltageV, double kParameter,
+                                                       double drainSourceVoltageV, double gateSourceVoltageV) {
+            return 2 * kParameter * (gateSourceVoltageV - drainSourceVoltageV / 2 - thresholdVoltageV)
+                * drainSourceVoltageV;
+        }
+
+        /**
+         * When Vgs ≥ VT and Vds > Vgs - VT: the drain current flattens at a value decided by the gate voltage.
+         * I_D = 1/2 * W/L * μ_N * C_ox * (V_gs -V_T)²
+         *
+         * @param kParameter in V⁻¹Ω⁻¹
+         * @return I_D = K × (V_gs -V_T)²
+         */
+        public static double mosfetSaturationCurrent(double thresholdVoltageV, double kParameter,
+                                                     double gateSourceVoltageV) {
+            return kParameter * Math.pow(gateSourceVoltageV - thresholdVoltageV, 2);
+        }
+
+        /**
+         * V_T = V_T0 + γ(√(2ϕ_F+V_sb) − √(2ϕ_F)). Where V_sb is the body-source voltage.
+         *
+         * @param insulatorCapacitance in F/m². The capacitance per unit area (C₀)
+         * @param substrateDoping      in m³ (N_A)
+         * @param surfacePotential     in volts (ϕ_F)
+         * @param siliconPermittivity  in F/m. Relative permittivity (ϵ_Si)
+         * @param elementaryCharge     in Coulombs (q)
+         * @return V_T0 = √(2ϵ_Si * q * N_A * (2ϕ_F)) / C₀ − 2ϕ_F. The units are V
+         */
+        public static double mosfetThresholdVoltage(double insulatorCapacitance, double substrateDoping,
+                                                    double surfacePotential, double siliconPermittivity,
+                                                    double elementaryCharge) {
+            return squareRoot(2 * siliconPermittivity * elementaryCharge * substrateDoping * (2 * surfacePotential))
+                / insulatorCapacitance + 2 * surfacePotential;
+        }
+
+        /**
+         * @param substrateDoping        in m³ (N_A)
+         * @param intrinsicConcentration in m³ (nᵢ)
+         * @param elementaryCharge       in Coulombs (q)
+         * @return Ψ_S(inv) = 2ϕ_F = (2kT)/q * ln(N/nᵢ). The units are V
+         */
+        public static double mosfetSurfacePotentialInversion(double tempKelvins, double substrateDoping,
+                                                             double intrinsicConcentration, double elementaryCharge) {
+            return (2 * BOLTZMANN_CONSTANT * tempKelvins) / elementaryCharge
+                * ln(substrateDoping / intrinsicConcentration);
+        }
+
+        /**
+         * @param insulatorCapacitance in F/m². The capacitance per unit area (C₀)
+         * @param substrateDoping      in m³ (N_A)
+         * @param siliconPermittivity  in F/m. Relative permittivity (ϵ_Si)
+         * @return √(2ϵ_Si * q * N_A) / C₀
+         */
+        public static double mosfetBodyEffectCoeff(double insulatorCapacitance, double substrateDoping,
+                                                   double siliconPermittivity, double elementaryChargeCoulombs) {
+            return squareRoot(2 * siliconPermittivity * elementaryChargeCoulombs * substrateDoping)
+                / insulatorCapacitance;
         }
     }
 
@@ -6022,6 +6512,15 @@ public final class PhysicsCalc {
          */
         public static double cloudBase(double tempCelsius, double cloudBaseAltitude, double elevationMeters) {
             return tempCelsius - 0.984 * (cloudBaseAltitude - elevationMeters) / 100;
+        }
+
+        /**
+         * @param timeSeconds Time between flash and thunder.
+         * @param soundSpeed  in m/s
+         * @return Storm distance = Time × Speed of sound. The units are meters
+         */
+        public static double lightningDistance(double timeSeconds, double soundSpeed) {
+            return timeSeconds * soundSpeed;
         }
     }
 

@@ -12,6 +12,11 @@ public enum SpeedUnit {
     KNOT, // kn
     LIGHT_SPEED; // c
 
+    /**
+     * In vacuum ~3.00 * 10⁸ m/s. Also, 300 * 10⁶ m/s
+     */
+    public static final int SPEED_OF_LIGHT = 299_792_458;
+
     public static final double SOUND_SPEED = 343.2; // Normal room temperature at 20°C; m/s or 1130 ft/s
     public static final double SOUND_SPEED_IN_DRY_AIR = 331.3; // at 0°C; m/s
     public static final double SOUND_SPEED_IN_AIR_KELVIN_REF_POINT = 273.15; // at 0°C
