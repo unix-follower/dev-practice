@@ -1,0 +1,176 @@
+graph TD
+    %% Fundamental Quantities
+    A["Position (x, y, z)"]
+    B["Velocity (v)"]
+    C["Acceleration (a)"]
+    D["Force (F)"]
+    E["Energy (E)"]
+    F["Mass (m)"]
+    G["Time (t)"]
+    H["Density (ρ)"]
+    I["Pressure (P)"]
+    J["Temperature (T)"]
+    K["Luminosity (L)"]
+    L["Flux (F*)"]
+    M["Derivative (d/dt)"]
+    N["Partial Derivative (∂/∂x, ∂/∂t)"]
+    O["Integral (∫ dt)"]
+    P["Integral (∫ dx)"]
+    Q["Integral (∫ dA)"]
+    R["Integral (∫ dV)"]
+    S["Gradient (∇)"]
+    T["Divergence (∇·)"]
+    U["Curl (∇×)"]
+    V[Boundary Conditions]
+    W[Green's Function]
+    X[Eigenvalue Problem]
+    Y["Hamiltonian (H)"]
+    Z["Lagrangian (L)"]
+    AA[Equations of Motion]
+    AB[Conservation Laws]
+
+    %% Advanced Astrophysics Topics
+    AC[Stellar Structure]
+    AD[Hydrostatic Equilibrium]
+    AE[Stellar Evolution]
+    AF[Radiative Transfer]
+    AG[Opacity]
+    AH["Magnetohydrodynamics (MHD)"]
+    AI[Plasma Physics]
+    AJ[General Relativity]
+    AK[Einstein Field Equations]
+    AL["Metric Tensor (g_μν)"]
+    AM[Cosmology]
+    AN[Friedmann Equations]
+    AO[Expansion of Universe]
+    AP[Dark Matter]
+    AQ[Dark Energy]
+    AR[Gravitational Waves]
+    AS[Wave Equation]
+    AT[Black Hole Physics]
+    AU[Accretion Disk]
+    AV[Relativistic Jets]
+    AW[Galaxy Formation]
+    AX[Supernova]
+    AY[N-body Simulation]
+    AZ[Computational Astrophysics]
+    BA[Big Data]
+    BB[Machine Learning]
+    BC[Bayesian Inference]
+    BD[Parameter Estimation]
+    BE[Uncertainty Quantification]
+    BF[Multi-Messenger Astrophysics]
+    BG[Neutrino Astronomy]
+    BH[Gamma Ray Astronomy
+]
+    BI[Radio Astronomy]
+    BJ[Optical Astronomy]
+    BK[X-ray Astronomy]
+    BL[Infrared Astronomy]
+    BM[Gravitational Lensing]
+    BN[Time-Domain Astrophysics]
+    BO[Transient Events]
+    BP[Fourier Analysis]
+    BQ[Signal Processing]
+
+    %% Calculus Operations
+    A -- "d/dt" --> B
+    B -- "d/dt" --> C
+    C -- "Newton's Law" --> D
+    D -- "∫ dt" --> B
+    D -- "· dx" --> E
+    A -- "∇" --> S
+    B -- "∇·" --> T
+    B -- "∇×" --> U
+    M -- "Derivative" --> AA
+    N -- "Partial Derivative" --> AA
+    O -- "Integral wrt t" --> AA
+    P -- "Integral wrt x" --> AA
+    Q -- "Integral wrt area" --> L
+    R -- "Volume Integral" --> E
+
+    %% Stellar Structure & Evolution
+    AC -- "Hydrostatic Equilibrium" --> AD
+    AC -- "Partial Derivative" --> N
+    AC -- "Stellar Evolution" --> AE
+    AC -- "Radiative Transfer" --> AF
+    AF -- "Opacity" --> AG
+    AF -- "Integral" --> P
+    AF -- "Partial Derivative" --> N
+
+    %% Magnetohydrodynamics & Plasma Physics
+    AH -- "Plasma Physics" --> AI
+    AH -- "Partial Derivative" --> N
+    AH -- "Divergence, Curl" --> T
+    AH -- "Integral" --> P
+
+    %% General Relativity & Cosmology
+    AJ -- "Einstein Field Equations" --> AK
+    AK -- "Metric Tensor" --> AL
+    AJ -- "Wave Equation" --> AS
+    AM -- "Friedmann Equations" --> AN
+    AM -- "Expansion of Universe" --> AO
+    AM -- "Dark Matter" --> AP
+    AM -- "Dark Energy" --> AQ
+    AM -- "General Relativity" --> AJ
+
+    %% Gravitational Waves & Black Holes
+    AR -- "Wave Equation" --> AS
+    AR -- "General Relativity" --> AJ
+    AR -- "Signal Processing" --> BQ
+    AR -- "Fourier Analysis" --> BP
+    AT -- "General Relativity" --> AJ
+    AT -- "Accretion Disk" --> AU
+    AT -- "Relativistic Jets" --> AV
+
+    %% Galaxy Formation, Supernova, N-body
+    AW -- "N-body Simulation" --> AY
+    AW -- "Partial Derivative" --> N
+    AW -- "Integral" --> P
+    AX -- "Stellar Evolution" --> AE
+    AX -- "Partial Derivative"
+ --> N
+
+    %% Computational Astrophysics & Data Science
+    AZ -- "N-body Simulation" --> AY
+    AZ -- "Big Data" --> BA
+    AZ -- "Machine Learning" --> BB
+    AZ -- "Bayesian Inference" --> BC
+    AZ -- "Parameter Estimation" --> BD
+    AZ -- "Uncertainty Quantification" --> BE
+    AZ -- "Signal Processing" --> BQ
+    AZ -- "Fourier Analysis" --> BP
+
+    %% Multi-Messenger & Observational Astrophysics
+    BF -- "Neutrino Astronomy" --> BG
+    BF -- "Gamma Ray Astronomy" --> BH
+    BF -- "Radio Astronomy" --> BI
+    BF -- "Optical Astronomy" --> BJ
+    BF -- "X-ray Astronomy" --> BK
+    BF -- "Infrared Astronomy" --> BL
+    BF -- "Gravitational Waves" --> AR
+
+    %% Gravitational Lensing & Time-Domain
+    BM -- "General Relativity" --> AJ
+    BM -- "Metric Tensor" --> AL
+    BM -- "Partial Derivative" --> N
+    BM -- "Integral" --> P
+    BN -- "Transient Events" --> BO
+    BN -- "Time Series Analysis" --> BP
+    BN -- "Big Data" --> BA
+    BN -- "Machine Learning" --> BB
+
+    %% Connections to Calculus
+    AA -- "Stellar Structure" --> AC
+    AA -- "MHD" --> AH
+    AA -- "General Relativity" --> AJ
+    AA -- "Cosmology" --> AM
+    AA -- "Computational Astrophysics" --> AZ
+    AA -- "Multi-Messenger" --> BF
+    AA -- "Gravitational Lensing" --> BM
+    AA -- "Time-Domain" --> BN
+    AA -- "Uncertainty Quantification" --> BE
+    AA -- "Bayesian Inference" --> BC
+    AA -- "Parameter Estimation" --> BD
+    AA -- "Signal Processing" --> BQ
+    AA -- "Fourier Analysis" --> BP

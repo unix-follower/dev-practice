@@ -1,0 +1,31 @@
+flowchart TD
+    A[Start: Query triggers index scan]
+    B[PostgreSQL planner selects index]
+    A --> B
+
+    C[Identify root page of index file]
+    B --> C
+
+    D[Buffer manager checks shared_buffers for index page]
+    C --> D
+
+    E{Is index page in shared_buffers?}
+    D --> E
+
+    E -->|Yes| F["Read index page from memory (shared_buffers)"]
+    E -->|No| G["Request index page from file system (e.g., ext4)"]
+
+    G --> H["OS checks page cache (e.g., Linux page cache)"]
+    H --> I{Is page in OS cache?}
+    I -->|Yes| J[Read index page from OS cache]
+    I -->|No| K["Read index page from disk (SSD/HDD)"]
+    K --> L[OS loads page into page cache]
+    L --> J
+    J --> M[Buffer manager loads page into shared_buffers]
+    F --> N[Traverse B-tree nodes as needed]
+    M --> N
+
+    N --> O["Obtain tuple pointers (TIDs) from index leaf pages"]
+    O --> P["Use TIDs to fetch table heap pages (similar process)"]
+    P --> Q[Return matching rows to executor]
+    Q --> R[Return result set to client]

@@ -1,0 +1,103 @@
+graph TD
+    %% Fundamental Quantities
+    A["Spacetime Coordinates (ct, x, y, z)"]
+    B["Four-Velocity (U^μ)"]
+    C["Four-Acceleration (A^μ)"]
+    D["Four-Momentum (P^μ)"]
+    E["Energy-Momentum Tensor (T^μν)"]
+    F["Metric Tensor (g_μν)"]
+    G["Proper Time (τ)"]
+    H["Interval (ds²)"]
+    I["Mass (m)"]
+    J["Energy (E)"]
+    K["Momentum (p)"]
+    L["Force (F)"]
+    M["Derivative (d/dt, d/dτ)"]
+    N["Partial Derivative (∂/∂x^μ)"]
+    O["Integral (∫ dτ)"]
+    P["Integral (∫ d⁴x)"]
+    Q["Gradient (∇)"]
+    R["Divergence (∇·)"]
+    S["Curl (∇×)"]
+    T["Covariant Derivative (∇_μ)"]
+    U["Christoffel Symbols (Γ^λ_{μν})"]
+    V["Riemann Tensor (R^ρ_{σμν})"]
+    W["Ricci Tensor (R_μν)"]
+    X["Scalar Curvature (R)"]
+    Y[Einstein Field Equations]
+    Z[Geodesic Equation]
+    AA[Lorentz Transformation]
+    AB[Relativistic Dynamics]
+    AC[Relativistic Energy-Momentum Relation]
+    AD[Relativistic Lagrangian]
+    AE[Relativistic Hamiltonian]
+    AF[Action Principle]
+    AG[Noether's Theorem]
+    AH[Conservation Laws]
+    AI[Black Hole Physics]
+    AJ[Gravitational Waves]
+    AK[Cosmology]
+    AL[Friedmann Equations]
+    AM[Redshift]
+    AN[Relativistic Electrodynamics]
+    AO[Maxwell's Equations]
+    AP[Tensor Calculus]
+    AQ[Parallel Transport]
+    AR[Synge's World Function]
+    AS[ADM Formalism]
+    AT[Penrose Diagram]
+    AU[Event Horizon
+]
+    AV[Singularity]
+    AW[Frame Dragging]
+    AX[Time Dilation]
+    AY[Length Contraction]
+    AZ[Relativistic Doppler Effect]
+
+    %% Calculus Operations
+    A -- "d/dτ" --> B
+    B -- "d/dτ" --> C
+    B -- "× m" --> D
+    D -- "Energy-Momentum Relation" --> AC
+    A -- "Lorentz Transformation" --> AA
+    A -- "Interval" --> H
+    H -- "Metric Tensor" --> F
+    F -- "Covariant Derivative" --> T
+    T -- "Christoffel Symbols" --> U
+    U -- "Riemann Tensor" --> V
+    V -- "Ricci Tensor" --> W
+    W -- "Scalar Curvature" --> X
+    X -- "Einstein Field Equations" --> Y
+    F -- "Geodesic Equation" --> Z
+    Z -- "Covariant Derivative" --> T
+    F -- "Parallel Transport" --> AQ
+    F -- "Synge's World Function" --> AR
+    F -- "Penrose Diagram" --> AT
+    F -- "Event Horizon" --> AU
+    F -- "Singularity" --> AV
+    F -- "Frame Dragging" --> AW
+    F -- "Black Hole Physics" --> AI
+    F -- "Gravitational Waves" --> AJ
+    F -- "Cosmology" --> AK
+    AK -- "Friedmann Equations" --> AL
+    AK -- "Redshift" --> AM
+    F -- "Tensor Calculus" --> AP
+    F -- "ADM Formalism" --> AS
+    F -- "Maxwell's Equations" --> AO
+    AO -- "Relativistic Electrodynamics" --> AN
+    F -- "Proper Time" --> G
+    F -- "Time Dilation" --> AX
+    F -- "Length Contraction" --> AY
+    F -- "Relativistic Doppler Effect" --> AZ
+    F -- "Relativistic Lagrangian" --> AD
+    F -- "Relativistic Hamiltonian" --> AE
+    F -- "Action Principle" --> AF
+    AF -- "Noether's Theorem" --> AG
+    AG -- "Conservation Laws" --> AH
+    F -- "Integral over spacetime" --> P
+    F -- "Partial Derivative" --> N
+    F -- "Gradient" --> Q
+    F -- "Divergence" --> R
+    F -- "Curl" --> S
+    F -- "Eigenvalue Problem" --> X
+    F -- "Boundary Conditions" --> V

@@ -1,0 +1,133 @@
+graph TD
+    %% Fundamental Quantities
+    A["Internal Energy (U)"]
+    B["Enthalpy (H)"]
+    C["Entropy (S)"]
+    D["Temperature (T)"]
+    E["Pressure (p)"]
+    F["Volume (V)"]
+    G["Helmholtz Free Energy (F)"]
+    H["Gibbs Free Energy (G)"]
+    I["Chemical Potential (μ)"]
+    J["Number of Particles (N)"]
+    K["Work (W)"]
+    L["Heat (Q)"]
+    M["Time (t)"]
+    N["Derivative (d/dt)"]
+    O["Partial Derivative (∂/∂x, ∂/∂T, ∂/∂p, ...)"]
+    P["Integral (∫ dt)"]
+    Q["Integral (∫ dV)"]
+    R["Integral (∫ dQ/T)"]
+    S["Gradient (∇)"]
+    T["Divergence (∇·)"]
+    U[First Law of Thermodynamics]
+    V[Second Law of Thermodynamics]
+    W[Third Law of Thermodynamics]
+    X[Maxwell Relations]
+    Y[Thermodynamic Potentials]
+    Z[Equations of State]
+    AA[Phase Equilibrium]
+    AB[Clapeyron Equation]
+    AC[Statistical Mechanics]
+    AD["Partition Function (Z)"]
+    AE[Boltzmann Distribution]
+    AF[Non-equilibrium Thermodynamics]
+    AG[Transport Processes]
+    AH[Onsager Relations]
+    AI[Irreversible Processes]
+    AJ[Fluctuation-Dissipation Theorem]
+    AK[Heat Engines]
+    AL[Refrigerators]
+    AM[Efficiency]
+    AN[Entropy Production]
+    AO[Information Theory]
+    AP[Free Energy Landscapes]
+    AQ[Critical Phenomena]
+    AR[Phase Transitions]
+    AS[Chemical Reactions]
+    AT[Gibbs Phase Rule]
+    AU[Legendre Transform]
+    AV["Response Functions (C_p, C_v, κ, α)"]
+    AW[Heat Capacity]
+    AX[Compressibility]
+    AY[Thermal Expansion]
+    AZ["Entropy Change (ΔS)"]
+    BA[Work Integrals]
+    BB[Heat Integrals]
+
+    %% Calculus Operations
+    M -- "d/dt" --> N
+    A -- "∂/∂S, ∂/∂V, ∂/∂N" --> O
+    B -- "∂/∂S, ∂/∂p, ∂/∂N" --> O
+    C -- "∂/∂U, ∂/∂V, ∂/∂N" --> O
+    D -- "∂/∂S, ∂/∂V, ∂/∂N" --> O
+    E -- "∂/∂S, ∂/∂V, ∂/∂N"
+ --> O
+    F -- "∂/∂S, ∂/∂p, ∂/∂N" --> O
+    G -- "∂/∂T, ∂/∂V, ∂/∂N" --> O
+    H -- "∂/∂T, ∂/∂p, ∂/∂N" --> O
+    I -- "∂/∂N" --> O
+    K -- "∫ p dV" --> BA
+    L -- "∫ dQ/T" --> R
+    Q -- "Volume Integral" --> Z
+    R -- "Entropy Integral" --> C
+    S -- "Gradient" --> D
+    T -- "Divergence" --> AG
+    P -- "Integral wrt t" --> AF
+
+    %% Thermodynamic Laws and Potentials
+    U -- "First Law" --> A
+    U -- "Work" --> K
+    U -- "Heat" --> L
+    V -- "Second Law" --> C
+    V -- "Entropy Production" --> AN
+    W -- "Third Law" --> C
+    Y -- "Thermodynamic Potentials" --> G
+    Y -- "Thermodynamic Potentials" --> H
+    Y -- "Legendre Transform" --> AU
+    Y -- "Maxwell Relations" --> X
+    X -- "Partial Derivatives" --> O
+    Z -- "Equations of State" --> A
+    Z -- "Equations of State" --> B
+    Z -- "Equations of State" --> C
+    Z -- "Equations of State" --> D
+    Z -- "Equations of State" --> E
+    Z -- "Equations of State" --> F
+    AA -- "Phase Equilibrium" --> AR
+    AA -- "Clapeyron Equation" --> AB
+    AA -- "Gibbs Phase Rule" --> AT
+    AB -- "Partial Derivatives" --> O
+    AT -- "Partial Derivatives" --> O
+
+    %% Statistical Mechanics and Advanced Topics
+    AC -- "Partition Function" --> AD
+    AC -- "Boltzmann Distribution" --> AE
+    AC -- "Free Energy Landscapes" --> AP
+    AC -- "Critical Phenomena" --> AQ
+    AC -- "Phase Transitions" --> AR
+    AC -- "
+Information Theory" --> AO
+    AC -- "Response Functions" --> AV
+    AV -- "Heat Capacity" --> AW
+    AV -- "Compressibility" --> AX
+    AV -- "Thermal Expansion" --> AY
+    AF -- "Transport Processes" --> AG
+    AF -- "Onsager Relations" --> AH
+    AF -- "Irreversible Processes" --> AI
+    AF -- "Fluctuation-Dissipation Theorem" --> AJ
+    AF -- "Entropy Production" --> AN
+    AK -- "Efficiency" --> AM
+    AL -- "Efficiency" --> AM
+    AS -- "Chemical Reactions" --> I
+    AS -- "Gibbs Free Energy" --> H
+    AZ -- "Entropy Change" --> C
+    BB -- "Heat Integrals" --> L
+
+    %% Connections to Calculus
+    AA -- "Partial Derivative" --> O
+    AA -- "Integral" --> K
+    AA -- "Gradient, Divergence" --> S
+    AA -- "Statistical Analysis" --> BA
+    AA -- "Simulation" --> BC
+    AA -- "Machine Learning" --> BB
+    AA -- "High-Performance Computing" --> BD

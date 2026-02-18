@@ -1,0 +1,32 @@
+flowchart TD
+    A[Start: CREATE INDEX statement with/without COLLATION]
+    B["Parse index type (e.g., btree)"]
+    A --> B
+
+    C["Parse column data type (e.g., text, varchar)"]
+    B --> C
+
+    D{Is COLLATION specified in CREATE INDEX?}
+    C --> D
+
+    D -->|No| E[Use default collation of column]
+    D -->|Yes| F[Use specified collation for index]
+
+    E --> G["Select default operator class for (index type, data type, collation)"]
+    F --> G
+
+    G[Operator class must be compatible with collation]
+    G --> H[Create index with collation info stored in system catalogs]
+    H --> I["Build index entries using specified collation rules (e.g., sort order, case sensitivity)"]
+    I --> J[Index is ready for use]
+
+    J --> K[Query with WHERE/ORDER BY on indexed column]
+    K --> L{Does query collation match index collation?}
+    L -->|Yes| M[Planner can use index efficiently]
+    L -->|No| N[Planner may not use index or may need to recheck order/uniqueness]
+
+    M --> O[Return results using index scan]
+    N --> P[May require full scan or sort, or recheck results]
+
+    %% Example: CREATE INDEX idx_name ON users (name COLLATE "en_US");
+    %% Query: SELECT * FROM users WHERE name = 'John' COLLATE "en_US";
