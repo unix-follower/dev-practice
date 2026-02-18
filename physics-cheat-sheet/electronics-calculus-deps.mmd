@@ -1,0 +1,121 @@
+graph
+ TD
+    %% Fundamental Quantities
+    A["Voltage (V)"]
+    B["Current (I)"]
+    C["Charge (Q)"]
+    D["Resistance (R)"]
+    E["Capacitance (C)"]
+    F["Inductance (L)"]
+    G["Power (P)"]
+    H["Energy (E)"]
+    I["Time (t)"]
+    J["Frequency (f)"]
+    K["Derivative (d/dt)"]
+    L["Integral (∫ dt)"]
+    M["Partial Derivative (∂/∂x, ∂/∂t)"]
+    N[Fourier Transform]
+    O[Laplace Transform]
+    P[Z-Transform]
+    Q["Vector Calculus (∇, ∇·, ∇×)"]
+    R[Kirchhoff's Laws]
+    S[Ohm's Law]
+    T[Node/Loop Analysis]
+    U[Thevenin/Norton Equivalents]
+    V[AC Circuit Analysis]
+    W[Transient Analysis]
+    X[Signal Processing]
+    Y[Filter Design]
+    Z[Semiconductor Physics]
+    AA[PN Junction]
+    AB[Transistor]
+    AC[Operational Amplifier]
+    AD[Feedback]
+    AE[Control Systems]
+    AF[Stability Analysis]
+    AG[Frequency Response]
+    AH["Impedance (Z)"]
+    AI["Admittance (Y)"]
+    AJ[Transfer Function]
+    AK[Noise Analysis]
+    AL[Digital Electronics]
+    AM[Logic Gates]
+    AN[Flip-Flops]
+    AO[Sequential Circuits]
+    AP[Microprocessors]
+    AQ[Embedded Systems]
+    AR[Analog-to-Digital Conversion]
+    AS[Digital-to-Analog Conversion]
+    AT[Sampling Theorem]
+    AU[Modulation]
+    AV[Communication Systems]
+    AW[Electromagnetic Compatibility]
+    AX[PCB Design]
+    AY[Simulation]
+    AZ[Machine Learning in Electronics]
+
+    %% Calculus Operations
+    C -- "dQ/dt" --> B
+    B -- "d/dt" --> K
+    A -- "d/dt" --> K
+    B -- "∫ I dt" --> L
+    A -- "∫ V dt" --> L
+    K -- "Current in Capacitor: I = C dV
+/dt" --> E
+    K -- "Voltage in Inductor: V = L dI/dt" --> F
+    L -- "Charge in Capacitor: Q = ∫ I dt" --> E
+    L -- "Flux in Inductor: Φ = ∫ V dt" --> F
+    K -- "Transient Analysis" --> W
+    K -- "AC Analysis (phasors)" --> V
+    N -- "Frequency Domain" --> X
+    O -- "Laplace Domain" --> AJ
+    P -- "Discrete-Time Analysis" --> X
+    Q -- "Electromagnetic Fields" --> AW
+    M -- "Semiconductor Physics" --> Z
+
+    %% Circuit Analysis
+    R -- "Node/Loop Analysis" --> T
+    S -- "V = IR" --> D
+    T -- "Thevenin/Norton" --> U
+    T -- "AC Analysis" --> V
+    T -- "Transient Analysis" --> W
+    V -- "Impedance" --> AH
+    V -- "Admittance" --> AI
+    V -- "Frequency Response" --> AG
+    W -- "Laplace Transform" --> O
+    AG -- "Bode Plot" --> AJ
+    AJ -- "Stability Analysis" --> AF
+    AJ -- "Control Systems" --> AE
+    AE -- "Feedback" --> AD
+    AE -- "Stability" --> AF
+
+    %% Signal Processing & Filters
+    X -- "Filter Design" --> Y
+    X -- "Noise Analysis" --> AK
+    X -- "Sampling Theorem" --> AT
+    X -- "Modulation" --> AU
+    X -- "Communication Systems" --> AV
+    X -- "Machine Learning" --> AZ
+
+    %% Semiconductor Devices
+    Z -- "PN Junction" --> AA
+    Z -- "
+Transistor" --> AB
+    AB -- "Amplifier" --> AC
+    AC -- "Feedback" --> AD
+
+    %% Digital Electronics
+    AL -- "Logic Gates" --> AM
+    AL -- "Flip-Flops" --> AN
+    AL -- "Sequential Circuits" --> AO
+    AL -- "Microprocessors" --> AP
+    AL -- "Embedded Systems" --> AQ
+    AL -- "A/D Conversion" --> AR
+    AL -- "D/A Conversion" --> AS
+    AR -- "Sampling Theorem" --> AT
+    AS -- "Signal Processing" --> X
+
+    %% Design, Simulation, and EMC
+    AX -- "PCB Design" --> AW
+    AX -- "Simulation" --> AY
+    AY -- "Machine Learning" --> AZ

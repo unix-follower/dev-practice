@@ -1,0 +1,135 @@
+graph TD
+    %% Fundamental Quantities
+    A["Pressure (p)"]
+    B["Temperature (T)"]
+    C["Density (ρ)"]
+    D["Humidity (q)"]
+    E["Wind Velocity (v)"]
+    F["Altitude (z)"]
+    G["Time (t)"]
+    H["Derivative (d/dt)"]
+    I["Partial Derivative (∂/∂x, ∂/∂t)"]
+    J["Integral (∫ dt)"]
+    K["Integral (∫ dx)"]
+    L["Integral (∫ dA)"]
+    M["Integral (∫ dV)"]
+    N["Gradient (∇)"]
+    O["Divergence (∇·)"]
+    P["Curl (∇×)"]
+    Q["Material Derivative (D/Dt)"]
+    R[Hydrostatic Equation]
+    S[Equation of State]
+    T[Continuity Equation]
+    U[Navier-Stokes Equations]
+    V[Thermodynamics]
+    W[First Law of Thermodynamics]
+    X["Potential Temperature (θ)"]
+    Y[Adiabatic Process]
+    Z[Atmospheric Stability]
+    AA[Buoyancy]
+    AB[Cloud Microphysics]
+    AC[Condensation]
+    AD[Precipitation]
+    AE[Cloud Droplet Growth]
+    AF[Atmospheric Radiation]
+    AG[Radiative Transfer Equation]
+    AH[Absorption/Scattering]
+    AI[Greenhouse Effect]
+    AJ[Ozone Chemistry]
+    AK[Atmospheric Dynamics]
+    AL[
+Geostrophic Wind]
+    AM[Coriolis Force]
+    AN[Planetary Boundary Layer]
+    AO[Turbulence]
+    AP[Wave Motion]
+    AQ[Gravity Waves]
+    AR[Rossby Waves]
+    AS[Climate Modeling]
+    AT["General Circulation Model (GCM)"w]
+    AU[Parameterization]
+    AV[Data Assimilation]
+    AW[Remote Sensing]
+    AX[Satellite Data]
+    AY[Weather Forecasting]
+    AZ[Uncertainty Quantification]
+    BA[Statistical Analysis]
+    BB[Machine Learning]
+    BC[Simulation]
+    BD[High-Performance Computing]
+
+    %% Calculus Operations
+    G -- "d/dt" --> H
+    F -- "∂/∂z" --> I
+    E -- "∇" --> N
+    E -- "∇·" --> O
+    E -- "∇×" --> P
+    H -- "Time Derivative" --> Q
+    I -- "Partial Derivative" --> U
+    J -- "Integral wrt t" --> U
+    K -- "Integral wrt x" --> U
+    L -- "Surface Integral" --> AF
+    M -- "Volume Integral" --> AF
+    N -- "Gradient" --> A
+    N -- "Gradient" --> B
+    N -- "Gradient" --> C
+    O -- "Divergence" --> T
+    P -- "Curl" --> E
+
+    %% Fundamental Equations
+    R -- "Hydrostatic Balance" --> A
+    S -- "Equation of State" --> C
+    T -- "Continuity Equation" --> U
+    U -- "Navier-Stokes" --> AK
+    U -- "Turbulence" --> AO
+    U -- "Wave Motion" --> AP
+    U -- "Boundary Layer" --> AN
+    U -- "Geostrophic Wind" --> AL
+    U -- "Coriolis Force" --> AM
+    U -- "Gravity Waves" --> AQ
+    U -- "Rossby
+ Waves" --> AR
+    V -- "First Law" --> W
+    W -- "Potential Temperature" --> X
+    W -- "Adiabatic Process" --> Y
+    W -- "Atmospheric Stability" --> Z
+    AA -- "Buoyancy" --> Z
+
+    %% Cloud Microphysics
+    AB -- "Condensation" --> AC
+    AB -- "Precipitation" --> AD
+    AB -- "Droplet Growth" --> AE
+
+    %% Atmospheric Radiation
+    AF -- "Radiative Transfer Equation" --> AG
+    AG -- "Absorption/Scattering" --> AH
+    AF -- "Greenhouse Effect" --> AI
+    AF -- "Ozone Chemistry" --> AJ
+
+    %% Climate Modeling & Data Science
+    AS -- "General Circulation Model" --> AT
+    AS -- "Parameterization" --> AU
+    AS -- "Data Assimilation" --> AV
+    AS -- "Simulation" --> BC
+    AS -- "Uncertainty Quantification" --> AZ
+    AS -- "Statistical Analysis" --> BA
+    AS -- "Machine Learning" --> BB
+    AS -- "High-Performance Computing" --> BD
+    AS -- "Remote Sensing" --> AW
+    AW -- "Satellite Data" --> AX
+    AS -- "Weather Forecasting" --> AY
+
+    %% Connections to Calculus
+    AA -- "Material Derivative" --> Q
+    AK -- "Partial Derivative" --> I
+    AK -- "Integral" --> K
+    AK -- "Gradient, Divergence, Curl" --> N
+    AK -- "Navier-Stokes" --> U
+    AF -- "Integral" --> L
+    AF -- "Integral" --> M
+    AG -- "Integral" --> L
+    AG -- "Integral" --> M
+    AP -- "Wave
+ Equation" --> AK
+    AO -- "Statistical Analysis" --> BA
+    BC -- "Simulation" --> BD

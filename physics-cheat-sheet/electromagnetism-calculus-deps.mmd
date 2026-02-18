@@ -1,0 +1,109 @@
+graph TD
+    %% Fundamental Quantities
+    A["Electric Field (E)"]
+    B["Magnetic Field (B)"]
+    C["Electric Potential (V)"]
+    D["Magnetic Vector Potential (A)"]
+    E["Charge Density (ρ)"]
+    F["Current Density (J)"]
+    G["Permittivity (ε₀)"]
+    H["Permeability (μ₀)"]
+    I["Time (t)"]
+    J["Position (x, y, z)"]
+    K["Derivative (d/dt)"]
+    L["Partial Derivative (∂/∂x, ∂/∂t)"]
+    M["Integral (∫ dt)"]
+    N["Integral (∫ dx)"]
+    O["Integral (∫ dA)"]
+    P["Integral (∫ dV)"]
+    Q["Gradient (∇)"]
+    R["Divergence (∇·)"]
+    S["Curl (∇×)"]
+    T[Boundary Conditions]
+    U[Green's Function]
+    V[Eigenvalue Problem]
+    W[Wave Equation]
+    X[Maxwell's Equations]
+    Y[Gauss's Law]
+    Z[Faraday's Law]
+    AA[A
+mpère-Maxwell Law]
+    AB[Gauss's Law for Magnetism]
+    AC[Electromagnetic Waves]
+    AD["Poynting Vector (S)"]
+    AE["Energy Density (u)"]
+    AF[Relativistic Electrodynamics]
+    AG[Lorentz Force]
+    AH[Charge Conservation]
+    AI[Continuity Equation]
+    AJ[Multipole Expansion]
+    AK[Retarded Potentials]
+    AL[Electromagnetic Radiation]
+    AM[Polarization]
+    AN[Dielectrics]
+    AO[Conductors]
+    AP[Magnetostatics]
+    AQ[Electrostatics]
+    AR[Plasma Physics]
+    AS[Waveguides]
+    AT[Resonant Cavities]
+    AU[Antennas]
+    AV[Optics]
+    AW["Quantum Electrodynamics (QED)"]
+
+    %% Calculus Operations
+    J -- "∇" --> Q
+    A -- "∇·" --> R
+    B -- "∇×" --> S
+    K -- "d/dt" --> A
+    K -- "d/dt" --> B
+    L -- "Partial Derivative" --> X
+    M -- "Integral wrt t" --> X
+    N -- "Integral wrt x" --> X
+    O -- "Surface Integral" --> Y
+    P -- "Volume Integral" --> Y
+    Q -- "Gradient" --> C
+    Q -- "Gradient" --> D
+    R -- "Divergence" --> A
+    S -- "Curl" --> B
+
+    %% Maxwell's Equations
+    X -- "Gauss's Law" --> Y
+    X -- "Faraday's Law" --> Z
+    X -- "Ampère-Maxwell Law" --> AA
+    X -- "Gauss's Law for Magnetism" --> AB
+    X -- "Wave Equation" --> W
+    X -- "Boundary Conditions" --> T
+    X -- "Green's Function" --> U
+    X -- "Eigenvalue Problem" --> V
+    X -- "Electromagnetic Waves" --> AC
+    X -- "Poynting Vector" --> AD
+    X -- "Energy Density" --> AE
+    X -- "Relativistic Electrodynamics" --> AF
+    X -- "Charge Conservation" --> AH
+    X -- "Continuity Equation" --> AI
+    X -- "Multipole Expansion" --> AJ
+    X -- "Retarded Potentials" --> AK
+    X -- "Electromagnetic Radiation" --> AL
+    X --
+ "Polarization" --> AM
+    X -- "Dielectrics" --> AN
+    X -- "Conductors" --> AO
+    X -- "Magnetostatics" --> AP
+    X -- "Electrostatics" --> AQ
+    X -- "Plasma Physics" --> AR
+    X -- "Waveguides" --> AS
+    X -- "Resonant Cavities" --> AT
+    X -- "Antennas" --> AU
+    X -- "Optics" --> AV
+    X -- "Quantum Electrodynamics" --> AW
+
+    %% Advanced Connections
+    AF -- "Lorentz Force" --> AG
+    AH -- "Continuity Equation" --> AI
+    AC -- "Wave Equation" --> W
+    AC -- "Optics" --> AV
+    AL -- "Retarded Potentials" --> AK
+    AL -- "Multipole Expansion" --> AJ
+    AL -- "Wave Equation" --> W
+    AV -- "Quantum Electrodynamics" --> AW

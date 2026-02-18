@@ -1,0 +1,44 @@
+sequenceDiagram
+    participant App as Application
+    participant PG as PostgreSQL FTS Engine
+    participant Parser as Parser/Dictionary
+
+    %% tsvector @@ tsquery
+    App->>PG: SELECT tsvector_column @@ tsquery_expression
+    PG->>PG: Use precomputed tsvector
+    PG->>Parser: Parse tsquery_expression into lexemes
+    Parser-->>PG: Return tsquery lexemes
+    PG->>PG: Match tsvector lexemes against tsquery lexemes
+    PG-->>App: Return match result (true/false)
+
+    %% tsquery @@ tsvector (commutative)
+    App->>PG: SELECT tsquery_expression @@ tsvector_column
+    PG->>Parser: Parse tsquery_expression into lexemes
+    Parser-->>PG: Return tsquery lexemes
+    PG->>PG: Use precomputed tsvector
+    PG->>PG: Match tsvector lexemes against tsquery lexemes
+    PG-->>App: Return match result (true/false)
+
+    %% text @@ tsquery
+    App->>PG: SELECT text_column @@ tsquery_expression
+    PG->>Parser: Parse text_column into tokens
+    Parser-->>PG: Return tokens
+    PG->>Parser: Normalize tokens to lexemes (using dictionary)
+    Parser-->>PG: Return tsvector lexemes
+    PG->>Parser: Parse tsquery_expression into lexemes
+    Parser-->>PG: Return tsquery lexemes
+    PG->>PG: Match tsvector lexemes against tsquery lexemes
+    PG-->>App: Return match result (true/false)
+
+    %% text @@ text
+    App->>PG: SELECT text_column @@ text_expression
+    PG->>Parser: Parse text_column into tokens
+    Parser-->>PG: Return tokens
+    PG->>Parser: Normalize tokens to lexemes (using dictionary)
+    Parser-->>PG: Return tsvector lexemes
+    PG->>Parser: Parse text_expression into tokens
+    Parser-->>PG: Return tokens
+    PG->>Parser: Normalize tokens to lexemes (using dictionary)
+    Parser-->>PG: Return tsquery lexemes
+    PG->>PG: Match tsvector lexemes against tsquery lexemes
+    PG-->>App: Return match result (true/false)

@@ -1,0 +1,16 @@
+sequenceDiagram
+    participant App as Application
+    participant PG as PostgreSQL FTS Engine
+    participant Parser as Parser (Document Parser)
+    participant Dict as Dictionary (e.g., Snowball, Ispell)
+
+    App->>PG: Submit document for full-text indexing/search
+    PG->>Parser: Parse document text
+    Parser-->>PG: Return sequence of tokens (words, numbers, punctuation)
+
+    loop For each token
+        PG->>Dict: Normalize token (lowercase, stemming, stop-word removal, etc.)
+        Dict-->>PG: Return lexeme (normalized form)
+    end
+
+    PG-->>App: Store or use lexemes for tsvector/tsquery

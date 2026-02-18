@@ -1,0 +1,27 @@
+flowchart TD
+    A[Start: CREATE INDEX statement]
+    B["Parse index type (e.g., btree, hash, gist, gin, etc.)"]
+    A --> B
+
+    C["Parse column data type(s)"]
+    B --> C
+
+    D{Is operator class specified in CREATE INDEX?}
+    C --> D
+
+    D -->|No| E["Select default operator class for (index type, column data type)"]
+    D -->|Yes| F[Use specified operator class]
+
+    E --> G[Identify operator family for operator class]
+    F --> G
+
+    G[Operator family defines set of related operator classes]
+    G --> H[Operator class defines comparison operators and support functions for index type]
+    H --> I["Map indexable operators (e.g., =, <, >, etc.) to index support functions"]
+    I --> J["Store operator class and family info in system catalogs (pg_opclass, pg_opfamily)"]
+    J --> K[Index is created with correct operator class/family]
+    K --> L[Index can now be used for queries with matching operators]
+
+    %% Example: btree index on text
+    %% Default operator class: text_ops (in btree operator family)
+    %% Operators: =, <, <=, >, >=
